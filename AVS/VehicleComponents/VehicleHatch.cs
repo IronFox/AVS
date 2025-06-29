@@ -1,0 +1,119 @@
+﻿using AVS.VehicleTypes;
+using System.Collections;
+using UnityEngine;
+//using AVS.Localization;
+
+namespace AVS
+{
+    public class VehicleHatch : HandTarget, IHandTarget, IDockListener
+    {
+        private bool isLive = true;
+        public ModVehicle mv;
+        public Transform EntryLocation;
+        public Transform ExitLocation;
+        public Transform SurfaceExitLocation;
+        public string EnterHint = Language.main.Get("VFEnterVehicle");
+        public string ExitHint = Language.main.Get("VFExitVehicle");
+
+        public void OnHandHover(GUIHand hand)
+        {
+            if (!isLive)
+            {
+                return;
+            }
+            HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
+            if ((mv as Submarine != null))
+            {
+                if ((mv as Submarine).IsPlayerInside())
+                {
+                    HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, ExitHint);
+                }
+                else
+                {
+                    HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, EnterHint);
+                }
+            }
+            else if ((mv as Submersible != null) || (mv as Walker != null) || (mv as Skimmer != null))
+            {
+                HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, EnterHint);
+            }
+        }
+
+        public void OnHandClick(GUIHand hand)
+        {
+            if (!isLive)
+            {
+                return;
+            }
+            Player.main.rigidBody.velocity = Vector3.zero;
+            Player.main.rigidBody.angularVelocity = Vector3.zero;
+            if ((mv as Submarine != null))
+            {
+                if ((mv as Submarine).IsPlayerInside())
+                {
+                    mv.PlayerExit();
+                    if (mv.transform.position.y < -3f)
+                    {
+                        Player.main.transform.position = ExitLocation.position;
+                    }
+                    else
+                    {
+                        StartCoroutine(ExitToSurface());
+                    }
+                }
+                else
+                {
+                    Player.main.transform.position = EntryLocation.position;
+                    (mv as Submarine).PlayerEntry();
+                }
+            }
+            else if (mv as Submersible != null && !mv.isScuttled)
+            {
+                Player.main.transform.position = (mv as Submersible).PilotSeat.SitLocation.transform.position;
+                Player.main.transform.rotation = (mv as Submersible).PilotSeat.SitLocation.transform.rotation;
+                (mv as Submersible).PlayerEntry();
+            }
+            /*
+			if (mv as Walker != null)
+			{
+				Player.main.transform.position = (mv as Walker).PilotSeat.SitLocation.transform.position;
+				Player.main.transform.rotation = (mv as Walker).PilotSeat.SitLocation.transform.rotation;
+				mv.PlayerEntry();
+			}
+			if (mv as Skimmer != null)
+			{
+				Player.main.transform.position = (mv as Skimmer).PilotSeats.First().SitLocation.transform.position;
+				Player.main.transform.rotation = (mv as Skimmer).PilotSeats.First().SitLocation.transform.rotation;
+				mv.PlayerEntry();
+			}
+			*/
+        }
+
+        public IEnumerator ExitToSurface()
+        {
+            int tryCount = 0;
+            float playerHeightBefore = Player.main.transform.position.y;
+            while (Player.main.transform.position.y < 2 + playerHeightBefore)
+            {
+                if (100 < tryCount)
+                {
+                    Logger.Error("Error: Failed to exit vehicle too many times. Stopping.");
+                    yield break;
+                }
+                Player.main.transform.position = SurfaceExitLocation.position;
+                tryCount++;
+                yield return null;
+            }
+        }
+
+        void IDockListener.OnDock()
+        {
+            isLive = false;
+        }
+
+        void IDockListener.OnUndock()
+        {
+            isLive = true;
+        }
+    }
+}
