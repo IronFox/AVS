@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using BepInEx.Configuration;
+using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using BepInEx.Configuration;
 
 namespace AVS.Admin
 {
@@ -35,20 +35,20 @@ namespace AVS.Admin
         }
         public static ExternalVehicleConfig<T> GetModVehicleConfig(string vehicleName)
         {
-            var MVs = VehicleManager.vehicleTypes.Where(x => x.name.Equals(vehicleName, StringComparison.OrdinalIgnoreCase));
-            if (!MVs.Any())
+            var MVs = VehicleManager.vehicleTypes.Where(x => x.name.Equals(vehicleName, StringComparison.OrdinalIgnoreCase)).ToList();
+            if (MVs.Count == 0)
             {
                 StringBuilder sb = new StringBuilder();
                 VehicleManager.vehicleTypes.ForEach(x => sb.AppendLine(x.name));
                 throw new ArgumentException($"GetModVehicleConfig: vehicle name does not identify a ModVehicle: {vehicleName}. Options are: {sb}");
             }
-            if (MVs.Count() > 1)
+            if (MVs.Count > 1)
             {
                 StringBuilder sb = new StringBuilder();
                 VehicleManager.vehicleTypes.ForEach(x => sb.AppendLine(x.name));
                 throw new ArgumentException($"GetModVehicleConfig: vehicle name does not uniquely identify a ModVehicle: {vehicleName}. There were {MVs.Count()} matches: {sb}");
             }
-            ModVehicle mv = MVs.First().mv;
+            ModVehicle mv = MVs[0].mv;
             if (!main.ContainsKey(mv.GetType().ToString()))
             {
                 AddNew(mv);
@@ -57,7 +57,7 @@ namespace AVS.Admin
         }
         public static ExternalVehicleConfig<T> GetSeamothConfig()
         {
-            if(SeamothConfig == null)
+            if (SeamothConfig == null)
             {
                 SeamothConfig = new ExternalVehicleConfig<T>
                 {
@@ -166,7 +166,7 @@ namespace AVS.Admin
                     {
                         foreach (ModVehicle innerMV in VehicleManager.vehicleTypes.Select(x => x.mv))
                         {
-                            if(innerMV.GetType().ToString() == vehicleName)
+                            if (innerMV.GetType().ToString() == vehicleName)
                             {
                                 OnChange(innerMV.TechType, thisConf.Value);
                                 break;

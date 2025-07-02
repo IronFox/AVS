@@ -140,9 +140,9 @@ namespace AVS.Admin
                 }
             }
             int extraDepthToAdd = 0;
-            extraDepthToAdd = maxDepthModuleLevel > 0 ? extraDepthToAdd += mv.CrushDepthUpgrade1 : extraDepthToAdd;
-            extraDepthToAdd = maxDepthModuleLevel > 1 ? extraDepthToAdd += mv.CrushDepthUpgrade2 : extraDepthToAdd;
-            extraDepthToAdd = maxDepthModuleLevel > 2 ? extraDepthToAdd += mv.CrushDepthUpgrade3 : extraDepthToAdd;
+            extraDepthToAdd = maxDepthModuleLevel > 0 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade1 : extraDepthToAdd;
+            extraDepthToAdd = maxDepthModuleLevel > 1 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade2 : extraDepthToAdd;
+            extraDepthToAdd = maxDepthModuleLevel > 2 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade3 : extraDepthToAdd;
             mv.GetComponent<CrushDamage>().SetExtraCrushDepth(extraDepthToAdd);
         }
         public static TechType GetTechTypeFromVehicleName(string name)

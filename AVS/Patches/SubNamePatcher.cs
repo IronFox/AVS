@@ -14,11 +14,11 @@ namespace AVS.Patches
         public static void SubNameSetNamePostfix(SubName __instance)
         {
             ModVehicle mv = __instance.GetComponent<ModVehicle>();
-            if(mv == null)
+            if (mv == null)
             {
                 return;
             }
-            if (mv.SubNameDecals != null)
+            if (mv.Config.SubNameDecals != null)
             {
                 SetSubNameDecals(mv);
             }
@@ -29,7 +29,7 @@ namespace AVS.Patches
         }
         private static void SetSubNameDecals(ModVehicle mv)
         {
-            foreach (var tmprougui in mv.SubNameDecals)
+            foreach (var tmprougui in mv.Config.SubNameDecals)
             {
                 tmprougui.font = Nautilus.Utility.FontUtils.Aller_Rg;
                 tmprougui.text = mv.subName.GetName();
@@ -44,11 +44,11 @@ namespace AVS.Patches
             }
             mv.nameColor = color;
             SetSubNameDecals(mv);
-            foreach (var tmprougui in mv.SubNameDecals)
+            foreach (var tmprougui in mv.Config.SubNameDecals)
             {
                 tmprougui.color = color;
             }
-            if(mv is VehicleTypes.Submarine sub)
+            if (mv is VehicleTypes.Submarine sub)
             {
                 sub.PaintVehicleName(mv.subName.GetName(), mv.nameColor, mv.baseColor);
             }
@@ -69,7 +69,7 @@ namespace AVS.Patches
             }
             else if (index == 1)
             {
-                if (mv.SubNameDecals != null)
+                if (mv.Config.SubNameDecals != null)
                 {
                     SetSubNameDecalsWithColor(mv, hsb, color);
                 }

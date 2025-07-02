@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
 
 namespace AVS.SaveLoad
 {
@@ -19,7 +19,7 @@ namespace AVS.SaveLoad
         }
         internal static void SerializeAllModularStorage(ModVehicle mv)
         {
-            foreach(string slotID in mv.slotIDs)
+            foreach (string slotID in mv.slotIDs)
             {
                 if (mv.modules.equipment.TryGetValue(slotID, out InventoryItem result))
                 {
@@ -53,7 +53,7 @@ namespace AVS.SaveLoad
         {
             yield return new WaitUntil(() => Admin.GameStateWatcher.isWorldLoaded);
             yield return new WaitUntil(() => mv.upgradesInput.equipment != null);
-            foreach(var upgradesLoader in mv.GetComponentsInChildren<VFUpgradesIdentifier>())
+            foreach (var upgradesLoader in mv.GetComponentsInChildren<VFUpgradesIdentifier>())
             {
                 yield return new WaitUntil(() => upgradesLoader.isFinished);
             }
@@ -87,7 +87,7 @@ namespace AVS.SaveLoad
                 yield return CraftData.InstantiateFromPrefabAsync(item.Item1, result, false);
                 GameObject thisItem = result.Get();
 
-                thisItem.transform.SetParent(mv.StorageRootObject.transform);
+                thisItem.transform.SetParent(mv.Config.StorageRootObject.transform);
                 try
                 {
                     container.AddItem(thisItem.EnsureComponent<Pickupable>());

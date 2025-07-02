@@ -59,9 +59,9 @@ namespace AVS
         {
             isReadyToSpeak = false;
             mv = GetComponent<ModVehicle>();
-            if (mv.BackupBatteries != null && mv.BackupBatteries.Count > 0)
+            if (mv.Config.BackupBatteries.Count > 0)
             {
-                aiEI = mv.BackupBatteries[0].BatterySlot.GetComponent<EnergyInterface>();
+                aiEI = mv.Config.BackupBatteries[0].BatterySlot.GetComponent<EnergyInterface>();
             }
             else
             {
@@ -82,25 +82,25 @@ namespace AVS
         private void SetupSpeakers()
         {
             //speakers.Add(mv.VehicleModel.EnsureComponent<AudioSource>());
-            if (mv as Submarine != null)
+            if (mv is Submarine sub)
             {
-                foreach (var ps in (mv as Submarine).PilotSeats)
+                foreach (var ps in sub.SubConfig.PilotSeats)
                 {
                     speakers.Add(ps.Seat.EnsureComponent<AudioSource>().Register());
                 }
-                foreach (var ps in (mv as Submarine).Hatches)
+                foreach (var ps in sub.SubConfig.Hatches)
                 {
                     speakers.Add(ps.Hatch.EnsureComponent<AudioSource>().Register());
                 }
-                foreach (var ps in (mv as Submarine).TetherSources)
+                foreach (var ps in sub.SubConfig.TetherSources)
                 {
                     speakers.Add(ps.EnsureComponent<AudioSource>().Register());
                 }
             }
-            if (mv as Submersible != null)
+            if (mv is Submersible sub2)
             {
-                speakers.Add((mv as Submersible).PilotSeat.Seat.EnsureComponent<AudioSource>().Register());
-                foreach (var ps in (mv as Submersible).Hatches)
+                speakers.Add(sub2.SubConfig.PilotSeat.Seat.EnsureComponent<AudioSource>().Register());
+                foreach (var ps in sub2.SubConfig.Hatches)
                 {
                     speakers.Add(ps.Hatch.EnsureComponent<AudioSource>().Register());
                 }

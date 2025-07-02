@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 // PURPOSE: allow custom save file sprites to be displayed
 // VALUE: High.
@@ -17,12 +17,12 @@ namespace AVS.Patches
         {
             foreach (var ve in VehicleManager.vehicleTypes)
             {
-                if (ve.mv != null && ve.mv.SaveFileSprite != Assets.StaticAssets.DefaultSaveFileSprite)
+                if (ve.mv != null && ve.mv.Config.SaveFileSprite != Assets.StaticAssets.DefaultSaveFileSprite)
                 {
                     string techType = ve.techType.AsString();
                     GameObject imageObject = new GameObject(techType);
                     imageObject.transform.SetParent(lb.saveIcons.transform, false);
-                    imageObject.AddComponent<UnityEngine.UI.Image>().sprite = ve.mv.SaveFileSprite;
+                    imageObject.AddComponent<UnityEngine.UI.Image>().sprite = ve.mv.Config.SaveFileSprite;
                     imageObject.EnsureComponent<RectTransform>().sizeDelta = new Vector2(24, 24);
                     imageObject.SetActive(false);
                 }
@@ -36,7 +36,7 @@ namespace AVS.Patches
             // A SaveIcon should be square
             AddLoadButtonSprites(lb);
 
-            if(SaveLoadManagerPatcher.hasTechTypeGameInfo.ContainsKey(lb.saveGame))
+            if (SaveLoadManagerPatcher.hasTechTypeGameInfo.ContainsKey(lb.saveGame))
             {
                 List<string> hasTechTypes = SaveLoadManagerPatcher.hasTechTypeGameInfo[lb.saveGame];
                 hasTechTypes.ForEach(x => lb.saveIcons.FindChild(x)?.gameObject.SetActive(true));
@@ -47,7 +47,7 @@ namespace AVS.Patches
             int count = 0;
             foreach (Transform tr in lb.saveIcons.transform)
             {
-                if(tr.gameObject.activeInHierarchy)
+                if (tr.gameObject.activeInHierarchy)
                 {
                     count++;
                 }

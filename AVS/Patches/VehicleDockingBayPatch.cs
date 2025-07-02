@@ -1,8 +1,8 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
-using HarmonyLib;
-using UnityEngine;
 using System.Reflection.Emit;
+using UnityEngine;
 
 // PURPOSE: allow ModVehicles to use in-game docking bays
 // VALUE: High.
@@ -79,11 +79,11 @@ namespace AVS.Patches
         public static bool IsThisASubmarineWithStandingPilot(GameObject nearby)
         {
             VehicleTypes.Submarine mv = UWE.Utils.GetComponentInHierarchy<VehicleTypes.Submarine>(nearby.gameObject);
-            if(mv == null)
+            if (mv == null)
             {
                 return false;
-            }    
-            if(mv.IsUnderCommand && !mv.IsPlayerPiloting())
+            }
+            if (mv.IsUnderCommand && !mv.IsPlayerPiloting())
             {
                 return true;
             }
@@ -96,7 +96,7 @@ namespace AVS.Patches
             {
                 return true;
             }
-            if (!mv.CanMoonpoolDock || mv.docked)
+            if (!mv.Config.CanMoonpoolDock || mv.docked)
             {
                 return false;
             }
@@ -261,7 +261,7 @@ namespace AVS.Patches
 
         public static void MaybeStartCinematicMode(PlayerCinematicController cinematic, Player player, Vehicle vehicle)
         {
-            if(vehicle as ModVehicle == null)
+            if (vehicle as ModVehicle == null)
             {
                 cinematic.StartCinematicMode(player);
             }

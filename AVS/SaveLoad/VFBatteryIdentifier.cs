@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 namespace AVS.SaveLoad
@@ -49,7 +48,7 @@ namespace AVS.SaveLoad
             try
             {
                 thisItem.GetComponent<Battery>().charge = thisBattery.Item2;
-                thisItem.transform.SetParent(mv.StorageRootObject.transform);
+                thisItem.transform.SetParent(mv.Config.StorageRootObject.transform);
                 GetComponent<EnergyMixin>().battery = thisItem.GetComponent<Battery>();
                 GetComponent<EnergyMixin>().batterySlot.AddItem(thisItem.GetComponent<Pickupable>());
                 thisItem.SetActive(false);

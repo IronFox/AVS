@@ -40,7 +40,7 @@ namespace AVS.Patches
             {
                 if (mv.upgradesInput == __instance)
                 {
-                    ModuleBuilder.main.BackgroundSprite = mv.ModuleBackgroundImage;
+                    ModuleBuilder.main.BackgroundSprite = mv.Config.ModuleBackgroundImage;
                     break;
                 }
             }

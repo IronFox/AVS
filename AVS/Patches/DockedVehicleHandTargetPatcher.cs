@@ -51,9 +51,9 @@ namespace AVS.Patches
             if (mv != null)
             {
                 string text = mv.subName.hullName.text;
-                if (mv is Submarine && (mv as Submarine).Hatches.Any())
+                if (mv is Submarine sub && sub.SubConfig.Hatches.Count > 0)
                 {
-                    text = (mv as Submarine).Hatches.First().Hatch.GetComponent<VehicleHatch>().EnterHint;
+                    text = sub.SubConfig.Hatches[0].Hatch.GetComponent<VehicleHatch>().EnterHint;
                 }
                 float energyActual = 0;
                 float energyMax = 0;
@@ -135,8 +135,8 @@ namespace AVS.Patches
             {
                 float GetVehicleTop()
                 {
-                    Vector3 worldCenter = mv.BoundingBoxCollider.transform.TransformPoint(mv.BoundingBoxCollider.center);
-                    return worldCenter.y + (mv.BoundingBoxCollider.size.y * 0.5f * mv.BoundingBoxCollider.transform.lossyScale.y);
+                    Vector3 worldCenter = mv.Config.BoundingBoxCollider.transform.TransformPoint(mv.Config.BoundingBoxCollider.center);
+                    return worldCenter.y + (mv.Config.BoundingBoxCollider.size.y * 0.5f * mv.Config.BoundingBoxCollider.transform.lossyScale.y);
                 }
                 float GetMoonPoolPlane()
                 {

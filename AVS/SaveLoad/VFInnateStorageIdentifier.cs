@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using System.Linq;
+using UnityEngine;
 
 namespace AVS.SaveLoad
 {
@@ -55,7 +55,7 @@ namespace AVS.SaveLoad
                 yield return CraftData.InstantiateFromPrefabAsync(item.Item1, result, false);
                 GameObject thisItem = result.Get();
 
-                thisItem.transform.SetParent(mv.StorageRootObject.transform);
+                thisItem.transform.SetParent(mv.Config.StorageRootObject.transform);
                 try
                 {
                     GetComponent<InnateStorageContainer>().container.AddItem(thisItem.EnsureComponent<Pickupable>());
@@ -72,7 +72,7 @@ namespace AVS.SaveLoad
                     {
                         UWE.CoroutineHost.StartCoroutine(SaveLoadUtils.ReloadBatteryPower(thisItem, item.Item2, item.Item3));
                     }
-                    catch(Exception e)
+                    catch (Exception e)
                     {
                         Logger.LogException($"Failed to reload battery power for innate storage item {thisItem.name} in innate storage on GameObject {gameObject.name} for {mv.name} : {mv.subName.hullName.text}", e);
                     }
@@ -80,6 +80,6 @@ namespace AVS.SaveLoad
             }
         }
 
-        
+
     }
 }

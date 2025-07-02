@@ -50,7 +50,7 @@ namespace AVS
                 yield break;
             }
             prefabs.Add(mv);
-            VehicleEntry ve = new VehicleEntry(mv, numVehicleTypes, pingType, mv.PingSprite ?? Assets.StaticAssets.DefaultPingSprite);
+            VehicleEntry ve = new VehicleEntry(mv, numVehicleTypes, pingType, mv.Config.PingSprite ?? Assets.StaticAssets.DefaultPingSprite);
             numVehicleTypes++;
             VehicleEntry naiveVE = new VehicleEntry(ve.mv, ve.unique_id, ve.pt, ve.ping_sprite, TechType.None);
             VehicleManager.vehicleTypes.Add(naiveVE); // must add/remove this vehicle entry so that we can call VFConfig.Setup.
@@ -211,7 +211,7 @@ namespace AVS
         {
             try
             {
-                foreach (VehicleParts.VehiclePilotSeat ps in mv.PilotSeats)
+                foreach (VehicleParts.VehiclePilotSeat ps in mv.SubConfig.PilotSeats)
                 {
                     mv.playerPosition = ps.SitLocation;
                     PilotingTrigger pt = ps.Seat.EnsureComponent<PilotingTrigger>();
@@ -227,7 +227,7 @@ namespace AVS
             }
             try
             {
-                foreach (VehicleParts.VehicleHatchStruct vhs in mv.Hatches)
+                foreach (VehicleParts.VehicleHatchStruct vhs in mv.SubConfig.Hatches)
                 {
                     var hatch = vhs.Hatch.EnsureComponent<VehicleHatch>();
                     hatch.mv = mv;
@@ -245,14 +245,14 @@ namespace AVS
             // Configure the Control Panel
             try
             {
-                if (mv.ControlPanel)
+                if (mv.SubConfig.ControlPanel)
                 {
-                    mv.controlPanelLogic = mv.ControlPanel.EnsureComponent<ControlPanel>();
+                    mv.controlPanelLogic = mv.SubConfig.ControlPanel.EnsureComponent<ControlPanel>();
                     mv.controlPanelLogic.mv = mv;
                     if (mv.transform.Find("Control-Panel-Location") != null)
                     {
-                        mv.ControlPanel.transform.localPosition = mv.transform.Find("Control-Panel-Location").localPosition;
-                        mv.ControlPanel.transform.localRotation = mv.transform.Find("Control-Panel-Location").localRotation;
+                        mv.SubConfig.ControlPanel.transform.localPosition = mv.transform.Find("Control-Panel-Location").localPosition;
+                        mv.SubConfig.ControlPanel.transform.localRotation = mv.transform.Find("Control-Panel-Location").localRotation;
                         GameObject.Destroy(mv.transform.Find("Control-Panel-Location").gameObject);
                     }
                 }
