@@ -11,6 +11,8 @@ namespace AVS
             Normal,
             Storage
         }
+
+        public HUDChoice HUDType = HUDChoice.Normal;
         private bool IsStorageHUD()
         {
             return textStorage != null;
@@ -26,45 +28,45 @@ namespace AVS
         }
         private bool ShouldIDie(ModVehicle mv, PDA pda)
         {
-            //if (mv == null || pda == null)
-            //{
-            //	// show nothing if we're not in an MV
-            //	// or if PDA isn't available
-            //	return true;
-            //}
+            if (mv == null || pda == null)
+            {
+                // show nothing if we're not in an MV
+                // or if PDA isn't available
+                return true;
+            }
 
-            //         if (IsStorageHUD())
-            //         {
-            //             if (HasMvStorage(mv))
-            //	{
-            //		switch (VehicleConfig.GetConfig(mv).HUDChoice.Value)
-            //		{
-            //			case HUDChoice.Normal:
-            //				// I'm the storage HUD, and I can be displayed, but the user wants the normal HUD. I should die.
-            //				return true;
-            //			case HUDChoice.Storage:
-            //				// I'm the storage HUD, and I can be displayed, and the user wants me. I should live.
-            //				return false;
-            //		}
-            //	}
-            //             else
-            //	{
-            //		// I'm the storage HUD, but I can't be displayed. I should die.
-            //		return true;
-            //	}
-            //         }
-            //         else
-            //{
-            //	switch (VehicleConfig.GetConfig(mv).HUDChoice.Value)
-            //	{
-            //		case HUDChoice.Normal:
-            //			// I'm the normal HUD, and the user wants me. I should live
-            //			return false;
-            //		case HUDChoice.Storage:
-            //			// I'm the normal HUD, but the user wants storage. I should die if it is available.
-            //			return HasMvStorage(mv);
-            //	}
-            //}
+            if (IsStorageHUD())
+            {
+                if (HasMvStorage(mv))
+                {
+                    switch (HUDType)
+                    {
+                        case HUDChoice.Normal:
+                            // I'm the storage HUD, and I can be displayed, but the user wants the normal HUD. I should die.
+                            return true;
+                        case HUDChoice.Storage:
+                            // I'm the storage HUD, and I can be displayed, and the user wants me. I should live.
+                            return false;
+                    }
+                }
+                else
+                {
+                    // I'm the storage HUD, but I can't be displayed. I should die.
+                    return true;
+                }
+            }
+            else
+            {
+                switch (HUDType)
+                {
+                    case HUDChoice.Normal:
+                        // I'm the normal HUD, and the user wants me. I should live
+                        return false;
+                    case HUDChoice.Storage:
+                        // I'm the normal HUD, but the user wants storage. I should die if it is available.
+                        return HasMvStorage(mv);
+                }
+            }
 
             return true;
         }
@@ -147,6 +149,7 @@ namespace AVS
                 textPower.text = IntStringCache.GetStringForInt(lastPower);
             }
         }
+
         public void UpdateStorage()
         {
             if (textStorage == null)
