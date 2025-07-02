@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Nautilus.Assets.Gadgets;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using Nautilus.Assets.Gadgets;
 
 namespace AVS.Assets
 {
@@ -46,26 +46,26 @@ namespace AVS.Assets
         /// <returns>The TechType of the new fragment.</returns>
         public static TechType RegisterFragment(FragmentData frag)
         {
-            if(frag.fragment == null && (frag.fragments == null || frag.fragments.Count() < 1))
+            if (frag.fragment == null && (frag.fragments == null || frag.fragments.Count < 1))
             {
                 Logger.Error("RegisterFragment error: no fragment objects were supplied");
                 return 0;
             }
-            if(frag.fragment != null && frag.fragments != null && frag.fragments.Count() > 0)
+            if (frag.fragment != null && frag.fragments != null && frag.fragments.Count > 0)
             {
                 Logger.Warn("RegisterFragment warning: fragment and fragments were both supplied. Fragment will be ignored.");
             }
-            if(frag.spawnLocations == null || frag.spawnLocations.Count < 1)
+            if (frag.spawnLocations == null || frag.spawnLocations.Count < 1)
             {
                 Logger.Error("For classID: " + frag.classID + ": Tried to register fragment without any spawn locations!");
             }
-            if (frag.spawnLocations != null && frag.spawnRotations != null && frag.spawnLocations.Count() != frag.spawnRotations.Count())
+            if (frag.spawnLocations != null && frag.spawnRotations != null && frag.spawnLocations.Count != frag.spawnRotations.Count)
             {
                 Logger.Error("For classID: " + frag.classID + ": Tried to register fragment with unequal number of spawn locations and rotations. Ensure there is one rotation for every location, or else don't specify any rotations.");
                 return TechType.None;
             }
             TechType fragmentTT;
-            if(frag.fragment != null && (frag.fragments == null || frag.fragments.Count() < 1))
+            if (frag.fragment != null && (frag.fragments == null || frag.fragments.Count < 1))
             {
                 Nautilus.Assets.CustomPrefab customPrefab = RegisterFragmentGenericSingle(frag, frag.fragment, true, out fragmentTT);
                 customPrefab.Register();
@@ -74,7 +74,7 @@ namespace AVS.Assets
             else
             {
                 fragmentTT = RegisterFragmentGeneric(frag);
-                Logger.Log("Registered fragment: " + frag.classID + " with " + (frag.fragments.Count() + 1).ToString() + " variations.");
+                Logger.Log("Registered fragment: " + frag.classID + " with " + (frag.fragments.Count + 1).ToString() + " variations.");
             }
             PDAScannerData.Add(MakeGenericEntryData(fragmentTT, frag));
             return fragmentTT;
@@ -110,11 +110,11 @@ namespace AVS.Assets
                 List<Vector3> spawnLocationsToUse = new List<Vector3>();
                 List<int> indexes = new List<int>();
                 int iterator = numberPrefabsRegistered;
-                while(iterator < frag.spawnLocations.Count())
+                while (iterator < frag.spawnLocations.Count)
                 {
                     spawnLocationsToUse.Add(frag.spawnLocations[iterator]);
                     indexes.Add(iterator);
-                    iterator += customPrefabs.Count();
+                    iterator += customPrefabs.Count;
                 }
                 if (frag.spawnRotations == null)
                 {
@@ -123,7 +123,7 @@ namespace AVS.Assets
                 else
                 {
                     List<Nautilus.Assets.SpawnLocation> spawns = new List<Nautilus.Assets.SpawnLocation>();
-                    for (int i = 0; i < spawnLocationsToUse.Count(); i++)
+                    for (int i = 0; i < spawnLocationsToUse.Count; i++)
                     {
                         spawns.Add(new Nautilus.Assets.SpawnLocation(spawnLocationsToUse[i], frag.spawnRotations[indexes[i]]));
                     }
@@ -153,7 +153,7 @@ namespace AVS.Assets
                 else
                 {
                     List<Nautilus.Assets.SpawnLocation> spawns = new List<Nautilus.Assets.SpawnLocation>();
-                    for (int i = 0; i < frag.spawnLocations.Count(); i++)
+                    for (int i = 0; i < frag.spawnLocations.Count; i++)
                     {
                         spawns.Add(new Nautilus.Assets.SpawnLocation(frag.spawnLocations[i], frag.spawnRotations[i]));
                     }

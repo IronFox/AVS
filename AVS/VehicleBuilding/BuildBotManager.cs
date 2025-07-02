@@ -40,7 +40,7 @@ namespace AVS
             VFXConstructing vfxc = go.EnsureComponent<VFXConstructing>();
 
             ModVehicle mv = go.GetComponent<ModVehicle>();
-            vfxc.timeToConstruct = mv == null ? 10f : mv.TimeToConstruct;
+            vfxc.timeToConstruct = mv == null ? 10f : mv.Config.TimeToConstruct;
 
             vfxc.alphaTexture = seamothVFXC.alphaTexture;
             vfxc.alphaDetailTexture = seamothVFXC.alphaDetailTexture;
@@ -204,7 +204,7 @@ namespace AVS
         }
         public static void BuildPathsForModVehicle(ModVehicle mv, GameObject pointsRoot)
         {
-            BoxCollider box = mv.BoundingBoxCollider;
+            BoxCollider box = mv.Config.BoundingBoxCollider;
             if (box != null)
             {
                 Transform A = GetCornerBoxCollider(pointsRoot, box, CornerValue.lefttopfront);
@@ -227,9 +227,9 @@ namespace AVS
             ModVehicle mv = go.GetComponent<ModVehicle>();
             GameObject bbPointsRoot = new GameObject("BuildBotPoints");
             bbPointsRoot.transform.SetParent(go.transform);
-            if (mv != null && mv.BoundingBoxCollider != null)
+            if (mv != null && mv.Config.BoundingBoxCollider != null)
             {
-                bbPointsRoot.transform.localPosition = go.transform.InverseTransformPoint(mv.BoundingBoxCollider.transform.position);
+                bbPointsRoot.transform.localPosition = go.transform.InverseTransformPoint(mv.Config.BoundingBoxCollider.transform.position);
                 BuildPathsForModVehicle(mv, bbPointsRoot);
             }
             else

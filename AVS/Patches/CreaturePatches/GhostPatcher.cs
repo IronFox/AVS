@@ -25,11 +25,11 @@ namespace AVS.Patches.LeviathanPatches
             TechType techType = CraftData.GetTechType(__instance.gameObject);
             if (techType == TechType.GhostLeviathan)
             {
-                __result = mv.GhostAdultBiteDamage;
+                __result = mv.Config.GhostAdultBiteDamage;
             }
             else if (techType == TechType.GhostLeviathanJuvenile)
             {
-                __result = mv.GhostJuvenileBiteDamage;
+                __result = mv.Config.GhostJuvenileBiteDamage;
             }
             else
             {

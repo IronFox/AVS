@@ -1,5 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using AVS.Config;
+using AVS.Util;
+using System.Collections;
 using System.Linq;
 using UnityEngine;
 
@@ -10,11 +11,16 @@ namespace AVS.VehicleTypes
      */
     public abstract class Submersible : ModVehicle
     {
-        public abstract VehicleParts.VehiclePilotSeat PilotSeat { get; } // Need a way to start and stop piloting
-        public abstract List<VehicleParts.VehicleHatchStruct> Hatches { get; } // Need a way to get in and out.
-        public virtual GameObject SteeringWheelLeftHandTarget { get; }
-        public virtual GameObject SteeringWheelRightHandTarget { get; }
-        public override PilotingStyle pilotingStyle => PilotingStyle.Seamoth;
+        //public override PilotingStyle pilotingStyle => PilotingStyle.Seamoth;
+        public abstract SubmersibleConfiguration GetSubmersibleConfiguration();
+        public sealed override VehicleConfiguration GetVehicleConfig()
+        {
+            SubConfig = GetSubmersibleConfiguration();
+            return SubConfig;
+        }
+
+        public SubmersibleConfiguration SubConfig { get; private set; }
+
         public override bool CanPilot()
         {
             return !FPSInputModule.current.lockMovement && IsPowered();
@@ -53,7 +59,7 @@ namespace AVS.VehicleTypes
             UWE.CoroutineHost.StartCoroutine(SitDownInChair());
             //StartCoroutine(TryStandUpFromChair());
             Player.main.armsController.ikToggleTime = 0;
-            Player.main.armsController.SetWorldIKTarget(SteeringWheelLeftHandTarget?.transform, SteeringWheelRightHandTarget?.transform);
+            Player.main.armsController.SetWorldIKTarget(SubConfig.SteeringWheelLeftHandTarget.GetTransform(), SubConfig.SteeringWheelRightHandTarget.GetTransform());
         }
         public override void StopPiloting()
         {
@@ -99,7 +105,7 @@ namespace AVS.VehicleTypes
             if (!IsVehicleDocked)
             {
                 Player.main.transform.SetParent(null);
-                Player.main.transform.position = Hatches.First().ExitLocation.position;
+                Player.main.transform.position = SubConfig.Hatches.First().ExitLocation.position;
             }
             else
             {

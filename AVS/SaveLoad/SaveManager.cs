@@ -132,7 +132,7 @@ namespace AVS.SaveLoad
                                         newBat.SetActive(false);
                                     }
                                 }
-                                thisItem.transform.SetParent(mv.StorageRootObject.transform);
+                                thisItem.transform.SetParent(mv.Config.StorageRootObject.transform);
                                 try
                                 {
                                     thisContainer.AddItem(thisItem.GetComponent<Pickupable>());
@@ -241,9 +241,9 @@ namespace AVS.SaveLoad
                         try
                         {
                             thisItem.GetComponent<Battery>().charge = battery.value.Item2;
-                            thisItem.transform.SetParent(mv.StorageRootObject.transform);
-                            mv.Batteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().battery = thisItem.GetComponent<Battery>();
-                            mv.Batteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().batterySlot.AddItem(thisItem.GetComponent<Pickupable>());
+                            thisItem.transform.SetParent(mv.Config.StorageRootObject.transform);
+                            mv.Config.Batteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().battery = thisItem.GetComponent<Battery>();
+                            mv.Config.Batteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().batterySlot.AddItem(thisItem.GetComponent<Pickupable>());
                             thisItem.SetActive(false);
                         }
                         catch (Exception e)
@@ -270,7 +270,7 @@ namespace AVS.SaveLoad
             {
                 if (MatchMv(mv, slot.Item1))
                 {
-                    if (mv.BackupBatteries is null || mv.BackupBatteries.Count == 0)
+                    if (mv.Config.BackupBatteries.Count == 0)
                     {
                         continue;
                     }
@@ -287,9 +287,9 @@ namespace AVS.SaveLoad
                         try
                         {
                             thisItem.GetComponent<Battery>().charge = battery.value.Item2;
-                            thisItem.transform.SetParent(mv.StorageRootObject.transform);
-                            mv.BackupBatteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().battery = thisItem.GetComponent<Battery>();
-                            mv.BackupBatteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().batterySlot.AddItem(thisItem.GetComponent<Pickupable>());
+                            thisItem.transform.SetParent(mv.Config.StorageRootObject.transform);
+                            mv.Config.BackupBatteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().battery = thisItem.GetComponent<Battery>();
+                            mv.Config.BackupBatteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().batterySlot.AddItem(thisItem.GetComponent<Pickupable>());
                             thisItem.SetActive(false);
                         }
                         catch (Exception e)
@@ -347,10 +347,9 @@ namespace AVS.SaveLoad
                 {
                     try
                     {
-                        if (mv is Submarine && (mv as Submarine).ColorPicker != null)
+                        if (mv is Submarine mvSub && mvSub.SubConfig.ColorPicker != null)
                         {
-                            Submarine mvSub = mv as Submarine;
-                            var active = mvSub.ColorPicker?.transform.Find("EditScreen/Active");
+                            var active = mvSub.SubConfig.ColorPicker.transform.Find("EditScreen/Active");
                             if (active is null)
                             {
                                 continue;
@@ -498,7 +497,7 @@ namespace AVS.SaveLoad
                         newBat.SetActive(false);
                     }
                 }
-                thisItem.transform.SetParent(mv.StorageRootObject.transform);
+                thisItem.transform.SetParent(mv.Config.StorageRootObject.transform);
                 try
                 {
                     matchedContainer.container.AddItem(thisItem.GetComponent<Pickupable>());

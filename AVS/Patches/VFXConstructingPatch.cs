@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using HarmonyLib;
+﻿using HarmonyLib;
+using System.Collections;
 using UnityEngine;
 
 // PURPOSE: configure timeToConstruct. Broadcasts the SubConstructionBeginning signal. Manages the building fx colors.
@@ -15,17 +15,17 @@ namespace AVS.Patches
             if (vfx != null)
             {
                 yield return new WaitUntil(() => vfx.ghostMaterial != null);
-                if (mv.ConstructionGhostColor != Color.black)
+                if (mv.Config.ConstructionGhostColor != Color.black)
                 {
                     Material customGhostMat = new Material(Shader.Find(Admin.Utils.marmosetUberName));
                     customGhostMat.CopyPropertiesFromMaterial(vfx.ghostMaterial);
                     vfx.ghostMaterial = customGhostMat;
-                    vfx.ghostMaterial.color = mv.ConstructionGhostColor;
-                    vfx.ghostOverlay.material.color = mv.ConstructionGhostColor;
+                    vfx.ghostMaterial.color = mv.Config.ConstructionGhostColor;
+                    vfx.ghostOverlay.material.color = mv.Config.ConstructionGhostColor;
                 }
-                if (mv.ConstructionWireframeColor != Color.black)
+                if (mv.Config.ConstructionWireframeColor != Color.black)
                 {
-                    vfx.wireColor = mv.ConstructionWireframeColor;
+                    vfx.wireColor = mv.Config.ConstructionWireframeColor;
                 }
             }
         }
@@ -39,7 +39,7 @@ namespace AVS.Patches
             ModVehicle mv = __instance.GetComponent<ModVehicle>();
             if (mv != null)
             {
-                __instance.timeToConstruct = mv.TimeToConstruct;
+                __instance.timeToConstruct = mv.Config.TimeToConstruct;
                 __instance.BroadcastMessage("SubConstructionBeginning", null, (UnityEngine.SendMessageOptions)1);
                 __instance.SendMessageUpwards("SubConstructionBeginning", null, (UnityEngine.SendMessageOptions)1);
                 UWE.CoroutineHost.StartCoroutine(ManageColor(__instance, mv));

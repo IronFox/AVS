@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using AVS.Config;
+using AVS.Util;
 using System.Collections;
+using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using AVS.Engines;
 using UnityEngine.Events;
 using UnityEngine.UI;
 //using AVS.Localization;
@@ -17,26 +15,7 @@ namespace AVS.VehicleTypes
      */
     public abstract class Submarine : ModVehicle
     {
-        public abstract List<VehicleParts.VehiclePilotSeat> PilotSeats { get; } // Need a way to start and stop piloting
-        public abstract List<VehicleParts.VehicleHatchStruct> Hatches { get; } // Need a way to get in and out.
-        public virtual List<VehicleParts.VehicleFloodLight> FloodLights => null;
-        public virtual List<GameObject> TetherSources => null;
-        public virtual GameObject ControlPanel => null;
-        public virtual GameObject Fabricator => null;
-        public virtual GameObject ColorPicker => null;
-        public virtual GameObject SteeringWheelLeftHandTarget => null;
-        public virtual GameObject SteeringWheelRightHandTarget => null;
-        public virtual List<Light> InteriorLights => null;
-        public virtual List<GameObject> NavigationPortLights => null;
-        public virtual List<GameObject> NavigationStarboardLights => null;
-        public virtual List<GameObject> NavigationPositionLights => null;
-        public virtual List<GameObject> NavigationWhiteStrobeLights => null;
-        public virtual List<GameObject> NavigationRedStrobeLights => null;
-        public virtual float ExitPitchLimit => 4f;
-        public virtual float ExitRollLimit => 4f;
-        public virtual float ExitVelocityLimit => 0.5f;
-        public virtual GameObject RespawnPoint => null;
-        public virtual bool DoesAutolevel => true;
+
 
 
         public ControlPanel controlPanelLogic;
@@ -49,6 +28,16 @@ namespace AVS.VehicleTypes
         public InteriorLightsController interiorlights;
         public NavigationLightsController navlights;
         public GameObject fabricator = null; //fabricator
+
+
+        public abstract SubmarineConfiguration GetSubmarineConfiguration();
+        public sealed override VehicleConfiguration GetVehicleConfig()
+        {
+            SubConfig = GetSubmarineConfiguration();
+            return SubConfig;
+        }
+
+        public SubmarineConfiguration SubConfig { get; private set; }
 
         public override bool CanPilot()
         {
@@ -70,9 +59,9 @@ namespace AVS.VehicleTypes
 
             // now that we're in-game, load the color picker
             // we can't do this before we're in-game because not all assets are ready before the game is started
-            if (ColorPicker != null)
+            if (SubConfig.ColorPicker != null)
             {
-                if (ColorPicker.transform.Find("EditScreen") == null)
+                if (SubConfig.ColorPicker.transform.Find("EditScreen") == null)
                 {
                     UWE.CoroutineHost.StartCoroutine(SetupColorPicker());
                 }
@@ -84,8 +73,13 @@ namespace AVS.VehicleTypes
         }
         private void EnsureColorPickerEnabled()
         {
-            ActualEditScreen = ColorPicker?.transform.Find("EditScreen")?.gameObject;
-            if(ActualEditScreen == null)
+            if (SubConfig.ColorPicker != null)
+            {
+                var edit = SubConfig.ColorPicker.transform.Find("EditScreen");
+                if (edit != null)
+                    ActualEditScreen = edit.gameObject;
+            }
+            if (ActualEditScreen == null)
             {
                 return;
             }
@@ -128,7 +122,9 @@ namespace AVS.VehicleTypes
             base.BeginPiloting();
             isPilotSeated = true;
             Player.main.armsController.ikToggleTime = 0;
-            Player.main.armsController.SetWorldIKTarget(SteeringWheelLeftHandTarget?.transform, SteeringWheelRightHandTarget?.transform);
+            Player.main.armsController.SetWorldIKTarget(
+                SubConfig.SteeringWheelLeftHandTarget.GetTransform(),
+                SubConfig.SteeringWheelRightHandTarget.GetTransform());
             Player.main.SetCurrentSub(GetComponent<SubRoot>());
         }
         public override void StopPiloting()
@@ -152,18 +148,21 @@ namespace AVS.VehicleTypes
                 Player.main.transform.SetParent(transform);
                 if (thisStopPilotingLocation == null)
                 {
-                    if(TetherSources.First() != null)
+                    var tetherTarget = SubConfig.TetherSources.FirstOrDefault(x => x != null);
+                    if (tetherTarget != null)
                     {
-                        Logger.Warn("Warning: pilot exit location was null. Defaulting to first tether.");
-                        Player.main.transform.position = TetherSources[0].transform.position;
+                        Logger.Warn("Warning: pilot exit location is null. Defaulting to first tether.");
+                        Player.main.transform.position = tetherTarget.transform.position;
                     }
+                    else
+                        Logger.Error("Error: pilot exit location is null. Tether source is empty.");
                 }
                 else
                 {
                     Player.main.transform.position = thisStopPilotingLocation.position;
                 }
             }
-            if(isScuttled)
+            if (isScuttled)
             {
                 UWE.CoroutineHost.StartCoroutine(GrantPlayerInvincibility(3f));
             }
@@ -244,19 +243,19 @@ namespace AVS.VehicleTypes
 
         IEnumerator TrySpawnFabricator()
         {
-            if(Fabricator == null)
+            if (SubConfig.Fabricator == null)
             {
                 yield break;
             }
             foreach (var fab in GetComponentsInChildren<Fabricator>())
             {
-                if (fab.gameObject.transform.localPosition == Fabricator.transform.localPosition)
+                if (fab.gameObject.transform.localPosition == SubConfig.Fabricator.transform.localPosition)
                 {
                     // This fabricator blueprint has already been fulfilled.
                     yield break;
                 }
             }
-            yield return SpawnFabricator(Fabricator.transform);
+            yield return SpawnFabricator(SubConfig.Fabricator.transform);
         }
 
         IEnumerator SpawnFabricator(Transform location)
@@ -416,7 +415,7 @@ namespace AVS.VehicleTypes
             Vector3 originalLocalScale = ActualEditScreen.transform.localScale;
 
 
-            GameObject frame = ColorPicker;
+            GameObject frame = SubConfig.ColorPicker;
             ActualEditScreen.transform.SetParent(frame.transform);
             ActualEditScreen.transform.localPosition = new Vector3(.15f, .28f, 0.01f);
             ActualEditScreen.transform.localEulerAngles = new Vector3(0, 180, 0);

@@ -148,6 +148,7 @@
     <Compile Include="Assets\VanillaVehicleHelpers.cs" />
     <Compile Include="Assets\AVSFabricator.cs" />
     <Compile Include="CompatChecker.cs" />
+    <Compile Include="Config\SubmersibleConfiguration.cs" />
     <Compile Include="DepthModules\DepthModule3.cs" />
     <Compile Include="DepthModules\DepthModule2.cs" />
     <Compile Include="DepthModules\DepthModule1.cs" />
@@ -169,6 +170,9 @@
     <Compile Include="SaveLoad\VFBatteryIdentifier.cs" />
     <Compile Include="SaveLoad\VFUpgradesIdentifier.cs" />
     <Compile Include="UpgradeTypes\CraftingNode.cs" />
+    <Compile Include="Config\SubmarineConfiguration.cs" />
+    <Compile Include="Config\VehicleConfiguration.cs" />
+    <Compile Include="Util\GameObjectHelper.cs" />
     <Compile Include="VehicleComponents\MaterialReactor.cs" />
     <Compile Include="VehicleComponents\ModVehicleDockingBay.cs" />
     <Compile Include="VehicleComponents\DockingBay.cs" />
