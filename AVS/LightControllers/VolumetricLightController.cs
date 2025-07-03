@@ -7,7 +7,7 @@ namespace AVS
         private ModVehicle MV => GetComponent<ModVehicle>();
         protected virtual void Awake()
         {
-            if (MV.volumetricLights == null || MV.volumetricLights.Count < 1)
+            if (MV.volumetricLights == null || MV.volumetricLights.Count == 0)
             {
                 Component.DestroyImmediate(this);
             }

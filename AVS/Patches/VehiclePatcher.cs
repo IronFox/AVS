@@ -88,7 +88,7 @@ namespace AVS
                 return;
             }
 
-            foreach (var tmp in ((ModVehicle)__instance).InnateStorages)
+            foreach (var tmp in ((ModVehicle)__instance).Com.InnateStorages)
             {
                 containers.Add(tmp.Container.GetComponent<InnateStorageContainer>().container);
             }

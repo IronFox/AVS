@@ -44,11 +44,11 @@ namespace AVS
 
         protected virtual void Awake()
         {
-            bool noPort = MV.NavigationPortLights == null || MV.NavigationPortLights.Count < 1;
-            bool noStar = MV.NavigationStarboardLights == null || MV.NavigationStarboardLights.Count < 1;
-            bool noPosi = MV.NavigationPositionLights == null || MV.NavigationPositionLights.Count < 1;
-            bool noReds = MV.NavigationRedStrobeLights == null || MV.NavigationRedStrobeLights.Count < 1;
-            bool noWhit = MV.NavigationWhiteStrobeLights == null || MV.NavigationWhiteStrobeLights.Count < 1;
+            bool noPort = MV.Com.NavigationPortLights.Count == 0;
+            bool noStar = MV.Com.NavigationStarboardLights.Count == 0;
+            bool noPosi = MV.Com.NavigationPositionLights.Count == 0;
+            bool noReds = MV.Com.NavigationRedStrobeLights.Count == 0;
+            bool noWhit = MV.Com.NavigationWhiteStrobeLights.Count == 0;
             if (noPort && noStar && noPosi && noReds && noWhit)
             {
                 Component.DestroyImmediate(this);
@@ -57,57 +57,45 @@ namespace AVS
         protected void Start()
         {
             rb = GetComponent<Rigidbody>();
-            if (MV.NavigationPositionLights != null)
+            foreach (GameObject lightObj in MV.Com.NavigationPositionLights)
             {
-                foreach (GameObject lightObj in MV.NavigationPositionLights)
-                {
-                    positionMats.Add(lightObj.GetComponent<MeshRenderer>().material);
-                }
-                BlinkOn(positionMats, Color.white);
+                positionMats.Add(lightObj.GetComponent<MeshRenderer>().material);
             }
-            if (MV.NavigationRedStrobeLights != null)
+            BlinkOn(positionMats, Color.white);
+            foreach (GameObject lightObj in MV.Com.NavigationRedStrobeLights)
             {
-                foreach (GameObject lightObj in MV.NavigationRedStrobeLights)
-                {
-                    redStrobeMats.Add(lightObj.GetComponent<MeshRenderer>().material);
-                    Light light = lightObj.EnsureComponent<Light>();
-                    light.enabled = false;
-                    light.color = Color.red;
-                    light.type = LightType.Point;
-                    light.intensity = 1f;
-                    light.range = 80f;
-                    light.shadows = LightShadows.Hard;
-                    redStrobeLights.Add(light);
-                }
+                redStrobeMats.Add(lightObj.GetComponent<MeshRenderer>().material);
+                Light light = lightObj.EnsureComponent<Light>();
+                light.enabled = false;
+                light.color = Color.red;
+                light.type = LightType.Point;
+                light.intensity = 1f;
+                light.range = 80f;
+                light.shadows = LightShadows.Hard;
+                redStrobeLights.Add(light);
             }
-            if (MV.NavigationWhiteStrobeLights != null)
+
+            foreach (GameObject lightObj in MV.Com.NavigationWhiteStrobeLights)
             {
-                foreach (GameObject lightObj in MV.NavigationWhiteStrobeLights)
-                {
-                    whiteStrobeMats.Add(lightObj.GetComponent<MeshRenderer>().material);
-                    Light light = lightObj.EnsureComponent<Light>();
-                    light.enabled = false;
-                    light.color = Color.white;
-                    light.type = LightType.Point;
-                    light.intensity = 0.5f;
-                    light.range = 80f;
-                    light.shadows = LightShadows.Hard;
-                    whiteStrobeLights.Add(light);
-                }
+                whiteStrobeMats.Add(lightObj.GetComponent<MeshRenderer>().material);
+                Light light = lightObj.EnsureComponent<Light>();
+                light.enabled = false;
+                light.color = Color.white;
+                light.type = LightType.Point;
+                light.intensity = 0.5f;
+                light.range = 80f;
+                light.shadows = LightShadows.Hard;
+                whiteStrobeLights.Add(light);
             }
-            if (MV.NavigationPortLights != null)
+
+            foreach (GameObject lightObj in MV.Com.NavigationPortLights)
             {
-                foreach (GameObject lightObj in MV.NavigationPortLights)
-                {
-                    portMats.Add(lightObj.GetComponent<MeshRenderer>().material);
-                }
+                portMats.Add(lightObj.GetComponent<MeshRenderer>().material);
             }
-            if (MV.NavigationStarboardLights != null)
+
+            foreach (GameObject lightObj in MV.Com.NavigationStarboardLights)
             {
-                foreach (GameObject lightObj in MV.NavigationStarboardLights)
-                {
-                    starboardMats.Add(lightObj.GetComponent<MeshRenderer>().material);
-                }
+                starboardMats.Add(lightObj.GetComponent<MeshRenderer>().material);
             }
             UWE.CoroutineHost.StartCoroutine(ControlLights());
         }

@@ -1,5 +1,7 @@
-﻿using AVS.Config;
+﻿using AVS.Composition;
+using AVS.Configuration;
 using AVS.Util;
+using System;
 using System.Collections;
 using System.Linq;
 using UnityEngine;
@@ -11,15 +13,20 @@ namespace AVS.VehicleTypes
      */
     public abstract class Submersible : ModVehicle
     {
-        //public override PilotingStyle pilotingStyle => PilotingStyle.Seamoth;
-        public abstract SubmersibleConfiguration GetSubmersibleConfiguration();
-        public sealed override VehicleConfiguration GetVehicleConfig()
+        public Submersible(VehicleConfiguration config) : base(config)
+        { }
+
+        public abstract SubmersibleComposition GetSubmersibleComposition();
+        public sealed override VehicleComposition GetVehicleComposition()
         {
-            SubConfig = GetSubmersibleConfiguration();
-            return SubConfig;
+            _subComposition = GetSubmersibleComposition();
+            return _subComposition;
         }
 
-        public SubmersibleConfiguration SubConfig { get; private set; }
+        private SubmersibleComposition _subComposition;
+        public new SubmersibleComposition Com =>
+            _subComposition
+            ?? throw new InvalidOperationException("This vehicle's composition has not yet been initialized. Please wait until Submersible.Awake() has been called");
 
         public override bool CanPilot()
         {
@@ -59,7 +66,7 @@ namespace AVS.VehicleTypes
             UWE.CoroutineHost.StartCoroutine(SitDownInChair());
             //StartCoroutine(TryStandUpFromChair());
             Player.main.armsController.ikToggleTime = 0;
-            Player.main.armsController.SetWorldIKTarget(SubConfig.SteeringWheelLeftHandTarget.GetTransform(), SubConfig.SteeringWheelRightHandTarget.GetTransform());
+            Player.main.armsController.SetWorldIKTarget(Com.SteeringWheelLeftHandTarget.GetTransform(), Com.SteeringWheelRightHandTarget.GetTransform());
         }
         public override void StopPiloting()
         {
@@ -105,7 +112,7 @@ namespace AVS.VehicleTypes
             if (!IsVehicleDocked)
             {
                 Player.main.transform.SetParent(null);
-                Player.main.transform.position = SubConfig.Hatches.First().ExitLocation.position;
+                Player.main.transform.position = Com.Hatches.First().ExitLocation.position;
             }
             else
             {

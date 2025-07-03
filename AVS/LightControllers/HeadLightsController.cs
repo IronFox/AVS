@@ -20,7 +20,7 @@ namespace AVS
         private ModVehicle MV => GetComponent<ModVehicle>();
         protected override void HandleLighting(bool active)
         {
-            MV.HeadLights.ForEach(x => x.Light.SetActive(active));
+            MV.Com.HeadLights.ForEach(x => x.Light.SetActive(active));
             foreach (var component in GetComponentsInChildren<ILightsStatusListener>())
             {
                 if (active)
@@ -50,7 +50,7 @@ namespace AVS
 
         protected virtual void Awake()
         {
-            if (MV.HeadLights == null || MV.HeadLights.Count < 1)
+            if (MV.Com.HeadLights.Count == 0)
             {
                 Component.DestroyImmediate(this);
             }

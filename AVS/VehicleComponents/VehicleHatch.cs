@@ -33,7 +33,7 @@ namespace AVS
                     HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, EnterHint);
                 }
             }
-            else if ((mv as Submersible != null) || (mv as Walker != null) || (mv as Skimmer != null))
+            else if ((mv as Submersible != null) || (mv as Skimmer != null))
             {
                 HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, EnterHint);
             }
@@ -67,10 +67,10 @@ namespace AVS
                     (mv as Submarine).PlayerEntry();
                 }
             }
-            else if (mv as Submersible != null && !mv.isScuttled)
+            else if (mv is Submersible sub && !mv.isScuttled)
             {
-                Player.main.transform.position = (mv as Submersible).PilotSeat.SitLocation.transform.position;
-                Player.main.transform.rotation = (mv as Submersible).PilotSeat.SitLocation.transform.rotation;
+                Player.main.transform.position = sub.Com.PilotSeat.SitLocation.transform.position;
+                Player.main.transform.rotation = sub.Com.PilotSeat.SitLocation.transform.rotation;
                 (mv as Submersible).PlayerEntry();
             }
             /*

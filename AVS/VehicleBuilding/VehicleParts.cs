@@ -8,10 +8,10 @@ namespace AVS.VehicleParts
     {
         public GameObject Seat { get; }
         public GameObject SitLocation { get; }
-        public Transform LeftHandLocation { get; }
-        public Transform RightHandLocation { get; }
         public Transform ExitLocation { get; }
-        public VehiclePilotSeat(GameObject seat, GameObject sitLocation, Transform iLeftHand, Transform iRightHand, Transform iExit)
+        public VehiclePilotSeat(GameObject seat,
+            GameObject sitLocation,
+            Transform exitLocation)
         {
             if (seat == null)
                 throw new ArgumentNullException(nameof(seat), "Vehicle pilot seat cannot be null.");
@@ -19,9 +19,7 @@ namespace AVS.VehicleParts
                 throw new ArgumentNullException(nameof(sitLocation), "Vehicle pilot sit location cannot be null.");
             Seat = seat;
             SitLocation = sitLocation;
-            LeftHandLocation = iLeftHand;
-            RightHandLocation = iRightHand;
-            ExitLocation = iExit;
+            ExitLocation = exitLocation;
         }
 
         /// <summary>
@@ -35,14 +33,6 @@ namespace AVS.VehicleParts
 
         internal bool CheckValidity(string thisName, bool verbose)
         {
-            if (LeftHandLocation == null)
-            {
-                VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, thisName + " A null PilotSeat.LeftHandLocation was provided. (It's unused anyway)");
-            }
-            if (RightHandLocation == null)
-            {
-                VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, thisName + " A null PilotSeat.RightHandLocation was provided. (It's unused anyway)");
-            }
             if (ExitLocation == null)
             {
                 VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Warn, verbose, thisName + " A null PilotSeat.ExitLocation was provided. You might need this if you exit from piloting into a weird place.");

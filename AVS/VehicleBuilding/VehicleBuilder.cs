@@ -41,6 +41,7 @@ namespace AVS
 
         public static IEnumerator Prefabricate(ModVehicle mv, PingType pingType, bool verbose)
         {
+            mv.RequireComposition();
             VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, "Prefabricating the " + mv.gameObject.name);
             yield return UWE.CoroutineHost.StartCoroutine(SeamothHelper.EnsureSeamoth());
             if (!Instrument(mv, pingType))
@@ -63,7 +64,7 @@ namespace AVS
         #region setup_funcs
         public static bool SetupObjects(ModVehicle mv)
         {
-
+            mv.RequireComposition();
             // Wow, look at this:
             // This Nautilus line might be super nice if it works for us
             // allow it to be opened as a storage container:
@@ -73,14 +74,14 @@ namespace AVS
             int iter = 0;
             try
             {
-                if (mv.InnateStorages != null)
+                if (mv.Com.InnateStorages != null)
                 {
-                    foreach (VehicleParts.VehicleStorage vs in mv.InnateStorages)
+                    foreach (VehicleParts.VehicleStorage vs in mv.Com.InnateStorages)
                     {
                         vs.Container.SetActive(false);
 
                         var cont = vs.Container.EnsureComponent<InnateStorageContainer>();
-                        cont.storageRoot = mv.StorageRootObject.GetComponent<ChildObjectIdentifier>();
+                        cont.storageRoot = mv.Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
                         cont.storageLabel = "Vehicle Storage " + iter.ToString();
                         cont.height = vs.Height;
                         cont.width = vs.Width;
@@ -114,26 +115,23 @@ namespace AVS
             iter = 0;
             try
             {
-                if (mv.ModularStorages != null)
+                foreach (VehicleParts.VehicleStorage vs in mv.Com.ModularStorages)
                 {
-                    foreach (VehicleParts.VehicleStorage vs in mv.ModularStorages)
-                    {
-                        vs.Container.SetActive(false);
+                    vs.Container.SetActive(false);
 
-                        FMODAsset storageCloseSound = SeamothHelper.Seamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().closeSound;
-                        FMODAsset storageOpenSound = SeamothHelper.Seamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().openSound;
-                        var inp = vs.Container.EnsureComponent<ModularStorageInput>();
-                        inp.mv = mv;
-                        inp.slotID = iter;
-                        iter++;
-                        inp.model = vs.Container;
-                        if (vs.Container.GetComponentInChildren<Collider>() is null)
-                        {
-                            inp.collider = vs.Container.EnsureComponent<BoxCollider>();
-                        }
-                        inp.openSound = storageOpenSound;
-                        inp.closeSound = storageCloseSound;
+                    FMODAsset storageCloseSound = SeamothHelper.Seamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().closeSound;
+                    FMODAsset storageOpenSound = SeamothHelper.Seamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().openSound;
+                    var inp = vs.Container.EnsureComponent<ModularStorageInput>();
+                    inp.mv = mv;
+                    inp.slotID = iter;
+                    iter++;
+                    inp.model = vs.Container;
+                    if (vs.Container.GetComponentInChildren<Collider>() is null)
+                    {
+                        inp.collider = vs.Container.EnsureComponent<BoxCollider>();
                     }
+                    inp.openSound = storageOpenSound;
+                    inp.closeSound = storageCloseSound;
                 }
             }
             catch (Exception e)
@@ -144,9 +142,9 @@ namespace AVS
             }
             try
             {
-                if (mv.Upgrades != null)
+                if (mv.Com.Upgrades != null)
                 {
-                    foreach (VehicleParts.VehicleUpgrades vu in mv.Upgrades)
+                    foreach (VehicleParts.VehicleUpgrades vu in mv.Com.Upgrades)
                     {
                         VehicleUpgradeConsoleInput vuci = vu.Interface.EnsureComponent<VehicleUpgradeConsoleInput>();
                         vuci.flap = vu.Flap.transform;
@@ -160,7 +158,7 @@ namespace AVS
                         SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vu.Interface.transform);
                         vu.Interface.EnsureComponent<SaveLoad.VFUpgradesIdentifier>();
                     }
-                    if (mv.Upgrades.Count() == 0)
+                    if (mv.Com.Upgrades.Count() == 0)
                     {
                         VehicleUpgradeConsoleInput vuci = mv.VehicleModel.EnsureComponent<VehicleUpgradeConsoleInput>();
                         vuci.enabled = false;
@@ -180,38 +178,14 @@ namespace AVS
                 Logger.Error(e.ToString());
                 return false;
             }
-            try
-            {
-                if (mv.BoundingBoxCollider == null)
-                {
-                    mv.BoundingBoxCollider = mv.BoundingBox.GetComponentInChildren<BoxCollider>(true);
-                }
-                mv.BoundingBoxCollider.enabled = false;
-            }
-            catch (Exception e)
-            {
-                Logger.WarnException("There was a problem setting up the BoundingBoxCollider. If your vehicle uses 'BoundingBox', use 'BoundingBoxCollider' instead.", e);
-                try
-                {
-                    mv.BoundingBoxCollider = mv.gameObject.AddComponent<BoxCollider>();
-                    mv.BoundingBoxCollider.size = new Vector3(6, 8, 12);
-                    mv.BoundingBoxCollider.enabled = false;
-                    Logger.Warn("The " + mv.name + " has been given a default BoundingBox of size 6x8x12.");
-                }
-                catch
-                {
-                    Logger.Error("I couldn't provide a bounding box for this vehicle. See the following error:");
-                    Logger.Error(e.ToString());
-                    return false;
-                }
-            }
+            mv.Com.BoundingBoxCollider.enabled = false;
             return true;
         }
         public static bool SetupObjects(Submarine mv)
         {
             try
             {
-                foreach (VehicleParts.VehiclePilotSeat ps in mv.SubConfig.PilotSeats)
+                foreach (VehicleParts.VehiclePilotSeat ps in mv.Com.PilotSeats)
                 {
                     mv.playerPosition = ps.SitLocation;
                     PilotingTrigger pt = ps.Seat.EnsureComponent<PilotingTrigger>();
@@ -227,7 +201,7 @@ namespace AVS
             }
             try
             {
-                foreach (VehicleParts.VehicleHatchStruct vhs in mv.SubConfig.Hatches)
+                foreach (VehicleParts.VehicleHatchStruct vhs in mv.Com.Hatches)
                 {
                     var hatch = vhs.Hatch.EnsureComponent<VehicleHatch>();
                     hatch.mv = mv;
@@ -245,14 +219,14 @@ namespace AVS
             // Configure the Control Panel
             try
             {
-                if (mv.SubConfig.ControlPanel)
+                if (mv.Com.ControlPanel)
                 {
-                    mv.controlPanelLogic = mv.SubConfig.ControlPanel.EnsureComponent<ControlPanel>();
+                    mv.controlPanelLogic = mv.Com.ControlPanel.EnsureComponent<ControlPanel>();
                     mv.controlPanelLogic.mv = mv;
                     if (mv.transform.Find("Control-Panel-Location") != null)
                     {
-                        mv.SubConfig.ControlPanel.transform.localPosition = mv.transform.Find("Control-Panel-Location").localPosition;
-                        mv.SubConfig.ControlPanel.transform.localRotation = mv.transform.Find("Control-Panel-Location").localRotation;
+                        mv.Com.ControlPanel.transform.localPosition = mv.transform.Find("Control-Panel-Location").localPosition;
+                        mv.Com.ControlPanel.transform.localRotation = mv.transform.Find("Control-Panel-Location").localRotation;
                         GameObject.Destroy(mv.transform.Find("Control-Panel-Location").gameObject);
                     }
                 }
@@ -269,10 +243,10 @@ namespace AVS
         {
             try
             {
-                mv.playerPosition = mv.PilotSeat.SitLocation;
-                PilotingTrigger pt = mv.PilotSeat.Seat.EnsureComponent<PilotingTrigger>();
+                mv.playerPosition = mv.Com.PilotSeat.SitLocation;
+                PilotingTrigger pt = mv.Com.PilotSeat.Seat.EnsureComponent<PilotingTrigger>();
                 pt.mv = mv;
-                pt.exit = mv.PilotSeat.ExitLocation;
+                pt.exit = mv.Com.PilotSeat.ExitLocation;
             }
             catch (Exception e)
             {
@@ -282,7 +256,7 @@ namespace AVS
             }
             try
             {
-                foreach (VehicleParts.VehicleHatchStruct vhs in mv.Hatches)
+                foreach (VehicleParts.VehicleHatchStruct vhs in mv.Com.Hatches)
                 {
                     var hatch = vhs.Hatch.EnsureComponent<VehicleHatch>();
                     hatch.mv = mv;
@@ -304,11 +278,11 @@ namespace AVS
         {
             var seamothEnergyMixin = SeamothHelper.Seamoth.GetComponent<EnergyMixin>();
             List<EnergyMixin> energyMixins = new List<EnergyMixin>();
-            if (mv.Batteries.Count() == 0)
+            if (mv.Com.Batteries.Count() == 0)
             {
                 // Configure energy mixin for this battery slot
                 var energyMixin = mv.gameObject.AddComponent<VehicleComponents.ForeverBattery>();
-                energyMixin.storageRoot = mv.StorageRootObject.GetComponent<ChildObjectIdentifier>();
+                energyMixin.storageRoot = mv.Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
                 energyMixin.defaultBattery = seamothEnergyMixin.defaultBattery;
                 energyMixin.compatibleBatteries = seamothEnergyMixin.compatibleBatteries;
                 energyMixin.soundPowerUp = seamothEnergyMixin.soundPowerUp;
@@ -319,11 +293,11 @@ namespace AVS
                 energyMixin.controlledObjects = new GameObject[] { };
                 energyMixins.Add(energyMixin);
             }
-            foreach (VehicleParts.VehicleBattery vb in mv.Batteries)
+            foreach (VehicleParts.VehicleBattery vb in mv.Com.Batteries)
             {
                 // Configure energy mixin for this battery slot
                 var energyMixin = vb.BatterySlot.EnsureComponent<EnergyMixin>();
-                energyMixin.storageRoot = mv.StorageRootObject.GetComponent<ChildObjectIdentifier>();
+                energyMixin.storageRoot = mv.Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
                 energyMixin.defaultBattery = seamothEnergyMixin.defaultBattery;
                 energyMixin.compatibleBatteries = seamothEnergyMixin.compatibleBatteries;
                 energyMixin.soundPowerUp = seamothEnergyMixin.soundPowerUp;
@@ -353,18 +327,18 @@ namespace AVS
         }
         public static void SetupAIEnergyInterface(ModVehicle mv)
         {
-            if (mv.BackupBatteries == null || mv.BackupBatteries.Count == 0)
+            if (mv.Com.BackupBatteries.Count == 0)
             {
                 mv.AIEnergyInterface = mv.energyInterface;
                 return;
             }
             var seamothEnergyMixin = SeamothHelper.Seamoth.GetComponent<EnergyMixin>();
             List<EnergyMixin> energyMixins = new List<EnergyMixin>();
-            foreach (VehicleParts.VehicleBattery vb in mv.BackupBatteries)
+            foreach (VehicleParts.VehicleBattery vb in mv.Com.BackupBatteries)
             {
                 // Configure energy mixin for this battery slot
                 var em = vb.BatterySlot.EnsureComponent<EnergyMixin>();
-                em.storageRoot = mv.StorageRootObject.GetComponent<ChildObjectIdentifier>();
+                em.storageRoot = mv.Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
                 em.defaultBattery = seamothEnergyMixin.defaultBattery;
                 em.compatibleBatteries = new List<TechType>() { TechType.PowerCell, TechType.PrecursorIonPowerCell };
                 em.soundPowerUp = seamothEnergyMixin.soundPowerUp;
@@ -387,7 +361,7 @@ namespace AVS
                 vb.BatterySlot.EnsureComponent<SaveLoad.VFBatteryIdentifier>();
             }
             // Configure energy interface
-            mv.AIEnergyInterface = mv.BackupBatteries.First().BatterySlot.EnsureComponent<EnergyInterface>();
+            mv.AIEnergyInterface = mv.Com.BackupBatteries.First().BatterySlot.EnsureComponent<EnergyInterface>();
             mv.AIEnergyInterface.sources = energyMixins.ToArray();
         }
         public static void SetupLightSounds(ModVehicle mv)
@@ -412,9 +386,9 @@ namespace AVS
         public static void SetupHeadLights(ModVehicle mv)
         {
             GameObject seamothHeadLight = SeamothHelper.Seamoth.transform.Find("lights_parent/light_left").gameObject;
-            if (mv.HeadLights != null)
+            if (mv.Com.HeadLights != null)
             {
-                foreach (VehicleParts.VehicleFloodLight pc in mv.HeadLights)
+                foreach (VehicleParts.VehicleFloodLight pc in mv.Com.HeadLights)
                 {
                     CopyComponent(seamothHeadLight.GetComponent<LightShadowQuality>(), pc.Light);
                     var thisLight = pc.Light.EnsureComponent<Light>();
@@ -435,9 +409,9 @@ namespace AVS
         public static void SetupFloodLights(Submarine mv)
         {
             GameObject seamothHeadLight = SeamothHelper.Seamoth.transform.Find("lights_parent/light_left").gameObject;
-            if (mv.FloodLights != null)
+            if (mv.Com.FloodLights != null)
             {
-                foreach (VehicleParts.VehicleFloodLight pc in mv.FloodLights)
+                foreach (VehicleParts.VehicleFloodLight pc in mv.Com.FloodLights)
                 {
                     CopyComponent(seamothHeadLight.GetComponent<LightShadowQuality>(), pc.Light);
                     var thisLight = pc.Light.EnsureComponent<Light>();
@@ -461,10 +435,10 @@ namespace AVS
             Transform seamothVL = SeamothHelper.Seamoth.transform.Find("lights_parent/light_left/x_FakeVolumletricLight"); // sic
             MeshFilter seamothVLMF = seamothVL.GetComponent<MeshFilter>();
             MeshRenderer seamothVLMR = seamothVL.GetComponent<MeshRenderer>();
-            List<VehicleParts.VehicleFloodLight> theseLights = mv.HeadLights ?? new List<VehicleParts.VehicleFloodLight>();
-            if (mv is VehicleTypes.Submarine subma && subma.FloodLights != null)
+            List<VehicleParts.VehicleFloodLight> theseLights = mv.Com.HeadLights.ToList();
+            if (mv is VehicleTypes.Submarine subma)
             {
-                theseLights.AddRange(subma.FloodLights);
+                theseLights.AddRange(subma.Com.FloodLights);
             }
             foreach (VehicleParts.VehicleFloodLight pc in theseLights)
             {
@@ -518,8 +492,8 @@ namespace AVS
              * Abyss: 1250
              * Cyclops: 1500
              */
-            lmData.maxHealth = mv.MaxHealth;
-            liveMixin.health = mv.MaxHealth;
+            lmData.maxHealth = mv.Config.MaxHealth;
+            liveMixin.health = mv.Config.MaxHealth;
             liveMixin.data = lmData;
             mv.liveMixin = liveMixin;
         }
@@ -535,7 +509,7 @@ namespace AVS
              * Prawn: 1250
              * Seamoth: 800
              */
-            rb.mass = mv.Mass;
+            rb.mass = mv.Config.Mass;
             rb.drag = 10f;
             rb.angularDrag = 10f;
             rb.useGravity = false;
@@ -615,9 +589,9 @@ namespace AVS
              */
             mv.crushDamage = mv.gameObject.EnsureComponent<CrushDamage>();
             mv.crushDamage.soundOnDamage = ce;
-            mv.crushDamage.kBaseCrushDepth = mv.BaseCrushDepth;
-            mv.crushDamage.damagePerCrush = mv.CrushDamage;
-            mv.crushDamage.crushPeriod = mv.CrushPeriod;
+            mv.crushDamage.kBaseCrushDepth = mv.Config.BaseCrushDepth;
+            mv.crushDamage.damagePerCrush = mv.Config.CrushDamage;
+            mv.crushDamage.crushPeriod = mv.Config.CrushDamageFrequency;
             mv.crushDamage.vehicle = mv;
             mv.crushDamage.liveMixin = mv.liveMixin;
             // TODO: this is of type VoiceNotification
@@ -625,11 +599,11 @@ namespace AVS
         }
         public static void SetupWaterClipping(ModVehicle mv)
         {
-            if (mv.WaterClipProxies != null)
+            if (mv.Com.WaterClipProxies != null)
             {
                 // Enable water clipping for proper interaction with the surface of the ocean
                 WaterClipProxy seamothWCP = SeamothHelper.Seamoth.GetComponentInChildren<WaterClipProxy>();
-                foreach (GameObject proxy in mv.WaterClipProxies)
+                foreach (GameObject proxy in mv.Com.WaterClipProxies)
                 {
                     WaterClipProxy waterClip = proxy.AddComponent<WaterClipProxy>();
                     waterClip.shape = WaterClipProxy.Shape.Box;
@@ -645,7 +619,7 @@ namespace AVS
             var subname = mv.gameObject.EnsureComponent<SubName>();
             subname.pingInstance = mv.pingInstance;
             subname.colorsInitialized = 0;
-            subname.hullName = mv.StorageRootObject.AddComponent<TMPro.TextMeshProUGUI>(); // DO NOT push a TMPro.TextMeshProUGUI on the root vehicle object!!!
+            subname.hullName = mv.Com.StorageRootObject.AddComponent<TMPro.TextMeshProUGUI>(); // DO NOT push a TMPro.TextMeshProUGUI on the root vehicle object!!!
             mv.subName = subname;
             mv.SetName(mv.vehicleDefaultName);
         }
@@ -725,7 +699,7 @@ namespace AVS
         }
         public static void SetupLavaLarvaAttachPoints(ModVehicle mv)
         {
-            if (mv.LavaLarvaAttachPoints.Count() > 0)
+            if (mv.Com.LavaLarvaAttachPoints.Count > 0)
             {
                 GameObject attachParent = new GameObject("AttachedLavaLarvae");
                 attachParent.transform.SetParent(mv.transform);
@@ -734,11 +708,11 @@ namespace AVS
                 lavaLarvaTarget.energyInterface = mv.energyInterface;
                 lavaLarvaTarget.larvaePrefabRoot = attachParent.transform;
                 lavaLarvaTarget.liveMixin = mv.liveMixin;
-                lavaLarvaTarget.primiryPointsCount = mv.LavaLarvaAttachPoints.Count();
+                lavaLarvaTarget.primiryPointsCount = mv.Com.LavaLarvaAttachPoints.Count;
                 lavaLarvaTarget.vehicle = mv;
                 lavaLarvaTarget.subControl = null;
                 List<LavaLarvaAttachPoint> llapList = new List<LavaLarvaAttachPoint>();
-                foreach (var llap in mv.LavaLarvaAttachPoints)
+                foreach (var llap in mv.Com.LavaLarvaAttachPoints)
                 {
                     GameObject llapGO = new GameObject();
                     llapGO.transform.SetParent(attachParent.transform);
@@ -758,26 +732,26 @@ namespace AVS
             subroot.worldForces = mv.worldForces;
             subroot.modulesRoot = mv.modulesRoot.transform;
             subroot.powerRelay = powerRelay;
-            if (mv.RespawnPoint == null)
+            if (mv.Com.RespawnPoint == null)
             {
                 mv.gameObject.EnsureComponent<RespawnPoint>();
             }
             else
             {
-                mv.RespawnPoint.EnsureComponent<RespawnPoint>();
+                mv.Com.RespawnPoint.EnsureComponent<RespawnPoint>();
             }
         }
         public static void SetupDenyBuildingTags(ModVehicle mv)
         {
-            mv.DenyBuildingColliders
+            mv.Com.DenyBuildingColliders
                 .ForEach(x => x.tag = Builder.denyBuildingTag);
         }
 
         #endregion
         public static bool Instrument(ModVehicle mv, PingType pingType)
         {
-            mv.StorageRootObject.EnsureComponent<ChildObjectIdentifier>();
-            mv.modulesRoot = mv.ModulesRootObject.EnsureComponent<ChildObjectIdentifier>();
+            mv.Com.StorageRootObject.EnsureComponent<ChildObjectIdentifier>();
+            mv.modulesRoot = mv.Com.ModulesRootObject.EnsureComponent<ChildObjectIdentifier>();
 
             if (!SetupObjects(mv as ModVehicle))
             {
@@ -816,7 +790,7 @@ namespace AVS
             SetupDamageComponents(mv);
             SetupLavaLarvaAttachPoints(mv);
             SetupDenyBuildingTags(mv);
-            mv.collisionModel = mv.CollisionModel;
+            mv.collisionModel = mv.Com.CollisionModel;
 
             if (mv as Submarine != null)
             {
@@ -842,7 +816,7 @@ namespace AVS
             // Add the [marmoset] shader to all renderers
             foreach (var renderer in mv.gameObject.GetComponentsInChildren<Renderer>(true))
             {
-                if (mv.CanopyWindows != null && mv.CanopyWindows.Contains(renderer.gameObject))
+                if (mv.Com.CanopyWindows != null && mv.Com.CanopyWindows.Contains(renderer.gameObject))
                 {
                     var seamothGlassMaterial = SeamothHelper.Seamoth.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/Submersible_SeaMoth_glass_interior_geo").GetComponent<SkinnedMeshRenderer>().material;
                     renderer.material = seamothGlassMaterial;
@@ -853,7 +827,7 @@ namespace AVS
         }
         public static void ApplyShaders(ModVehicle mv, Shader shader)
         {
-            if (mv.AutoApplyShaders)
+            if (mv.Config.AutoApplyShaders)
             {
                 ForceApplyShaders(mv, shader);
                 ApplyGlassMaterial(mv);
@@ -882,7 +856,7 @@ namespace AVS
                 {
                     continue;
                 }
-                if (mv.CanopyWindows != null && mv.CanopyWindows.Contains(renderer.gameObject))
+                if (mv.Com.CanopyWindows.Contains(renderer.gameObject))
                 {
                     continue;
                 }

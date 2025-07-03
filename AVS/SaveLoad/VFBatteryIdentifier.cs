@@ -48,7 +48,7 @@ namespace AVS.SaveLoad
             try
             {
                 thisItem.GetComponent<Battery>().charge = thisBattery.Item2;
-                thisItem.transform.SetParent(mv.Config.StorageRootObject.transform);
+                thisItem.transform.SetParent(mv.Com.StorageRootObject.transform);
                 GetComponent<EnergyMixin>().battery = thisItem.GetComponent<Battery>();
                 GetComponent<EnergyMixin>().batterySlot.AddItem(thisItem.GetComponent<Pickupable>());
                 thisItem.SetActive(false);

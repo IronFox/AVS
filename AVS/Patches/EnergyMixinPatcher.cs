@@ -17,13 +17,17 @@ namespace AVS.Patches
             {
                 if (item == null || item.item == null)
                 {
-                    if(__instance.controlledObjects != null)
+                    if (__instance.controlledObjects != null)
                     {
                         __instance.controlledObjects.ForEach(x => x.SetActive(false));
                     }
                     if (__instance.batteryModels != null)
                     {
-                        __instance.batteryModels.ForEach(x => x.model.SetActive(false));
+                        __instance.batteryModels.ForEach(x =>
+                        {
+                            if (x.model)
+                                x.model.SetActive(false);
+                        });
                     }
                     return false;
                 }

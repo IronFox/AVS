@@ -19,7 +19,7 @@ namespace AVS
         }
         private bool HasMvStorage(ModVehicle mv)
         {
-            return mv.Config.InnateStorages != null || ModularStorageInput.GetAllModularStorageContainers(mv).Count > 0;
+            return mv.Com.InnateStorages != null || ModularStorageInput.GetAllModularStorageContainers(mv).Count > 0;
         }
 
         private void DeactivateAll()

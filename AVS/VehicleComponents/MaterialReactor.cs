@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.Util;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,10 +121,10 @@ namespace AVS.VehicleComponents
                 rateEnergies.Add(reagent.inputTechType, reagent.energyPerSecond);
                 spentMaterialIndex.Add(reagent.inputTechType, reagent.outputTechType);
             }
-            gameObject.SetActive(false);
+            gameObject.LoggedSetActive(false);
             EnergyMixin eMix = gameObject.AddComponent<EnergyMixin>();
             eMix.batterySlot = new StorageSlot(transform);
-            gameObject.SetActive(true);
+            gameObject.LoggedSetActive(true);
             GameObject batteryObj = new GameObject("ReactorBattery");
             batteryObj.transform.SetParent(transform);
             reactorBattery = batteryObj.AddComponent<ReactorBattery>();
@@ -164,7 +165,7 @@ namespace AVS.VehicleComponents
                             container._items.Remove(reactantPair.Key.techType);
                             container.NotifyRemoveItem(reactantPair.Key);
                             TechType toAdd = spentMaterialIndex[reactantPair.Key.techType];
-                            if(toAdd != TechType.None)
+                            if (toAdd != TechType.None)
                             {
                                 UWE.CoroutineHost.StartCoroutine(AddMaterial(toAdd));
                             }
@@ -181,12 +182,12 @@ namespace AVS.VehicleComponents
             TaskResult<GameObject> result = new TaskResult<GameObject>();
             yield return CraftData.InstantiateFromPrefabAsync(toAdd, result, false);
             GameObject spentMaterial = result.Get();
-            spentMaterial.SetActive(false);
+            spentMaterial.LoggedSetActive(false);
             try
             {
                 container.AddItem(spentMaterial.GetComponent<Pickupable>());
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 string errorMessage = $"Could not add material {toAdd.AsString()} to the material reactor!";
                 Logger.LogException(errorMessage, e, true);
@@ -201,7 +202,7 @@ namespace AVS.VehicleComponents
             UpdateVisuals?.Invoke(container.count);
             // check if it can rot, and disable all that
             Eatable eatable = item.item.gameObject.GetComponent<Eatable>();
-            if(eatable != null)
+            if (eatable != null)
             {
                 eatable.decomposes = false;
             }
@@ -265,7 +266,7 @@ namespace AVS.VehicleComponents
             }
             foreach (var pair in maxEnergies)
             {
-                if(5 < Vector3.Distance(Player.main.transform.position, transform.position))
+                if (5 < Vector3.Distance(Player.main.transform.position, transform.position))
                 {
                     break;
                 }
@@ -292,7 +293,8 @@ namespace AVS.VehicleComponents
         public static List<MaterialReactorData> GetBioReactorData()
         {
             return BaseBioReactor.charge.Select(x =>
-                new MaterialReactorData {
+                new MaterialReactorData
+                {
                     inputTechType = x.Key,
                     totalEnergy = x.Value,
                     energyPerSecond = 1f,
@@ -321,7 +323,7 @@ namespace AVS.VehicleComponents
         void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
         {
             var saveDict = SaveLoad.JsonInterface.Read<List<Tuple<TechType, float>>>(mv, newSaveFileName);
-            if(saveDict == default)
+            if (saveDict == default)
             {
                 saveDict = SaveLoad.JsonInterface.Read<List<Tuple<TechType, float>>>(mv, saveFileName);
             }
@@ -337,7 +339,7 @@ namespace AVS.VehicleComponents
             {
                 result.Add(new Tuple<TechType, float>(reactant.Key.techType, reactant.Value));
             }
-            foreach(var item in container)
+            foreach (var item in container)
             {
                 if (currentEnergies.ContainsKey(item))
                 {
@@ -349,9 +351,9 @@ namespace AVS.VehicleComponents
         }
         private IEnumerator LoadSaveDict(List<Tuple<TechType, float>> saveDict)
         {
-            foreach(var reactant in saveDict)
+            foreach (var reactant in saveDict)
             {
-                if(reactant.Item1 == TechType.None)
+                if (reactant.Item1 == TechType.None)
                 {
                     reactorBattery.SetCharge(reactant.Item2);
                     continue;

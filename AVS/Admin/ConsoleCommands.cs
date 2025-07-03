@@ -130,7 +130,7 @@ namespace AVS.Admin
 		}
 		public void OnConsoleCommand_vfdestroy(NotificationCenter.Notification notif)
 		{
-			if (notif.data == null || notif.data.Count < 1)
+			if (notif.data == null || notif.data.Count == 0)
 			{
 				ErrorMessage.AddError("vfdestroy error: no vehicle type specified. Ex: \"vfdestroy exosuit\"");
 			}

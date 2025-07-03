@@ -55,7 +55,7 @@ namespace AVS.SaveLoad
                 yield return CraftData.InstantiateFromPrefabAsync(item.Item1, result, false);
                 GameObject thisItem = result.Get();
 
-                thisItem.transform.SetParent(mv.Config.StorageRootObject.transform);
+                thisItem.transform.SetParent(mv.Com.StorageRootObject.transform);
                 try
                 {
                     GetComponent<InnateStorageContainer>().container.AddItem(thisItem.EnsureComponent<Pickupable>());

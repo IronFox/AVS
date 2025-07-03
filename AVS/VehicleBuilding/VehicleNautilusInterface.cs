@@ -1,7 +1,8 @@
 using AVS.Assets;
+using AVS.Configuration;
+using AVS.Util;
 using Nautilus.Assets.Gadgets;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 
 namespace AVS
@@ -11,8 +12,8 @@ namespace AVS
         internal static TechType RegisterVehicle(VehicleEntry vehicle)
         {
             string vehicleKey = vehicle.mv.name;
-            Nautilus.Assets.PrefabInfo vehicle_info = Nautilus.Assets.PrefabInfo.WithTechType(vehicleKey, vehicleKey, vehicle.mv.Description);
-            vehicle_info.WithIcon(vehicle.mv.CraftingSprite ?? StaticAssets.ModVehicleIcon);
+            Nautilus.Assets.PrefabInfo vehicle_info = Nautilus.Assets.PrefabInfo.WithTechType(vehicleKey, vehicleKey, vehicle.mv.Config.Description);
+            vehicle_info.WithIcon(vehicle.mv.Config.CraftingSprite ?? StaticAssets.ModVehicleIcon);
 
             Nautilus.Assets.CustomPrefab module_CustomPrefab = new Nautilus.Assets.CustomPrefab(vehicle_info);
             Nautilus.Utility.PrefabUtils.AddBasicComponents(vehicle.mv.VehicleModel, vehicleKey, vehicle_info.TechType, LargeWorldEntity.CellLevel.Global);
@@ -22,37 +23,40 @@ namespace AVS
                                             "recipes",
                                             $"{vehicleKey}_recipe.json");
             Nautilus.Crafting.RecipeData vehicleRecipe = Nautilus.Utility.JsonUtils.Load<Nautilus.Crafting.RecipeData>(jsonRecipeFileName, false, new Nautilus.Json.Converters.CustomEnumConverter());
-            if (vehicleRecipe.Ingredients.Count() == 0)
+            if (vehicleRecipe.Ingredients.Count == 0)
             {
                 // If the custom recipe file doesn't exist, go ahead and make it using the default recipe.
-                vehicleRecipe.Ingredients.AddRange(vehicle.mv.Recipe.Select(x => new CraftData.Ingredient(x.Key, x.Value)).ToList());
+                vehicleRecipe = vehicle.mv.Config.Recipe.ToRecipeData();
                 Nautilus.Utility.JsonUtils.Save<Nautilus.Crafting.RecipeData>(vehicleRecipe, jsonRecipeFileName, new Nautilus.Json.Converters.CustomEnumConverter());
             }
-            //if (VehicleConfig.GetConfig(vehicle.mv).UseCustomRecipe.Value)
-            //{
-            //    vehicleRecipe = Nautilus.Utility.JsonUtils.Load<Nautilus.Crafting.RecipeData>(jsonRecipeFileName, false, new Nautilus.Json.Converters.CustomEnumConverter());
-            //}
-            //else
+            else if (vehicle.mv.Config.AllowRecipeOverride)
             {
-                vehicleRecipe = new Nautilus.Crafting.RecipeData();
-                vehicleRecipe.Ingredients.AddRange(vehicle.mv.Recipe.Select(x => new CraftData.Ingredient(x.Key, x.Value)).ToList());
+                vehicleRecipe = vehicle.mv.OnRecipeOverride(
+                    Recipe.Import(vehicleRecipe, vehicle.mv.Config.Recipe)
+                    ).ToRecipeData();
+                Nautilus.Utility.JsonUtils.Save<Nautilus.Crafting.RecipeData>(vehicleRecipe, jsonRecipeFileName, new Nautilus.Json.Converters.CustomEnumConverter());
+            }
+            else
+            {
+                vehicleRecipe = vehicle.mv.Config.Recipe.ToRecipeData();
+                Nautilus.Utility.JsonUtils.Save<Nautilus.Crafting.RecipeData>(vehicleRecipe, jsonRecipeFileName, new Nautilus.Json.Converters.CustomEnumConverter());
             }
 
             module_CustomPrefab.SetRecipe(vehicleRecipe).WithFabricatorType(CraftTree.Type.Constructor).WithStepsToFabricatorTab(new string[] { "Vehicles" });
-            var scanningGadget = module_CustomPrefab.SetUnlock(vehicle.mv.UnlockedWith)
+            var scanningGadget = module_CustomPrefab.SetUnlock(vehicle.mv.Config.UnlockedWith)
                 .WithPdaGroupCategory(TechGroup.Constructor, TechCategory.Constructor);
 
-            if (!string.IsNullOrEmpty(vehicle.mv.EncyclopediaEntry))
+            if (!string.IsNullOrEmpty(vehicle.mv.Config.EncyclopediaEntry))
             {
                 Nautilus.Handlers.LanguageHandler.SetLanguageLine($"Ency_{vehicleKey}", vehicleKey);
-                Nautilus.Handlers.LanguageHandler.SetLanguageLine($"EncyDesc_{vehicleKey}", vehicle.mv.EncyclopediaEntry);
-                scanningGadget.WithEncyclopediaEntry("Tech/Vehicles", null, vehicle.mv.EncyclopediaImage?.texture);
-                Nautilus.Handlers.StoryGoalHandler.RegisterItemGoal(vehicleKey, Story.GoalType.Encyclopedia, vehicle.mv.UnlockedWith);
+                Nautilus.Handlers.LanguageHandler.SetLanguageLine($"EncyDesc_{vehicleKey}", vehicle.mv.Config.EncyclopediaEntry);
+                scanningGadget.WithEncyclopediaEntry("Tech/Vehicles", null, vehicle.mv.Config.EncyclopediaImage.GetTexture2D());
+                Nautilus.Handlers.StoryGoalHandler.RegisterItemGoal(vehicleKey, Story.GoalType.Encyclopedia, vehicle.mv.Config.UnlockedWith);
             }
 
-            if (vehicle.mv.UnlockedSprite != null)
+            if (vehicle.mv.Config.UnlockedSprite != null)
             {
-                scanningGadget.WithAnalysisTech(vehicle.mv.UnlockedSprite, unlockMessage: vehicle.mv.UnlockedMessage);
+                scanningGadget.WithAnalysisTech(vehicle.mv.Config.UnlockedSprite, unlockMessage: vehicle.mv.Config.UnlockedMessage);
             }
             module_CustomPrefab.Register();
             return vehicle_info.TechType;

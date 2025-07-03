@@ -36,6 +36,11 @@ namespace AVS
                 MyLog.LogInfo($"[DebugLog]: {message}");
             }
         }
+        public static void DebugLog(string message)
+        {
+            MyLog.LogInfo($"[DebugLog]: {message}");
+
+        }
         public static void WarnException(string message, System.Exception e, bool outputToScreen = false)
         {
             Warn(message);

@@ -46,7 +46,7 @@ namespace AVS.Assets
         /// <returns>The TechType of the new fragment.</returns>
         public static TechType RegisterFragment(FragmentData frag)
         {
-            if (frag.fragment == null && (frag.fragments == null || frag.fragments.Count < 1))
+            if (frag.fragment == null && (frag.fragments == null || frag.fragments.Count == 0))
             {
                 Logger.Error("RegisterFragment error: no fragment objects were supplied");
                 return 0;
@@ -55,7 +55,7 @@ namespace AVS.Assets
             {
                 Logger.Warn("RegisterFragment warning: fragment and fragments were both supplied. Fragment will be ignored.");
             }
-            if (frag.spawnLocations == null || frag.spawnLocations.Count < 1)
+            if (frag.spawnLocations == null || frag.spawnLocations.Count == 0)
             {
                 Logger.Error("For classID: " + frag.classID + ": Tried to register fragment without any spawn locations!");
             }
@@ -65,7 +65,7 @@ namespace AVS.Assets
                 return TechType.None;
             }
             TechType fragmentTT;
-            if (frag.fragment != null && (frag.fragments == null || frag.fragments.Count < 1))
+            if (frag.fragment != null && (frag.fragments == null || frag.fragments.Count == 0))
             {
                 Nautilus.Assets.CustomPrefab customPrefab = RegisterFragmentGenericSingle(frag, frag.fragment, true, out fragmentTT);
                 customPrefab.Register();

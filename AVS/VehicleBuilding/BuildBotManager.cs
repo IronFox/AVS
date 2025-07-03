@@ -204,7 +204,7 @@ namespace AVS
         }
         public static void BuildPathsForModVehicle(ModVehicle mv, GameObject pointsRoot)
         {
-            BoxCollider box = mv.Config.BoundingBoxCollider;
+            BoxCollider box = mv.Com.BoundingBoxCollider;
             if (box != null)
             {
                 Transform A = GetCornerBoxCollider(pointsRoot, box, CornerValue.lefttopfront);
@@ -227,9 +227,9 @@ namespace AVS
             ModVehicle mv = go.GetComponent<ModVehicle>();
             GameObject bbPointsRoot = new GameObject("BuildBotPoints");
             bbPointsRoot.transform.SetParent(go.transform);
-            if (mv != null && mv.Config.BoundingBoxCollider != null)
+            if (mv != null && mv.Com.BoundingBoxCollider != null)
             {
-                bbPointsRoot.transform.localPosition = go.transform.InverseTransformPoint(mv.Config.BoundingBoxCollider.transform.position);
+                bbPointsRoot.transform.localPosition = go.transform.InverseTransformPoint(mv.Com.BoundingBoxCollider.transform.position);
                 BuildPathsForModVehicle(mv, bbPointsRoot);
             }
             else
