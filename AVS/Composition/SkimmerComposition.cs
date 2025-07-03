@@ -28,26 +28,28 @@ namespace AVS.Composition
             GameObject steeringWheelRightHandTarget = null,
             IReadOnlyList<Collider> denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI> subNameDecals = null,
-            IReadOnlyList<Transform> lavaLarvaAttachPoints = null
+            IReadOnlyList<Transform> lavaLarvaAttachPoints = null,
+            GameObject leviathanGrabPoint = null
         ) : base(
-            storageRootObject,
-            modulesRootObject,
-            hatches,
-            collisionModel,
-            batteries,
-            upgrades,
-            boundingBoxCollider,
-            waterClipProxies,
-            innateStorages,
-            modularStorages,
-            headLights,
-            canopyWindows,
-            backupBatteries,
-            steeringWheelLeftHandTarget,
-            steeringWheelRightHandTarget,
-            denyBuildingColliders,
-            subNameDecals,
-            lavaLarvaAttachPoints
+            storageRootObject: storageRootObject,
+            modulesRootObject: modulesRootObject,
+            hatches: hatches,
+            collisionModel: collisionModel,
+            batteries: batteries,
+            upgrades: upgrades,
+            boundingBoxCollider: boundingBoxCollider,
+            waterClipProxies: waterClipProxies,
+            innateStorages: innateStorages,
+            modularStorages: modularStorages,
+            headLights: headLights,
+            canopyWindows: canopyWindows,
+            backupBatteries: backupBatteries,
+            steeringWheelLeftHandTarget: steeringWheelLeftHandTarget,
+            steeringWheelRightHandTarget: steeringWheelRightHandTarget,
+            denyBuildingColliders: denyBuildingColliders,
+            subNameDecals: subNameDecals,
+            lavaLarvaAttachPoints: lavaLarvaAttachPoints,
+            leviathanGrabPoint: leviathanGrabPoint
         )
         {
             PilotSeats = pilotSeats ?? Array.Empty<VehicleParts.VehiclePilotSeat>();

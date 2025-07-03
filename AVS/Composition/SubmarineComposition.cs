@@ -121,6 +121,7 @@ namespace AVS.Composition
         /// <param name="denyBuildingColliders">Deny building colliders. Optional.</param>
         /// <param name="subNameDecals">Sub name decals. Optional.</param>
         /// <param name="lavaLarvaAttachPoints">Lava larva attach points. Optional.</param>
+        /// <param name="leviathanGrabPoint">Leviathan grab point. Optional.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="tetherSources"/> or <paramref name="pilotSeats"/> is null or empty.</exception>
         public SubmarineComposition(
             GameObject storageRootObject,
@@ -154,7 +155,8 @@ namespace AVS.Composition
             GameObject steeringWheelRightHandTarget = null,
             IReadOnlyList<Collider> denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI> subNameDecals = null,
-            IReadOnlyList<Transform> lavaLarvaAttachPoints = null
+            IReadOnlyList<Transform> lavaLarvaAttachPoints = null,
+            GameObject leviathanGrabPoint = null
         )
         : base(
             hatches: hatches,
@@ -174,7 +176,8 @@ namespace AVS.Composition
             steeringWheelRightHandTarget: steeringWheelRightHandTarget,
             denyBuildingColliders: denyBuildingColliders,
             subNameDecals: subNameDecals,
-            lavaLarvaAttachPoints: lavaLarvaAttachPoints
+            lavaLarvaAttachPoints: lavaLarvaAttachPoints,
+            leviathanGrabPoint: leviathanGrabPoint
         )
         {
             if (tetherSources == null || tetherSources.Count == 0)

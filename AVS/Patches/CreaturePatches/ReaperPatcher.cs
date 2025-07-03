@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.Util;
+using HarmonyLib;
 using UnityEngine;
 
 // PURPOSE: allows Reaper Leviathans to grab a ModVehicle. Configure how much damage their bite does.
@@ -70,10 +71,11 @@ namespace AVS.Patches.LeviathanPatches
         [HarmonyPatch(nameof(ReaperLeviathan.Update))]
         public static void UpdatePostfix(ReaperLeviathan __instance)
         {
-            if ((__instance.holdingVehicle as ModVehicle) != null)
+            if (__instance.holdingVehicle is ModVehicle v)
             {
-                Vector3 diff = (__instance.holdingVehicle as ModVehicle).LeviathanGrabPoint.transform.position - (__instance.holdingVehicle as ModVehicle).transform.position;
-                __instance.holdingVehicle.transform.position -= diff;
+                var gb = v.Com.LeviathanGrabPoint.Or(v.gameObject);
+                Vector3 diff = gb.transform.position - v.transform.position;
+                v.transform.position -= diff;
             }
         }
     }

@@ -5,6 +5,12 @@ namespace AVS.Util
 {
     public static class GameObjectHelper
     {
+        public static GameObject Or(this GameObject a, GameObject b)
+        {
+            if (a)
+                return a;
+            return b;
+        }
         public static void LoggedSetActive(this GameObject gameObject, bool value)
         {
             if (gameObject == null)
