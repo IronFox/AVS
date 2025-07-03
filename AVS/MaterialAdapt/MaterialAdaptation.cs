@@ -165,7 +165,7 @@ namespace AVS.MaterialAdapt
         /// Reapplies all material properties to the target
         /// </summary>
         /// <param name="logConfig">Log Configuration</param>
-        public void ApplyToTarget(Logging logConfig = default)
+        public void ApplyToTarget(Logging logConfig = default, float? uniformShininess = null)
         {
             try
             {
@@ -184,7 +184,7 @@ namespace AVS.MaterialAdapt
 
                 Prototype.ApplyTo(m, logConfig);
 
-                Migrated.ApplyTo(m, logConfig);
+                Migrated.ApplyTo(m, uniformShininess, logConfig);
             }
             catch (Exception ex)
             {

@@ -331,20 +331,41 @@ namespace AVS.MaterialAdapt
         //    return new MaterialPrototype(glassMaterial, loadTextures: true);
         //}
 
+
+        /// <summary>
+        /// Creates a material prototype for the glass material of the Seamoth.
+        /// </summary>
+        /// <param name="logConfig">Logging configuration</param>
+        /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
+        /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
+        /// if the respective material is not found</returns>
+        public static MaterialPrototype GlassFromSeamoth(Logging logConfig = default)
+        {
+            var sm = SeamothHelper.Seamoth;
+            if (!sm)
+            {
+                logConfig.LogWarning($"Seamoth not yet available. Keep trying until it is loaded.");
+                return null;
+            }
+            logConfig.LogExtraStep($"Found Seamoth");
+            var glassMaterial = sm.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/Submersible_SeaMoth_glass_interior_geo").GetComponent<SkinnedMeshRenderer>().material;
+            return new MaterialPrototype(glassMaterial, loadTextures: true);
+        }
+
         /// <summary>
         /// Creates a material prototype for the main material of the Seamoth body.
         /// While the Seamoth is not yet available, the method returns null.
         /// If the Seamoth is loaded but the material could not be found, the return
         /// value is an empty material prototype (IsEmpty=true)
         /// </summary>
-        /// <param name="verbose">True to log details</param>
+        /// <param name="logConfig">Logging configuration</param>
         /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
         /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
         /// if the respective material is not found</returns>
         public static MaterialPrototype FromSeamoth(Logging logConfig = default)
         {
             var sm = SeamothHelper.Seamoth;
-            if (sm == null)
+            if (!sm)
                 return null;
 
             logConfig.LogExtraStep($"Found Seamoth");

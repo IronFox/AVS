@@ -9,7 +9,10 @@ namespace AVS.Admin
 {
     public static class Utils
     {
-        public const string marmosetUberName = "MarmosetUBER";
+        /// <summary>
+        /// Name of the (only) shader used for all vehicles.
+        /// </summary>
+        public static string marmosetUberName { get; } = "MarmosetUBER";
         public const string emissionKeyword = "MARMO_EMISSION";
         public const string specmapKeyword = "MARMO_SPECMAP";
         public const string glowField = "_GlowStrength";
@@ -77,10 +80,10 @@ namespace AVS.Admin
             //ListShaderProperties();
             //VehicleBuilder.ApplyShaders(this, shader4);
         }
-        public static void LoadShader(ModVehicle mv, Shader shade)
-        {
-            VehicleBuilder.ApplyShaders(mv, shade);
-        }
+        //public static void LoadShader(ModVehicle mv, Shader shade)
+        //{
+        //    VehicleBuilder.ApplyShaders(mv, shade);
+        //}
         public static bool IsAnAncestorTheCurrentMountedVehicle(Transform current)
         {
             if (!current)

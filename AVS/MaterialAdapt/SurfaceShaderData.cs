@@ -51,6 +51,10 @@ namespace AVS.MaterialAdapt
         /// </summary>
         public int SmoothnessTextureChannel { get; }
 
+        /// <summary>
+        /// The specular reflectivity texture to use for this material.
+        /// Only the alpha channel is used.
+        /// </summary>
         public Texture SpecularTexture
         {
             get
@@ -72,6 +76,9 @@ namespace AVS.MaterialAdapt
         /// </summary>
         public MaterialAddress Source { get; }
 
+        /// <summary>
+        /// Constructs a new instance of <see cref="SurfaceShaderData"/>
+        /// </summary>
         public SurfaceShaderData(
             Color color,
             Color emissionColor,
@@ -170,11 +177,7 @@ namespace AVS.MaterialAdapt
             }
         }
 
-        [Obsolete("Please use SurfaceShaderData.From(renderer,materialIndex, logConfig) instead")]
-        public static SurfaceShaderData From(Material m, bool ignoreShaderName = false)
-        {
-            return From(target: default, m, Logging.Default, ignoreShaderName);
-        }
+
 
         private static SurfaceShaderData From(MaterialAddress target, Material m, Logging logConfig, bool ignoreShaderName = false)
         {
@@ -205,6 +208,7 @@ namespace AVS.MaterialAdapt
         /// currently match "Standard"
         /// </summary>
         /// <param name="source">The source material</param>
+        /// <param name="logConfig">Log Configuration</param>
         /// <param name="ignoreShaderName">
         /// If true, will always read the material, regardless of shader name.
         /// If false, will only read the material if its shader name equals "Standard",
@@ -232,6 +236,7 @@ namespace AVS.MaterialAdapt
         /// </summary>
         /// <param name="renderer">The source renderer</param>
         /// <param name="materialIndex">The source material index on that renderer</param>
+        /// <param name="logConfig">Log Configuration</param>
         /// <param name="ignoreShaderName">
         /// If true, will always read the material, regardless of shader name.
         /// If false, will only read the material if its shader name equals "Standard",
@@ -252,17 +257,25 @@ namespace AVS.MaterialAdapt
         /// Applies the loaded configuration to the given material
         /// </summary>
         /// <param name="m">Target material</param>
+        /// <param name="uniformShininess">If non-null, applies this level of shininess to all materials</param>
         /// <param name="logConfig">Log Configuration</param>
-        public void ApplyTo(Material m, Logging logConfig)
+        public void ApplyTo(Material m, float? uniformShininess, Logging logConfig)
         {
             ColorVariable.Set(m, "_Color2", Color, logConfig);
             ColorVariable.Set(m, "_Color3", Color, logConfig);
+
+
+            //if (!MainTex && !m.mainTexture)
+            //{
+            //    logConfig.LogExtraStep($"Main texture not set. Loading white texture");
+            //    m.mainTexture = Texture2D.whiteTexture;
+            //}
 
             var existingSpecTex = m.GetTexture(SpecTexName);
 
             var spec = SpecularTexture;
 
-            if (spec != null)
+            if (spec && uniformShininess is null)
             {
                 if (existingSpecTex != MetallicTexture)
                 {
@@ -273,25 +286,37 @@ namespace AVS.MaterialAdapt
             }
             else
             {
-                if (!existingSpecTex || existingSpecTex.name != DummyTexName)
+                var tex = existingSpecTex as Texture2D;
+                if (!tex || existingSpecTex.name != DummyTexName)
                 {
                     logConfig.LogExtraStep($"Source has no smoothness alpha texture. Setting to {Smoothness}");
-                    var met = Smoothness;
-                    var tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
+                    var gray = uniformShininess ?? Smoothness;
+                    tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
                     tex.name = DummyTexName;
-                    tex.SetPixel(0, 0, new Color(met, met, met, met));
+                    tex.SetPixel(0, 0, new Color(gray, gray, gray, gray));
                     tex.Apply();
                     m.SetTexture(SpecTexName, tex);
                 }
+                else
+                {
+                    var gray = uniformShininess ?? Smoothness;
+                    var col = new Color(gray, gray, gray, gray);
+                    var old = tex.GetPixel(0, 0);
+                    if (!old.ApproxEquals(col, 0.02f))
+                    {
+                        logConfig.LogExtraStep($"Updating smoothness alpha texture. Setting {old} -> {col}");
+                        tex.SetPixel(0, 0, col);
+                        tex.Apply();
+                    }
+                }
             }
-
             var existingIllumTex = m.GetTexture(IllumTexName);
 
             if (EmissionTexture != null)
             {
                 if (EmissionTexture != existingIllumTex)
                 {
-                    logConfig.LogExtraStep($"Translating emission map {EmissionTexture} to {IllumTexName}");
+                    logConfig.LogExtraStep($"Translating emission map {EmissionTexture} to _Illum");
 
                     m.SetTexture(IllumTexName, EmissionTexture);
                 }
@@ -299,26 +324,10 @@ namespace AVS.MaterialAdapt
             }
             else
             {
-                if (EmissionColor == Color.black)
+                if (existingIllumTex != Texture2D.blackTexture)
                 {
-                    if (existingIllumTex != Texture2D.blackTexture)
-                    {
-                        logConfig.LogExtraStep($"Source has no illumination texture. Loading black into {IllumTexName}");
-                        m.SetTexture(IllumTexName, Texture2D.blackTexture);
-                    }
-                }
-                else
-                {
-                    if (!existingIllumTex || existingIllumTex.name != DummyIllumTexName)
-                    {
-                        logConfig.LogExtraStep($"Source has no illumination texture. Setting to {EmissionColor}");
-
-                        var tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-                        tex.name = DummyIllumTexName;
-                        tex.SetPixel(0, 0, EmissionColor);
-                        tex.Apply();
-                        m.SetTexture(IllumTexName, tex);
-                    }
+                    logConfig.LogExtraStep($"Source has no illumination texture. Loading black into _Illum");
+                    m.SetTexture(IllumTexName, Texture2D.blackTexture);
                 }
             }
         }
@@ -340,6 +349,7 @@ namespace AVS.MaterialAdapt
                 smoothnessTextureChannel: SmoothnessTextureChannel,
                 source: source);
 
+        /// <inheritdoc />
         public override string ToString()
             => "" + Source;
 

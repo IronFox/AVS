@@ -799,8 +799,8 @@ namespace AVS
 
 
             // ApplyShaders should happen last
-            Shader shader = Shader.Find(Admin.Utils.marmosetUberName);
-            ApplyShaders(mv, shader);
+            //Shader shader = Shader.Find(Admin.Utils.marmosetUberName);
+            //ApplyShaders(mv, shader);
 
             return true;
         }
@@ -818,14 +818,14 @@ namespace AVS
                 }
             }
         }
-        public static void ApplyShaders(ModVehicle mv, Shader shader)
-        {
-            if (mv.Config.AutoApplyShaders)
-            {
-                ForceApplyShaders(mv, shader);
-                ApplyGlassMaterial(mv);
-            }
-        }
+        //public static void ApplyShaders(ModVehicle mv, Shader shader)
+        //{
+        //    if (mv.Config.AutoFixMaterials)
+        //    {
+        //        ForceApplyShaders(mv, shader);
+        //        ApplyGlassMaterial(mv);
+        //    }
+        //}
         public static void ForceApplyShaders(ModVehicle mv, Shader shader)
         {
             if (shader == null)
