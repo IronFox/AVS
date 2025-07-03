@@ -18,7 +18,7 @@ namespace AVS.Patches
             {
                 return;
             }
-            if (mv.Config.SubNameDecals != null)
+            if (mv.Com.SubNameDecals.Count > 0)
             {
                 SetSubNameDecals(mv);
             }
@@ -29,7 +29,7 @@ namespace AVS.Patches
         }
         private static void SetSubNameDecals(ModVehicle mv)
         {
-            foreach (var tmprougui in mv.Config.SubNameDecals)
+            foreach (var tmprougui in mv.Com.SubNameDecals)
             {
                 tmprougui.font = Nautilus.Utility.FontUtils.Aller_Rg;
                 tmprougui.text = mv.subName.GetName();
@@ -44,7 +44,7 @@ namespace AVS.Patches
             }
             mv.nameColor = color;
             SetSubNameDecals(mv);
-            foreach (var tmprougui in mv.Config.SubNameDecals)
+            foreach (var tmprougui in mv.Com.SubNameDecals)
             {
                 tmprougui.color = color;
             }
@@ -69,7 +69,7 @@ namespace AVS.Patches
             }
             else if (index == 1)
             {
-                if (mv.Config.SubNameDecals != null)
+                if (mv.Com.SubNameDecals.Count > 0)
                 {
                     SetSubNameDecalsWithColor(mv, hsb, color);
                 }

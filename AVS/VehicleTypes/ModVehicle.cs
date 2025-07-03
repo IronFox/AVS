@@ -1,4 +1,5 @@
-﻿using AVS.Config;
+﻿using AVS.Composition;
+using AVS.Configuration;
 using AVS.Engines;
 using AVS.VehicleTypes;
 using System;
@@ -34,25 +35,54 @@ namespace AVS
         #region abstract_members
         #endregion
 
+        /// <summary>
+        /// The root game object of this vehicle. Usually the same as the vehicle game object.
+        /// </summary>
+        public virtual GameObject VehicleModel => gameObject;
+
         public virtual VFEngine VFEngine { get; set; }
         public virtual ModVehicleEngine Engine { get; set; } // prefer to use VFEngine.
         //public virtual GameObject BoundingBox => null; // Prefer to use BoundingBoxCollider directly (don't use this)
         public virtual GameObject LeviathanGrabPoint => gameObject;
 
-
+        /// <summary>
+        /// Invariant vehicle configuration. Initialized during construction.
+        /// Never null.
+        /// </summary>
+        public VehicleConfiguration Config { get; }
 
         public virtual bool LogDebug => false; // Set to true if you want debug logs for this vehicle
 
-        public abstract VehicleConfiguration GetVehicleConfig();
+        public abstract VehicleComposition GetVehicleComposition();
 
-        public VehicleConfiguration Config { get; private set; }
+        /// <summary>
+        /// Resolved vehicle composition.
+        /// If accessed before <see cref="Awake()"/>, a InvalidOperationException will be thrown.
+        /// </summary>
+        public VehicleComposition Com => _composition
+            ?? throw new InvalidOperationException("This vehicle's composition has not yet been initialized. Please wait until ModVehicle.Awake() has been called");
+        private VehicleComposition _composition = null;
+        protected ModVehicle(VehicleConfiguration config)
+        {
+            Config = config ?? throw new ArgumentNullException(nameof(config), "VehicleConfiguration cannot be null");
+        }
 
-
+        internal void RequireComposition()
+        {
+            if (_composition == null)
+            {
+                _composition = GetVehicleComposition();
+                if (_composition == null)
+                {
+                    throw new InvalidOperationException("Vehicle composition cannot be null. Please ensure Get*Composition() is implemented correctly.");
+                }
+            }
+        }
 
         #region vehicle_overrides
         public override void Awake()
         {
-            Config = GetVehicleConfig();
+            RequireComposition();
 
             energyInterface = GetComponent<EnergyInterface>();
             base.Awake();
@@ -72,7 +102,7 @@ namespace AVS
                 VFEngine = GetComponent<VFEngine>();
             }
             base.LazyInitialize();
-            Config.Upgrades.ForEach(x => x.Interface.GetComponent<VehicleUpgradeConsoleInput>().equipment = modules);
+            Com.Upgrades.ForEach(x => x.Interface.GetComponent<VehicleUpgradeConsoleInput>().equipment = modules);
             var warpChipThing = GetComponent("TelePingVehicleInstance");
             if (warpChipThing != null)
             {
@@ -271,7 +301,7 @@ namespace AVS
                 Player.main.SetScubaMaskActive(false);
                 try
                 {
-                    foreach (GameObject window in Config.CanopyWindows)
+                    foreach (GameObject window in Com.CanopyWindows)
                     {
                         window?.SetActive(false);
                     }
@@ -293,7 +323,7 @@ namespace AVS
             {
                 try
                 {
-                    foreach (GameObject window in Config.CanopyWindows)
+                    foreach (GameObject window in Com.CanopyWindows)
                     {
                         window?.SetActive(true);
                     }
@@ -348,7 +378,7 @@ namespace AVS
                 yield return CraftData.InstantiateFromPrefabAsync(TechType.PowerCell, result, false);
                 GameObject newAIBattery = result.Get();
                 newAIBattery.GetComponent<Battery>().charge = 200;
-                newAIBattery.transform.SetParent(Config.StorageRootObject.transform);
+                newAIBattery.transform.SetParent(Com.StorageRootObject.transform);
                 if (AIEnergyInterface)
                 {
                     AIEnergyInterface.sources.First().battery = newAIBattery.GetComponent<Battery>();
@@ -360,14 +390,14 @@ namespace AVS
                     yield return CraftData.InstantiateFromPrefabAsync(TechType.PowerCell, result, false);
                     GameObject newPowerCell = result.Get();
                     newPowerCell.GetComponent<Battery>().charge = 200;
-                    newPowerCell.transform.SetParent(Config.StorageRootObject.transform);
-                    var mixin = Config.Batteries[0].BatterySlot.gameObject.GetComponent<EnergyMixin>();
+                    newPowerCell.transform.SetParent(Com.StorageRootObject.transform);
+                    var mixin = Com.Batteries[0].BatterySlot.gameObject.GetComponent<EnergyMixin>();
                     mixin.battery = newPowerCell.GetComponent<Battery>();
                     mixin.batterySlot.AddItem(newPowerCell.GetComponent<Pickupable>());
                     newPowerCell.SetActive(false);
                 }
             }
-            if (Config.Batteries != null && Config.Batteries.Count() > 0)
+            if (Com.Batteries != null && Com.Batteries.Count() > 0)
             {
                 UWE.CoroutineHost.StartCoroutine(GiveUsABatteryOrGiveUsDeath());
             }
@@ -420,7 +450,7 @@ namespace AVS
         }
         public virtual Vector3 GetBoundingDimensions()
         {
-            BoxCollider box = Config.BoundingBoxCollider;
+            BoxCollider box = Com.BoundingBoxCollider;
             if (box == null)
             {
                 return Vector3.zero;
@@ -431,7 +461,7 @@ namespace AVS
         }
         public virtual Vector3 GetDifferenceFromCenter()
         {
-            BoxCollider box = Config.BoundingBoxCollider;
+            BoxCollider box = Com.BoundingBoxCollider;
             if (box != null)
             {
                 Vector3 colliderCenterWorld = box.transform.TransformPoint(box.center);
@@ -474,7 +504,7 @@ namespace AVS
             {
                 (component as IScuttleListener).OnScuttle();
             }
-            Config.WaterClipProxies.ForEach(x => x.SetActive(false));
+            Com.WaterClipProxies.ForEach(x => x.SetActive(false));
             isPoweredOn = false;
             gameObject.EnsureComponent<Scuttler>().Scuttle();
             var sealedThing = gameObject.EnsureComponent<Sealed>();
@@ -489,7 +519,7 @@ namespace AVS
             {
                 (component as IScuttleListener).OnUnscuttle();
             }
-            Config.WaterClipProxies.ForEach(x => x.SetActive(true));
+            Com.WaterClipProxies.ForEach(x => x.SetActive(true));
             isPoweredOn = true;
             gameObject.EnsureComponent<Scuttler>().Unscuttle();
         }
@@ -498,16 +528,16 @@ namespace AVS
             IEnumerator DropLoot(Vector3 place, GameObject root)
             {
                 TaskResult<GameObject> result = new TaskResult<GameObject>();
-                foreach (KeyValuePair<TechType, int> item in Config.Recipe)
+                foreach (var item in Config.Recipe)
                 {
-                    for (int i = 0; i < item.Value; i++)
+                    for (int i = 0; i < item.Amount; i++)
                     {
                         yield return null;
                         if (UnityEngine.Random.value < 0.6f)
                         {
                             continue;
                         }
-                        yield return CraftData.InstantiateFromPrefabAsync(item.Key, result, false);
+                        yield return CraftData.InstantiateFromPrefabAsync(item.Type, result, false);
                         GameObject go = result.Get();
                         Vector3 loc = place + 1.2f * UnityEngine.Random.onUnitSphere;
                         Vector3 rot = 360 * UnityEngine.Random.onUnitSphere;
@@ -690,16 +720,16 @@ namespace AVS
         }
         private void SetStorageModule(int slotID, bool activated)
         {
-            foreach (var sto in Config.InnateStorages)
+            foreach (var sto in Com.InnateStorages)
             {
                 sto.Container.SetActive(true);
             }
-            if (Config.ModularStorages.Count <= slotID)
+            if (Com.ModularStorages.Count <= slotID)
             {
                 ErrorMessage.AddWarning("There is no storage expansion for slot ID: " + slotID.ToString());
                 return;
             }
-            var modSto = Config.ModularStorages[slotID];
+            var modSto = Com.ModularStorages[slotID];
             modSto.Container.SetActive(activated);
             if (activated)
             {
@@ -733,9 +763,9 @@ namespace AVS
                 case VehicleBuilder.InnateStorage:
                     {
                         InnateStorageContainer vsc;
-                        if (0 <= slotID && slotID < Config.InnateStorages.Count)
+                        if (0 <= slotID && slotID < Com.InnateStorages.Count)
                         {
-                            vsc = Config.InnateStorages[slotID].Container.GetComponent<InnateStorageContainer>();
+                            vsc = Com.InnateStorages[slotID].Container.GetComponent<InnateStorageContainer>();
                         }
                         else
                         {
@@ -771,7 +801,7 @@ namespace AVS
                     {
                         continue;
                     }
-                    if (Config.CanopyWindows != null && Config.CanopyWindows.Contains(renderer.gameObject))
+                    if (Com.CanopyWindows != null && Com.CanopyWindows.Contains(renderer.gameObject))
                     {
                         continue;
                     }
@@ -856,7 +886,6 @@ namespace AVS
                 myPlayer.transform.parent = null;
             }
             Submersible mvSubmersible = this as Submersible;
-            Walker mvWalker = this as Walker;
             Skimmer mvSkimmer = this as Skimmer;
             Submarine mvSubmarine = this as Submarine;
             if (mvSubmersible != null)
@@ -865,13 +894,6 @@ namespace AVS
                 DoExitActions(ref myMode);
                 myPlayer.mode = myMode;
                 mvSubmersible.StopPiloting();
-                return;
-            }
-            else if (mvWalker != null)
-            {
-                DoExitActions(ref myMode);
-                myPlayer.mode = myMode;
-                mvWalker.StopPiloting();
                 return;
             }
             else if (mvSkimmer != null)
@@ -903,14 +925,14 @@ namespace AVS
 
 
                 mvSubmarine.VFEngine.KillMomentum();
-                if (mvSubmarine.SubConfig.PilotSeats.Count == 0)
+                if (mvSubmarine.Com.PilotSeats.Count == 0)
                 {
                     Logger.Error("Error: tried to exit a submarine without pilot seats");
                     return;
                 }
                 // teleport the player to a walking position, just behind the chair
                 Player.main.transform.position =
-                    mvSubmarine.SubConfig.PilotSeats[0].CalculatedExitLocation;
+                    mvSubmarine.Com.PilotSeats[0].CalculatedExitLocation;
 
                 DoExitActions(ref myMode);
                 myPlayer.mode = myMode;
@@ -955,7 +977,7 @@ namespace AVS
         }
         public bool HasRoomFor(Pickupable pickup)
         {
-            foreach (var container in Config.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().container))
+            foreach (var container in Com.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().container))
             {
                 if (container.HasRoomFor(pickup))
                 {
@@ -973,7 +995,7 @@ namespace AVS
         }
         public bool HasInStorage(TechType techType, int count = 1)
         {
-            foreach (var container in Config.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().container))
+            foreach (var container in Com.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().container))
             {
                 if (container.Contains(techType))
                 {
@@ -1005,7 +1027,7 @@ namespace AVS
                 }
                 return false;
             }
-            foreach (var container in Config.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().container))
+            foreach (var container in Com.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().container))
             {
                 if (container.HasRoomFor(pickup))
                 {
@@ -1067,10 +1089,10 @@ namespace AVS
                 return ret;
             }
 
-            Config.InnateStorages.ForEach(x => retCapacity += GetInnateCapacity(x));
-            Config.InnateStorages.ForEach(x => retStored += GetInnateStored(x));
+            Com.InnateStorages.ForEach(x => retCapacity += GetInnateCapacity(x));
+            Com.InnateStorages.ForEach(x => retStored += GetInnateStored(x));
 
-            if (Config.ModularStorages != null)
+            if (Com.ModularStorages != null)
             {
                 retCapacity += GetModularCapacity();
                 retStored += GetModularStored();
@@ -1253,7 +1275,7 @@ namespace AVS
         internal void SaveInnateStorage(string path, List<Tuple<TechType, float, TechType>> storageData)
         {
             innateStorageSaveData.Add(path, storageData);
-            if (innateStorageSaveData.Count() == Config.InnateStorages.Count())
+            if (innateStorageSaveData.Count() == Com.InnateStorages.Count())
             {
                 // write it out
                 SaveLoad.JsonInterface.Write(this, StorageSaveName, innateStorageSaveData);
@@ -1286,8 +1308,8 @@ namespace AVS
         internal void SaveBatteryData(string path, Tuple<TechType, float> batteryData)
         {
             int batteryCount = 0;
-            batteryCount += Config.Batteries.Count;
-            batteryCount += Config.BackupBatteries.Count;
+            batteryCount += Com.Batteries.Count;
+            batteryCount += Com.BackupBatteries.Count;
 
             batterySaveData.Add(path, batteryData);
             if (batterySaveData.Count() == batteryCount)
@@ -1316,6 +1338,34 @@ namespace AVS
                 return default;
             }
         }
+
         #endregion
+
+        /// <summary>
+        /// Overridable import method called when an imported recipe is loaded.
+        /// </summary>
+        /// <param name="recipe">Recipe restored from file</param>
+        /// <returns>Recipe to use</returns>
+        public virtual Recipe OnRecipeOverride(Recipe recipe)
+        {
+            return recipe;
+        }
+
+
+        private GameObject GetOrCreateChild(string childName)
+        {
+            var child = transform.Find(childName)?.gameObject;
+            if (!child)
+            {
+                child = new GameObject(childName);
+                child.transform.SetParent(transform);
+            }
+            return child;
+        }
+
+        public GameObject GetOrCreateDefaultStorageRootObject()
+            => GetOrCreateChild("StorageRootObject");
+        public GameObject GetOrCreateDefaultModulesRootObject()
+            => GetOrCreateChild("ModulesRootObject");
     }
 }

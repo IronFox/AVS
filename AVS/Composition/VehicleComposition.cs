@@ -1,0 +1,188 @@
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace AVS.Composition
+{
+    /// <summary>
+    /// Objects, transforms, and components as identified by the derived mod vehicle.
+    /// GameObjects and Transforms are expected to be contained by the vehicle.
+    /// </summary>
+    public class VehicleComposition
+    {
+        /// <summary>
+        /// The parent object for all storage objects.
+        /// Must not be null. Must be different from the vehicle game object.
+        /// </summary>
+        public GameObject StorageRootObject { get; }
+
+        /// <summary>
+        /// The parent object for all modules.
+        /// Must not be null. Must be different from the vehicle game object.
+        /// </summary>
+        public GameObject ModulesRootObject { get; }
+
+        /// <summary>
+        /// Base object containing all colliders, directly or as children.
+        /// The code can handle this not being set, but it really should be set.
+        /// </summary>
+        public GameObject CollisionModel { get; }
+
+        /// <summary>
+        /// Entry/exit hatches for the submarine.
+        /// Required not empty
+        /// </summary>
+        public IReadOnlyList<VehicleParts.VehicleHatchStruct> Hatches { get; } = Array.Empty<VehicleParts.VehicleHatchStruct>();
+
+        /// <summary>
+        /// Battery definitions. Can be empty which disallows any batteries.
+        /// </summary>
+        public IReadOnlyList<VehicleParts.VehicleBattery> Batteries { get; } = Array.Empty<VehicleParts.VehicleBattery>();
+
+        /// <summary>
+        /// Upgrade module definitions. Can be empty which disallows any upgrades.
+        /// </summary>
+        public IReadOnlyList<VehicleParts.VehicleUpgrades> Upgrades { get; } = Array.Empty<VehicleParts.VehicleUpgrades>();
+
+        /// <summary>
+        /// Single box collider that contains the entire vehicle.
+        /// While the code can handle this not being set, it really should be set.
+        /// </summary>
+        public BoxCollider BoundingBoxCollider { get; }
+
+        /// <summary>
+        /// Empty game objects that each define a box that clips the water surface.
+        /// These objects must not contain any components (renderers or otherwise).
+        /// The position identifies their center, the size their extents.
+        /// </summary>
+        public IReadOnlyList<GameObject> WaterClipProxies { get; } = Array.Empty<GameObject>();
+
+        /// <summary>
+        /// Storages that the vehicle always has.
+        /// </summary>
+        public IReadOnlyList<VehicleParts.VehicleStorage> InnateStorages { get; } = Array.Empty<VehicleParts.VehicleStorage>();
+        /// <summary>
+        /// Storages that can be added to the vehicle by the player.
+        /// </summary>
+        public IReadOnlyList<VehicleParts.VehicleStorage> ModularStorages { get; } = Array.Empty<VehicleParts.VehicleStorage>();
+
+        /// <summary>
+        /// Collection and configuration of headlights, to be rendered volumetrically while the player is outside the vehicle.
+        /// </summary>
+        public IReadOnlyList<VehicleParts.VehicleFloodLight> HeadLights { get; } = Array.Empty<VehicleParts.VehicleFloodLight>();
+
+        /// <summary>
+        /// Window objects automatically hidden when the vehicle is being piloted as to avoid reflections.
+        /// </summary>
+        public IReadOnlyList<GameObject> CanopyWindows { get; } = Array.Empty<GameObject>();
+
+        /// <summary>
+        /// Batteries exclusively used for the AI. Not sure anyone uses these.
+        /// </summary>
+        public IReadOnlyList<VehicleParts.VehicleBattery> BackupBatteries { get; } = Array.Empty<VehicleParts.VehicleBattery>();
+
+
+        /// <summary>
+        /// This is what the player's left hand will 'grab' while you pilot.
+        /// Can be null if the vehicle does not have a steering wheel.
+        /// </summary>
+        public GameObject SteeringWheelLeftHandTarget { get; } = null;
+        /// <summary>
+        /// This is what the player's right hand will 'grab' while you pilot.
+        /// Can be null if the vehicle does not have a steering wheel.
+        /// </summary>
+        public GameObject SteeringWheelRightHandTarget { get; } = null;
+
+        /// <summary>
+        /// Base object building is not permitted within these colliders.
+        /// </summary>
+        public IReadOnlyList<Collider> DenyBuildingColliders { get; } = Array.Empty<Collider>();
+
+        /// <summary>
+        /// Text output objects containing the vehicle name decals.
+        /// </summary>
+        public IReadOnlyList<TMPro.TextMeshProUGUI> SubNameDecals { get; } = Array.Empty<TMPro.TextMeshProUGUI>();
+
+        /// <summary>
+        /// Contains the attach points for the Lava Larvae (to suck away energy).
+        /// If empty, the vehicle will not be attacked by Lava Larvae.
+        /// </summary>
+        public IReadOnlyList<Transform> LavaLarvaAttachPoints { get; } = Array.Empty<Transform>();
+
+
+        /// <summary>
+        /// Constructs a VehicleComposition with required and optional parts.
+        /// </summary>
+        /// <param name="storageRootObject">The parent object for all storage objects. Must not be null and not the same as vehicle object.</param>
+        /// <param name="modulesRootObject">The parent object for all modules. Must not be null and not the same as vehicle object.</param>
+        /// <param name="collisionModel">Base object containing all colliders. Can be null.</param>
+        /// <param name="hatches">Entry/exit hatches. Must not be null or empty.</param>
+        /// <param name="batteries">Battery definitions. Optional.</param>
+        /// <param name="upgrades">Upgrade module definitions. Optional.</param>
+        /// <param name="boundingBoxCollider">Single box collider for the vehicle. Can be null.</param>
+        /// <param name="waterClipProxies">Water clip proxies. Optional.</param>
+        /// <param name="innateStorages">Innate storages. Optional.</param>
+        /// <param name="modularStorages">Modular storages. Optional.</param>
+        /// <param name="headLights">Headlights. Optional.</param>
+        /// <param name="canopyWindows">Canopy windows. Optional.</param>
+        /// <param name="backupBatteries">Backup batteries. Optional.</param>
+        /// <param name="steeringWheelLeftHandTarget">Steering wheel left hand target. Optional.</param>
+        /// <param name="steeringWheelRightHandTarget">Steering wheel right hand target. Optional.</param>
+        /// <param name="denyBuildingColliders">Deny building colliders. Optional.</param>
+        /// <param name="subNameDecals">Sub name decals. Optional.</param>
+        /// <param name="lavaLarvaAttachPoints">Lava larva attach points. Optional.</param>
+        public VehicleComposition(
+            GameObject storageRootObject,
+            GameObject modulesRootObject,
+            IReadOnlyList<VehicleParts.VehicleHatchStruct> hatches,
+            GameObject collisionModel = null,
+            IReadOnlyList<VehicleParts.VehicleBattery> batteries = null,
+            IReadOnlyList<VehicleParts.VehicleUpgrades> upgrades = null,
+            BoxCollider boundingBoxCollider = null,
+            IReadOnlyList<GameObject> waterClipProxies = null,
+            IReadOnlyList<VehicleParts.VehicleStorage> innateStorages = null,
+            IReadOnlyList<VehicleParts.VehicleStorage> modularStorages = null,
+            IReadOnlyList<VehicleParts.VehicleFloodLight> headLights = null,
+            IReadOnlyList<GameObject> canopyWindows = null,
+            IReadOnlyList<VehicleParts.VehicleBattery> backupBatteries = null,
+            GameObject steeringWheelLeftHandTarget = null,
+            GameObject steeringWheelRightHandTarget = null,
+            IReadOnlyList<Collider> denyBuildingColliders = null,
+            IReadOnlyList<TMPro.TextMeshProUGUI> subNameDecals = null,
+            IReadOnlyList<Transform> lavaLarvaAttachPoints = null
+        )
+        {
+            if (storageRootObject == null)
+                throw new ArgumentNullException(nameof(storageRootObject));
+            if (modulesRootObject == null)
+                throw new ArgumentNullException(nameof(modulesRootObject));
+            if (hatches == null || hatches.Count == 0)
+                throw new ArgumentException("Hatches must not be null or empty.", nameof(hatches));
+
+            StorageRootObject = storageRootObject;
+            ModulesRootObject = modulesRootObject;
+            CollisionModel = collisionModel;
+            Hatches = hatches;
+            Batteries = batteries ?? Array.Empty<VehicleParts.VehicleBattery>();
+            Upgrades = upgrades ?? Array.Empty<VehicleParts.VehicleUpgrades>();
+            BoundingBoxCollider = boundingBoxCollider;
+            WaterClipProxies = waterClipProxies ?? Array.Empty<GameObject>();
+            InnateStorages = innateStorages ?? Array.Empty<VehicleParts.VehicleStorage>();
+            ModularStorages = modularStorages ?? Array.Empty<VehicleParts.VehicleStorage>();
+            HeadLights = headLights ?? Array.Empty<VehicleParts.VehicleFloodLight>();
+            CanopyWindows = canopyWindows ?? Array.Empty<GameObject>();
+            BackupBatteries = backupBatteries ?? Array.Empty<VehicleParts.VehicleBattery>();
+            SteeringWheelLeftHandTarget = steeringWheelLeftHandTarget;
+            SteeringWheelRightHandTarget = steeringWheelRightHandTarget;
+            DenyBuildingColliders = denyBuildingColliders ?? Array.Empty<Collider>();
+            SubNameDecals = subNameDecals ?? Array.Empty<TMPro.TextMeshProUGUI>();
+            LavaLarvaAttachPoints = lavaLarvaAttachPoints ?? Array.Empty<Transform>();
+        }
+
+
+
+
+
+
+    }
+}

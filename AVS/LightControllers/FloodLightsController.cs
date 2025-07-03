@@ -1,6 +1,6 @@
-﻿using System.Linq;
+﻿using AVS.VehicleTypes;
+using System.Linq;
 using UnityEngine;
-using AVS.VehicleTypes;
 
 namespace AVS
 {
@@ -9,10 +9,10 @@ namespace AVS
         private Submarine MV => GetComponent<Submarine>();
         protected override void HandleLighting(bool active)
         {
-            MV.FloodLights.ForEach(x => x.Light.SetActive(active));
+            MV.Com.FloodLights.ForEach(x => x.Light.SetActive(active));
             if (active)
             {
-                MV.FloodLights
+                MV.Com.FloodLights
                     .Select(x => x.Light.GetComponent<MeshRenderer>())
                     .Where(x => x != null)
                     .SelectMany(x => x.materials)
@@ -20,7 +20,7 @@ namespace AVS
             }
             else
             {
-                MV.FloodLights
+                MV.Com.FloodLights
                     .Select(x => x.Light.GetComponent<MeshRenderer>())
                     .Where(x => x != null)
                     .SelectMany(x => x.materials)
@@ -53,7 +53,7 @@ namespace AVS
         }
         protected virtual void Awake()
         {
-            if (MV.FloodLights == null || MV.FloodLights.Count < 1)
+            if (MV.Com.FloodLights.Count == 0)
             {
                 Component.DestroyImmediate(this);
             }

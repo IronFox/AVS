@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using AVS.VehicleTypes;
 using System.Collections;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using AVS.VehicleTypes;
 
 namespace AVS
 {
@@ -29,8 +25,8 @@ namespace AVS
                 {
                     return new Bounds(Vector3.zero, Vector3.zero);
                 }
-                BoxCollider collider = mv.BoundingBoxCollider;
-                if(collider == null)
+                BoxCollider collider = mv.Com.BoundingBoxCollider;
+                if (collider == null)
                 {
                     return new Bounds(Vector3.zero, Vector3.zero);
                 }
@@ -40,9 +36,9 @@ namespace AVS
                 collider.enabled = false;
                 if (result.size == Vector3.zero)
                 {
-                    if(!collider.gameObject.activeInHierarchy)
+                    if (!collider.gameObject.activeInHierarchy)
                     {
-                        if(!collider.gameObject.activeSelf)
+                        if (!collider.gameObject.activeSelf)
                         {
                             Logger.Warn("TetherSource Error: BoundingBoxCollider was not active. Setting it active.");
                             collider.gameObject.SetActive(true);
@@ -78,16 +74,16 @@ namespace AVS
 
         public void Start()
         {
-            if (mv.BoundingBoxCollider == null || mv.TetherSources.Count() == 0)
+            if (mv.Com.BoundingBoxCollider == null || mv.Com.TetherSources.Count == 0)
             {
                 isSimple = true;
             }
             else
             {
                 isSimple = false;
-                mv.BoundingBoxCollider.gameObject.SetActive(true);
-                mv.BoundingBoxCollider.enabled = false;
-                mv.TetherSources.ForEach(x => x.SetActive(false));
+                mv.Com.BoundingBoxCollider.gameObject.SetActive(true);
+                mv.Com.BoundingBoxCollider.enabled = false;
+                mv.Com.TetherSources.ForEach(x => x.SetActive(false));
             }
             Player.main.StartCoroutine(ManageTether());
         }
@@ -124,11 +120,11 @@ namespace AVS
             // I don't know why it rips the player out of its position anyways.
             IEnumerator PleaseEnableColliders()
             {
-                List<Collider> effectedColliders = mv.GetComponentsInChildren<Collider>(true)
+                var effectedColliders = mv.GetComponentsInChildren<Collider>(true)
                     .Where(x => !x.enabled) // collisionModel is set active again
-                    .Where(x => x != mv.BoundingBoxCollider) // want this to remain disabled
+                    .Where(x => x != mv.Com.BoundingBoxCollider) // want this to remain disabled
                     .ToList();
-                while (effectedColliders.Where(x => x.enabled).Count() == 0)
+                while (effectedColliders.Any(x => !x.enabled))
                 {
                     yield return new WaitForSeconds(5);
                     effectedColliders.ForEach(x => x.enabled = true);
@@ -157,14 +153,14 @@ namespace AVS
                     {
                         mv.PlayerEntry();
                     }
-                    else if (Vector3.Distance(Player.main.transform.position, mv.PilotSeats.First().Seat.transform.position) < 1f)
+                    else if (Vector3.Distance(Player.main.transform.position, mv.Com.PilotSeats.First().Seat.transform.position) < 1f)
                     {
                         mv.PlayerEntry();
                     }
                 }
                 else
                 {
-                    if (mv.TetherSources.Where(x => PlayerWithinLeash(x)).Count() > 0)
+                    if (mv.Com.TetherSources.Where(x => PlayerWithinLeash(x)).Count() > 0)
                     {
                         mv.PlayerEntry();
                     }
@@ -178,11 +174,11 @@ namespace AVS
             yield return new WaitForSeconds(3f);
             while (true)
             {
-                if(mv == null)
+                if (mv == null)
                 {
                     yield break;
                 }
-                if(isLive)
+                if (isLive)
                 {
                     if (mv.IsPlayerInside())
                     {

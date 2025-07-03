@@ -8,7 +8,7 @@ namespace AVS
         private Submarine MV => GetComponent<Submarine>();
         protected override void HandleLighting(bool active)
         {
-            MV.InteriorLights.ForEach(x => x.enabled = active);
+            MV.Com.InteriorLights.ForEach(x => x.enabled = active);
             foreach (var component in GetComponentsInChildren<ILightsStatusListener>())
             {
                 if (active)
@@ -28,7 +28,7 @@ namespace AVS
         }
         protected virtual void Awake()
         {
-            if (MV.InteriorLights == null || MV.InteriorLights.Count < 1)
+            if (MV.Com.InteriorLights.Count == 0)
             {
                 Component.DestroyImmediate(this);
             }
@@ -44,7 +44,7 @@ namespace AVS
 
         void IPlayerListener.OnPlayerEntry()
         {
-            if(!IsLightsOn)
+            if (!IsLightsOn)
             {
                 Toggle();
             }

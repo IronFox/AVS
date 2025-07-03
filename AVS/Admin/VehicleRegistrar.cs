@@ -41,6 +41,7 @@ namespace AVS
         }
         public static IEnumerator RegisterVehicle(ModVehicle mv, bool verbose = false)
         {
+            mv.RequireComposition();
             if (VehicleManager.vehicleTypes.Where(x => x.name == mv.gameObject.name).Any())
             {
                 VerboseLog(LogType.Warn, verbose, $"{mv.gameObject.name} was already registered.");
@@ -86,33 +87,25 @@ namespace AVS
         }
         public static bool ValidateAll(ModVehicle mv, bool verbose)
         {
-            if (mv as Submarine != null)
+            if (mv is Submarine sub1)
             {
-                if (!ValidateRegistration(mv as Submarine, verbose))
+                if (!ValidateRegistration(sub1, verbose))
                 {
                     Logger.Error("Invalid Submarine Registration for the " + mv.gameObject.name + ". Next.");
                     return false;
                 }
             }
-            if (mv as Submersible != null)
+            if (mv is Submersible sub2)
             {
-                if (!ValidateRegistration(mv as Submersible, verbose))
+                if (!ValidateRegistration(sub2, verbose))
                 {
                     Logger.Error("Invalid Submersible Registration for the " + mv.gameObject.name + ". Next.");
                     return false;
                 }
             }
-            if (mv as Walker != null)
+            if (mv is Skimmer sk)
             {
-                if (!ValidateRegistration(mv as Walker, verbose))
-                {
-                    Logger.Error("Invalid Submersible Registration for the " + mv.gameObject.name + ". Next.");
-                    return false;
-                }
-            }
-            if (mv as Skimmer != null)
-            {
-                if (!ValidateRegistration(mv as Skimmer, verbose))
+                if (!ValidateRegistration(sk, verbose))
                 {
                     Logger.Error("Invalid Submersible Registration for the " + mv.gameObject.name + ". Next.");
                     return false;
@@ -137,7 +130,7 @@ namespace AVS
                 }
                 VerboseLog(LogType.Log, verbose, "Validating the Registration of the " + mv.name);
                 thisName = mv.name + ": ";
-                if (mv.Config.VehicleModel == null)
+                if (mv.VehicleModel == null)
                 {
                     Logger.Error(thisName + " A null ModVehicle.VehicleModel was passed for registration.");
                     return false;
@@ -157,47 +150,47 @@ namespace AVS
                     Logger.Error(thisName + " A non-positive mass was passed for registration. Don't do that.");
                     return false;
                 }
-                if (mv.Config.InnateStorages.Count == 0)
+                if (mv.Com.InnateStorages.Count == 0)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " No ModVehicle.InnateStorages were provided. These are lockers the vehicle always has.");
                 }
-                if (mv.Config.ModularStorages.Count == 0)
+                if (mv.Com.ModularStorages.Count == 0)
                 {
                     VerboseLog(LogType.Log, verbose, thisName + " No ModVehicle.ModularStorages were provided. These are lockers that can be unlocked with upgrades.");
                 }
-                if (mv.Config.Upgrades.Count == 0)
+                if (mv.Com.Upgrades.Count == 0)
                 {
                     Logger.Warn(thisName + " No ModVehicle.Upgrades were provided. These specify interfaces the player can click to insert and remove upgrades.");
                 }
-                if (mv.Config.Batteries.Count == 0)
+                if (mv.Com.Batteries.Count == 0)
                 {
                     Logger.Warn(thisName + " No ModVehicle.Batteries were provided. These are necessary to power the engines. This vehicle will be always powered.");
                 }
-                if (mv.Config.BackupBatteries.Count == 0)
+                if (mv.Com.BackupBatteries.Count == 0)
                 {
                     VerboseLog(LogType.Log, verbose, thisName + " No ModVehicle.BackupBatteries were provided. This collection of batteries belong to the AI and will be used exclusively for life support, auto-leveling, and other AI tasks. The AI will use the main batteries instead.");
                 }
-                if (mv.Config.HeadLights.Count == 0)
+                if (mv.Com.HeadLights.Count == 0)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " No ModVehicle.HeadLights were provided. These lights would be activated when the player right clicks while piloting.");
                 }
-                if (mv.Config.WaterClipProxies.Count == 0)
+                if (mv.Com.WaterClipProxies.Count == 0)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " No ModVehicle.WaterClipProxies were provided. These are necessary to keep the ocean surface out of the vehicle.");
                 }
-                if (mv.Config.CanopyWindows.Count == 0)
+                if (mv.Com.CanopyWindows.Count == 0)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " No ModVehicle.CanopyWindows were provided. These must be specified to handle window transparencies.");
                 }
-                if (mv.Config.BoundingBoxCollider == null)
+                if (mv.Com.BoundingBoxCollider == null)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " No BoundingBox BoxCollider was provided. If a BoundingBox GameObject was provided, it did not have a BoxCollider. Tether range is 10 meters. This vehicle will not be able to dock in the Moonpool. The build bots will assume this vehicle is 6m x 8m x 12m.");
                 }
-                if (mv.Config.CollisionModel == null)
+                if (mv.Com.CollisionModel == null)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " A null ModVehicle.CollisionModel was provided. This is necessary for leviathans to grab the vehicle.");
                 }
-                foreach (VehicleParts.VehicleStorage vs in mv.Config.InnateStorages.Concat(mv.Config.ModularStorages))
+                foreach (VehicleParts.VehicleStorage vs in mv.Com.InnateStorages.Concat(mv.Com.ModularStorages))
                 {
                     if (vs.Container == null)
                     {
@@ -215,7 +208,7 @@ namespace AVS
                         return false;
                     }
                 }
-                foreach (VehicleParts.VehicleUpgrades vu in mv.Config.Upgrades)
+                foreach (VehicleParts.VehicleUpgrades vu in mv.Com.Upgrades)
                 {
                     if (vu.Interface == null)
                     {
@@ -232,7 +225,7 @@ namespace AVS
                         VerboseLog(LogType.Log, verbose, thisName + " A null VehicleUpgrades.ModuleProxies was provided. AVS will not provide a model for this upgrade slot.");
                     }
                 }
-                foreach (VehicleParts.VehicleBattery vb in mv.Config.Batteries.Concat(mv.Config.BackupBatteries))
+                foreach (VehicleParts.VehicleBattery vb in mv.Com.Batteries.Concat(mv.Com.BackupBatteries))
                 {
                     if (vb.BatterySlot == null)
                     {
@@ -244,7 +237,7 @@ namespace AVS
                         VerboseLog(LogType.Log, verbose, thisName + " A null VehicleBattery.BatteryProxy was provided. AVS will not provide a model for this battery slot.");
                     }
                 }
-                foreach (VehicleParts.VehicleFloodLight vfl in mv.Config.HeadLights)
+                foreach (VehicleParts.VehicleFloodLight vfl in mv.Com.HeadLights)
                 {
                     if (vfl.Light == null)
                     {
@@ -262,22 +255,22 @@ namespace AVS
                         return false;
                     }
                 }
-                if (mv.Config.StorageRootObject == null)
+                if (mv.Com.StorageRootObject == null)
                 {
                     Logger.Error(thisName + " A null ModVehicle.StorageRootObject was provided. There would be no way to store things in this vehicle.");
                     return false;
                 }
-                if (mv.Config.ModulesRootObject == null)
+                if (mv.Com.ModulesRootObject == null)
                 {
                     Logger.Error(thisName + " A null ModVehicle.ModulesRootObject was provided. There would be no way to upgrade this vehicle.");
                     return false;
                 }
-                if (mv.Config.StorageRootObject == mv.gameObject)
+                if (mv.Com.StorageRootObject == mv.gameObject)
                 {
                     Logger.Error(thisName + " The StorageRootObject was the same as the Vehicle itself. These must be uniquely identifiable objects!");
                     return false;
                 }
-                if (mv.Config.ModulesRootObject == mv.gameObject)
+                if (mv.Com.ModulesRootObject == mv.gameObject)
                 {
                     Logger.Error(thisName + " The ModulesRootObject was the same as the Vehicle itself. These must be uniquely identifiable objects!");
                     return false;
@@ -290,26 +283,9 @@ namespace AVS
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " A null ModVehicle.ModVehicleEngine was passed for registration. A default engine will be chosen.");
                 }
-                if (mv.Config.Recipe != null)
-                {
-                    bool badRecipeFlag = false;
-                    foreach (var ingredient in mv.Config.Recipe)
-                    {
-                        try
-                        {
-                            string result = ingredient.Key.EncodeKey();
-                        }
-                        catch (System.Exception e)
-                        {
-                            Logger.LogException($"Vehicle Recipe Error: {mv.name}'s recipe had an invalid tech type: {ingredient.Key}. Probably you are referencing an unregistered/non-existent techtype!", e);
-                            badRecipeFlag = true;
-                        }
-                    }
-                    if (badRecipeFlag)
-                    {
-                        return false;
-                    }
-                }
+                if (!mv.Config.Recipe.CheckValidity(mv.name))
+                    return false;
+
             }
             catch (Exception e)
             {
@@ -330,82 +306,82 @@ namespace AVS
             try
             {
                 thisName = mv.name + ": ";
-                if (mv.SubConfig.PilotSeats.Count == 0)
+                if (mv.Com.PilotSeats.Count == 0)
                 {
                     Logger.Error(thisName + " No ModVehicle.PilotSeats were provided. These specify what the player will click on to begin piloting the vehicle.");
                     return false;
                 }
-                if (mv.SubConfig.Hatches.Count == 0)
+                if (mv.Com.Hatches.Count == 0)
                 {
                     Logger.Error(thisName + " No ModVehicle.Hatches were provided. These specify how the player will enter and exit the vehicle.");
                     return false;
                 }
-                if (mv.SubConfig.FloodLights.Count == 0)
+                if (mv.Com.FloodLights.Count == 0)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " No ModVehicle.FloodLights were provided. These lights would be activated on the control panel.");
                 }
-                if (mv.SubConfig.NavigationPortLights.Count == 0)
+                if (mv.Com.NavigationPortLights.Count == 0)
                 {
                     VerboseLog(LogType.Log, verbose, thisName + " Some navigation lights were missing.");
                 }
-                if (mv.SubConfig.NavigationStarboardLights.Count == 0)
+                if (mv.Com.NavigationStarboardLights.Count == 0)
                 {
                     VerboseLog(LogType.Log, verbose, thisName + " Some navigation lights were missing.");
                 }
-                if (mv.SubConfig.NavigationPositionLights.Count == 0)
+                if (mv.Com.NavigationPositionLights.Count == 0)
                 {
                     VerboseLog(LogType.Log, verbose, thisName + " Some navigation lights were missing.");
                 }
-                if (mv.SubConfig.NavigationWhiteStrobeLights.Count == 0)
+                if (mv.Com.NavigationWhiteStrobeLights.Count == 0)
                 {
                     VerboseLog(LogType.Log, verbose, thisName + " Some navigation lights were missing.");
                 }
-                if (mv.SubConfig.NavigationRedStrobeLights.Count == 0)
+                if (mv.Com.NavigationRedStrobeLights.Count == 0)
                 {
                     VerboseLog(LogType.Log, verbose, thisName + " Some navigation lights were missing.");
                 }
-                if (mv.SubConfig.TetherSources.Count == 0)
+                if (mv.Com.TetherSources.Count == 0)
                 {
                     Logger.Error(thisName + " No ModVehicle.TetherSources were provided. These are necessary to keep the player 'grounded' within the vehicle.");
                     return false;
                 }
-                if (mv.SubConfig.ColorPicker == null)
+                if (mv.Com.ColorPicker == null)
                 {
                     VerboseLog(LogType.Log, verbose, thisName + " A null ModVehicle.ColorPicker was provided. You only need this if you implement the necessary painting functions.");
                 }
-                if (mv.SubConfig.Fabricator == null)
+                if (mv.Com.Fabricator == null)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " A null ModVehicle.Fabricator was provided. The Submarine will not come with a fabricator at construction-time.");
                 }
-                if (mv.SubConfig.ControlPanel == null)
+                if (mv.Com.ControlPanel == null)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " A null ModVehicle.ControlPanel was provided. This is necessary to toggle floodlights.");
                 }
-                if (mv.SubConfig.SteeringWheelLeftHandTarget == null)
+                if (mv.Com.SteeringWheelLeftHandTarget == null)
                 {
                     VerboseLog(LogType.Log, verbose, thisName + " A null ModVehicle.SteeringWheelLeftHandTarget was provided. This is what the player's left hand will 'grab' while you pilot.");
                 }
-                if (mv.SubConfig.SteeringWheelRightHandTarget == null)
+                if (mv.Com.SteeringWheelRightHandTarget == null)
                 {
                     VerboseLog(LogType.Log, verbose, thisName + " A null ModVehicle.SteeringWheelRightHandTarget was provided.  This is what the player's right hand will 'grab' while you pilot.");
                 }
-                foreach (VehicleParts.VehiclePilotSeat ps in mv.SubConfig.PilotSeats)
+                foreach (VehicleParts.VehiclePilotSeat ps in mv.Com.PilotSeats)
                 {
                     if (!ps.CheckValidity(thisName, verbose))
                         return false;
                 }
-                foreach (VehicleParts.VehicleHatchStruct vhs in mv.SubConfig.Hatches)
+                foreach (VehicleParts.VehicleHatchStruct vhs in mv.Com.Hatches)
                 {
                     if (!vhs.CheckValidity(thisName, verbose))
                         return false;
 
                 }
-                foreach (VehicleParts.VehicleStorage vs in mv.SubConfig.ModularStorages)
+                foreach (VehicleParts.VehicleStorage vs in mv.Com.ModularStorages)
                 {
                     if (!vs.CheckValidity(thisName))
                         return false;
                 }
-                foreach (VehicleParts.VehicleFloodLight vfl in mv.SubConfig.FloodLights)
+                foreach (VehicleParts.VehicleFloodLight vfl in mv.Com.FloodLights)
                 {
                     if (!vfl.CheckValidity(thisName))
                         return false;
@@ -431,27 +407,27 @@ namespace AVS
             try
             {
                 thisName = mv.name + ": ";
-                if (mv.SubConfig.Hatches.Count == 0)
+                if (mv.Com.Hatches.Count == 0)
                 {
                     Logger.Error(thisName + " No ModVehicle.Hatches were provided. These specify how the player will enter and exit the vehicle.");
                     return false;
                 }
-                if (mv.SubConfig.SteeringWheelLeftHandTarget == null)
+                if (mv.Com.SteeringWheelLeftHandTarget == null)
                 {
                     VerboseLog(LogType.Log, verbose, thisName + " A null ModVehicle.SteeringWheelLeftHandTarget was provided. This is what the player's left hand will 'grab' while you pilot.");
                 }
-                if (mv.SubConfig.SteeringWheelRightHandTarget == null)
+                if (mv.Com.SteeringWheelRightHandTarget == null)
                 {
                     VerboseLog(LogType.Log, verbose, thisName + " A null ModVehicle.SteeringWheelRightHandTarget was provided.  This is what the player's right hand will 'grab' while you pilot.");
                 }
-                if (!mv.SubConfig.PilotSeat.CheckValidity(thisName, verbose))
+                if (!mv.Com.PilotSeat.CheckValidity(thisName, verbose))
                     return false;
-                foreach (VehicleParts.VehicleHatchStruct vhs in mv.SubConfig.Hatches)
+                foreach (VehicleParts.VehicleHatchStruct vhs in mv.Com.Hatches)
                 {
                     if (!vhs.CheckValidity(thisName, verbose))
                         return false;
                 }
-                foreach (VehicleParts.VehicleStorage vs in mv.SubConfig.ModularStorages)
+                foreach (VehicleParts.VehicleStorage vs in mv.Com.ModularStorages)
                 {
                     if (!vs.CheckValidity(thisName))
                         return false;

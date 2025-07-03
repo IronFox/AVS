@@ -59,9 +59,9 @@ namespace AVS
         {
             isReadyToSpeak = false;
             mv = GetComponent<ModVehicle>();
-            if (mv.Config.BackupBatteries.Count > 0)
+            if (mv.Com.BackupBatteries.Count > 0)
             {
-                aiEI = mv.Config.BackupBatteries[0].BatterySlot.GetComponent<EnergyInterface>();
+                aiEI = mv.Com.BackupBatteries[0].BatterySlot.GetComponent<EnergyInterface>();
             }
             else
             {
@@ -84,23 +84,23 @@ namespace AVS
             //speakers.Add(mv.VehicleModel.EnsureComponent<AudioSource>());
             if (mv is Submarine sub)
             {
-                foreach (var ps in sub.SubConfig.PilotSeats)
+                foreach (var ps in sub.Com.PilotSeats)
                 {
                     speakers.Add(ps.Seat.EnsureComponent<AudioSource>().Register());
                 }
-                foreach (var ps in sub.SubConfig.Hatches)
+                foreach (var ps in sub.Com.Hatches)
                 {
                     speakers.Add(ps.Hatch.EnsureComponent<AudioSource>().Register());
                 }
-                foreach (var ps in sub.SubConfig.TetherSources)
+                foreach (var ps in sub.Com.TetherSources)
                 {
                     speakers.Add(ps.EnsureComponent<AudioSource>().Register());
                 }
             }
             if (mv is Submersible sub2)
             {
-                speakers.Add(sub2.SubConfig.PilotSeat.Seat.EnsureComponent<AudioSource>().Register());
-                foreach (var ps in sub2.SubConfig.Hatches)
+                speakers.Add(sub2.Com.PilotSeat.Seat.EnsureComponent<AudioSource>().Register());
+                foreach (var ps in sub2.Com.Hatches)
                 {
                     speakers.Add(ps.Hatch.EnsureComponent<AudioSource>().Register());
                 }

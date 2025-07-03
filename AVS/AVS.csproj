@@ -148,7 +148,10 @@
     <Compile Include="Assets\VanillaVehicleHelpers.cs" />
     <Compile Include="Assets\AVSFabricator.cs" />
     <Compile Include="CompatChecker.cs" />
-    <Compile Include="Config\SubmersibleConfiguration.cs" />
+    <Compile Include="Composition\SkimmerComposition.cs" />
+    <Compile Include="Composition\SubmersibleComposition.cs" />
+    <Compile Include="Configuration\Recipe.cs" />
+    <Compile Include="Configuration\VehicleConfiguration.cs" />
     <Compile Include="DepthModules\DepthModule3.cs" />
     <Compile Include="DepthModules\DepthModule2.cs" />
     <Compile Include="DepthModules\DepthModule1.cs" />
@@ -160,6 +163,9 @@
     <Compile Include="LightControllers\VolumetricLightController.cs" />
     <Compile Include="Localization\Localizer.cs" />
     <Compile Include="Logger.cs" />
+    <Compile Include="MaterialAdapt\MaterialAdaptation.cs" />
+    <Compile Include="MaterialAdapt\MaterialFixer.cs" />
+    <Compile Include="MaterialAdapt\MaterialPrototype.cs" />
     <Compile Include="Patches\EnergyMixinPatcher.cs" />
     <Compile Include="Patches\BuilderPatcher.cs" />
     <Compile Include="Patches\PrecursorDoorMotorModeSetterPatcher.cs" />
@@ -169,10 +175,13 @@
     <Compile Include="SaveLoad\VFInnateStorageIdentifier.cs" />
     <Compile Include="SaveLoad\VFBatteryIdentifier.cs" />
     <Compile Include="SaveLoad\VFUpgradesIdentifier.cs" />
+    <Compile Include="MaterialAdapt\SurfaceShaderData.cs" />
     <Compile Include="UpgradeTypes\CraftingNode.cs" />
-    <Compile Include="Config\SubmarineConfiguration.cs" />
-    <Compile Include="Config\VehicleConfiguration.cs" />
+    <Compile Include="Composition\SubmarineComposition.cs" />
+    <Compile Include="Composition\VehicleComposition.cs" />
     <Compile Include="Util\GameObjectHelper.cs" />
+    <Compile Include="Util\ListExt.cs" />
+    <Compile Include="Util\Logging.cs" />
     <Compile Include="VehicleComponents\MaterialReactor.cs" />
     <Compile Include="VehicleComponents\ModVehicleDockingBay.cs" />
     <Compile Include="VehicleComponents\DockingBay.cs" />
@@ -281,7 +290,6 @@
     <Compile Include="Interfaces\IVehicleStatusListener.cs" />
     <Compile Include="Admin\VehicleManager.cs" />
     <Compile Include="VehicleBuilding\VehicleParts.cs" />
-    <Compile Include="VehicleTypes\Walker.cs" />
   </ItemGroup>
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

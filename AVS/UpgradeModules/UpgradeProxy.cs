@@ -6,7 +6,7 @@ namespace AVS
 {
     public class UpgradeProxy : MonoBehaviour
     {
-        public List<Transform> proxies = new List<Transform>();
+        public IReadOnlyList<Transform> proxies = new List<Transform>();
         public List<VehicleUpgradeConsoleInput.Slot> slots = null;
 
         public void Awake()
