@@ -38,12 +38,11 @@ namespace AVS
         /// <summary>
         /// The root game object of this vehicle. Usually the same as the vehicle game object.
         /// </summary>
-        public virtual GameObject VehicleModel => gameObject;
+        public virtual GameObject VehicleRoot => gameObject;
 
         public virtual VFEngine VFEngine { get; set; }
         public virtual ModVehicleEngine Engine { get; set; } // prefer to use VFEngine.
         //public virtual GameObject BoundingBox => null; // Prefer to use BoundingBoxCollider directly (don't use this)
-        public virtual GameObject LeviathanGrabPoint => gameObject;
 
         /// <summary>
         /// Invariant vehicle configuration. Initialized during construction.

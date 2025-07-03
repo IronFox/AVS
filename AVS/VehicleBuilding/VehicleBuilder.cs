@@ -142,34 +142,27 @@ namespace AVS
             }
             try
             {
-                if (mv.Com.Upgrades != null)
+                foreach (VehicleParts.VehicleUpgrades vu in mv.Com.Upgrades)
                 {
-                    foreach (VehicleParts.VehicleUpgrades vu in mv.Com.Upgrades)
-                    {
-                        VehicleUpgradeConsoleInput vuci = vu.Interface.EnsureComponent<VehicleUpgradeConsoleInput>();
-                        vuci.flap = vu.Flap.transform;
-                        vuci.anglesOpened = vu.AnglesOpened;
-                        vuci.anglesClosed = vu.AnglesClosed;
-                        vuci.collider = vuci.GetComponentInChildren<Collider>();
-                        mv.upgradesInput = vuci;
-                        var up = vu.Interface.EnsureComponent<UpgradeProxy>();
-                        up.proxies = vu.ModuleProxies;
+                    VehicleUpgradeConsoleInput vuci = vu.Interface.EnsureComponent<VehicleUpgradeConsoleInput>();
+                    vuci.flap = vu.Flap.transform;
+                    vuci.anglesOpened = vu.AnglesOpened;
+                    vuci.anglesClosed = vu.AnglesClosed;
+                    vuci.collider = vuci.GetComponentInChildren<Collider>();
+                    mv.upgradesInput = vuci;
+                    var up = vu.Interface.EnsureComponent<UpgradeProxy>();
+                    up.proxies = vu.ModuleProxies;
 
-                        SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vu.Interface.transform);
-                        vu.Interface.EnsureComponent<SaveLoad.VFUpgradesIdentifier>();
-                    }
-                    if (mv.Com.Upgrades.Count() == 0)
-                    {
-                        VehicleUpgradeConsoleInput vuci = mv.VehicleModel.EnsureComponent<VehicleUpgradeConsoleInput>();
-                        vuci.enabled = false;
-                        vuci.collider = mv.VehicleModel.AddComponent<BoxCollider>();
-                        (vuci.collider as BoxCollider).size = Vector3.zero;
-                        mv.upgradesInput = vuci;
-                    }
+                    SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vu.Interface.transform);
+                    vu.Interface.EnsureComponent<SaveLoad.VFUpgradesIdentifier>();
                 }
-                else
+                if (mv.Com.Upgrades.Count == 0)
                 {
-                    Logger.Warn("The ModVehicle.Upgrades was null.");
+                    VehicleUpgradeConsoleInput vuci = mv.VehicleRoot.EnsureComponent<VehicleUpgradeConsoleInput>();
+                    vuci.enabled = false;
+                    vuci.collider = mv.VehicleRoot.AddComponent<BoxCollider>();
+                    (vuci.collider as BoxCollider).size = Vector3.zero;
+                    mv.upgradesInput = vuci;
                 }
             }
             catch (Exception e)

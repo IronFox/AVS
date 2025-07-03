@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace AVS.Admin
@@ -14,7 +12,7 @@ namespace AVS.Admin
     public class GameObjectManager<T> : IGameObjectManager where T : Component
     {
         private static List<T> AllSuchObjects = new List<T>();
-        public static T FindNearestSuch(Vector3 target, Func<T, bool> filter=null)
+        public static T FindNearestSuch(Vector3 target, Func<T, bool> filter = null)
         {
             float ComputeDistance(T thisObject)
             {
@@ -29,16 +27,16 @@ namespace AVS.Admin
             }
 
             List<T> FilteredSuchObjects = Where(x => x != null);
-            if(filter != null)
+            if (filter != null)
             {
-                FilteredSuchObjects = FilteredSuchObjects.Where(x=>filter(x)).ToList();
+                FilteredSuchObjects = FilteredSuchObjects.Where(x => filter(x)).ToList();
             }
             return FilteredSuchObjects.OrderBy(x => ComputeDistance(x)).FirstOrDefault();
         }
 
-        public static List<T> Where(Func<T,bool> pred)
+        public static List<T> Where(Func<T, bool> pred)
         {
-            AllSuchObjects.RemoveAll(x => x == null);
+            AllSuchObjects.RemoveAll(x => !x);
             return AllSuchObjects.Where(pred).ToList();
         }
 

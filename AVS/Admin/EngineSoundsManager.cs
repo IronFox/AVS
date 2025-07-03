@@ -184,7 +184,7 @@ namespace AVS
                 else
                 {
                     AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
-                    if (clip == null)
+                    if (!clip)
                     {
                         Logger.Error("Failed to retrieve AudioClip from file: " + filePath);
                     }

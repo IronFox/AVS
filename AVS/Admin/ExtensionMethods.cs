@@ -77,7 +77,7 @@ namespace AVS
         }
         public static bool IsGameObjectAncestor(this Transform current, GameObject ancestor)
         {
-            if (current == null || ancestor == null)
+            if (!current || !ancestor)
             {
                 return false;
             }
@@ -89,7 +89,7 @@ namespace AVS
         }
         public static TechType GetTechType(this Vehicle vehicle)
         {
-            if (vehicle == null || vehicle.GetComponent<TechTag>() == null)
+            if (!vehicle || !vehicle.GetComponent<TechTag>())
             {
                 return TechType.None;
             }

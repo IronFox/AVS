@@ -74,6 +74,9 @@ namespace AVS.Composition
         /// <param name="lavaLarvaAttachPoints">
         /// Attach points for Lava Larvae. Optional. Can be null or empty.
         /// </param>
+        /// <param name="leviathanGrabPoint">
+        /// Leviathan grab point. Optional.
+        /// </param>
         /// <exception cref="ArgumentNullException">
         /// Thrown if <paramref name="pilotSeat"/> is null or if <c>PilotSeat.Seat</c> is null.
         /// </exception>
@@ -96,7 +99,8 @@ namespace AVS.Composition
             GameObject steeringWheelRightHandTarget = null,
             IReadOnlyList<Collider> denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI> subNameDecals = null,
-            IReadOnlyList<Transform> lavaLarvaAttachPoints = null
+            IReadOnlyList<Transform> lavaLarvaAttachPoints = null,
+            GameObject leviathanGrabPoint = null
         ) : base(
             storageRootObject: storageRootObject,
             modulesRootObject: modulesRootObject,
@@ -115,7 +119,8 @@ namespace AVS.Composition
             steeringWheelRightHandTarget: steeringWheelRightHandTarget,
             denyBuildingColliders: denyBuildingColliders,
             subNameDecals: subNameDecals,
-            lavaLarvaAttachPoints: lavaLarvaAttachPoints
+            lavaLarvaAttachPoints: lavaLarvaAttachPoints,
+            leviathanGrabPoint: leviathanGrabPoint
         )
         {
             if (pilotSeat.Seat == null)

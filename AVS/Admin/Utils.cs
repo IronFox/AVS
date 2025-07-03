@@ -83,11 +83,11 @@ namespace AVS.Admin
         }
         public static bool IsAnAncestorTheCurrentMountedVehicle(Transform current)
         {
-            if (current == null)
+            if (!current)
             {
                 return false;
             }
-            if (current.GetComponent<Vehicle>() != null)
+            if (current.GetComponent<Vehicle>())
             {
                 return current.GetComponent<Vehicle>() == Player.main.GetVehicle();
             }
@@ -114,17 +114,17 @@ namespace AVS.Admin
         }
         public static void EvaluateDepthModules(AddActionParams param)
         {
-            if (param.vehicle.GetComponent<ModVehicle>() == null)
+            ModVehicle mv = param.vehicle.GetComponent<ModVehicle>();
+            if (!mv)
             {
                 Subtitles.Add("This upgrade is not compatible with this vehicle.");
                 return;
             }
-            ModVehicle mv = param.vehicle.GetComponent<ModVehicle>();
             // Iterate over all upgrade modules,
             // in order to determine our max depth module level
             int maxDepthModuleLevel = 0;
             List<string> upgrades = mv.GetCurrentUpgrades();
-            foreach (String upgrade in upgrades)
+            foreach (var upgrade in upgrades)
             {
                 if (string.Equals(upgrade, "AvsDepthModule1(Clone)", StringComparison.OrdinalIgnoreCase))
                 {

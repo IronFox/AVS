@@ -140,7 +140,7 @@ namespace AVS.VehicleParts
         public Vector3 AnglesOpened { get; }
         public Vector3 AnglesClosed { get; }
         public IReadOnlyList<Transform> ModuleProxies { get; }
-        public VehicleUpgrades(GameObject @interface, GameObject flap, Vector3 iOpenAngles, Vector3 iClosedAngles, IReadOnlyList<Transform> iProxies = null)
+        public VehicleUpgrades(GameObject @interface, GameObject flap, Vector3 openAngles, Vector3 closedAngles, IReadOnlyList<Transform> iProxies = null)
         {
             if (@interface == null)
                 throw new ArgumentNullException(nameof(@interface), "Vehicle upgrades interface cannot be null.");
@@ -148,9 +148,28 @@ namespace AVS.VehicleParts
                 throw new ArgumentNullException(nameof(flap), "Vehicle upgrades flap cannot be null.");
             Interface = @interface;
             Flap = flap;
-            AnglesOpened = iOpenAngles;
-            AnglesClosed = iClosedAngles;
+            AnglesOpened = openAngles;
+            AnglesClosed = closedAngles;
             ModuleProxies = iProxies;
+        }
+
+        internal bool CheckValidity(string thisName, bool verbose)
+        {
+            if (!Interface)
+            {
+                Logger.Error(thisName + " A null VehicleUpgrades.Interface was provided. There would be no way to upgrade this vehicle.");
+                return false;
+            }
+            if (!Flap)
+            {
+                Logger.Error(thisName + " A null VehicleUpgrades.Flap was provided. The upgrades interface requires this. It will be rotated by the angles in this struct when activated. You can set the rotation angle to zero to take no action.");
+                return false;
+            }
+            if (ModuleProxies is null)
+            {
+                VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, thisName + " A null VehicleUpgrades.ModuleProxies was provided. AVS will not provide a model for this upgrade slot.");
+            }
+            return true;
         }
     }
     public readonly struct VehicleBattery
@@ -169,6 +188,20 @@ namespace AVS.VehicleParts
                 throw new ArgumentNullException(nameof(batterySlot), "Vehicle battery slot cannot be null.");
             BatterySlot = batterySlot;
             BatteryProxy = batteryProxy;
+        }
+
+        internal bool CheckValidity(string thisName, bool verbose)
+        {
+            if (!BatterySlot)
+            {
+                Logger.Error(thisName + " A null VehicleBattery.BatterySlot was provided. There would be no way to access this battery.");
+                return false;
+            }
+            if (!BatteryProxy)
+            {
+                VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, thisName + " A null VehicleBattery.BatteryProxy was provided. AVS will not provide a model for this battery slot.");
+            }
+            return true;
         }
     }
     public readonly struct VehicleFloodLight

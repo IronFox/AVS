@@ -16,8 +16,8 @@ namespace AVS
             vehicle_info.WithIcon(vehicle.mv.Config.CraftingSprite ?? StaticAssets.ModVehicleIcon);
 
             Nautilus.Assets.CustomPrefab module_CustomPrefab = new Nautilus.Assets.CustomPrefab(vehicle_info);
-            Nautilus.Utility.PrefabUtils.AddBasicComponents(vehicle.mv.VehicleModel, vehicleKey, vehicle_info.TechType, LargeWorldEntity.CellLevel.Global);
-            module_CustomPrefab.SetGameObject(vehicle.mv.VehicleModel);
+            Nautilus.Utility.PrefabUtils.AddBasicComponents(vehicle.mv.VehicleRoot, vehicleKey, vehicle_info.TechType, LargeWorldEntity.CellLevel.Global);
+            module_CustomPrefab.SetGameObject(vehicle.mv.VehicleRoot);
             string jsonRecipeFileName = Path.Combine(
                                             Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location),
                                             "recipes",

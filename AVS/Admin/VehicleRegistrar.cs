@@ -130,7 +130,7 @@ namespace AVS
                 }
                 VerboseLog(LogType.Log, verbose, "Validating the Registration of the " + mv.name);
                 thisName = mv.name + ": ";
-                if (mv.VehicleModel == null)
+                if (!mv.VehicleRoot)
                 {
                     Logger.Error(thisName + " A null ModVehicle.VehicleModel was passed for registration.");
                     return false;
@@ -182,76 +182,39 @@ namespace AVS
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " No ModVehicle.CanopyWindows were provided. These must be specified to handle window transparencies.");
                 }
-                if (mv.Com.BoundingBoxCollider == null)
+                if (!mv.Com.BoundingBoxCollider)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " No BoundingBox BoxCollider was provided. If a BoundingBox GameObject was provided, it did not have a BoxCollider. Tether range is 10 meters. This vehicle will not be able to dock in the Moonpool. The build bots will assume this vehicle is 6m x 8m x 12m.");
                 }
-                if (mv.Com.CollisionModel == null)
+                if (!mv.Com.CollisionModel)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " A null ModVehicle.CollisionModel was provided. This is necessary for leviathans to grab the vehicle.");
                 }
                 foreach (VehicleParts.VehicleStorage vs in mv.Com.InnateStorages.Concat(mv.Com.ModularStorages))
                 {
-                    if (vs.Container == null)
+                    if (!vs.CheckValidity(thisName))
                     {
-                        Logger.Error(thisName + " A null VehicleStorage.Container was provided. There would be no way to access this storage.");
-                        return false;
-                    }
-                    if (vs.Height < 0)
-                    {
-                        Logger.Error(thisName + " A negative VehicleStorage.Height was provided. This storage would have no space.");
-                        return false;
-                    }
-                    if (vs.Width < 0)
-                    {
-                        Logger.Error(thisName + " A negative VehicleStorage.Width was provided. This storage would have no space.");
                         return false;
                     }
                 }
                 foreach (VehicleParts.VehicleUpgrades vu in mv.Com.Upgrades)
                 {
-                    if (vu.Interface == null)
+                    if (!vu.CheckValidity(thisName, verbose))
                     {
-                        Logger.Error(thisName + " A null VehicleUpgrades.Interface was provided. There would be no way to upgrade this vehicle.");
                         return false;
-                    }
-                    if (vu.Flap is null)
-                    {
-                        Logger.Error(thisName + " A null VehicleUpgrades.Flap was provided. The upgrades interface requires this. It will be rotated by the angles in this struct when activated. You can set the rotation angle to zero to take no action.");
-                        return false;
-                    }
-                    if (vu.ModuleProxies is null)
-                    {
-                        VerboseLog(LogType.Log, verbose, thisName + " A null VehicleUpgrades.ModuleProxies was provided. AVS will not provide a model for this upgrade slot.");
                     }
                 }
                 foreach (VehicleParts.VehicleBattery vb in mv.Com.Batteries.Concat(mv.Com.BackupBatteries))
                 {
-                    if (vb.BatterySlot == null)
+                    if (!vb.CheckValidity(thisName, verbose))
                     {
-                        Logger.Error(thisName + " A null VehicleBattery.BatterySlot was provided. There would be no way to access this battery.");
                         return false;
-                    }
-                    if (vb.BatteryProxy == null)
-                    {
-                        VerboseLog(LogType.Log, verbose, thisName + " A null VehicleBattery.BatteryProxy was provided. AVS will not provide a model for this battery slot.");
                     }
                 }
                 foreach (VehicleParts.VehicleFloodLight vfl in mv.Com.HeadLights)
                 {
-                    if (vfl.Light == null)
+                    if (!vfl.CheckValidity(thisName))
                     {
-                        Logger.Error(thisName + " A null VehicleFloodLight.Light was provided. There would be nothing from which to emit light.");
-                        return false;
-                    }
-                    if (vfl.Intensity < 0)
-                    {
-                        Logger.Error(thisName + " A negative VehicleFloodLight.Intensity was provided. The light would be totally dark.");
-                        return false;
-                    }
-                    if (vfl.Range < 0)
-                    {
-                        Logger.Error(thisName + " A negative VehicleFloodLight.Range was provided. The light would be totally dark.");
                         return false;
                     }
                 }
@@ -275,7 +238,7 @@ namespace AVS
                     Logger.Error(thisName + " The ModulesRootObject was the same as the Vehicle itself. These must be uniquely identifiable objects!");
                     return false;
                 }
-                if (mv.LeviathanGrabPoint == null)
+                if (!mv.Com.LeviathanGrabPoint)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " A null ModVehicle.LeviathanGrabPoint was provided. This is where leviathans attach to the vehicle. The root object will be used instead.");
                 }

@@ -108,6 +108,11 @@ namespace AVS.Composition
         /// If empty, the vehicle will not be attacked by Lava Larvae.
         /// </summary>
         public IReadOnlyList<Transform> LavaLarvaAttachPoints { get; } = Array.Empty<Transform>();
+        /// <summary>
+        /// Leviathan grab point, used by the Leviathan to grab the vehicle.
+        /// If empty, the vehicle's own object is used as the grab point.
+        /// </summary>
+        public GameObject LeviathanGrabPoint { get; }
 
 
         /// <summary>
@@ -131,6 +136,7 @@ namespace AVS.Composition
         /// <param name="denyBuildingColliders">Deny building colliders. Optional.</param>
         /// <param name="subNameDecals">Sub name decals. Optional.</param>
         /// <param name="lavaLarvaAttachPoints">Lava larva attach points. Optional.</param>
+        /// <param name="leviathanGrabPoint">Leviathan grab point. Optional.</param>
         public VehicleComposition(
             GameObject storageRootObject,
             GameObject modulesRootObject,
@@ -149,7 +155,8 @@ namespace AVS.Composition
             GameObject steeringWheelRightHandTarget = null,
             IReadOnlyList<Collider> denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI> subNameDecals = null,
-            IReadOnlyList<Transform> lavaLarvaAttachPoints = null
+            IReadOnlyList<Transform> lavaLarvaAttachPoints = null,
+            GameObject leviathanGrabPoint = null
         )
         {
             if (storageRootObject == null)
@@ -159,6 +166,7 @@ namespace AVS.Composition
             if (hatches == null || hatches.Count == 0)
                 throw new ArgumentException("Hatches must not be null or empty.", nameof(hatches));
 
+            LeviathanGrabPoint = leviathanGrabPoint;
             StorageRootObject = storageRootObject;
             ModulesRootObject = modulesRootObject;
             CollisionModel = collisionModel;
