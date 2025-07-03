@@ -1,4 +1,5 @@
 ﻿using AVS.Assets;
+using AVS.Util;
 using UnityEngine;
 using static AVS.ModVehicle;
 
@@ -139,11 +140,58 @@ namespace AVS.Configuration
         /// <summary>
         /// True to automatically correct shaders to the vehicle's materials.
         /// </summary>
-        public bool AutoApplyShaders { get; } = true;
+        public bool AutoFixMaterials { get; } = true;
 
+        /// <summary>
+        /// The logging configuration for material fixes.
+        /// </summary>
+        public Logging MaterialFixLogging { get; } = Logging.Default;
 
+        /// <summary>
+        /// If true, the vehicle's shader name will not be checked when fixing materials.
+        /// </summary>
+        public bool IgnoreShaderNameWhenFixingMaterial { get; } = false;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VehicleConfiguration"/> class with the specified parameters.
+        /// </summary>
+        /// <param name="materialFixLogging">The logging configuration for material fixes. If null, defaults to <see cref="Logging.Default"/>.</param>
+        /// <param name="pingSprite">Sprite to show when the camera is sufficiently far away. Also used on the map, if used.</param>
+        /// <param name="saveFileSprite">Sprite to attach to the save file in the preview. Should be very abstract, ideally just an outline.</param>
+        /// <param name="recipe">Construction recipe. If null, uses <see cref="Recipe.Example"/>.</param>
+        /// <param name="allowRecipeOverride">If true, the recipe can be overridden by a JSON file created in the "recipes" folder.</param>
+        /// <param name="unlockedSprite">Sprite shown when the vehicle is unlocked.</param>
+        /// <param name="description">Localized description of the vehicle.</param>
+        /// <param name="encyclopediaEntry">Localized encyclopedia entry for this vehicle.</param>
+        /// <param name="encyclopediaImage">Image to show in the encyclopedia entry, if any.</param>
+        /// <param name="craftingSprite">The sprite to show in the crafting menu of the mobile vehicle bay.</param>
+        /// <param name="moduleBackgroundImage">The image to show in the background of the vehicle's module menu.</param>
+        /// <param name="unlockedWith">Type that, if unlocked, also automatically unlocks this vehicle for crafting.</param>
+        /// <param name="maxHealth">Maximum health of the vehicle. Must be greater than 0.</param>
+        /// <param name="crushDamage">Absolute damage dealt to the vehicle when it descends below its crush depth.</param>
+        /// <param name="ghostAdultBiteDamage">Absolute damage dealt to the vehicle when it is bit by an adult ghost leviathan.</param>
+        /// <param name="ghostJuvenileBiteDamage">Absolute damage dealt to the vehicle when it is bit by a juvenile ghost leviathan.</param>
+        /// <param name="reaperBiteDamage">Absolute damage dealt to the vehicle when it is bit by a reaper leviathan.</param>
+        /// <param name="mass">Physical mass of the vehicle. Must be greater than 0.</param>
+        /// <param name="numModules">Maximum number of modules that can be installed on this vehicle.</param>
+        /// <param name="unlockedMessage">PDA message shown when the vehicle is unlocked.</param>
+        /// <param name="baseCrushDepth">Base crush depth of the vehicle, measured in meters. Must be greater than 0.</param>
+        /// <param name="crushDepthUpgrade1">Crush depth increase if a level 1 depth upgrade is installed.</param>
+        /// <param name="crushDepthUpgrade2">Crush depth increase if a level 2 depth upgrade is installed.</param>
+        /// <param name="crushDepthUpgrade3">Crush depth increase if a level 3 depth upgrade is installed.</param>
+        /// <param name="crushDamageFrequency">Number of times per second the vehicle will take damage when below its crush depth.</param>
+        /// <param name="pilotingStyle">The piloting style of the vehicle. Affects player animations.</param>
+        /// <param name="timeToConstruct">The number of seconds it takes to construct the vehicle in the mobile vehicle bay.</param>
+        /// <param name="constructionGhostColor">Color used for rendering construction ghost objects. Applied only if not black.</param>
+        /// <param name="constructionWireframeColor">Color used for rendering construction wireframes. Applied only if not black.</param>
+        /// <param name="canLeviathanGrab">True if the vehicle can be grabbed by a leviathan.</param>
+        /// <param name="canMoonpoolDock">True if the vehicle can be docked in a moonpool.</param>
+        /// <param name="cyclopsDockRotation">Rotation applied when docking the vehicle in a cyclops.</param>
+        /// <param name="autoFixMaterials">True to automatically correct shaders to the vehicle's materials.</param>
+        /// <param name="ignoreShaderNameWhenFixingMaterial">If true, the vehicle's shader name will not be checked when fixing materials.</param>
         public VehicleConfiguration(
+
+            Logging? materialFixLogging = null,
             Atlas.Sprite pingSprite = null,
             Sprite saveFileSprite = null,
             Recipe recipe = null,
@@ -175,7 +223,8 @@ namespace AVS.Configuration
             bool canLeviathanGrab = true,
             bool canMoonpoolDock = true,
             Quaternion? cyclopsDockRotation = null,
-            bool autoApplyShaders = true
+            bool autoFixMaterials = true,
+            bool ignoreShaderNameWhenFixingMaterial = false
         )
         {
             if (maxHealth <= 0)
@@ -185,6 +234,7 @@ namespace AVS.Configuration
             if (baseCrushDepth <= 0)
                 throw new System.ArgumentOutOfRangeException(nameof(baseCrushDepth), "BaseCrushDepth must be greater than 0.");
 
+            MaterialFixLogging = materialFixLogging ?? Logging.Default;
             PingSprite = pingSprite ?? Assets.StaticAssets.DefaultPingSprite;
             SaveFileSprite = saveFileSprite ?? Assets.StaticAssets.DefaultSaveFileSprite;
             Recipe = recipe ?? Recipe.Example;
@@ -216,7 +266,8 @@ namespace AVS.Configuration
             CanLeviathanGrab = canLeviathanGrab;
             CanMoonpoolDock = canMoonpoolDock;
             CyclopsDockRotation = cyclopsDockRotation ?? Quaternion.identity;
-            AutoApplyShaders = autoApplyShaders;
+            AutoFixMaterials = autoFixMaterials;
+            IgnoreShaderNameWhenFixingMaterial = ignoreShaderNameWhenFixingMaterial;
         }
 
 

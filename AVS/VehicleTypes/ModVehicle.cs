@@ -1,6 +1,8 @@
 ﻿using AVS.Composition;
 using AVS.Configuration;
 using AVS.Engines;
+using AVS.MaterialAdapt;
+using AVS.Util;
 using AVS.VehicleTypes;
 using System;
 using System.Collections;
@@ -10,31 +12,42 @@ using UnityEngine;
 
 namespace AVS
 {
-    /*
-     * ModVehicle is the primary abstract class provided by Vehicle Framework.
-     * All VF vehicles inherit from ModVehicle.
-     */
+    /// <summary>
+    /// ModVehicle is the primary abstract class provided by Vehicle Framework. 
+    /// All VF vehicles inherit from ModVehicle.
+    /// </summary>
     public abstract class ModVehicle : Vehicle, ICraftTarget, IProtoTreeEventListener, ILogFilter
     {
-        #region enumerations
-        public enum DeathStyle
-        {
-            Explode = 0,
-            Sink = 1,
-            Float = 2
-        }
+
+        /// <summary>
+        /// The piloting style of the vehicle.
+        /// </summary>
         public enum PilotingStyle
         {
+            /// <summary>
+            /// Arms expected to grab a wheel
+            /// </summary>
             Cyclops,
+            /// <summary>
+            /// Arms expected to grab joysticks
+            /// </summary>
             Seamoth,
+            /// <summary>
+            /// Arms expected to grab joysticks
+            /// </summary>
             Prawn,
+            /// <summary>
+            /// Arm animations controled via <see cref="HandleOtherPilotingAnimations(bool)"/>
+            /// </summary>
             Other
         }
-        #endregion
 
-        #region abstract_members
-        #endregion
 
+        /// <summary>
+        /// The material fixer instance used for this vehicle.
+        /// Ineffective if <see cref="VehicleConfiguration.AutoFixMaterials"/> is false.
+        /// </summary>
+        public MaterialFixer MaterialFixer { get; }
         /// <summary>
         /// The root game object of this vehicle. Usually the same as the vehicle game object.
         /// </summary>
@@ -50,20 +63,86 @@ namespace AVS
         /// </summary>
         public VehicleConfiguration Config { get; }
 
-        public virtual bool LogDebug => false; // Set to true if you want debug logs for this vehicle
+        /// <summary>
+        /// True to log high-verbosity debug messages (as non-debug)
+        /// </summary>
+        public virtual bool LogDebug => false;
 
+        /// <summary>
+        /// Retrieves the composition of the vehicle.
+        /// Executed once either during <see cref="Awake()"/> or vehicle registration, whichever comes first.
+        /// </summary>
         public abstract VehicleComposition GetVehicleComposition();
 
         /// <summary>
         /// Resolved vehicle composition.
-        /// If accessed before <see cref="Awake()"/>, a InvalidOperationException will be thrown.
+        /// If accessed before <see cref="Awake()"/> (or vehicle registration), InvalidOperationException will be thrown.
         /// </summary>
         public VehicleComposition Com => _composition
             ?? throw new InvalidOperationException("This vehicle's composition has not yet been initialized. Please wait until ModVehicle.Awake() has been called");
         private VehicleComposition _composition = null;
+
+        /// <summary>
+        /// Constructs the vehicle with the given configuration.
+        /// </summary>
+        /// <param name="config">Vehicle configuration. Must not be null</param>
+        /// <exception cref="ArgumentNullException"></exception>
         protected ModVehicle(VehicleConfiguration config)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config), "VehicleConfiguration cannot be null");
+            MaterialFixer = new MaterialFixer(this, config.MaterialFixLogging, () => this.ResolveMaterial(config.MaterialFixLogging));
+
+        }
+
+        /// <summary>
+        /// If this method returns true,
+        /// all materials of the given game object will be excluded
+        /// from material fixing.
+        /// </summary>
+        /// <remarks>Child objects will still be processed</remarks>
+        /// <param name="go">Game object to test</param>
+        /// <returns>True if this object should not be fixed</returns>
+        protected virtual bool ExcludeFromMaterialFixing(GameObject go)
+            => go.GetComponent<Skybox>()
+            || go.name.ToLower().Contains("light")
+            || Com.CanopyWindows.Contains(go);
+
+        /// <summary>
+        /// If this method returns true,
+        /// the specific material of the given renderer will be excluded
+        /// from material fixing.
+        /// </summary>
+        /// <param name="renderer">Owning renderer</param>
+        /// <param name="materialIndex">Index of the material being processed with 0 being the first material</param>
+        /// <param name="material">Material being processed</param>
+        /// <returns>True if this material should not be fixed</returns>
+        protected virtual bool ExcludeFromMaterialFixing(Renderer renderer, int materialIndex, Material material)
+            => false;
+
+
+        private IEnumerable<SurfaceShaderData> ResolveMaterial(Logging logConfig)
+        {
+            var renderers = GetComponentsInChildren<Renderer>();
+            foreach (var renderer in renderers)
+            {
+                if (ExcludeFromMaterialFixing(renderer.gameObject))
+                {
+                    // skip this renderer
+                    continue;
+                }
+
+                for (int i = 0; i < renderer.materials.Length; i++)
+                {
+                    if (ExcludeFromMaterialFixing(renderer, i, renderer.materials[i]))
+                    {
+                        continue;
+                    }
+
+                    var material = SurfaceShaderData.From(renderer, i, logConfig, Config.IgnoreShaderNameWhenFixingMaterial);
+                    if (material != null)
+                        yield return material;
+                }
+            }
         }
 
         internal void RequireComposition()
@@ -78,7 +157,7 @@ namespace AVS
             }
         }
 
-        #region vehicle_overrides
+        ///<inheritdoc />
         public override void Awake()
         {
             RequireComposition();
@@ -109,6 +188,7 @@ namespace AVS
             }
             vfxConstructing = GetComponent<VFXConstructing>();
         }
+        ///<inheritdoc />
         public override void Start()
         {
             base.Start();
@@ -123,8 +203,11 @@ namespace AVS
             powerMan = gameObject.EnsureComponent<PowerManager>();
             isInited = true;
         }
+        ///<inheritdoc />
         public override void Update()
         {
+            if (Config.AutoFixMaterials)
+                MaterialFixer.OnUpdate();
             if (isScuttled)
             {
                 if (IsVehicleDocked)
@@ -136,10 +219,15 @@ namespace AVS
             base.Update();
             HandleExtraQuickSlotInputs();
         }
+        /// <inheritdoc />
         public override void FixedUpdate()
         {
             ManagePhysics();
         }
+        /// <summary>
+        /// To be executed when the vehicle is killed.
+        /// </summary>
+        /// <remarks>Calls <see cref="DestroyMV"/> </remarks>
         public new virtual void OnKill()
         {
             liveMixin.health = 0;
@@ -192,6 +280,12 @@ namespace AVS
             AVS.Patches.CompatibilityPatches.BetterVehicleStoragePatcher.TryUseBetterVehicleStorage(this, slotID, techType);
             base.OnUpgradeModuleUse(techType, slotID);
         }
+        /// <summary>
+        /// Executed when an upgrade module is added or removed.
+        /// </summary>
+        /// <param name="slotID">Slot index the module is added to or removed from</param>
+        /// <param name="techType">Tech type of the module being added or removed</param>
+        /// <param name="added">True if the module is added, false if removed</param>
         public override void OnUpgradeModuleChange(int slotID, TechType techType, bool added)
         {
             upgradeOnAddedActions.ForEach(x => x(slotID, techType, added));
@@ -204,6 +298,11 @@ namespace AVS
             };
             Admin.UpgradeRegistrar.OnAddActions.ForEach(x => x(addedParams));
         }
+        /// <summary>
+        /// Gets the quick slot type of the given slot ID.
+        /// </summary>
+        /// <param name="slotID">Slot index with 0 being the first</param>
+        /// <returns>Slotted inventory item or null</returns>
         public override InventoryItem GetSlotItem(int slotID)
         {
             if (slotID < 0 || slotID >= this.slotIDs.Length)
@@ -217,6 +316,11 @@ namespace AVS
             }
             return null;
         }
+        /// <summary>
+        /// Gets the current vehicle depth and crush depth.
+        /// </summary>
+        /// <param name="depth">Vehicle depth</param>
+        /// <param name="crushDepth">Crush depth</param>
         public override void GetDepth(out int depth, out int crushDepth)
         {
             depth = Mathf.FloorToInt(GetComponent<CrushDamage>().GetDepth());
@@ -252,8 +356,11 @@ namespace AVS
             DoExitRoutines();
         }
 
+        /// <summary>
+        /// The slotIds of the vehicle.
+        /// </summary>
         public override string[] slotIDs
-        { // You probably do not want to override this
+        {
             get
             {
                 if (_slotIDs == null)
@@ -263,6 +370,9 @@ namespace AVS
                 return _slotIDs;
             }
         }
+        /// <summary>
+        /// Vehicle default name
+        /// </summary>
         public override string vehicleDefaultName
         {
             get
@@ -275,9 +385,10 @@ namespace AVS
                 return main.Get("ModVehicle");
             }
         }
-        #endregion
 
-        #region virtual_methods
+        /// <summary>
+        /// Enters the player into the sub, updates the quickbar and notifies the player of the piloting status.
+        /// </summary>
         public virtual void BeginPiloting()
         {
             // BeginPiloting is the VF trigger to start controlling a vehicle.
@@ -285,12 +396,21 @@ namespace AVS
             uGUI.main.quickSlots.SetTarget(this);
             NotifyStatus(PlayerStatus.OnPilotBegin);
         }
+        /// <summary>
+        /// Stops the piloting of the current vehicle and resets the control state.
+        /// </summary>
+        /// <remarks>This method disengages the player from controlling a vehicle and resets any
+        /// associated UI elements.  It also triggers a notification to update the player's status to reflect the end of
+        /// piloting.</remarks>
         public virtual void StopPiloting()
         {
             // StopPiloting is the VF trigger to discontinue controlling a vehicle.
             uGUI.main.quickSlots.SetTarget(null);
             NotifyStatus(PlayerStatus.OnPilotEnd);
         }
+        /// <summary>
+        /// Called when the player enters the vehicle.
+        /// </summary>
         public virtual void PlayerEntry()
         {
             Logger.DebugLog(this, "start modvehicle player entry");
@@ -315,6 +435,9 @@ namespace AVS
                 pingInstance.enabled = false;
             }
         }
+        /// <summary>
+        /// Called when the player exits the vehicle.
+        /// </summary>
         public virtual void PlayerExit()
         {
             Logger.DebugLog(this, "start modvehicle player exit");
@@ -361,6 +484,10 @@ namespace AVS
             // to show off the cool animations~
             return 0;
         }
+        /// <summary>
+        /// Detects if the vehicle is currently underwater.
+        /// </summary>
+        /// <returns>true if underwater</returns>
         public virtual bool GetIsUnderwater()
         {
             bool isBeneathSurface = !worldForces.IsAboveWater();
@@ -401,20 +528,29 @@ namespace AVS
                 UWE.CoroutineHost.StartCoroutine(GiveUsABatteryOrGiveUsDeath());
             }
         }
+        /// <summary>
+        /// Executed when the vehicle docks in a docking bay (e.g. a moonpool).
+        /// </summary>
+        /// <remarks>Calls <see cref="OnPlayerDocked(Vector3)" /> if the vessel is currently being controlled</remarks>
+        /// <param name="exitLocation">
+        /// The location the player should exit to after docking</param>
         public virtual void OnVehicleDocked(Vector3 exitLocation)
         {
+            if (Config.AutoFixMaterials)
+                MaterialFixer.OnVehicleDocked();
             // The Moonpool invokes this once upon vehicle entry into the dock
             IsVehicleDocked = true;
             if (IsUnderCommand)
-            {
                 OnPlayerDocked(exitLocation);
-            }
             useRigidbody.detectCollisions = false;
             foreach (var component in GetComponentsInChildren<IDockListener>())
-            {
-                (component as IDockListener).OnDock();
-            }
+                component.OnDock();
         }
+        /// <summary>
+        /// Executed when the player should evict the vehicle after being docked in a docking bay (e.g. a moonpool).
+        /// </summary>
+        /// <remarks>Calls <see cref="PlayerExit()" /></remarks>
+        /// <param name="exitLocation">If non-0, the player should relocate to this location</param>
         public virtual void OnPlayerDocked(Vector3 exitLocation)
         {
             PlayerExit();
@@ -424,8 +560,14 @@ namespace AVS
                 Player.main.transform.LookAt(this.transform);
             }
         }
+        /// <summary>
+        /// Executed when the vehicle undocks from a docking bay (e.g. a moonpool).
+        /// </summary>
+        /// <remarks>Calls <see cref="OnPlayerUndocked()" /></remarks>
         public virtual void OnVehicleUndocked()
         {
+            if (Config.AutoFixMaterials)
+                MaterialFixer.OnVehicleUndocked();
             // The Moonpool invokes this once upon vehicle exit from the dock
             if (!isScuttled && !Admin.ConsoleCommands.isUndockConsoleCommand)
             {
@@ -434,7 +576,7 @@ namespace AVS
             IsVehicleDocked = false;
             foreach (var component in GetComponentsInChildren<IDockListener>())
             {
-                (component as IDockListener).OnUndock();
+                component.OnUndock();
             }
             IEnumerator EnsureCollisionsEnabledEventually()
             {
@@ -443,10 +585,17 @@ namespace AVS
             }
             UWE.CoroutineHost.StartCoroutine(EnsureCollisionsEnabledEventually());
         }
+        /// <summary>
+        /// Executed when the player should reenter a newly undocked local vehicle.
+        /// </summary>
+        /// <remarks>Calls <see cref="PlayerEntry()"/></remarks>
         public virtual void OnPlayerUndocked()
         {
             PlayerEntry();
         }
+        /// <summary>
+        /// Loosely computes the bounding dimensions of the vehicle.
+        /// </summary>
         public virtual Vector3 GetBoundingDimensions()
         {
             BoxCollider box = Com.BoundingBoxCollider;
@@ -458,10 +607,13 @@ namespace AVS
             Vector3 worldScale = box.transform.lossyScale;
             return Vector3.Scale(boxDimensions, worldScale);
         }
+        /// <summary>
+        /// Gets the difference between the vehicle's position and the center of its bounding box.
+        /// </summary>
         public virtual Vector3 GetDifferenceFromCenter()
         {
             BoxCollider box = Com.BoundingBoxCollider;
-            if (box != null)
+            if (box)
             {
                 Vector3 colliderCenterWorld = box.transform.TransformPoint(box.center);
                 Vector3 difference = colliderCenterWorld - transform.position;
@@ -469,6 +621,10 @@ namespace AVS
             }
             return Vector3.zero;
         }
+        /// <summary>
+        /// Animation routine to execute when the vehicle is (un)docked in a moonpool.
+        /// </summary>
+        /// <param name="moonpool"></param>
         public virtual void AnimateMoonPoolArms(VehicleDockingBay moonpool)
         {
             // AnimateMoonPoolArms is called in VehicleDockingBay.LateUpdate when a ModVehicle is docked in a moonpool.
@@ -476,17 +632,31 @@ namespace AVS
             // There is also "exosuit_docked"
             SafeAnimator.SetBool(moonpool.animator, "seamoth_docked", moonpool.vehicle_docked_param && moonpool.dockedVehicle != null);
         }
+
+        /// <summary>
+        /// Destroys the vehicle and executes the death action.
+        /// </summary>
+        /// <remarks>Calls <see cref="DeathAction" /> and <see cref="ScuttleVehicle" /></remarks>
         public virtual void DestroyMV()
         {
             DeathAction();
             ScuttleVehicle();
         }
+        /// <summary>
+        /// Executed when the vehicle is destroyed.
+        /// This default behavior lets the vehicle slowly sink to the bottom of the ocean.
+        /// </summary>
         public virtual void DeathAction()
         {
             worldForces.enabled = true;
             worldForces.handleGravity = true;
             worldForces.underwaterGravity = 1.5f;
         }
+
+        /// <summary>
+        /// Executed when the vehicle is destroyed.
+        /// Sets this vehicle as ready to be salvaged.
+        /// </summary>
         public virtual void ScuttleVehicle()
         {
             if (isScuttled)
@@ -511,17 +681,23 @@ namespace AVS
             sealedThing.maxOpenedAmount = liveMixin.maxHealth / 5f;
             sealedThing.openedEvent.AddHandler(gameObject, new UWE.Event<Sealed>.HandleFunction(OnCutOpen));
         }
+        /// <summary>
+        /// Returns the vehicle to a non-scuttled state.
+        /// </summary>
         public virtual void UnscuttleVehicle()
         {
             isScuttled = false;
             foreach (var component in GetComponentsInChildren<IScuttleListener>())
             {
-                (component as IScuttleListener).OnUnscuttle();
+                component.OnUnscuttle();
             }
             Com.WaterClipProxies.ForEach(x => x.SetActive(true));
             isPoweredOn = true;
             gameObject.EnsureComponent<Scuttler>().Unscuttle();
         }
+        /// <summary>
+        /// Executed when the vehicle is salvaged.
+        /// </summary>
         public virtual void OnSalvage()
         {
             IEnumerator DropLoot(Vector3 place, GameObject root)
@@ -554,7 +730,15 @@ namespace AVS
             }
             UWE.CoroutineHost.StartCoroutine(DropLoot(transform.position, gameObject));
         }
+        /// <summary>
+        /// Executed has started being piloted by a player and <see cref="VehicleConfiguration.PilotingStyle" /> is set to <see cref="PilotingStyle.Other" />.
+        /// </summary>
+        /// <param name="isPiloting">True if the player is actually piloting</param>
         public virtual void HandleOtherPilotingAnimations(bool isPiloting) { }
+
+        /// <summary>
+        /// Checks if the player is currently piloting this vehicle.
+        /// </summary>
         public virtual bool IsPlayerControlling()
         {
             if (this as VehicleTypes.Submarine != null)
@@ -570,25 +754,38 @@ namespace AVS
                 return false;
             }
         }
+        /// <summary>
+        /// Executed when loading has finished
+        /// </summary>
         public virtual void OnFinishedLoading()
         {
 
         }
+        /// <summary>
+        /// Updates the base color of the vehicle.
+        /// </summary>
         public virtual void SetBaseColor(Vector3 hsb, Color color)
         {
             baseColor = color;
         }
+        /// <summary>
+        /// Updates the interior color of the vehicle.
+        /// </summary>
         public virtual void SetInteriorColor(Vector3 hsb, Color color)
         {
             interiorColor = color;
         }
+        /// <summary>
+        /// Updates the stripe color of the vehicle.
+        /// </summary>
         public virtual void SetStripeColor(Vector3 hsb, Color color)
         {
             stripeColor = color;
         }
-        #endregion
 
-        #region public_fields
+        /// <summary>
+        /// Checks if the vehicle is currently under the command of the player.
+        /// </summary>
         public bool IsUnderCommand
         {// true when inside a vehicle (or piloting a drone)
             get
@@ -601,6 +798,7 @@ namespace AVS
                 IsPlayerDry = value;
             }
         }
+
         public FMOD_CustomEmitter lightsOnSound = null;
         public FMOD_CustomEmitter lightsOffSound = null;
         public List<GameObject> lights = new List<GameObject>();
@@ -620,10 +818,23 @@ namespace AVS
         public bool IsPlayerDry = false;
         public bool isScuttled = false;
         public bool IsUndockingAnimating = false;
+
+
+
         public List<Action<int, TechType, bool>> upgradeOnAddedActions = new List<Action<int, TechType, bool>>();
+
+
+
+        /// <summary>
+        /// Tech type of the vehicle.
+        /// </summary>
         public TechType TechType => GetComponent<TechTag>().type;
+
+        /// <summary>
+        /// True if the vehicle is constructed and ready to be piloted.
+        /// </summary>
         public bool IsConstructed => vfxConstructing == null || vfxConstructing.IsConstructed();
-        #endregion
+
 
         #region internal_fields
         private bool _IsUnderCommand = false;
@@ -840,6 +1051,9 @@ namespace AVS
             bool shouldSetKinematic = teleporting || (!constructionFallOverride && !GetPilotingMode() && (!Admin.GameStateWatcher.IsWorldSettled || docked || !vfxConstructing.IsConstructed()));
             UWE.Utils.SetIsKinematicAndUpdateInterpolation(useRigidbody, shouldSetKinematic, true);
         }
+        /// <summary>
+        /// Executed when the player has started piloting a vehicle. The exact animations depend on <see cref="VehicleConfiguration.PilotingStyle" />.
+        /// </summary>
         internal void HandlePilotingAnimations()
         {
             switch (Config.PilotingStyle)

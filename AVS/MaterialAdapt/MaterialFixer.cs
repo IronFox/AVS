@@ -16,13 +16,20 @@ namespace AVS.MaterialAdapt
     public class MaterialFixer
     {
 
-        private DateTime repairMaterialsIn = DateTime.MaxValue;
+        private float repairMaterialsInSeconds = float.MaxValue;
+        private bool doRepairMaterialsPostUndock;
         private int repairMaterialsInFrames = 3;
         private bool materialsFixed;
         private readonly List<MaterialAdaptation> adaptations = new List<MaterialAdaptation>();
 
+        /// <summary>
+        /// True if materials have been fixed at least once.
+        /// </summary>
         public bool MaterialsAreFixed => materialsFixed;
 
+        /// <summary>
+        /// The owning vehicle.
+        /// </summary>
         public ModVehicle Vehicle { get; }
 
         /// <summary>
@@ -30,7 +37,17 @@ namespace AVS.MaterialAdapt
         /// </summary>
         public Logging Logging { get; set; }
 
+        /// <summary>
+        /// The used material resolver function.
+        /// </summary>
         public Func<IEnumerable<SurfaceShaderData>> MaterialResolver { get; }
+
+        /// <summary>
+        /// Null or in [0,1].<br/>
+        /// If non-null, enforces the same uniform shininess level on all materials
+        /// </summary>
+        public float? UniformShininess { get; set; }
+        private float? uniformShininess;
 
         /// <summary>
         /// Constructs the instance
@@ -87,12 +104,6 @@ namespace AVS.MaterialAdapt
 
                 for (int i = 0; i < renderer.materials.Length; i++)
                 {
-                    if (DefaultIsGlass(renderer.materials[i]))
-                    {
-                        logConfig.LogExtraStep($"Skipping glass material {renderer.materials[i].name} on {renderer.gameObject.name}");
-                        continue;
-                    }
-
                     var material = SurfaceShaderData.From(renderer, i, logConfig, ignoreShaderNames);
                     if (material != null)
                         yield return material;
@@ -100,21 +111,23 @@ namespace AVS.MaterialAdapt
             }
         }
 
-        public static bool DefaultIsGlass(Material material)
-        {
-            return material.name.Contains("[Glass]");
-        }
-
-
         /// <summary>
         /// Notifies that the vehicle has just undocked from a docking bay (moonpool, etc).
         /// </summary>
         /// <remarks>Should be called from your vehicle OnVehicleUndocked() method</remarks>
         public void OnVehicleUndocked()
         {
-            repairMaterialsIn = DateTime.Now + TimeSpan.FromSeconds(0.5f);
-            repairMaterialsInFrames = 3;
+            repairMaterialsInSeconds = 0.2f;
+            repairMaterialsInFrames = 1;
+            doRepairMaterialsPostUndock = true;
         }
+
+        /// <summary>
+        /// Notifies that the vehicle has just docked to a docking bay (moonpool, etc).
+        /// </summary>
+        /// <remarks>Should be called from your vehicle OnVehicleDocked() method</remarks>
+        public void OnVehicleDocked() => OnVehicleUndocked();
+
 
         /// <summary>
         /// Forcefully reapplies all material adaptations.
@@ -135,8 +148,9 @@ namespace AVS.MaterialAdapt
         /// </summary>
         /// <remarks>Should be called from your vehicle Update() method</remarks>
         /// <param name="subTransform">Root transform of your sub</param>
-        public void OnUpdate()
+        public bool OnUpdate()
         {
+            bool anyChanged = false;
 
             if (!materialsFixed)
             {
@@ -146,6 +160,7 @@ namespace AVS.MaterialAdapt
                 if (HullPrototype != null /*&& GlassPrototype != null*/)
                 {
                     materialsFixed = true;
+                    uniformShininess = UniformShininess;
 
 
 
@@ -155,14 +170,14 @@ namespace AVS.MaterialAdapt
                     }
                     else
                     {
-                        Shader shader = Shader.Find("MarmosetUBER");
+                        Shader shader = Shader.Find(Admin.Utils.marmosetUberName);
 
                         foreach (var data in MaterialResolver())
                         {
                             try
                             {
                                 var materialAdaptation = new MaterialAdaptation(HullPrototype, data, shader);
-                                materialAdaptation.ApplyToTarget(Logging);
+                                materialAdaptation.ApplyToTarget(Logging, uniformShininess);
 
                                 adaptations.Add(materialAdaptation);
                             }
@@ -190,15 +205,33 @@ namespace AVS.MaterialAdapt
                         Logging.LogExtraStep($"All done. Applied {adaptations.Count} adaptations");
                     }
                 }
+                anyChanged = true;
+
+            }
+            else if (uniformShininess != UniformShininess)
+            {
+                uniformShininess = UniformShininess;
+                foreach (MaterialAdaptation adaptation in adaptations)
+                {
+                    adaptation.ApplyToTarget(Logging, uniformShininess);
+                }
+                anyChanged = true;
             }
 
-            if (DateTime.Now > repairMaterialsIn && --repairMaterialsInFrames == 0)
+            if (doRepairMaterialsPostUndock)
             {
-                repairMaterialsIn = DateTime.MaxValue;
-                Logging.LogExtraStep($"Undocked. Resetting materials");
-                foreach (MaterialAdaptation adaptation in adaptations)
-                    adaptation.PostDockFixOnTarget(Logging);
+                repairMaterialsInSeconds -= Time.deltaTime;
+                if (repairMaterialsInSeconds < 0 && --repairMaterialsInFrames == 0)
+                {
+                    repairMaterialsInSeconds = float.MaxValue;
+                    doRepairMaterialsPostUndock = false;
+                    Logging.LogExtraStep($"Undocked. Resetting materials");
+                    foreach (MaterialAdaptation adaptation in adaptations)
+                        adaptation.PostDockFixOnTarget(Logging);
+                    anyChanged = true;
+                }
             }
+            return anyChanged;
         }
     }
 }
