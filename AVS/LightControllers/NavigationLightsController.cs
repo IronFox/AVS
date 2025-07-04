@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.Util;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -209,25 +210,25 @@ namespace AVS
         }
         private void BlinkThisLightOn(Material mat, Color col)
         {
-            mat.EnableKeyword(Admin.Utils.emissionKeyword);
-            mat.EnableKeyword(Admin.Utils.specmapKeyword);
-            mat.SetFloat(Admin.Utils.glowField, lightBrightness);
-            mat.SetFloat(Admin.Utils.glowNightField, lightBrightness);
-            mat.SetColor(Admin.Utils.colorField, col);
-            mat.SetColor(Admin.Utils.glowColorField, col);
+            mat.EnableKeyword(Shaders.EmissionKeyword);
+            mat.EnableKeyword(Shaders.SpecmapKeyword);
+            mat.SetFloat(Shaders.GlowField, lightBrightness);
+            mat.SetFloat(Shaders.GlowNightField, lightBrightness);
+            mat.SetColor(Shaders.ColorField, col);
+            mat.SetColor(Shaders.GlowColorField, col);
         }
         private void BlinkThisStrobeOn(Material mat, Color col)
         {
-            mat.EnableKeyword(Admin.Utils.emissionKeyword);
-            mat.EnableKeyword(Admin.Utils.specmapKeyword);
-            mat.SetFloat(Admin.Utils.glowField, strobeBrightness);
-            mat.SetFloat(Admin.Utils.glowNightField, strobeBrightness);
-            mat.SetColor(Admin.Utils.colorField, col);
-            mat.SetColor(Admin.Utils.glowColorField, col);
+            mat.EnableKeyword(Shaders.EmissionKeyword);
+            mat.EnableKeyword(Shaders.SpecmapKeyword);
+            mat.SetFloat(Shaders.GlowField, strobeBrightness);
+            mat.SetFloat(Shaders.GlowNightField, strobeBrightness);
+            mat.SetColor(Shaders.ColorField, col);
+            mat.SetColor(Shaders.GlowColorField, col);
         }
         private void BlinkThisLightOff(Material mat)
         {
-            mat.DisableKeyword(Admin.Utils.emissionKeyword);
+            mat.DisableKeyword(Shaders.EmissionKeyword);
         }
         private void BlinkOn(List<Material> mats, Color col)
         {

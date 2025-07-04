@@ -105,14 +105,14 @@ namespace AVS
 
             void SetWorldNotLoaded()
             {
-                Admin.GameStateWatcher.isWorldLoaded = false;
+                Admin.GameStateWatcher.IsWorldLoaded = false;
                 ModuleBuilder.haveWeCalledBuildAllSlots = false;
                 ModuleBuilder.slotExtenderIsPatched = false;
                 ModuleBuilder.slotExtenderHasGreenLight = false;
             }
             void SetWorldLoaded()
             {
-                Admin.GameStateWatcher.isWorldLoaded = true;
+                Admin.GameStateWatcher.IsWorldLoaded = true;
             }
             void OnLoadOnce()
             {
@@ -175,7 +175,7 @@ namespace AVS
             */
 
             // do this here because it happens only once
-            SceneManager.sceneUnloaded += Admin.GameStateWatcher.OnResetScene;
+            SceneManager.sceneUnloaded += Admin.GameStateWatcher.SignalSceneUnloaded;
         }
         public void PostPatch()
         {

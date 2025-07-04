@@ -1,16 +1,19 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using AVS.Util;
 using AVS.VehicleTypes;
+using UnityEngine;
 //using AVS.Localization;
 
 namespace AVS
 {
+    /// <summary>
+    /// Represents the control panel for a submarine, handling button initialization, lighting, and user interactions.
+    /// Implements listeners for vehicle status, power, lights, and autopilot events.
+    /// </summary>
     public class ControlPanel : MonoBehaviour, IVehicleStatusListener, IPowerListener, ILightsStatusListener, IAutoPilotListener
     {
+        /// <summary>
+        /// The submarine instance this control panel is associated with.
+        /// </summary>
         public Submarine mv;
 
         private GameObject buttonHeadLights;
@@ -23,6 +26,9 @@ namespace AVS
         private GameObject button8;
         private GameObject buttonPower;
 
+        /// <summary>
+        /// Initializes the control panel by finding and configuring all button GameObjects and their logic.
+        /// </summary>
         public void Init()
         {
             // find buttons
@@ -60,6 +66,10 @@ namespace AVS
 
             ResetAllButtonLighting();
         }
+
+        /// <summary>
+        /// Resets all button lighting to their default states.
+        /// </summary>
         private void ResetAllButtonLighting()
         {
             SetButtonLightingActive(buttonHeadLights, false);
@@ -72,6 +82,10 @@ namespace AVS
             SetButtonLightingActive(button8, false);
             SetButtonLightingActive(buttonPower, true);
         }
+
+        /// <summary>
+        /// Adjusts all button lighting for a power down state (all off).
+        /// </summary>
         private void AdjustButtonLightingForPowerDown()
         {
             SetButtonLightingActive(buttonHeadLights, false);
@@ -84,14 +98,26 @@ namespace AVS
             SetButtonLightingActive(button8, false);
             SetButtonLightingActive(buttonPower, false);
         }
+
+        /// <summary>
+        /// No-op click handler for unused buttons.
+        /// </summary>
         public void EmptyClick()
         {
         }
+
+        /// <summary>
+        /// Hover handler for unused buttons, sets the hand reticle text and icon.
+        /// </summary>
         public void EmptyHover()
         {
             HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFEmptyHover"));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
+
+        /// <summary>
+        /// Click handler for the headlights button, toggles the headlights.
+        /// </summary>
         public void HeadlightsClick()
         {
             if (mv.headlights != null)
@@ -99,11 +125,19 @@ namespace AVS
                 mv.headlights.Toggle();
             }
         }
+
+        /// <summary>
+        /// Hover handler for the headlights button, sets the hand reticle text and icon.
+        /// </summary>
         public void HeadLightsHover()
         {
             HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFHeadLightsHover"));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
+
+        /// <summary>
+        /// Click handler for the floodlights button, toggles the floodlights.
+        /// </summary>
         public void FloodLightsClick()
         {
             if (mv.floodlights != null)
@@ -111,11 +145,19 @@ namespace AVS
                 mv.floodlights.Toggle();
             }
         }
+
+        /// <summary>
+        /// Hover handler for the floodlights button, sets the hand reticle text and icon.
+        /// </summary>
         public void FloodLightsHover()
         {
             HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFFloodLightsHover"));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
+
+        /// <summary>
+        /// Click handler for the navigation lights button, toggles the navigation lights.
+        /// </summary>
         public void NavLightsClick()
         {
             if (mv.navlights != null)
@@ -123,32 +165,56 @@ namespace AVS
                 mv.navlights.Toggle();
             }
         }
+
+        /// <summary>
+        /// Hover handler for the navigation lights button, sets the hand reticle text and icon.
+        /// </summary>
         public void NavLightsHover()
         {
             HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFNavLightsHover"));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
+
+        /// <summary>
+        /// Click handler for the interior lights button, toggles the interior lights.
+        /// </summary>
         public void InteriorLightsClick()
         {
-            if(mv.interiorlights != null)
+            if (mv.interiorlights != null)
             {
                 mv.interiorlights.Toggle();
             }
         }
+
+        /// <summary>
+        /// Hover handler for the interior lights button, sets the hand reticle text and icon.
+        /// </summary>
         public void InteriorLightsHover()
         {
             HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFInteriorLightsHover"));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
+
+        /// <summary>
+        /// Click handler for the default color button, paints the vehicle with its default style.
+        /// </summary>
         public void DefaultColorClick()
         {
             mv.PaintVehicleDefaultStyle(mv.GetName());
         }
+
+        /// <summary>
+        /// Hover handler for the default color button, sets the hand reticle text and icon.
+        /// </summary>
         public void DefaultColorHover()
         {
             HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFDefaultColorHover"));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
+
+        /// <summary>
+        /// Click handler for the power button, toggles vehicle power if there is charge.
+        /// </summary>
         public void PowerClick()
         {
             mv.energyInterface.GetValues(out float charge, out _);
@@ -157,20 +223,38 @@ namespace AVS
                 mv.TogglePower();
             }
         }
+
+        /// <summary>
+        /// Hover handler for the power button, sets the hand reticle text and icon.
+        /// </summary>
         public void PowerHover()
         {
             HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFPowerHover"));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
+
+        /// <summary>
+        /// Click handler for the autopilot button. (Not implemented.)
+        /// </summary>
         public void AutoPilotClick()
         {
             // TODO
         }
+
+        /// <summary>
+        /// Hover handler for the autopilot button, sets the hand reticle text and icon.
+        /// </summary>
         public void AutoPilotHover()
         {
             HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFAutoPilotHover"));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
+
+        /// <summary>
+        /// Sets the lighting state of a button, enabling or disabling emission and color.
+        /// </summary>
+        /// <param name="button">The button GameObject.</param>
+        /// <param name="active">True to enable lighting, false to disable.</param>
         public void SetButtonLightingActive(GameObject button, bool active)
         {
             if (button == null)
@@ -184,13 +268,13 @@ namespace AVS
                 {
                     foreach (Material mat in renderer.materials)
                     {
-                        mat.EnableKeyword(Admin.Utils.emissionKeyword);
-                        mat.SetFloat(Admin.Utils.glowField, 0.1f);
-                        mat.SetFloat(Admin.Utils.glowNightField, 0.1f);
-                        mat.SetFloat(Admin.Utils.emissionField, 0.01f);
-                        mat.SetFloat(Admin.Utils.emissionNightField, 0.01f);
-                        mat.SetColor(Admin.Utils.glowColorField, Color.red);
-                        mat.SetColor(Admin.Utils.colorField, Color.red);
+                        mat.EnableKeyword(Shaders.EmissionKeyword);
+                        mat.SetFloat(Shaders.GlowField, 0.1f);
+                        mat.SetFloat(Shaders.GlowNightField, 0.1f);
+                        mat.SetFloat(Shaders.EmissionField, 0.01f);
+                        mat.SetFloat(Shaders.EmissionNightField, 0.01f);
+                        mat.SetColor(Shaders.GlowColorField, Color.red);
+                        mat.SetColor(Shaders.ColorField, Color.red);
                     }
                 }
             }
@@ -200,106 +284,146 @@ namespace AVS
                 {
                     foreach (Material mat in renderer.materials)
                     {
-                        mat.DisableKeyword(Admin.Utils.emissionKeyword);
-                        mat.SetColor(Admin.Utils.colorField, Color.white);
+                        mat.DisableKeyword(Shaders.EmissionKeyword);
+                        mat.SetColor(Shaders.ColorField, Color.white);
                     }
                 }
             }
         }
 
+        // ILightsStatusListener implementation
+
+        /// <inheritdoc />
         void ILightsStatusListener.OnHeadLightsOn()
         {
             SetButtonLightingActive(buttonHeadLights, true);
         }
 
+        /// <inheritdoc />
         void ILightsStatusListener.OnHeadLightsOff()
         {
             SetButtonLightingActive(buttonHeadLights, false);
         }
 
+        /// <inheritdoc />
         void ILightsStatusListener.OnInteriorLightsOn()
         {
             SetButtonLightingActive(buttonInteriorLights, true);
         }
 
+        /// <inheritdoc />
         void ILightsStatusListener.OnInteriorLightsOff()
         {
             SetButtonLightingActive(buttonInteriorLights, false);
         }
 
+        // IVehicleStatusListener implementation
+
+        /// <inheritdoc />
         void IVehicleStatusListener.OnTakeDamage()
         {
         }
+
+        // IAutoPilotListener implementation
+
+        /// <inheritdoc />
         void IAutoPilotListener.OnAutoLevelBegin()
         {
         }
+
+        /// <inheritdoc />
         void IAutoPilotListener.OnAutoLevelEnd()
         {
         }
 
+        /// <inheritdoc />
         void IAutoPilotListener.OnAutoPilotBegin()
         {
             SetButtonLightingActive(buttonAutoPilot, true);
         }
 
+        /// <inheritdoc />
         void IAutoPilotListener.OnAutoPilotEnd()
         {
             SetButtonLightingActive(buttonAutoPilot, false);
         }
 
+        // ILightsStatusListener continued
+
+        /// <inheritdoc />
         void ILightsStatusListener.OnFloodLightsOn()
         {
             SetButtonLightingActive(buttonFloodLights, true);
         }
 
+        /// <inheritdoc />
         void ILightsStatusListener.OnFloodLightsOff()
         {
             SetButtonLightingActive(buttonFloodLights, false);
         }
 
+        /// <inheritdoc />
         void ILightsStatusListener.OnNavLightsOn()
         {
             SetButtonLightingActive(buttonNavLights, true);
         }
 
+        /// <inheritdoc />
         void ILightsStatusListener.OnNavLightsOff()
         {
             SetButtonLightingActive(buttonNavLights, false);
         }
 
+        // IPowerListener implementation
+
+        /// <inheritdoc />
         void IPowerListener.OnBatterySafe()
         {
         }
 
+        /// <inheritdoc />
         void IPowerListener.OnBatteryLow()
         {
         }
 
+        /// <inheritdoc />
         void IPowerListener.OnBatteryNearlyEmpty()
         {
         }
 
+        /// <inheritdoc />
         void IPowerListener.OnBatteryDepleted()
         {
         }
+
+        /// <inheritdoc />
         void IPowerListener.OnPowerUp()
         {
             ResetAllButtonLighting();
         }
+
+        /// <inheritdoc />
         void IPowerListener.OnPowerDown()
         {
             AdjustButtonLightingForPowerDown();
         }
+
+        /// <inheritdoc />
         void IPowerListener.OnBatteryDead()
         {
             AdjustButtonLightingForPowerDown();
             SetButtonLightingActive(buttonPower, false);
         }
+
+        /// <inheritdoc />
         void IPowerListener.OnBatteryRevive()
         {
             ResetAllButtonLighting();
         }
 
+        // IVehicleStatusListener continued
+
+        /// <inheritdoc />
         void IVehicleStatusListener.OnNearbyLeviathan()
         {
             SetButtonLightingActive(buttonHeadLights, false);

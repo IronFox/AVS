@@ -1001,37 +1001,38 @@ namespace AVS
                     }
             }
         }
-        private void SetDockedLighting(bool docked)
-        {
-            foreach (var renderer in GetComponentsInChildren<Renderer>())
-            {
-                foreach (Material mat in renderer.materials)
-                {
-                    if (renderer.gameObject.name.ToLower().Contains("light"))
-                    {
-                        continue;
-                    }
-                    if (Com.CanopyWindows != null && Com.CanopyWindows.Contains(renderer.gameObject))
-                    {
-                        continue;
-                    }
-                    mat.EnableKeyword(Admin.Utils.emissionKeyword);
-                    mat.SetFloat(Admin.Utils.emissionNightField, docked ? 0.4f : 0f);
-                    mat.SetFloat(Admin.Utils.emissionField, 0);
-                    mat.SetFloat(Admin.Utils.glowField, 0);
-                    mat.SetFloat(Admin.Utils.glowNightField, 0);
-                    mat.SetFloat(Admin.Utils.specIntField, 0f);
-                    if (docked)
-                    {
-                        mat.EnableKeyword(Admin.Utils.specmapKeyword);
-                    }
-                    else
-                    {
-                        mat.DisableKeyword(Admin.Utils.specmapKeyword);
-                    }
-                }
-            }
-        }
+
+        //private void SetDockedLighting(bool docked)
+        //{
+        //    foreach (var renderer in GetComponentsInChildren<Renderer>())
+        //    {
+        //        foreach (Material mat in renderer.materials)
+        //        {
+        //            if (renderer.gameObject.name.ToLower().Contains("light"))
+        //            {
+        //                continue;
+        //            }
+        //            if (Com.CanopyWindows != null && Com.CanopyWindows.Contains(renderer.gameObject))
+        //            {
+        //                continue;
+        //            }
+        //            mat.EnableKeyword(Shaders.EmissionKeyword);
+        //            mat.SetFloat(Shaders.EmissionNightField, docked ? 0.4f : 0f);
+        //            mat.SetFloat(Shaders.EmissionField, 0);
+        //            mat.SetFloat(Shaders.GlowField, 0);
+        //            mat.SetFloat(Shaders.GlowNightField, 0);
+        //            mat.SetFloat(Shaders.SpecIntField, 0f);
+        //            if (docked)
+        //            {
+        //                mat.EnableKeyword(Admin.Utils.specmapKeyword);
+        //            }
+        //            else
+        //            {
+        //                mat.DisableKeyword(Admin.Utils.specmapKeyword);
+        //            }
+        //        }
+        //    }
+        //}
         internal void TogglePower()
         {
             isPoweredOn = !isPoweredOn;
@@ -1419,7 +1420,7 @@ namespace AVS
             // Because Submarines had color changing before I knew how to integrate with the Moonpool
             // The new color changing methods are much simpler, but Odyssey and Beluga use the old methods,
             // So I'll still support them.
-            yield return new WaitUntil(() => Admin.GameStateWatcher.isWorldLoaded);
+            yield return new WaitUntil(() => Admin.GameStateWatcher.IsWorldLoaded);
             yield return new WaitUntil(() => isInitialized);
             var simpleData = SaveLoad.JsonInterface.Read<Dictionary<string, string>>(this, SimpleDataSaveFileName);
             if (simpleData == null || simpleData.Count == 0)

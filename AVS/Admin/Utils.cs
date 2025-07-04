@@ -7,95 +7,43 @@ using UnityEngine;
 
 namespace AVS.Admin
 {
+    /// <summary>
+    /// Global utility methods for the AVS mod.
+    /// </summary>
     public static class Utils
     {
-        /// <summary>
-        /// Name of the (only) shader used for all vehicles.
-        /// </summary>
-        public static string marmosetUberName { get; } = "MarmosetUBER";
-        public const string emissionKeyword = "MARMO_EMISSION";
-        public const string specmapKeyword = "MARMO_SPECMAP";
-        public const string glowField = "_GlowStrength";
-        public const string glowNightField = "_GlowStrengthNight";
-        public const string emissionField = "_EmissionLM";
-        public const string emissionNightField = "_EmissionLMNight";
-        public const string specIntField = "_SpecInt";
-        public const string colorField = "_Color";
-        public const string glowColorField = "_GlowColor";
-        public static Shader StoreShader(List<MeshRenderer> rends)
-        {
-            Shader m_ShaderMemory = null;
-            foreach (var rend in rends) //go.GetComponentsInChildren<MeshRenderer>(true)
-            {
-                // skip some materials
-                foreach (Material mat in rend.materials)
-                {
-                    if (mat.shader != null)
-                    {
-                        m_ShaderMemory = mat.shader;
-                        break;
-                    }
-                }
-            }
-            return m_ShaderMemory;
-        }
-        public static void ListShadersInUse()
-        {
-            HashSet<string> shaderNames = new HashSet<string>();
 
-            // Find all materials currently loaded in the game.
-            Material[] materials = Resources.FindObjectsOfTypeAll<Material>();
 
-            foreach (var material in materials)
-            {
-                if (material.shader != null)
-                {
-                    // Add the shader name to the set to ensure uniqueness.
-                    shaderNames.Add(material.shader.name);
-                }
-            }
-
-            // Now you have a unique list of shader names in use.
-            foreach (var shaderName in shaderNames)
-            {
-                Debug.Log("Shader in use: " + shaderName);
-            }
-        }
-        public static void ListShaderProperties()
-        {
-            Shader shader = Shader.Find(marmosetUberName);
-            for (int i = 0; i < shader.GetPropertyCount(); i++)
-            {
-                string propertyName = shader.GetPropertyName(i);
-                Debug.Log($"Property {i}: {propertyName}, Type: {shader.GetPropertyType(i)}");
-            }
-        }
-        public static void ApplyMarmoset(GameObject go)
-        {
-            go.GetComponentsInChildren<MeshRenderer>(true).ForEach(x => x.materials.ForEach(y => y.shader = Shader.Find(marmosetUberName)));
-        }
-        public static void ApplyInteriorLighting()
-        {
-            //ListShadersInUse();
-            //ListShaderProperties();
-            //VehicleBuilder.ApplyShaders(this, shader4);
-        }
         //public static void LoadShader(ModVehicle mv, Shader shade)
         //{
         //    VehicleBuilder.ApplyShaders(mv, shade);
         //}
+
+        /// <summary>
+        /// Determines whether the specified transform or any of its ancestors is the currently mounted vehicle.
+        /// </summary>
+        /// <remarks>This method recursively traverses the transform hierarchy to determine if any
+        /// ancestor is the player's currently mounted vehicle. If the specified transform is <see langword="null"/>,
+        /// the method returns <see langword="false"/>.</remarks>
+        /// <param name="current">The transform to check, typically representing a game object in the hierarchy.</param>
+        /// <returns><see langword="true"/> if the specified transform or one of its ancestors is the vehicle currently mounted
+        /// by the player; otherwise, <see langword="false"/>.</returns>
         public static bool IsAnAncestorTheCurrentMountedVehicle(Transform current)
         {
             if (!current)
             {
                 return false;
             }
-            if (current.GetComponent<Vehicle>())
+            var vh = current.GetComponent<Vehicle>();
+            if (vh)
             {
-                return current.GetComponent<Vehicle>() == Player.main.GetVehicle();
+                return vh == Player.main.GetVehicle();
             }
             return IsAnAncestorTheCurrentMountedVehicle(current.parent);
         }
+        /// <summary>
+        /// Registers the common depth modules for vehicles.
+        /// </summary>
         public static void RegisterDepthModules()
         {
             UpgradeCompat compat = new UpgradeCompat
@@ -115,6 +63,17 @@ namespace AVS.Admin
             depthmodule3.ExtendRecipe(depth2);
             UpgradeTechTypes depth3 = UpgradeRegistrar.RegisterUpgrade(depthmodule3, compat);
         }
+
+
+        /// <summary>
+        /// Evaluates the depth upgrade modules installed on the specified vehicle and adjusts its crush depth
+        /// accordingly.
+        /// </summary>
+        /// <remarks>This method checks the installed depth upgrade modules on the provided vehicle and
+        /// determines the highest level of depth module present. Based on the detected module level, it calculates the
+        /// additional crush depth and applies it to the vehicle. If the vehicle is not compatible with depth upgrades,
+        /// a message is displayed to the user.</remarks>
+        /// <param name="param">The parameters containing the vehicle to evaluate and its associated data.</param>
         public static void EvaluateDepthModules(AddActionParams param)
         {
             ModVehicle mv = param.vehicle.GetComponent<ModVehicle>();
@@ -148,6 +107,16 @@ namespace AVS.Admin
             extraDepthToAdd = maxDepthModuleLevel > 2 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade3 : extraDepthToAdd;
             mv.GetComponent<CrushDamage>().SetExtraCrushDepth(extraDepthToAdd);
         }
+
+
+        /// <summary>
+        /// Retrieves the <see cref="TechType"/> associated with a vehicle based on its name.
+        /// </summary>
+        /// <remarks>If no vehicle with the specified name is found, an error is logged, and the method
+        /// returns <see cref="TechType.None"/>.</remarks>
+        /// <param name="name">The name of the vehicle to search for. This parameter is case-sensitive and must not be null or empty.</param>
+        /// <returns>The <see cref="TechType"/> of the vehicle if a match is found; otherwise, returns <see
+        /// cref="TechType.None"/>.</returns>
         public static TechType GetTechTypeFromVehicleName(string name)
         {
             try
@@ -162,19 +131,16 @@ namespace AVS.Admin
                 return 0;
             }
         }
-        public static void EnableSimpleEmission(Material mat, float dayAmount = 1f, float nightAmount = 1f)
-        {
-            // This is the minumum requirement for emission under the marmosetuber shader.
-            // No guarantees this will work well, but it's a good starting place.
-            // For example, not all materials will want to use a specular map. In that case,
-            // it can make a material look brighter, shinier, or more luminescent than it should be.
-            mat.EnableKeyword(emissionKeyword);
-            mat.EnableKeyword(specmapKeyword);
-            mat.SetFloat(glowField, 0);
-            mat.SetFloat(glowNightField, 0);
-            mat.SetFloat(emissionField, dayAmount);
-            mat.SetFloat(emissionNightField, nightAmount);
-        }
+
+
+        /// <summary>
+        /// Adds a new entry to the PDA Encyclopedia or updates an existing one if the key already exists.
+        /// </summary>
+        /// <remarks>This method ensures that the entry is added or updated only after the PDA
+        /// Encyclopedia mapping is initialized.  If an entry with the same key already exists, it will be replaced with
+        /// the provided data.</remarks>
+        /// <param name="data">The encyclopedia entry data to add or update. The <see cref="PDAEncyclopedia.EntryData.key"/> property must
+        /// be unique and non-null.</param>
         public static void AddEncyclopediaEntry(PDAEncyclopedia.EntryData data)
         {
             IEnumerator AddEncyclopediaEntryInternal()

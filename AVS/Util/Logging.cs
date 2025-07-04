@@ -6,7 +6,7 @@ using UnityEngine.Rendering;
 namespace AVS.Util
 {
     /// <summary>
-    /// Logging configuration
+    /// Logging configuration, mostly used for material adaptation processes.
     /// </summary>
     public readonly struct Logging
     {
@@ -94,13 +94,13 @@ namespace AVS.Util
             if (!string.IsNullOrEmpty(Prefix))
             {
                 if (IncludeTimestamp)
-                    return $"{DateTime.Now:HH:mm:ss.fff} [Archon] {Prefix}: {msg}";
+                    return $"{DateTime.Now:HH:mm:ss.fff} [Mod] {Prefix}: {msg}";
                 return $"{Prefix}: {msg}";
             }
             else
             {
                 if (IncludeTimestamp)
-                    return $"{DateTime.Now:HH:mm:ss.fff} [Archon] {msg}";
+                    return $"{DateTime.Now:HH:mm:ss.fff} [Mod] {msg}";
                 return msg;
             }
         }

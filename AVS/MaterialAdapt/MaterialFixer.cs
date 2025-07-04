@@ -170,7 +170,7 @@ namespace AVS.MaterialAdapt
                     }
                     else
                     {
-                        Shader shader = Shader.Find(Admin.Utils.marmosetUberName);
+                        Shader shader = Shaders.FindMainShader();
 
                         foreach (var data in MaterialResolver())
                         {

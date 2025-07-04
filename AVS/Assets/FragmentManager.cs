@@ -1,4 +1,5 @@
-﻿using Nautilus.Assets.Gadgets;
+﻿using AVS.Util;
+using Nautilus.Assets.Gadgets;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -170,7 +171,7 @@ namespace AVS.Assets
             int numberFragments = 1;
             foreach (GameObject fragmentObject in tail)
             {
-                Admin.Utils.ApplyMarmoset(fragmentObject);
+                Shaders.ApplyMainShaderRecursively(fragmentObject);
                 Nautilus.Assets.PrefabInfo fragmentInfo = Nautilus.Assets.PrefabInfo.WithTechType(frag.ClassID + numberFragments, frag.DisplayName, frag.Description);
                 numberFragments++;
                 fragmentInfo.TechType = fragmentType;
@@ -206,7 +207,7 @@ namespace AVS.Assets
         }
         internal static Nautilus.Assets.CustomPrefab RegisterFragmentGenericSingle(FragmentData frag, GameObject fragmentObject, bool doSpawnLocations, out TechType result)
         {
-            Admin.Utils.ApplyMarmoset(fragmentObject);
+            Shaders.ApplyMainShaderRecursively(fragmentObject);
             Nautilus.Assets.PrefabInfo fragmentInfo = Nautilus.Assets.PrefabInfo.WithTechType(frag.ClassID, frag.DisplayName, frag.Description);
             Nautilus.Assets.CustomPrefab customFragmentPrefab = new Nautilus.Assets.CustomPrefab(fragmentInfo);
             fragmentObject.EnsureComponent<BoxCollider>();
