@@ -155,7 +155,6 @@
     <Compile Include="DepthModules\DepthModule3.cs" />
     <Compile Include="DepthModules\DepthModule2.cs" />
     <Compile Include="DepthModules\DepthModule1.cs" />
-    <Compile Include="Engines\VFEngine.cs" />
     <Compile Include="Engines\SurfaceVessel.cs" />
     <Compile Include="Interfaces\IDockListener.cs" />
     <Compile Include="Interfaces\IScuttleListener.cs" />

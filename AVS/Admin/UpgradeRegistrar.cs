@@ -37,19 +37,19 @@ namespace AVS.Admin
     public readonly struct UpgradeTechTypes
     {
         /// <summary>
-        /// Registration result to use for mod vehicles.
+        /// Tech type applicable for any mod vehicle.
         /// </summary>
         public TechType ForModVehicle { get; }
         /// <summary>
-        /// Registration result to use for Seamoth vehicles.
+        /// Tech type applicable for Seamoth vehicles.
         /// </summary>
         public TechType ForSeamoth { get; }
         /// <summary>
-        /// Registration result to use for PRAWN exosuits.
+        /// Tech type applicable for PRAWN exosuits.
         /// </summary>
         public TechType ForExosuit { get; }
         /// <summary>
-        /// Registration result to use for Cyclops submarines.
+        /// Tech type applicable for Cyclops vehicles.
         /// </summary>
         public TechType ForCyclops { get; }
 

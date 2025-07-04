@@ -53,8 +53,8 @@ namespace AVS
         /// </summary>
         public virtual GameObject VehicleRoot => gameObject;
 
-        public virtual VFEngine VFEngine { get; set; }
-        public virtual ModVehicleEngine Engine { get; set; } // prefer to use VFEngine.
+        public virtual ModVehicleEngine Engine { get; set; }
+
         //public virtual GameObject BoundingBox => null; // Prefer to use BoundingBoxCollider directly (don't use this)
 
         /// <summary>
@@ -175,9 +175,9 @@ namespace AVS
 
             gameObject.EnsureComponent<AutoPilot>();
 
-            if (VFEngine == null)
+            if (!Engine)
             {
-                VFEngine = GetComponent<VFEngine>();
+                Engine = GetComponent<ModVehicleEngine>();
             }
             base.LazyInitialize();
             Com.Upgrades.ForEach(x => x.Interface.GetComponent<VehicleUpgradeConsoleInput>().equipment = modules);
@@ -1138,7 +1138,7 @@ namespace AVS
                 }
 
 
-                mvSubmarine.VFEngine.KillMomentum();
+                mvSubmarine.Engine.KillMomentum();
                 if (mvSubmarine.Com.PilotSeats.Count == 0)
                 {
                     Logger.Error("Error: tried to exit a submarine without pilot seats");
@@ -1345,19 +1345,20 @@ namespace AVS
         }
         internal static void MaybeControlRotation(Vehicle veh)
         {
-            ModVehicle mv = veh as ModVehicle;
-            if (mv == null
-                || !veh.GetPilotingMode()
-                || !mv.IsUnderCommand
-                || mv.GetComponent<VFEngine>() == null
-                || !veh.GetComponent<VFEngine>().enabled
-                || Player.main.GetPDA().isOpen
-                || (AvatarInputHandler.main && !AvatarInputHandler.main.IsEnabled())
-                || !mv.energyInterface.hasCharge)
+            if (veh is ModVehicle mv)
             {
-                return;
+                if (!mv.GetPilotingMode()
+                    || !mv.IsUnderCommand
+                    || !mv.Engine
+                    || !mv.Engine.enabled
+                    || Player.main.GetPDA().isOpen
+                    || (AvatarInputHandler.main && !AvatarInputHandler.main.IsEnabled())
+                    || !mv.energyInterface.hasCharge)
+                {
+                    return;
+                }
+                mv.GetComponent<ModVehicleEngine>().ControlRotation();
             }
-            mv.GetComponent<VFEngine>().ControlRotation();
         }
         public static EnergyMixin GetEnergyMixinFromVehicle(Vehicle veh)
         {
