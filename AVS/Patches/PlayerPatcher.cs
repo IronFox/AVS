@@ -20,7 +20,7 @@ namespace AVS
         public static void AwakePostfix(Player __instance)
         {
             new GameObject().AddComponent<Admin.ConsoleCommands>();
-            AVS.Admin.GameStateWatcher.IsPlayerAwaked = true;
+            AVS.Admin.GameStateWatcher.IsPlayerAwakened = true;
             AVS.Assets.FragmentManager.AddScannerDataEntries();
             HUDBuilder.DecideBuildHUD();
 

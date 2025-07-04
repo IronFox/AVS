@@ -22,8 +22,8 @@ namespace AVS.Assets
             DepthIcon = Assets.SpriteHelper.GetSpriteInternal("DepthIcon.png");
 
             Assets.VehicleAssets DSAssets = Assets.AssetBundleInterface.GetVehicleAssetsFromBundle("modvehiclepingsprite");
-            DefaultPingSprite = Assets.AssetBundleInterface.LoadAdditionalSprite(DSAssets.abi, "ModVehicleSpriteAtlas", "ModVehiclePingSprite");
-            DefaultSaveFileSprite = Assets.AssetBundleInterface.LoadAdditionalRawSprite(DSAssets.abi, "ModVehicleSpriteAtlas", "ModVehiclePingSprite");
+            DefaultPingSprite = Assets.AssetBundleInterface.LoadAdditionalSprite(DSAssets.AssetBundleInterface, "ModVehicleSpriteAtlas", "ModVehiclePingSprite");
+            DefaultSaveFileSprite = Assets.AssetBundleInterface.LoadAdditionalRawSprite(DSAssets.AssetBundleInterface, "ModVehicleSpriteAtlas", "ModVehiclePingSprite");
             DSAssets.Close();
         }
         internal static void SetupDefaultAssets()

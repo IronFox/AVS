@@ -1,4 +1,5 @@
-﻿using AVS.VehicleTypes;
+﻿using AVS.Util;
+using AVS.VehicleTypes;
 using System.Linq;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace AVS
                     .Select(x => x.Light.GetComponent<MeshRenderer>())
                     .Where(x => x != null)
                     .SelectMany(x => x.materials)
-                    .ForEach(x => Admin.Utils.EnableSimpleEmission(x, 10, 10));
+                    .ForEach(x => Shaders.EnableSimpleEmission(x, 10, 10));
             }
             else
             {
@@ -24,7 +25,7 @@ namespace AVS
                     .Select(x => x.Light.GetComponent<MeshRenderer>())
                     .Where(x => x != null)
                     .SelectMany(x => x.materials)
-                    .ForEach(x => Admin.Utils.EnableSimpleEmission(x, 0, 0));
+                    .ForEach(x => Shaders.EnableSimpleEmission(x, 0, 0));
             }
             foreach (var component in GetComponentsInChildren<ILightsStatusListener>())
             {

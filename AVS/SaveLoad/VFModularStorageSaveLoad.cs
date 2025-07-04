@@ -51,7 +51,7 @@ namespace AVS.SaveLoad
         }
         internal static IEnumerator DeserializeAllModularStorage(ModVehicle mv)
         {
-            yield return new WaitUntil(() => Admin.GameStateWatcher.isWorldLoaded);
+            yield return new WaitUntil(() => Admin.GameStateWatcher.IsWorldLoaded);
             yield return new WaitUntil(() => mv.upgradesInput.equipment != null);
             foreach (var upgradesLoader in mv.GetComponentsInChildren<VFUpgradesIdentifier>())
             {

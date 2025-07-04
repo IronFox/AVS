@@ -143,7 +143,6 @@
     <Compile Include="Admin\VehicleRegistrar.cs" />
     <Compile Include="Admin\EngineSoundsManager.cs" />
     <Compile Include="Admin\VoiceManager.cs" />
-    <Compile Include="Assets\IngredientStruct.cs" />
     <Compile Include="Assets\SpriteHelper.cs" />
     <Compile Include="Assets\StaticAssets.cs" />
     <Compile Include="Assets\VanillaVehicleHelpers.cs" />
@@ -183,6 +182,7 @@
     <Compile Include="Util\GameObjectHelper.cs" />
     <Compile Include="Util\ListExt.cs" />
     <Compile Include="Util\Logging.cs" />
+    <Compile Include="Util\Shaders.cs" />
     <Compile Include="VehicleComponents\MaterialReactor.cs" />
     <Compile Include="VehicleComponents\ModVehicleDockingBay.cs" />
     <Compile Include="VehicleComponents\DockingBay.cs" />
