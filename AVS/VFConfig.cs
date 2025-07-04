@@ -42,7 +42,7 @@ namespace AVS
         {
             if (Player.main != null)
             {
-                foreach (var tmp in VoiceManager.voices.Where(x => x != null && x.mv != null & x.mv.GetComponent<TechTag>() != null))
+                foreach (var tmp in VoiceManager.voices.Where(x => x != null && x.mv && x.mv.GetComponent<TechTag>()))
                 {
                     string voiceName = VehicleConfig.main[tmp.mv.GetType().ToString()].AutopilotVoice.Value;
                     VoiceManager.UpdateDefaultVoice(tmp.mv, voiceName);
@@ -54,10 +54,10 @@ namespace AVS
         {
             if (Player.main != null)
             {
-                foreach (var tmp in EngineSoundsManager.engines.Where(x => x != null && x.mv != null & x.mv.GetComponent<TechTag>() != null))
+                foreach (var tmp in EngineSoundsManager.engines.Where(x => x != null && x.MV && x.MV.GetComponent<TechTag>()))
                 {
-                    string soundsName = VehicleConfig.main[tmp.mv.GetType().ToString()].EngineSounds.Value;
-                    EngineSoundsManager.UpdateDefaultVoice(tmp.mv, soundsName);
+                    string soundsName = VehicleConfig.main[tmp.MV.GetType().ToString()].EngineSounds.Value;
+                    EngineSoundsManager.UpdateDefaultVoice(tmp.MV, soundsName);
                     tmp.SetEngineSounds(EngineSoundsManager.GetVoice(soundsName));
                 }
             }

@@ -10,24 +10,32 @@ using UnityEngine.Networking;
 
 namespace AVS
 {
-    public class EngineSounds
+    public readonly struct EngineSounds
     {
-        public AudioClip hum;
-        public AudioClip whistle;
+        public AudioClip Hum { get; }
+        public AudioClip Whistle { get; }
+
+        public EngineSounds(AudioClip hum, AudioClip whistle)
+        {
+            Hum = hum ?? VoiceManager.silence;
+            Whistle = whistle ?? VoiceManager.silence;
+        }
+
+        public static EngineSounds Silence { get; } = new EngineSounds(VoiceManager.silence, VoiceManager.silence);
     }
     public static class EngineSoundsManager
     {
-        internal static List<ModVehicleEngine> engines = new List<ModVehicleEngine>();
+        internal static List<ModVehicleEngine> engines { get; } = new List<ModVehicleEngine>();
         // EngineSounds names : EngineSounds
-        internal static Dictionary<string, EngineSounds> EngineSoundss = new Dictionary<string, EngineSounds>();
+        internal static Dictionary<string, EngineSounds> EngineSoundMap { get; } = new Dictionary<string, EngineSounds>();
         // vehicle names : EngineSounds names
-        internal static Dictionary<TechType, string> defaultEngineSounds = new Dictionary<TechType, string>();
-        public static EngineSounds silentVoice = new EngineSounds();
+        internal static Dictionary<TechType, string> defaultEngineSounds { get; } = new Dictionary<TechType, string>();
+        private static EngineSounds SilentVoice = EngineSounds.Silence;
         public static void RegisterEngineSounds(string name, EngineSounds voice)
         {
             try
             {
-                EngineSoundss.Add(name, voice);
+                EngineSoundMap.Add(name, voice);
             }
             catch (ArgumentException e)
             {
@@ -53,7 +61,7 @@ namespace AVS
         {
             try
             {
-                return EngineSoundss[name];
+                return EngineSoundMap[name];
             }
             catch (KeyNotFoundException e)
             {
@@ -67,7 +75,7 @@ namespace AVS
             {
                 Logger.LogException($"GetVoice engine-sounds failed: {name}.", e);
             }
-            return silentVoice;
+            return SilentVoice;
         }
         public static void RegisterDefault(ModVehicle mv, string voice)
         {
@@ -104,12 +112,12 @@ namespace AVS
         {
             try
             {
-                return EngineSoundss[defaultEngineSounds[mv.TechType]];
+                return EngineSoundMap[defaultEngineSounds[mv.TechType]];
             }
             catch (Exception)
             {
                 Logger.Warn($"No default engine sounds for vehicle type: {mv.GetName()}. Using Shiruba.");
-                return EngineSoundss.First().Value;
+                return EngineSoundMap.First().Value;
             }
         }
         internal static IEnumerator LoadAllVoices()
@@ -121,11 +129,7 @@ namespace AVS
         private static IEnumerator GetSilence()
         {
             yield return new WaitUntil(() => VoiceManager.silence != null);
-            silentVoice = new EngineSounds
-            {
-                hum = VoiceManager.silence,
-                whistle = VoiceManager.silence,
-            };
+            SilentVoice = new EngineSounds();
             yield break;
         }
         // Method signature with a callback to return the EngineSounds instance
@@ -146,28 +150,29 @@ namespace AVS
             string engineSoundsFolder = Path.Combine(modPath, "EngineSounds");
             string engineSoundPath = Path.Combine(engineSoundsFolder, voice) + "/";
 
-            // List of clip names to load, corresponding to their fields in EngineSounds
-            string[] clipNames = {
-            "whistle",
-            "hum"
-        };
 
-            foreach (string clipName in clipNames)
+            AudioClip hum = null,
+                    whistle = null;
+
+            yield return LoadAudioClip(engineSoundPath + "hum.ogg", clip =>
             {
-                string path = "file://" + engineSoundPath + clipName + ".ogg";
-                yield return LoadAudioClip(path, clip =>
-                {
-                    // Use reflection to set the clip dynamically based on its name
-                    clip.name = clipName;
-                    typeof(EngineSounds).GetField(clipName).SetValue(returnVoice, clip);
-                },
-                () =>
-                {
-                    // Handle error, potentially logging and assigning Silence
-                    Logger.Warn($"WARNING: {clipName} could not be loaded. Assigning Silence.");
-                    typeof(EngineSounds).GetField(clipName).SetValue(returnVoice, VoiceManager.silence);
-                });
-            }
+                hum = clip;
+            },
+            () =>
+            {
+                hum = VoiceManager.silence;
+            });
+
+            yield return LoadAudioClip(engineSoundPath + "whistle.ogg", clip =>
+            {
+                whistle = clip;
+            },
+            () =>
+            {
+                whistle = VoiceManager.silence;
+            });
+
+            returnVoice = new EngineSounds(hum: hum, whistle: whistle);
 
             onComplete?.Invoke(returnVoice);
         }

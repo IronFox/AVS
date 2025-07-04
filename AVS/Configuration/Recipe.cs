@@ -24,7 +24,7 @@ namespace AVS.Configuration
         /// Constructs an ingredient
         /// </summary>
         /// <param name="type">The type of the ingredient, represented as a <see cref="TechType"/>.</param>
-        /// <param name="amount">The quantity of the ingredient required. Must be a non-negative integer.</param>
+        /// <param name="amount">The quantity of the ingredient required. Must be a positive, non-zero integer.</param>
         public RecipeIngredient(TechType type, int amount)
         {
             Type = type;
@@ -37,7 +37,7 @@ namespace AVS.Configuration
         /// <summary>
         /// Converts this ingredient to a <see cref="CraftData.Ingredient"/>.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Converted ingredient</returns>
         public CraftData.Ingredient ToIngredient()
         {
             return new CraftData.Ingredient(Type, Amount);

@@ -510,31 +510,13 @@ namespace AVS
         }
         public static void SetupEngine(Submarine mv)
         {
-            if (mv.VFEngine == null)
-            {
-                if (mv.Engine == null)
-                {
-                    mv.VFEngine = mv.gameObject.AddComponent<OdysseyEngine>();
-                }
-                else
-                {
-                    mv.VFEngine = mv.Engine;
-                }
-            }
+            if (!mv.Engine)
+                mv.Engine = mv.gameObject.AddComponent<OdysseyEngine>();
         }
         public static void SetupEngine(Submersible mv)
         {
-            if (mv.VFEngine == null)
-            {
-                if (mv.Engine == null)
-                {
-                    mv.VFEngine = mv.gameObject.AddComponent<CricketEngine>();
-                }
-                else
-                {
-                    mv.VFEngine = mv.Engine;
-                }
-            }
+            if (!mv.Engine)
+                mv.Engine = mv.gameObject.AddComponent<CricketEngine>();
         }
         public static void SetupWorldForces(ModVehicle mv)
         {

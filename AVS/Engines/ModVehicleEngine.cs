@@ -2,12 +2,34 @@
 
 namespace AVS.Engines
 {
-    public abstract class ModVehicleEngine : VFEngine
+    public abstract class ModVehicleEngine : MonoBehaviour, IScuttleListener
     {
-        public ModVehicle mv = null;
-        public Rigidbody rb = null;
-        private EngineSounds _sounds = null;
-        public EngineSounds sounds
+        private ModVehicle mv = null;
+        private Rigidbody rb = null;
+        private EngineSounds _sounds = default;
+
+        /// <summary>
+        /// Center of mass for the vehicle, applied during Start().
+        /// </summary>
+        protected Vector3 CenterOfMass { get; set; } = Vector3.zero;
+        /// <summary>
+        /// Angular drag for the vehicle, applied during Start().
+        /// </summary>
+        protected float AngularDrag { get; set; } = 5f;
+
+        public ModVehicle MV =>
+            mv
+            ? mv
+            : mv = GetComponent<ModVehicle>();
+
+        protected Rigidbody RB =>
+            rb
+            ? rb
+            : rb = GetComponent<Rigidbody>();
+
+        public float DamageModifier { get; set; } = 1f;
+
+        public EngineSounds Sounds
         {
             get
             {
@@ -16,8 +38,8 @@ namespace AVS.Engines
             set
             {
                 _sounds = value;
-                EngineSource1.clip = value.hum;
-                EngineSource2.clip = value.whistle;
+                EngineSource1.clip = value.Hum;
+                EngineSource2.clip = value.Whistle;
             }
         }
         private AudioSource EngineSource1;
@@ -194,9 +216,12 @@ namespace AVS.Engines
             // register self with mainpatcher, for on-the-fly voice selection updating
             EngineSoundsManager.engines.Add(this);
         }
-        public override void Start()
+        /// <inheritdoc/>
+        public virtual void Start()
         {
-            base.Start();
+            RB.centerOfMass = CenterOfMass;
+            RB.angularDrag = AngularDrag;
+
             EngineSource1 = MV.gameObject.AddComponent<AudioSource>().Register();
             EngineSource1.loop = true;
             EngineSource1.playOnAwake = false;
@@ -209,66 +234,76 @@ namespace AVS.Engines
             EngineSource2.priority = 0;
             EngineSource1.spread = 180;
 
-            sounds = EngineSoundsManager.GetDefaultVoice(MV);
+            Sounds = EngineSoundsManager.GetDefaultVoice(MV);
         }
         public void OnDisable()
         {
             EngineSource1?.Stop();
             EngineSource2?.Stop();
         }
-        /*
+
         public virtual void FixedUpdate()
         {
-            var fcc = MainCameraControl.main.GetComponent<FreecamController>();
-            bool isFreecam = false;
-            if (fcc.mode || fcc.ghostMode)
+            if (CanMove())
             {
-                isFreecam = true;
-            }
-            Vector3 moveDirection = Vector3.zero;
-            if (mv.GetIsUnderwater() || CanMoveAboveWater)
-            {
-                if (mv.CanPilot() && mv.IsPlayerControlling() && !isFreecam)
+                if (CanTakeInputs())
                 {
-                    moveDirection = GameInput.GetMoveDirection();
-                    ApplyPlayerControls(moveDirection);
-                    DrainPower(moveDirection);
+                    DoMovementInputs();
                 }
-                ExecutePhysicsMove();
+                DoMovement();
             }
-            DoEngineSounds(moveDirection);
-            ApplyDrag(moveDirection);
+            DoFixedUpdate();
         }
-        */
+
         #endregion
 
         #region overridden_methods
-        protected override bool CanMove()
+        protected virtual bool CanMove()
         {
             return MV.GetIsUnderwater() || CanMoveAboveWater;
         }
-        protected override bool CanRotate()
+        protected virtual bool CanRotate()
         {
             return MV.GetIsUnderwater() || CanRotateAboveWater;
         }
-        protected override void DoMovement()
+        protected virtual void DoMovement()
         {
             ExecutePhysicsMove();
         }
-        protected override void DoFixedUpdate()
+        protected virtual void DoFixedUpdate()
         {
             Vector3 moveDirection = GameInput.GetMoveDirection();
             DoEngineSounds(moveDirection);
             ApplyDrag(moveDirection);
         }
-        protected override void MoveWithInput(Vector3 moveInput)
+        protected virtual void MoveWithInput(Vector3 moveInput)
         {
             UpdateRightMomentum(moveInput.x);
             UpdateUpMomentum(moveInput.y);
             UpdateForwardMomentum(moveInput.z);
             return;
         }
-        public override void DrainPower(Vector3 moveDirection)
+        public void ApplyPlayerControls(Vector3 moveDirection)
+        {
+            var modifiers = GetComponentsInChildren<VehicleAccelerationModifier>();
+            foreach (var modifier in modifiers)
+            {
+                modifier.ModifyAcceleration(ref moveDirection);
+            }
+            MoveWithInput(moveDirection);
+            return;
+        } // public for historical reasons
+
+        protected virtual void DoMovementInputs()
+        {
+            Vector3 moveDirection = GameInput.GetMoveDirection();
+            if (!Player.main.GetPDA().isOpen)
+            {
+                ApplyPlayerControls(moveDirection);
+                DrainPower(moveDirection);
+            }
+        }
+        public virtual void DrainPower(Vector3 moveDirection)
         {
             /* Rationale for these values
              * Seamoth spends this on Update
@@ -282,13 +317,13 @@ namespace AVS.Engines
             float upgradeModifier = Mathf.Pow(0.85f, MV.numEfficiencyModules);
             MV.powerMan.TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.fixedDeltaTime);
         }
-        public override void KillMomentum()
+        public virtual void KillMomentum()
         {
             ForwardMomentum = 0f;
             RightMomentum = 0f;
             UpMomentum = 0f;
         }
-        public override void ControlRotation()
+        public virtual void ControlRotation()
         {
             if (CanRotate())
             {
@@ -407,6 +442,16 @@ namespace AVS.Engines
                 }
             }
         }
+        protected virtual bool CanTakeInputs()
+        {
+            var fcc = MainCameraControl.main.GetComponent<FreecamController>();
+            bool isFreecam = false;
+            if (fcc.mode || fcc.ghostMode)
+            {
+                isFreecam = true;
+            }
+            return MV.CanPilot() && MV.IsPlayerControlling() && !isFreecam;
+        }
         protected virtual void DoEngineSounds(Vector3 moveDirection)
         {
             // DoEngineSounds shouldn't depend on the movement input,
@@ -436,9 +481,19 @@ namespace AVS.Engines
         {
             if (!blockVoiceChange)
             {
-                sounds = inputVoice;
+                Sounds = inputVoice;
             }
         }
         #endregion
+
+        void IScuttleListener.OnScuttle()
+        {
+            enabled = false;
+        }
+
+        void IScuttleListener.OnUnscuttle()
+        {
+            enabled = true;
+        }
     }
 }

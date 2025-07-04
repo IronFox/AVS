@@ -7,17 +7,46 @@ using UnityEngine;
 
 namespace AVS
 {
+    /// <summary>
+    /// Handles registration, validation, and queuing of mod vehicles for the AVS system.
+    /// Provides methods for registering vehicles, validating their configuration, and logging registration events.
+    /// </summary>
     public static class VehicleRegistrar
     {
-        public static int VehiclesRegistered = 0;
-        public static int VehiclesPrefabricated = 0;
-        private static Queue<Action> RegistrationQueue = new Queue<Action>();
-        private static bool RegistrySemaphore = false;
+        /// <summary>
+        /// The number of vehicles successfully registered.
+        /// </summary>
+        public static int VehiclesRegistered { get; private set; } = 0;
+
+        /// <summary>
+        /// The number of vehicles prefabricated.
+        /// </summary>
+        public static int VehiclesPrefabricated { get; private set; } = 0;
+
+        private static Queue<Action> RegistrationQueue { get; } = new Queue<Action>();
+        private static bool RegistrySemaphore { get; set; } = false;
+
+        /// <summary>
+        /// Specifies the type of log message for verbose logging.
+        /// </summary>
         public enum LogType
         {
+            /// <summary>
+            /// Standard log message.
+            /// </summary>
             Log,
+            /// <summary>
+            /// Warning log message.
+            /// </summary>
             Warn
         }
+
+        /// <summary>
+        /// Logs a message if verbose logging is enabled, using the specified log type.
+        /// </summary>
+        /// <param name="type">The type of log message.</param>
+        /// <param name="verbose">Whether verbose logging is enabled.</param>
+        /// <param name="message">The message to log.</param>
         public static void VerboseLog(LogType type, bool verbose, string message)
         {
             if (verbose)
@@ -35,10 +64,24 @@ namespace AVS
                 }
             }
         }
+
+        /// <summary>
+        /// Registers a vehicle asynchronously by starting a coroutine.
+        /// </summary>
+        /// <remarks>Calls <see cref="RegisterVehicle(ModVehicle, bool)" /></remarks>
+        /// <param name="mv">The mod vehicle to register.</param>
+        /// <param name="verbose">Whether to enable verbose logging.</param>
         public static void RegisterVehicleLater(ModVehicle mv, bool verbose = false)
         {
             UWE.CoroutineHost.StartCoroutine(RegisterVehicle(mv, verbose));
         }
+
+        /// <summary>
+        /// Coroutine for registering a mod vehicle, including validation and queuing if necessary.
+        /// </summary>
+        /// <param name="mv">The mod vehicle to register.</param>
+        /// <param name="verbose">Whether to enable verbose logging.</param>
+        /// <returns>IEnumerator for coroutine execution.</returns>
         public static IEnumerator RegisterVehicle(ModVehicle mv, bool verbose = false)
         {
             mv.RequireComposition();
@@ -67,10 +110,14 @@ namespace AVS
                 yield return UWE.CoroutineHost.StartCoroutine(InternalRegisterVehicle(mv, verbose));
             }
         }
-        public static IEnumerator RegisterVehicle(ModVehicle mv)
-        {
-            yield return RegisterVehicle(mv, false);
-        }
+
+
+        /// <summary>
+        /// Internal coroutine for registering a mod vehicle, including prefab creation and queue management.
+        /// </summary>
+        /// <param name="mv">The mod vehicle to register.</param>
+        /// <param name="verbose">Whether to enable verbose logging.</param>
+        /// <returns>IEnumerator for coroutine execution.</returns>
         private static IEnumerator InternalRegisterVehicle(ModVehicle mv, bool verbose)
         {
             RegistrySemaphore = true;
@@ -85,6 +132,13 @@ namespace AVS
                 RegistrationQueue.Dequeue().Invoke();
             }
         }
+
+        /// <summary>
+        /// Validates a mod vehicle and its specific type (Submarine, Submersible, Skimmer).
+        /// </summary>
+        /// <param name="mv">The mod vehicle to validate.</param>
+        /// <param name="verbose">Whether to enable verbose logging.</param>
+        /// <returns>True if the vehicle is valid; otherwise, false.</returns>
         public static bool ValidateAll(ModVehicle mv, bool verbose)
         {
             if (mv is Submarine sub1)
@@ -113,6 +167,13 @@ namespace AVS
             }
             return true;
         }
+
+        /// <summary>
+        /// Validates the registration of a mod vehicle, checking required fields and configuration.
+        /// </summary>
+        /// <param name="mv">The mod vehicle to validate.</param>
+        /// <param name="verbose">Whether to enable verbose logging.</param>
+        /// <returns>True if the vehicle is valid; otherwise, false.</returns>
         public static bool ValidateRegistration(ModVehicle mv, bool verbose)
         {
             string thisName = "";
@@ -242,7 +303,7 @@ namespace AVS
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " A null ModVehicle.LeviathanGrabPoint was provided. This is where leviathans attach to the vehicle. The root object will be used instead.");
                 }
-                if (mv.VFEngine == null && mv.Engine == null)
+                if (!mv.Engine)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " A null ModVehicle.ModVehicleEngine was passed for registration. A default engine will be chosen.");
                 }
@@ -259,6 +320,13 @@ namespace AVS
             VerboseLog(LogType.Log, verbose, "The Registration of the " + mv.name + " as a ModVehicle has been Validated.");
             return true;
         }
+
+        /// <summary>
+        /// Validates the registration of a Submarine, including submarine-specific requirements.
+        /// </summary>
+        /// <param name="mv">The submarine to validate.</param>
+        /// <param name="verbose">Whether to enable verbose logging.</param>
+        /// <returns>True if the submarine is valid; otherwise, false.</returns>
         public static bool ValidateRegistration(Submarine mv, bool verbose)
         {
             if (!ValidateRegistration(mv as ModVehicle, verbose))
@@ -360,6 +428,13 @@ namespace AVS
             VerboseLog(LogType.Log, verbose, "The Registration of the " + mv.name + " as a Submarine has been Validated.");
             return true;
         }
+
+        /// <summary>
+        /// Validates the registration of a Submersible, including submersible-specific requirements.
+        /// </summary>
+        /// <param name="mv">The submersible to validate.</param>
+        /// <param name="verbose">Whether to enable verbose logging.</param>
+        /// <returns>True if the submersible is valid; otherwise, false.</returns>
         public static bool ValidateRegistration(Submersible mv, bool verbose)
         {
             if (!ValidateRegistration(mv as ModVehicle, verbose))

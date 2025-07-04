@@ -1,14 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using BiomeData = LootDistributionData.BiomeData;
 
 namespace AVS.Assets
 {
+    /// <summary>
+    /// Biome types used in Subnautica.
+    /// </summary>
     public enum AbstractBiomeType
     {
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
         SafeShallows,
         KelpForest,
         GrassyPlateus,
@@ -36,8 +37,16 @@ namespace AVS.Assets
         CragField,
         PrisonAquarium,
         Mesas
+#pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
 
+    /// <summary>
+    /// Provides methods and mappings for working with biome types and their associated data.
+    /// </summary>
+    /// <remarks>The <see cref="BiomeTypes"/> class offers functionality to retrieve biome types associated
+    /// with  specific abstract biome categories, as well as methods to generate biome data based on input parameters. 
+    /// This class is designed to facilitate operations involving biomes, such as retrieving biome lists or  creating
+    /// biome-specific data structures.</remarks>
     public static class BiomeTypes
     {
         // I included "CreatureOnly" biomes and some dead (unused) biome numbers
@@ -72,53 +81,118 @@ namespace AVS.Assets
             {AbstractBiomeType.Mesas, Enumerable.Range(2800, 3).Select(i => (BiomeType)i).ToList() }
         };
 
-        public static List<BiomeType> Get(AbstractBiomeType type)
+        /// <summary>
+        /// Retrieves a read-only list of biome types associated with the specified abstract biome type.
+        /// </summary>
+        /// <param name="type">The abstract biome type for which to retrieve the associated biome types.</param>
+        /// <returns>A read-only list of <see cref="BiomeType"/> objects associated with the specified  <paramref name="type"/>.
+        /// The list will contain all biome types mapped to the given abstract biome type.</returns>
+        public static IReadOnlyList<BiomeType> Get(AbstractBiomeType type)
         {
             return mapping[type];
         }
 
-        public static BiomeData GetOneBiomeData(BiomeType type, int Icount = 1, float Iprobability = 0.1f)
+        private static BiomeData NewOneBiomeData(BiomeType type, int count = 1, float probability = 0.1f)
         {
-            return new BiomeData { biome = type, count = Icount, probability = Iprobability };
+            return new BiomeData { biome = type, count = count, probability = probability };
         }
 
-        public static List<BiomeData> GetBiomeData(BiomeStruct biomeStruct)
+        /// <summary>
+        /// Retrieves a list of biome data based on the specified biome structure.
+        /// </summary>
+        /// <remarks>The method uses the type specified in <paramref name="biomeStruct"/> to determine the
+        /// biome types and generates corresponding biome data entries based on the count and probability
+        /// values.</remarks>
+        /// <param name="biomeStruct">A structure containing the type, count, and probability information used to generate the biome data.</param>
+        /// <returns>A read-only list of <see cref="BiomeData"/> objects representing the generated biome data.</returns>
+        public static IReadOnlyList<BiomeData> GetBiomeData(BiomeStruct biomeStruct)
         {
-            return Get(biomeStruct.type).Select(biomeType => GetOneBiomeData(biomeType, biomeStruct.count, biomeStruct.probability)).ToList();
+            return Get(biomeStruct.Type).Select(biomeType => NewOneBiomeData(biomeType, biomeStruct.Count, biomeStruct.Probability)).ToList();
         }
     }
 
-    public struct BiomeStruct
+    /// <summary>
+    /// Represents a biome with its type, count, and probability of loot occurrence in this biome.
+    /// </summary>
+    /// <remarks>This structure is immutable and is used to encapsulate information about a specific biome,
+    /// including its type, the number of occurrences, and the likelihood of loot in it.</remarks>
+    public readonly struct BiomeStruct
     {
-        public AbstractBiomeType type;
-        public int count;
-        public float probability;
-        public BiomeStruct(AbstractBiomeType itype, int icount, float iprobability)
+        /// <summary>
+        /// Gets the type of the biome represented by this instance.
+        /// </summary>
+        public AbstractBiomeType Type { get; }
+        /// <summary>
+        /// Probably the number of loot items spawned at once if this biome is selected by random based on Probability.
+        /// </summary>
+        public int Count { get; }
+        /// <summary>
+        /// Gets the probability value as a floating-point number.
+        /// </summary>
+        public float Probability { get; }
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BiomeStruct"/> class with the specified biome type, count, and
+        /// probability.
+        /// </summary>
+        /// <param name="type">The type of the biome represented by this structure. This value cannot be null.</param>
+        /// <param name="count">The number of occurrences or instances of the biome. Must be a non-negative integer.</param>
+        /// <param name="probability">The probability associated with the biome, represented as a floating-point value between 0.0 and 1.0.</param>
+        public BiomeStruct(AbstractBiomeType type, int count, float probability)
         {
-            type = itype;
-            count = icount;
-            probability = iprobability;
+            Type = type;
+            Count = count;
+            Probability = probability;
         }
     }
 
+
+    /// <summary>
+    /// Represents a collection of abstract biome data, allowing conversion to concrete biome data.
+    /// </summary>
     public class AbstractBiomeData
     {
-        public List<BiomeStruct> biomes = new List<BiomeStruct>();
-        public List<BiomeData> ConvertStruct(BiomeStruct biome)
+        /// <summary>
+        /// Gets the list of <see cref="BiomeStruct"/> instances representing the abstract biomes.
+        /// </summary>
+        internal List<BiomeStruct> Biomes { get; } = new List<BiomeStruct>();
+
+        /// <summary>
+        /// Converts a <see cref="BiomeStruct"/> to a read-only list of <see cref="BiomeData"/> objects.
+        /// </summary>
+        /// <param name="biome">The <see cref="BiomeStruct"/> to convert.</param>
+        /// <returns>A read-only list of <see cref="BiomeData"/> objects corresponding to the given biome structure.</returns>
+        public IReadOnlyList<BiomeData> ConvertStruct(BiomeStruct biome)
         {
             return BiomeTypes.GetBiomeData(biome);
         }
-        public List<BiomeData> Get()
+
+        /// <summary>
+        /// Retrieves all <see cref="BiomeData"/> objects for the biomes contained in this instance.
+        /// </summary>
+        /// <returns>A read-only list of <see cref="BiomeData"/> objects representing all biomes in this collection.</returns>
+        public IReadOnlyList<BiomeData> Get()
         {
-            return biomes.SelectMany(x => ConvertStruct(x)).ToList();
+            return Biomes.SelectMany(x => ConvertStruct(x)).ToList();
         }
     }
 
+
+    /// <summary>
+    /// Extension methods for <see cref="AbstractBiomeData"/> to simplify adding biomes.
+    /// </summary>
     public static class AbstractBiomeDataExtensions
     {
+        /// <summary>
+        /// Adds a new <see cref="BiomeStruct"/> to the <see cref="AbstractBiomeData"/> instance with the specified parameters.
+        /// </summary>
+        /// <param name="data">The <see cref="AbstractBiomeData"/> instance to add the biome to.</param>
+        /// <param name="type">The abstract biome type to add.</param>
+        /// <param name="count">The number of occurrences for the biome. Defaults to 1.</param>
+        /// <param name="probability">The probability of loot occurrence in the biome. Defaults to 0.1.</param>
+        /// <returns>The <see cref="AbstractBiomeData"/> instance with the new biome added.</returns>
         public static AbstractBiomeData WithBiome(this AbstractBiomeData data, AbstractBiomeType type, int count = 1, float probability = 0.1f)
         {
-            data.biomes.Add(new BiomeStruct(type, count, probability));
+            data.Biomes.Add(new BiomeStruct(type, count, probability));
             return data;
         }
     }
