@@ -82,7 +82,12 @@ namespace AVS.Assets
             bundleName = bundlePath;
             try
             {
+                Logger.Log($"Loading asset bundle from {bundlePath}");
                 bundle = AssetBundle.LoadFromFile(bundlePath);
+                if (bundle)
+                    Logger.Log($"Loaded asset bundle from {bundlePath}");
+                else
+                    Logger.Log($"Loaded null asset bundle from {bundlePath}");
             }
             catch (Exception e)
             {
