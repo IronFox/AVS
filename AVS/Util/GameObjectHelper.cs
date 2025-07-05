@@ -23,7 +23,7 @@ namespace AVS.Util
         }
 
 
-        public static GameObject Or(this GameObject a, GameObject b)
+        public static T Or<T>(this T a, T b) where T : Object
         {
             if (a)
                 return a;
