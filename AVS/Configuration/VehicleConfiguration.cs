@@ -1,6 +1,7 @@
 ﻿using AVS.Assets;
 using AVS.Util;
 using AVS.VehicleComponents;
+using System;
 using UnityEngine;
 using static AVS.ModVehicle;
 
@@ -178,6 +179,16 @@ namespace AVS.Configuration
         public VehicleColor InitialNameColor { get; set; } = VehicleColor.Default;
 
         /// <summary>
+        /// Gets the current setting regarding sound volume for voice messages sent by the vehicle's <see cref="VoiceQueue"/> component,
+        /// further modified by Subnautica's global voice and master sound volumes.
+        /// </summary>
+        public Func<float> GetVoiceSoundVolume { get; }
+        /// <summary>
+        /// Gets the current setting whether to show subtitles for voice messages sent by the vehicle's <see cref="VoiceQueue"/> component.
+        /// </summary>
+        public Func<bool> GetVoiceSubtitlesEnabled { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="VehicleConfiguration"/> class with the specified parameters.
         /// </summary>
         /// <param name="materialFixLogging">The logging configuration for material fixes. If null, defaults to <see cref="Logging.Default"/>.</param>
@@ -226,6 +237,8 @@ namespace AVS.Configuration
         /// <param name="initialStripeColor">Initial stripe color of the vehicle. If null, defaults to <see cref="VehicleColor.Default"/>.</param>
         /// <param name="initialInteriorColor">Initial interior color of the vehicle. If null, defaults to <see cref="VehicleColor.Default"/>.</param>
         /// <param name="initialNameColor">Initial name color of the vehicle. If null, defaults to <see cref="VehicleColor.Default"/>.</param>
+        /// <param name="getVoiceSoundVolume">Query function to get the sound volume for voice messages sent by the vehicle's <see cref="VoiceQueue"/> component. If null, defaults to always 1</param>
+        /// <param name="getVoiceSubtitlesEnabled">Query function to get whether to show subtitles for voice messages sent by the vehicle's <see cref="VoiceQueue"/> component. If null, defaults to always false</param>
         public VehicleConfiguration(
 
             VehicleColor? initialBaseColor = null,
@@ -265,7 +278,9 @@ namespace AVS.Configuration
             bool canMoonpoolDock = true,
             Quaternion? cyclopsDockRotation = null,
             bool autoFixMaterials = true,
-            bool ignoreShaderNameWhenFixingMaterial = false
+            bool ignoreShaderNameWhenFixingMaterial = false,
+            Func<float> getVoiceSoundVolume = null,
+            Func<bool> getVoiceSubtitlesEnabled = null
         )
         {
             if (maxHealth <= 0)
@@ -275,6 +290,8 @@ namespace AVS.Configuration
             if (baseCrushDepth <= 0)
                 throw new System.ArgumentOutOfRangeException(nameof(baseCrushDepth), "BaseCrushDepth must be greater than 0.");
 
+            GetVoiceSoundVolume = getVoiceSoundVolume ?? (() => 1);
+            GetVoiceSubtitlesEnabled = getVoiceSubtitlesEnabled ?? (() => false);
             InitialBaseColor = initialBaseColor ?? VehicleColor.Default;
             InitialStripeColor = initialStripeColor ?? VehicleColor.Default;
             InitialInteriorColor = initialInteriorColor ?? VehicleColor.Default;
