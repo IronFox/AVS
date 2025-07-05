@@ -2,7 +2,7 @@
 
 namespace AVS.Engines
 {
-    public class OdysseyEngine : ModVehicleEngine
+    public class OdysseyEngine : AbstractEngine
     {
         protected override float FORWARD_TOP_SPEED => 1250;
         protected override float REVERSE_TOP_SPEED => 750;
@@ -45,6 +45,8 @@ namespace AVS.Engines
             }
         }
         */
+        private float _forwardMomentum = 0;
+        /// <inheritdoc/>
         protected override float ForwardMomentum
         {
             get
@@ -71,6 +73,7 @@ namespace AVS.Engines
                 }
             }
         }
+        /// <inheritdoc/>
         protected override void UpdateForwardMomentum(float inputMagnitude)
         {
             if (ForwardMomentum < IMPULSE_BOOST && 0 < inputMagnitude)
@@ -92,6 +95,7 @@ namespace AVS.Engines
                 ForwardMomentum = ForwardMomentum + inputMagnitude * REVERSE_ACCEL * Time.deltaTime;
             }
         }
+        /// <inheritdoc/>
         protected override float RightMomentum
         {
             get
@@ -118,6 +122,7 @@ namespace AVS.Engines
                 }
             }
         }
+        /// <inheritdoc/>
         protected override void UpdateRightMomentum(float inputMagnitude)
         {
             if (RightMomentum < IMPULSE_BOOST && 0 < inputMagnitude)
@@ -135,6 +140,8 @@ namespace AVS.Engines
                 RightMomentum += inputMagnitude * STRAFE_ACCEL * Time.deltaTime;
             }
         }
+        private float _upMomentum = 0;
+        /// <inheritdoc/>
         protected override float UpMomentum
         {
             get
@@ -161,6 +168,7 @@ namespace AVS.Engines
                 }
             }
         }
+        /// <inheritdoc/>
         protected override void UpdateUpMomentum(float inputMagnitude)
         {
             if (UpMomentum < IMPULSE_BOOST && 0 < inputMagnitude)
@@ -181,6 +189,7 @@ namespace AVS.Engines
             float topMomentum = FORWARD_TOP_SPEED + STRAFE_MAX_SPEED + VERT_MAX_SPEED;
             return totalMomentumNow / topMomentum;
         }
+        /// <inheritdoc/>
         public override void ControlRotation()
         {
             // Control rotation
@@ -193,12 +202,13 @@ namespace AVS.Engines
             RB.AddTorque(MV.transform.right * yRot * -pitchFactor * Time.deltaTime, ForceMode.VelocityChange);
         }
 
+        /// <inheritdoc/>
         public override void DrainPower(Vector3 moveDirection)
         {
             float scalarFactor = 0.23f;
             float basePowerConsumptionPerSecond = moveDirection.x + moveDirection.y + moveDirection.z;
-            float upgradeModifier = Mathf.Pow(0.85f, MV.numEfficiencyModules);
-            MV.powerMan.TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.fixedDeltaTime);
+            float upgradeModifier = Mathf.Pow(0.85f, MV.NumEfficiencyModules);
+            MV.PowerManager.TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.fixedDeltaTime);
         }
     }
 }

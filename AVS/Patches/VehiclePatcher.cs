@@ -103,7 +103,7 @@ namespace AVS
             {
                 return;
             }
-            if (!mv.isPoweredOn)
+            if (!mv.IsPoweredOn)
             {
                 __result = false;
             }

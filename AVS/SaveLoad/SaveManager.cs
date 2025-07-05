@@ -1,4 +1,5 @@
-﻿using AVS.VehicleTypes;
+﻿using AVS.VehicleComponents;
+using AVS.VehicleTypes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -337,9 +338,9 @@ namespace AVS.SaveLoad
             {
                 yield break;
             }
-            Color SynthesizeColor(color col)
+            VehicleColor SynthesizeColor(color col)
             {
-                return new Color(col.Item1, col.Item2, col.Item3, col.Item4);
+                return new VehicleColor(new Color(col.Item1, col.Item2, col.Item3, col.Item4));
             }
             foreach (Tuple<Vector3, string, color, color, color, color, bool> vehicle in data.AllVehiclesAesthetics)
             {
@@ -364,34 +365,34 @@ namespace AVS.SaveLoad
                             }
                             else
                             {
-                                mvSub.baseColor = SynthesizeColor(vehicle.Item3);
-                                mvSub.interiorColor = SynthesizeColor(vehicle.Item4);
-                                mvSub.stripeColor = SynthesizeColor(vehicle.Item5);
-                                mvSub.nameColor = SynthesizeColor(vehicle.Item6);
-                                mvSub.PaintVehicleSection("ExteriorMainColor", mvSub.baseColor);
-                                mvSub.PaintVehicleSection("ExteriorPrimaryAccent", mvSub.interiorColor);
-                                mvSub.PaintVehicleSection("ExteriorSecondaryAccent", mvSub.stripeColor);
-                                mvSub.PaintVehicleName(vehicle.Item2, mvSub.nameColor, mvSub.baseColor);
+                                mvSub.SetBaseColor(SynthesizeColor(vehicle.Item3));
+                                mvSub.SetInteriorColor(SynthesizeColor(vehicle.Item4));
+                                mvSub.SetStripeColor(SynthesizeColor(vehicle.Item5));
+                                mvSub.SetNameColor(SynthesizeColor(vehicle.Item6));
+                                mvSub.PaintVehicleSection("ExteriorMainColor", mvSub.BaseColor);
+                                mvSub.PaintVehicleSection("ExteriorPrimaryAccent", mvSub.InteriorColor);
+                                mvSub.PaintVehicleSection("ExteriorSecondaryAccent", mvSub.StripeColor);
+                                mvSub.PaintVehicleName(vehicle.Item2, mvSub.NameColor, mvSub.BaseColor);
 
                                 mvSub.IsDefaultTexture = false;
 
-                                active.transform.Find("MainExterior/SelectedColor").GetComponent<Image>().color = mvSub.baseColor;
-                                active.transform.Find("PrimaryAccent/SelectedColor").GetComponent<Image>().color = mvSub.interiorColor;
-                                active.transform.Find("SecondaryAccent/SelectedColor").GetComponent<Image>().color = mvSub.stripeColor;
-                                active.transform.Find("NameLabel/SelectedColor").GetComponent<Image>().color = mvSub.nameColor;
+                                active.transform.Find("MainExterior/SelectedColor").GetComponent<Image>().color = mvSub.BaseColor.RGB;
+                                active.transform.Find("PrimaryAccent/SelectedColor").GetComponent<Image>().color = mvSub.InteriorColor.RGB;
+                                active.transform.Find("SecondaryAccent/SelectedColor").GetComponent<Image>().color = mvSub.StripeColor.RGB;
+                                active.transform.Find("NameLabel/SelectedColor").GetComponent<Image>().color = mvSub.NameColor.RGB;
                             }
                         }
                         else
                         {
-                            mv.baseColor = SynthesizeColor(vehicle.Item3);
-                            mv.interiorColor = SynthesizeColor(vehicle.Item4);
-                            mv.stripeColor = SynthesizeColor(vehicle.Item5);
-                            mv.nameColor = SynthesizeColor(vehicle.Item6);
+                            mv.SetBaseColor(SynthesizeColor(vehicle.Item3));
+                            mv.SetInteriorColor(SynthesizeColor(vehicle.Item4));
+                            mv.SetStripeColor(SynthesizeColor(vehicle.Item5));
+                            mv.SetNameColor(SynthesizeColor(vehicle.Item6));
 
-                            mv.subName.SetColor(0, Vector3.zero, mv.baseColor);
-                            mv.subName.SetColor(1, Vector3.zero, mv.nameColor);
-                            mv.subName.SetColor(2, Vector3.zero, mv.interiorColor);
-                            mv.subName.SetColor(3, Vector3.zero, mv.stripeColor);
+                            mv.subName.SetColor(0, Vector3.zero, mv.BaseColor.RGB);
+                            mv.subName.SetColor(1, Vector3.zero, mv.NameColor.RGB);
+                            mv.subName.SetColor(2, Vector3.zero, mv.InteriorColor.RGB);
+                            mv.subName.SetColor(3, Vector3.zero, mv.StripeColor.RGB);
                         }
                         break;
                     }

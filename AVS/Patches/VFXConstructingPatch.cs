@@ -60,8 +60,8 @@ namespace AVS.Patches
             if (mv != null)
             {
                 __instance.timeToConstruct = mv.Config.TimeToConstruct;
-                __instance.BroadcastMessage("SubConstructionBeginning", null, (UnityEngine.SendMessageOptions)1);
-                __instance.SendMessageUpwards("SubConstructionBeginning", null, (UnityEngine.SendMessageOptions)1);
+                __instance.BroadcastMessage(nameof(ModVehicle.SubConstructionBeginning), null, (UnityEngine.SendMessageOptions)1);
+                __instance.SendMessageUpwards(nameof(ModVehicle.SubConstructionBeginning), null, (UnityEngine.SendMessageOptions)1);
                 UWE.CoroutineHost.StartCoroutine(ManageColor(__instance, mv));
             }
         }

@@ -9,7 +9,7 @@ namespace AVS
     /// Represents the control panel for a submarine, handling button initialization, lighting, and user interactions.
     /// Implements listeners for vehicle status, power, lights, and autopilot events.
     /// </summary>
-    public class ControlPanel : MonoBehaviour, IVehicleStatusListener, IPowerListener, ILightsStatusListener, IAutoPilotListener
+    public class ControlPanel : MonoBehaviour, IVehicleStatusListener, IPowerListener, ILightsStatusListener
     {
         /// <summary>
         /// The submarine instance this control panel is associated with.
@@ -120,9 +120,9 @@ namespace AVS
         /// </summary>
         public void HeadlightsClick()
         {
-            if (mv.headlights != null)
+            if (mv.HeadlightsController)
             {
-                mv.headlights.Toggle();
+                mv.HeadlightsController.Toggle();
             }
         }
 
@@ -326,27 +326,7 @@ namespace AVS
 
         // IAutoPilotListener implementation
 
-        /// <inheritdoc />
-        void IAutoPilotListener.OnAutoLevelBegin()
-        {
-        }
 
-        /// <inheritdoc />
-        void IAutoPilotListener.OnAutoLevelEnd()
-        {
-        }
-
-        /// <inheritdoc />
-        void IAutoPilotListener.OnAutoPilotBegin()
-        {
-            SetButtonLightingActive(buttonAutoPilot, true);
-        }
-
-        /// <inheritdoc />
-        void IAutoPilotListener.OnAutoPilotEnd()
-        {
-            SetButtonLightingActive(buttonAutoPilot, false);
-        }
 
         // ILightsStatusListener continued
 

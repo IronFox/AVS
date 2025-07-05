@@ -84,7 +84,7 @@ namespace AVS
         /// <returns>IEnumerator for coroutine execution.</returns>
         public static IEnumerator RegisterVehicle(ModVehicle mv, bool verbose = false)
         {
-            mv.RequireComposition();
+            mv.OnAwakeOrPrefabricate();
             if (VehicleManager.vehicleTypes.Where(x => x.name == mv.gameObject.name).Any())
             {
                 VerboseLog(LogType.Warn, verbose, $"{mv.gameObject.name} was already registered.");
@@ -193,7 +193,7 @@ namespace AVS
                 thisName = mv.name + ": ";
                 if (!mv.VehicleRoot)
                 {
-                    Logger.Error(thisName + " A null ModVehicle.VehicleModel was passed for registration.");
+                    Logger.Error(thisName + " A null ModVehicle.VehicleRoot was passed for registration.");
                     return false;
                 }
                 if (mv.Config.BaseCrushDepth < 0)
@@ -303,7 +303,7 @@ namespace AVS
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " A null ModVehicle.LeviathanGrabPoint was provided. This is where leviathans attach to the vehicle. The root object will be used instead.");
                 }
-                if (!mv.Engine)
+                if (!mv.Com.Engine)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + " A null ModVehicle.ModVehicleEngine was passed for registration. A default engine will be chosen.");
                 }

@@ -1,8 +1,8 @@
 ﻿using AVS.Composition;
 using AVS.Configuration;
-using AVS.Engines;
 using AVS.MaterialAdapt;
 using AVS.Util;
+using AVS.VehicleComponents;
 using AVS.VehicleTypes;
 using System;
 using System.Collections;
@@ -53,8 +53,6 @@ namespace AVS
         /// </summary>
         public virtual GameObject VehicleRoot => gameObject;
 
-        public virtual ModVehicleEngine Engine { get; set; }
-
         //public virtual GameObject BoundingBox => null; // Prefer to use BoundingBoxCollider directly (don't use this)
 
         /// <summary>
@@ -66,7 +64,7 @@ namespace AVS
         /// <summary>
         /// True to log high-verbosity debug messages (as non-debug)
         /// </summary>
-        public virtual bool LogDebug => false;
+        public virtual bool LogDebug { get; } = false;
 
         /// <summary>
         /// Retrieves the composition of the vehicle.
@@ -91,7 +89,10 @@ namespace AVS
         {
             Config = config ?? throw new ArgumentNullException(nameof(config), "VehicleConfiguration cannot be null");
             MaterialFixer = new MaterialFixer(this, config.MaterialFixLogging, () => this.ResolveMaterial(config.MaterialFixLogging));
-
+            baseColor = config.InitialBaseColor;
+            stripeColor = config.InitialStripeColor;
+            nameColor = config.InitialNameColor;
+            interiorColor = config.InitialInteriorColor;
         }
 
         /// <summary>
@@ -145,7 +146,16 @@ namespace AVS
             }
         }
 
-        internal void RequireComposition()
+
+        internal void OnAwakeOrPrefabricate()
+        {
+            RequireComposition();
+        }
+        /// <summary>
+        /// Initialized <see cref="Com"/>.
+        /// </summary>
+        /// <exception cref="InvalidOperationException"></exception>
+        private void RequireComposition()
         {
             if (_composition == null)
             {
@@ -157,28 +167,41 @@ namespace AVS
             }
         }
 
+
+        private static int idCounter = 0;
+        /// <summary>
+        /// A unique ID for this vehicle instance.
+        /// </summary>
+        public int Id { get; } = idCounter++;
+
+        /// <summary>
+        /// The voice queue for this vehicle.
+        /// </summary>
+        public VoiceQueue VoiceQueue { get; private set; }
+
         ///<inheritdoc />
         public override void Awake()
         {
-            RequireComposition();
+            OnAwakeOrPrefabricate();
+            HudPingInstance = gameObject.GetComponent<PingInstance>();//created during prefab. Cannot properly create here if missing
+            VoiceQueue = gameObject.EnsureComponent<VoiceQueue>();
 
             energyInterface = GetComponent<EnergyInterface>();
+
+            PowerManager = gameObject.EnsureComponent<PowerManager>();
+
             base.Awake();
             VehicleManager.EnrollVehicle(this); // Register our new vehicle with Vehicle Framework
-            upgradeOnAddedActions.Add(StorageModuleAction);
-            upgradeOnAddedActions.Add(ArmorPlatingModuleAction);
-            upgradeOnAddedActions.Add(PowerUpgradeModuleAction);
+            UpgradeOnAddedActions.Add(StorageModuleAction);
+            UpgradeOnAddedActions.Add(ArmorPlatingModuleAction);
+            UpgradeOnAddedActions.Add(PowerUpgradeModuleAction);
 
-            VehicleBuilder.SetupVolumetricLights(this);
-            headlights = gameObject.AddComponent<HeadLightsController>();
+            SetupVolumetricLights();
+            HeadlightsController = gameObject.EnsureComponent<HeadLightsController>();
             gameObject.AddComponent<VolumetricLightController>();
 
             gameObject.EnsureComponent<AutoPilot>();
 
-            if (!Engine)
-            {
-                Engine = GetComponent<ModVehicleEngine>();
-            }
             base.LazyInitialize();
             Com.Upgrades.ForEach(x => x.Interface.GetComponent<VehicleUpgradeConsoleInput>().equipment = modules);
             var warpChipThing = GetComponent("TelePingVehicleInstance");
@@ -188,6 +211,55 @@ namespace AVS
             }
             vfxConstructing = GetComponent<VFXConstructing>();
         }
+
+        internal void SetupVolumetricLights()
+        {
+            if (!SeamothHelper.Seamoth)
+            {
+                Logger.Error("SeamothHelper.Seamoth is null. Cannot setup volumetric lights.");
+                return;
+            }
+            GameObject seamothHeadLight = SeamothHelper.Seamoth.transform.Find("lights_parent/light_left").gameObject;
+            Transform seamothVL = SeamothHelper.Seamoth.transform.Find("lights_parent/light_left/x_FakeVolumletricLight"); // sic
+            MeshFilter seamothVLMF = seamothVL.GetComponent<MeshFilter>();
+            MeshRenderer seamothVLMR = seamothVL.GetComponent<MeshRenderer>();
+            List<VehicleParts.VehicleFloodLight> theseLights = Com.HeadLights.ToList();
+            if (this is VehicleTypes.Submarine subma)
+            {
+                theseLights.AddRange(subma.Com.FloodLights);
+            }
+            foreach (VehicleParts.VehicleFloodLight pc in theseLights)
+            {
+                GameObject volumetricLight = new GameObject("VolumetricLight");
+                volumetricLight.transform.SetParent(pc.Light.transform);
+                volumetricLight.transform.localPosition = Vector3.zero;
+                volumetricLight.transform.localEulerAngles = Vector3.zero;
+                volumetricLight.transform.localScale = seamothVL.localScale;
+
+                var lvlMeshFilter = volumetricLight.AddComponent<MeshFilter>();
+                lvlMeshFilter.mesh = seamothVLMF.mesh;
+                lvlMeshFilter.sharedMesh = seamothVLMF.sharedMesh;
+
+                var lvlMeshRenderer = volumetricLight.AddComponent<MeshRenderer>();
+                lvlMeshRenderer.material = seamothVLMR.material;
+                lvlMeshRenderer.sharedMaterial = seamothVLMR.sharedMaterial;
+                lvlMeshRenderer.shadowCastingMode = seamothVLMR.shadowCastingMode;
+                lvlMeshRenderer.renderingLayerMask = seamothVLMR.renderingLayerMask;
+
+                var leftVFX = seamothHeadLight
+                    .GetComponent<VFXVolumetricLight>()
+                    .CopyComponentWithFieldsTo(pc.Light);
+                leftVFX.lightSource = pc.Light.GetComponent<Light>();
+                leftVFX.color = pc.Color;
+                leftVFX.volumGO = volumetricLight;
+                leftVFX.volumRenderer = lvlMeshRenderer;
+                leftVFX.volumMeshFilter = lvlMeshFilter;
+                leftVFX.angle = (int)pc.Angle;
+                leftVFX.range = pc.Range;
+                VolumetricLights.Add(volumetricLight);
+            }
+        }
+
         ///<inheritdoc />
         public override void Start()
         {
@@ -200,8 +272,7 @@ namespace AVS
             // so I'm not able to provide the value easily here. Not even sure what a GameInfoIcon is :shrug:
             gameObject.EnsureComponent<GameInfoIcon>().techType = TechType;
             GameInfoIcon.Add(TechType);
-            powerMan = gameObject.EnsureComponent<PowerManager>();
-            isInited = true;
+            //hasStarted = true;
         }
         ///<inheritdoc />
         public override void Update()
@@ -244,6 +315,11 @@ namespace AVS
             }
             DestroyMV();
         }
+        /// <summary>
+        /// Executed if a toggleable upgrade module is toggled on or off.
+        /// </summary>
+        /// <param name="slotID">Upgrade module slot</param>
+        /// <param name="active">True if has been toggled on, false if off</param>
         public override void OnUpgradeModuleToggle(int slotID, bool active)
         {
             TechType techType = modules.GetTechTypeInSlot(slotIDs[slotID]);
@@ -257,24 +333,29 @@ namespace AVS
             Admin.UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
             base.OnUpgradeModuleToggle(slotID, active);
         }
+        /// <summary>
+        /// Executed when a usable upgrade module is used.
+        /// </summary>
+        /// <param name="techType">The tech type of the upgrade being used</param>
+        /// <param name="slotID">Upgrade module slot</param>
         public override void OnUpgradeModuleUse(TechType techType, int slotID)
         {
             UpgradeTypes.SelectableActionParams param = new UpgradeTypes.SelectableActionParams
-            {
-                vehicle = this,
-                slotID = slotID,
-                techType = techType
-            };
+            (
+                vehicle: this,
+                slotID: slotID,
+                techType: techType
+            );
             Admin.UpgradeRegistrar.OnSelectActions.ForEach(x => x(param));
 
             UpgradeTypes.SelectableChargeableActionParams param2 = new UpgradeTypes.SelectableChargeableActionParams
-            {
-                vehicle = this,
-                slotID = slotID,
-                techType = techType,
-                charge = param.vehicle.quickSlotCharge[param.slotID],
-                slotCharge = param.vehicle.GetSlotCharge(param.slotID)
-            };
+            (
+                vehicle: this,
+                slotID: slotID,
+                techType: techType,
+                charge: param.Vehicle.quickSlotCharge[param.SlotID],
+                slotCharge: param.Vehicle.GetSlotCharge(param.SlotID)
+            );
             Admin.UpgradeRegistrar.OnSelectChargeActions.ForEach(x => x(param2));
 
             AVS.Patches.CompatibilityPatches.BetterVehicleStoragePatcher.TryUseBetterVehicleStorage(this, slotID, techType);
@@ -288,7 +369,7 @@ namespace AVS
         /// <param name="added">True if the module is added, false if removed</param>
         public override void OnUpgradeModuleChange(int slotID, TechType techType, bool added)
         {
-            upgradeOnAddedActions.ForEach(x => x(slotID, techType, added));
+            UpgradeOnAddedActions.ForEach(x => x(slotID, techType, added));
             UpgradeTypes.AddActionParams addedParams = new UpgradeTypes.AddActionParams
             {
                 vehicle = this,
@@ -326,10 +407,14 @@ namespace AVS
             depth = Mathf.FloorToInt(GetComponent<CrushDamage>().GetDepth());
             crushDepth = Mathf.FloorToInt(GetComponent<CrushDamage>().crushDepth);
         }
+
+        /// <summary>
+        /// Invoked via reflection by patches to notify the vehicle of a sub construction completion.
+        /// </summary>
         public override void SubConstructionComplete()
         {
             Logger.DebugLog(this, "ModVehicle SubConstructionComplete");
-            pingInstance.enabled = true;
+            HudPingInstance.enabled = true;
             worldForces.handleGravity = true;
             BuildBotManager.ResetGhostMaterial();
         }
@@ -432,7 +517,7 @@ namespace AVS
                 Player.main.lastValidSub = GetComponent<SubRoot>();
                 Player.main.SetCurrentSub(GetComponent<SubRoot>(), true);
                 NotifyStatus(PlayerStatus.OnPlayerEntry);
-                pingInstance.enabled = false;
+                HudPingInstance.enabled = false;
             }
         }
         /// <summary>
@@ -467,23 +552,45 @@ namespace AVS
             NotifyStatus(PlayerStatus.OnPlayerExit);
             Player.main.transform.SetParent(null);
             Player.main.TryEject(); // for DeathRun Remade Compat. See its patch in PlayerPatcher.cs
-            pingInstance.enabled = true;
+            HudPingInstance.enabled = true;
         }
+
+        /// <summary>
+        /// Invoked via reflection by patches to notify the vehicle of a sub construction beginning.
+        /// </summary>
         public virtual void SubConstructionBeginning()
         {
-            Logger.DebugLog(this, "ModVehicle SubConstructionBeginning");
-            pingInstance.enabled = false;
-            worldForces.handleGravity = false;
+            Logger.DebugLog(this, $"ModVehicle#{this.Id} SubConstructionBeginning");
+            if (HudPingInstance)
+                HudPingInstance.enabled = false;
+            else
+                Logger.Error($"HudPingInstance is null in SubConstructionBeginning #{this.Id}");
+            if (worldForces)
+                worldForces.handleGravity = false;
+            else
+                Logger.Error($"worldForces is null in SubConstructionBeginning #{this.Id}");
         }
+
+        /// <summary>
+        /// Supposed to be called when the AI battery is reloaded.
+        /// The way it's implement now, this appears to be called when any battery is reloaded.
+        /// </summary>
         public virtual void OnAIBatteryReload()
         {
         }
+        /// <summary>
+        /// Executed when the PDA storage is opened or closed.
+        /// </summary>
+        /// <param name="name">Name of the storage being opened or closed</param>
+        /// <param name="open">True if the storage was opened, otherwise false</param>
+        /// <returns>
+        /// The number of seconds to wait before opening the PDF, to show off the cool animations
+        /// </returns>
         public virtual float OnStorageOpen(string name, bool open)
         {
-            // this function returns the number of seconds to wait before opening the PDA,
-            // to show off the cool animations~
             return 0;
         }
+
         /// <summary>
         /// Detects if the vehicle is currently underwater.
         /// </summary>
@@ -493,8 +600,10 @@ namespace AVS
             bool isBeneathSurface = !worldForces.IsAboveWater();
             return isBeneathSurface && !precursorOutOfWater;
         }
+
         public virtual void OnCraftEnd(TechType techType)
         {
+            Logger.Log($"OnCraftEnd called for {techType}");
             IEnumerator GiveUsABatteryOrGiveUsDeath()
             {
                 yield return new WaitForSeconds(2.5f);
@@ -505,10 +614,10 @@ namespace AVS
                 GameObject newAIBattery = result.Get();
                 newAIBattery.GetComponent<Battery>().charge = 200;
                 newAIBattery.transform.SetParent(Com.StorageRootObject.transform);
-                if (AIEnergyInterface)
+                if (aiEnergyInterface)
                 {
-                    AIEnergyInterface.sources.First().battery = newAIBattery.GetComponent<Battery>();
-                    AIEnergyInterface.sources.First().batterySlot.AddItem(newAIBattery.GetComponent<Pickupable>());
+                    aiEnergyInterface.sources.First().battery = newAIBattery.GetComponent<Battery>();
+                    aiEnergyInterface.sources.First().batterySlot.AddItem(newAIBattery.GetComponent<Pickupable>());
                     newAIBattery.SetActive(false);
                 }
                 if (!energyInterface.hasCharge)
@@ -528,6 +637,7 @@ namespace AVS
                 UWE.CoroutineHost.StartCoroutine(GiveUsABatteryOrGiveUsDeath());
             }
         }
+
         /// <summary>
         /// Executed when the vehicle docks in a docking bay (e.g. a moonpool).
         /// </summary>
@@ -546,11 +656,12 @@ namespace AVS
             foreach (var component in GetComponentsInChildren<IDockListener>())
                 component.OnDock();
         }
+
         /// <summary>
         /// Executed when the player should evict the vehicle after being docked in a docking bay (e.g. a moonpool).
         /// </summary>
         /// <remarks>Calls <see cref="PlayerExit()" /></remarks>
-        /// <param name="exitLocation">If non-0, the player should relocate to this location</param>
+        /// <param name="exitLocation">If non-zero, the player should relocate to this location</param>
         public virtual void OnPlayerDocked(Vector3 exitLocation)
         {
             PlayerExit();
@@ -560,6 +671,7 @@ namespace AVS
                 Player.main.transform.LookAt(this.transform);
             }
         }
+
         /// <summary>
         /// Executed when the vehicle undocks from a docking bay (e.g. a moonpool).
         /// </summary>
@@ -585,6 +697,7 @@ namespace AVS
             }
             UWE.CoroutineHost.StartCoroutine(EnsureCollisionsEnabledEventually());
         }
+
         /// <summary>
         /// Executed when the player should reenter a newly undocked local vehicle.
         /// </summary>
@@ -593,6 +706,7 @@ namespace AVS
         {
             PlayerEntry();
         }
+
         /// <summary>
         /// Loosely computes the bounding dimensions of the vehicle.
         /// </summary>
@@ -607,6 +721,7 @@ namespace AVS
             Vector3 worldScale = box.transform.lossyScale;
             return Vector3.Scale(boxDimensions, worldScale);
         }
+
         /// <summary>
         /// Gets the difference between the vehicle's position and the center of its bounding box.
         /// </summary>
@@ -663,7 +778,7 @@ namespace AVS
             {
                 return;
             }
-            pingInstance.enabled = false;
+            HudPingInstance.enabled = false;
             void OnCutOpen(Sealed sealedComp)
             {
                 OnSalvage();
@@ -674,7 +789,7 @@ namespace AVS
                 (component as IScuttleListener).OnScuttle();
             }
             Com.WaterClipProxies.ForEach(x => x.SetActive(false));
-            isPoweredOn = false;
+            IsPoweredOn = false;
             gameObject.EnsureComponent<Scuttler>().Scuttle();
             var sealedThing = gameObject.EnsureComponent<Sealed>();
             sealedThing.openedAmount = 0;
@@ -692,7 +807,7 @@ namespace AVS
                 component.OnUnscuttle();
             }
             Com.WaterClipProxies.ForEach(x => x.SetActive(true));
-            isPoweredOn = true;
+            IsPoweredOn = true;
             gameObject.EnsureComponent<Scuttler>().Unscuttle();
         }
         /// <summary>
@@ -741,13 +856,13 @@ namespace AVS
         /// </summary>
         public virtual bool IsPlayerControlling()
         {
-            if (this as VehicleTypes.Submarine != null)
+            if (this is VehicleTypes.Submarine sub)
             {
-                return (this as VehicleTypes.Submarine).IsPlayerPiloting();
+                return sub.IsPlayerPiloting();
             }
-            else if (this as VehicleTypes.Submersible != null)
+            else if (this is ModVehicle sub2)
             {
-                return (this as VehicleTypes.Submersible).IsUnderCommand;
+                return sub2.IsUnderCommand;
             }
             else // this is just a ModVehicle
             {
@@ -764,24 +879,49 @@ namespace AVS
         /// <summary>
         /// Updates the base color of the vehicle.
         /// </summary>
-        public virtual void SetBaseColor(Vector3 hsb, Color color)
+        public virtual void SetBaseColor(VehicleColor color)
         {
             baseColor = color;
         }
+
         /// <summary>
         /// Updates the interior color of the vehicle.
         /// </summary>
-        public virtual void SetInteriorColor(Vector3 hsb, Color color)
+        public virtual void SetInteriorColor(VehicleColor color)
         {
             interiorColor = color;
         }
         /// <summary>
         /// Updates the stripe color of the vehicle.
         /// </summary>
-        public virtual void SetStripeColor(Vector3 hsb, Color color)
+        public virtual void SetStripeColor(VehicleColor color)
         {
             stripeColor = color;
         }
+        /// <summary>
+        /// Updates the name color of the vehicle.
+        /// </summary>
+        public virtual void SetNameColor(VehicleColor color)
+        {
+            nameColor = color;
+        }
+
+        /// <summary>
+        /// The current base color.
+        /// </summary>
+        public VehicleColor BaseColor => baseColor;
+        /// <summary>
+        /// The current interior color.
+        /// </summary>
+        public VehicleColor InteriorColor => interiorColor;
+        /// <summary>
+        /// The current stripe color.
+        /// </summary>
+        public VehicleColor StripeColor => stripeColor;
+        /// <summary>
+        /// The current name color.
+        /// </summary>
+        public VehicleColor NameColor => nameColor;
 
         /// <summary>
         /// Checks if the vehicle is currently under the command of the player.
@@ -795,38 +935,108 @@ namespace AVS
             protected set
             {
                 _IsUnderCommand = value;
-                IsPlayerDry = value;
+                //IsPlayerDry = value;
             }
         }
 
-        public FMOD_CustomEmitter lightsOnSound = null;
-        public FMOD_CustomEmitter lightsOffSound = null;
-        public List<GameObject> lights = new List<GameObject>();
-        public List<GameObject> volumetricLights = new List<GameObject>();
-        public PingInstance pingInstance = null;
-        public HeadLightsController headlights;
-        public EnergyInterface AIEnergyInterface;
-        public AutoPilotVoice voice;
-        public bool isInited = false;
+        /// <summary>
+        /// Sound to play when the vehicle lights are turned on.
+        /// Set during prefabrication.
+        /// </summary>
+        /// <remarks> Prefabrication fields must remain open fields or
+        /// Unity instantiation will not preserve them.
+        /// Since the vehicle has multiple custom emitters, we cannot
+        /// fetch it during Awake()</remarks>
+        public FMOD_CustomEmitter lightsOnSound;
+        /// <summary>
+        /// Sound to play when the vehicle lights are turned off.
+        /// Set during prefabrication.
+        /// </summary>
+        /// <remarks> Prefabrication fields must remain open fields or
+        /// Unity instantiation will not preserve them.
+        /// Since the vehicle has multiple custom emitters, we cannot
+        /// fetch it during Awake()</remarks>
+        public FMOD_CustomEmitter lightsOffSound;
+
+        /// <summary>
+        /// Populated during prefabrication/Awake().
+        /// </summary>
+        internal List<GameObject> VolumetricLights { get; } = new List<GameObject>();
+
+        /// <summary>
+        /// Marker on the HUD.
+        /// Can be used to enable or disable the marker.
+        /// </summary>
+        public PingInstance HudPingInstance { get; private set; }
+
+        /// <summary>
+        /// The headlights controller for this vehicle.
+        /// Set during Awake().
+        /// </summary>
+        public HeadLightsController HeadlightsController { get; private set; }  //set during awake()
+
+        /// <summary>
+        /// Energy interface used by the AI.
+        /// At present, this is only used by the <see cref="AutoPilot" /> to refill oxygen.
+        /// </summary>
+        /// <remarks> Prefabrication fields must remain open fields or
+        /// Unity instantiation will not preserve them. We cannot fetch it during awake because
+        /// the vehicle may have multiple energy interfaces.</remarks>
+        public EnergyInterface aiEnergyInterface;
+
+        //private VoiceQueue voice;
+        //private bool hasStarted = false;
+
         // if the player toggles the power off,
         // the vehicle is called "powered off,"
         // because it is unusable yet the batteries are not empty
-        public bool isPoweredOn = true;
-        public FMOD_StudioEventEmitter ambienceSound;
-        public int numEfficiencyModules = 0;
-        public PowerManager powerMan = null;
-        public bool IsPlayerDry = false;
-        public bool isScuttled = false;
-        public bool IsUndockingAnimating = false;
+        public bool IsPoweredOn { get; private set; } = true;
 
 
+        /// <summary>
+        /// Ambient sound emitter, copied from the seamoth prefab.
+        /// </summary>
+        /// <remarks>
+        /// Copied during prefab setup.
+        /// </remarks>
+        private FMOD_StudioEventEmitter ambienceSound;
 
-        public List<Action<int, TechType, bool>> upgradeOnAddedActions = new List<Action<int, TechType, bool>>();
+        /// <summary>
+        /// The number of installed power efficiency modules.
+        /// Automatically updated when a power efficiency module is added or removed.
+        /// </summary>
+        public int NumEfficiencyModules { get; private set; } = 0;
+
+        /// <summary>
+        /// The vehicle's power manager.
+        /// </summary>
+        public PowerManager PowerManager { get; private set; }  //set during Start()
+
+        //public bool IsPlayerDry { get; private set; } = false;
+        /// <summary>
+        /// True if the vehicle is scuttled (destroyed and ready to be salvaged).
+        /// </summary>
+        public bool isScuttled { get; private set; } = false;
+        /// <summary>
+        /// Gets a value indicating whether the undocking animation is currently in progress.
+        /// </summary>
+        public bool IsUndockingAnimating { get; internal set; } = false;
 
 
 
         /// <summary>
-        /// Tech type of the vehicle.
+        /// Actions to execute when an upgrade module is added or removed.
+        /// The first argument is the slot ID,
+        /// then the tech type of the module,
+        /// finally a boolean indicating if the module is being added (true) or removed (false).
+        /// </summary>
+        internal List<Action<int, TechType, bool>> UpgradeOnAddedActions { get; }
+            = new List<Action<int, TechType, bool>>();
+
+
+
+        /// <summary>
+        /// Fetches the tech type of the vehicle by searching for its <see cref="TechTag" /> component.
         /// </summary>
         public TechType TechType => GetComponent<TechTag>().type;
 
@@ -835,18 +1045,80 @@ namespace AVS
         /// </summary>
         public bool IsConstructed => vfxConstructing == null || vfxConstructing.IsConstructed();
 
+        /// <summary>
+        /// True if the vehicle is currently docked in a docking bay (e.g. a moonpool).
+        /// </summary>
+        protected bool IsVehicleDocked { get; private set; } = false;
 
         #region internal_fields
         private bool _IsUnderCommand = false;
         private int numArmorModules = 0;
-        protected bool IsVehicleDocked = false;
         private string[] _slotIDs = null;
-        protected internal Color baseColor = Color.white;
-        protected internal Color interiorColor = Color.white;
-        protected internal Color stripeColor = Color.white;
-        protected internal Color nameColor = Color.black;
+        private VehicleColor baseColor = VehicleColor.Default;
+        private VehicleColor interiorColor = VehicleColor.Default;
+        private VehicleColor stripeColor = VehicleColor.Default;
+        private VehicleColor nameColor = VehicleColor.Default;
         #endregion
 
+
+
+        /// <summary>
+        /// Constructs the vehicle's ping instance as part of the prefab setup.
+        /// </summary>
+        /// <param name="pingType"></param>
+        internal void PrefabSetupHudPing(PingType pingType)
+        {
+            Logger.Log($"Setting up HudPingInstance for ModVehicle #{Id}");
+            HudPingInstance = gameObject.EnsureComponent<PingInstance>();
+            HudPingInstance.origin = transform;
+            HudPingInstance.pingType = pingType;
+            HudPingInstance.SetLabel("Vehicle");
+        }
+
+        internal void SetupAIEnergyInterface()
+        {
+            if (Com.BackupBatteries.Count == 0)
+            {
+                aiEnergyInterface = energyInterface;
+                return;
+            }
+            var seamothEnergyMixin = SeamothHelper.Seamoth.GetComponent<EnergyMixin>();
+            List<EnergyMixin> energyMixins = new List<EnergyMixin>();
+            foreach (VehicleParts.VehicleBattery vb in Com.BackupBatteries)
+            {
+                // Configure energy mixin for this battery slot
+                var em = vb.BatterySlot.EnsureComponent<EnergyMixin>();
+                em.storageRoot = Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
+                em.defaultBattery = seamothEnergyMixin.defaultBattery;
+                em.compatibleBatteries = new List<TechType>() { TechType.PowerCell, TechType.PrecursorIonPowerCell };
+                em.soundPowerUp = seamothEnergyMixin.soundPowerUp;
+                em.soundPowerDown = seamothEnergyMixin.soundPowerDown;
+                em.soundBatteryAdd = seamothEnergyMixin.soundBatteryAdd;
+                em.soundBatteryRemove = seamothEnergyMixin.soundBatteryRemove;
+                em.batteryModels = seamothEnergyMixin.batteryModels;
+
+                energyMixins.Add(em);
+
+                var tmp = vb.BatterySlot.EnsureComponent<VehicleBatteryInput>();
+                tmp.mixin = em;
+                tmp.tooltip = "VFAutoPilotBattery";
+
+                var model = vb.BatterySlot.gameObject.EnsureComponent<StorageComponents.BatteryProxy>();
+                model.proxy = vb.BatteryProxy;
+                model.mixin = em;
+
+                SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vb.BatterySlot.transform);
+                vb.BatterySlot.EnsureComponent<SaveLoad.VFBatteryIdentifier>();
+            }
+            // Configure energy interface
+            aiEnergyInterface = Com.BackupBatteries.First().BatterySlot.EnsureComponent<EnergyInterface>();
+            aiEnergyInterface.sources = energyMixins.ToArray();
+        }
+
+        internal void SetupAmbienceSound(FMOD_StudioEventEmitter reference)
+        {
+            ambienceSound = reference.CopyComponentWithFieldsTo(gameObject);
+        }
 
         protected virtual bool PlayerCanExitHelmControl(float roll, float pitch, float velocity) => true;
 
@@ -880,7 +1152,7 @@ namespace AVS
         {
             if (techType == TechType.VehiclePowerUpgradeModule)
             {
-                _ = added ? numEfficiencyModules++ : numEfficiencyModules--;
+                _ = added ? NumEfficiencyModules++ : NumEfficiencyModules--;
             }
         }
         private bool IsAllowedToRemove(Pickupable pickupable, bool verbose)
@@ -1035,7 +1307,7 @@ namespace AVS
         //}
         internal void TogglePower()
         {
-            isPoweredOn = !isPoweredOn;
+            IsPoweredOn = !IsPoweredOn;
         }
         private void ManagePhysics()
         {
@@ -1138,7 +1410,7 @@ namespace AVS
                 }
 
 
-                mvSubmarine.Engine.KillMomentum();
+                mvSubmarine.Com.Engine.KillMomentum();
                 if (mvSubmarine.Com.PilotSeats.Count == 0)
                 {
                     Logger.Error("Error: tried to exit a submarine without pilot seats");
@@ -1349,15 +1621,14 @@ namespace AVS
             {
                 if (!mv.GetPilotingMode()
                     || !mv.IsUnderCommand
-                    || !mv.Engine
-                    || !mv.Engine.enabled
+                    || !mv.Com.Engine.enabled
                     || Player.main.GetPDA().isOpen
                     || (AvatarInputHandler.main && !AvatarInputHandler.main.IsEnabled())
                     || !mv.energyInterface.hasCharge)
                 {
                     return;
                 }
-                mv.GetComponent<ModVehicleEngine>().ControlRotation();
+                mv.Com.Engine.ControlRotation();
             }
         }
         public static EnergyMixin GetEnergyMixinFromVehicle(Vehicle veh)
@@ -1407,10 +1678,10 @@ namespace AVS
                 { isControlling, IsPlayerControlling() ? bool.TrueString : bool.FalseString },
                 { isInside, IsUnderCommand ? bool.TrueString : bool.FalseString },
                 { mySubName, subName.hullName.text },
-                { baseColorName, $"#{ColorUtility.ToHtmlStringRGB(baseColor)}" },
-                { interiorColorName, $"#{ColorUtility.ToHtmlStringRGB(interiorColor)}" },
-                { stripeColorName, $"#{ColorUtility.ToHtmlStringRGB(stripeColor)}" },
-                { nameColorName, $"#{ColorUtility.ToHtmlStringRGB(nameColor)}" },
+                { baseColorName, $"#{ColorUtility.ToHtmlStringRGB(baseColor.RGB)}" },
+                { interiorColorName, $"#{ColorUtility.ToHtmlStringRGB(interiorColor.RGB)}" },
+                { stripeColorName, $"#{ColorUtility.ToHtmlStringRGB(stripeColor.RGB)}" },
+                { nameColorName, $"#{ColorUtility.ToHtmlStringRGB(nameColor.RGB)}" },
                 { defaultColorName, (this is Submarine sub) && sub.IsDefaultTexture ? bool.TrueString : bool.FalseString }
             };
             SaveLoad.JsonInterface.Write(this, SimpleDataSaveFileName, simpleData);
@@ -1443,23 +1714,27 @@ namespace AVS
             {
                 yield break;
             }
-            if (ColorUtility.TryParseHtmlString(simpleData[baseColorName], out baseColor))
+            if (ColorUtility.TryParseHtmlString(simpleData[baseColorName], out var rgb))
             {
-                subName.SetColor(0, Vector3.zero, baseColor);
-                sub?.PaintVehicleName(simpleData[mySubName], Color.black, baseColor);
+                baseColor = new VehicleColor(rgb);
+                subName.SetColor(0, Vector3.zero, baseColor.RGB);
+                sub?.PaintVehicleName(simpleData[mySubName], Color.black, baseColor.RGB);
             }
-            if (ColorUtility.TryParseHtmlString(simpleData[nameColorName], out nameColor))
+            if (ColorUtility.TryParseHtmlString(simpleData[nameColorName], out rgb))
             {
-                subName.SetColor(1, Vector3.zero, nameColor);
-                sub?.PaintVehicleName(simpleData[mySubName], nameColor, baseColor);
+                nameColor = new VehicleColor(rgb);
+                subName.SetColor(1, Vector3.zero, nameColor.RGB);
+                sub?.PaintVehicleName(simpleData[mySubName], nameColor.RGB, baseColor.RGB);
             }
-            if (ColorUtility.TryParseHtmlString(simpleData[interiorColorName], out interiorColor))
+            if (ColorUtility.TryParseHtmlString(simpleData[interiorColorName], out rgb))
             {
-                subName.SetColor(2, Vector3.zero, interiorColor);
+                interiorColor = new VehicleColor(rgb);
+                subName.SetColor(2, Vector3.zero, interiorColor.RGB);
             }
-            if (ColorUtility.TryParseHtmlString(simpleData[stripeColorName], out stripeColor))
+            if (ColorUtility.TryParseHtmlString(simpleData[stripeColorName], out rgb))
             {
-                subName.SetColor(3, Vector3.zero, stripeColor);
+                stripeColor = new VehicleColor(rgb);
+                subName.SetColor(3, Vector3.zero, stripeColor.RGB);
             }
         }
         void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)

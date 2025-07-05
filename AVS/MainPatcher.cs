@@ -25,7 +25,7 @@ namespace AVS
             SetupInstance();
             //VFConfig = new VFConfig();
             //NautilusConfig = Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions<AVSNautilusConfig>();
-            AVS.Logger.MyLog = base.Logger;
+            AVS.Logger.Init(Logger);
             PrePatch();
         }
         public virtual void Start()
@@ -34,6 +34,8 @@ namespace AVS
             PostPatch();
             CompatChecker.CheckAll();
             UWE.CoroutineHost.StartCoroutine(AVS.Logger.MakeAlerts());
+            UWE.CoroutineHost.StartCoroutine(PrawnHelper.EnsurePrawn());
+
         }
 
         public virtual void PrePatch()
@@ -59,10 +61,10 @@ namespace AVS
 
             AVS.Logger.Log("Admin.Utils.RegisterDepthModules()");
             Admin.Utils.RegisterDepthModules();
-            AVS.Logger.Log("UWE.CoroutineHost.StartCoroutine(VoiceManager.LoadAllVoices())");
-            GetVoices = UWE.CoroutineHost.StartCoroutine(VoiceManager.LoadAllVoices());
-            AVS.Logger.Log("UWE.CoroutineHost.StartCoroutine(EngineSoundsManager.LoadAllVoices())");
-            GetEngineSounds = UWE.CoroutineHost.StartCoroutine(EngineSoundsManager.LoadAllVoices());
+            //AVS.Logger.Log("UWE.CoroutineHost.StartCoroutine(VoiceManager.LoadAllVoices())");
+            //GetVoices = UWE.CoroutineHost.StartCoroutine(VoiceManager.LoadAllVoices());
+            //AVS.Logger.Log("UWE.CoroutineHost.StartCoroutine(EngineSoundsManager.LoadAllVoices())");
+            //GetEngineSounds = UWE.CoroutineHost.StartCoroutine(DynamicClipLoader.LoadAllVoices());
             AVS.Logger.Log("PrePatch finished.");
         }
         public virtual void Patch()

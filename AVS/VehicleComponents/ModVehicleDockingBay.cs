@@ -31,7 +31,7 @@ namespace AVS.VehicleComponents
             float dockRecharge = Math.Min(1, dockDesires);
             if (charge > dockRecharge && dockRecharge > 0)
             {
-                float actual = mv.powerMan.TrySpendEnergy(dockRecharge);
+                float actual = mv.PowerManager.TrySpendEnergy(dockRecharge);
                 currentDockedVehicle.AddEnergy(actual);
             }
         }

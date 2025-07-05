@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using System.Collections;
+﻿using System.Collections;
+using UnityEngine;
 
 namespace AVS.VehicleComponents
 {
@@ -68,7 +68,7 @@ namespace AVS.VehicleComponents
         {
             bool IsValidDockingTarget(Vehicle thisPossibleTarget)
             {
-                if(thisPossibleTarget is Exosuit exo)
+                if (thisPossibleTarget is Exosuit exo)
                 {
                     if (exo.GetIsGrappling())
                     {
@@ -92,11 +92,11 @@ namespace AVS.VehicleComponents
                 (currentDockedVehicle as SeaMoth).toggleLights.SetLightsActive(false);
                 currentDockedVehicle.GetComponent<SeaMoth>().enabled = true; // why is this necessary?
             }
-            else if(currentDockedVehicle is ModVehicle mv)
+            else if (currentDockedVehicle is ModVehicle mv)
             {
-                if (mv.headlights.IsLightsOn)
+                if (mv.HeadlightsController.IsLightsOn)
                 {
-                    mv.headlights.Toggle();
+                    mv.HeadlightsController.Toggle();
                 }
             }
         }
@@ -131,7 +131,7 @@ namespace AVS.VehicleComponents
                 Player.main.SetPosition(PlayerExitLocation.position);
                 ModVehicle.TeleportPlayer(PlayerExitLocation.position);
             }
-            if(dockingVehicle is ModVehicle mv)
+            if (dockingVehicle is ModVehicle mv)
             {
                 mv.DeselectSlots();
                 Player.main.SetPosition(PlayerExitLocation.position);
@@ -139,7 +139,7 @@ namespace AVS.VehicleComponents
                 mv.OnVehicleDocked(Vector3.zero);
             }
             dockingVehicle.transform.SetParent(transform);
-            if(GetComponent<VehicleTypes.Submarine>() != null)
+            if (GetComponent<VehicleTypes.Submarine>() != null)
             {
                 GetComponent<VehicleTypes.Submarine>().PlayerEntry();
             }
@@ -158,11 +158,11 @@ namespace AVS.VehicleComponents
                 // since vehicle collisions aren't re-enabled until undocking is complete
                 AvatarInputHandler.main.gameObject.SetActive(false);
             }
-            if(currentDockedVehicle is SeaMoth || currentDockedVehicle is Exosuit)
+            if (currentDockedVehicle is SeaMoth || currentDockedVehicle is Exosuit)
             {
                 currentDockedVehicle.EnterVehicle(Player.main, true, true);
             }
-            if(currentDockedVehicle is ModVehicle mv)
+            if (currentDockedVehicle is ModVehicle mv)
             {
                 mv.OnVehicleUndocked();
                 mv.useRigidbody.detectCollisions = false;
@@ -233,7 +233,7 @@ namespace AVS.VehicleComponents
         }
         private IEnumerator InternalAttach(Vehicle dockTarget)
         {
-            if(dockTarget == null)
+            if (dockTarget == null)
             {
                 yield break;
             }

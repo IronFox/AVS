@@ -24,7 +24,7 @@ namespace AVS.Patches
             }
             if (mv is VehicleTypes.Submarine sub)
             {
-                sub.PaintVehicleName(mv.subName.GetName(), mv.nameColor, mv.baseColor);
+                sub.PaintVehicleName(mv.subName.GetName(), mv.NameColor.RGB, mv.BaseColor.RGB);
             }
         }
         private static void SetSubNameDecals(ModVehicle mv)
@@ -42,7 +42,9 @@ namespace AVS.Patches
             {
                 return;
             }
-            mv.nameColor = color;
+
+            var col = new VehicleComponents.VehicleColor(color, hsb);
+            mv.SetNameColor(col);
             SetSubNameDecals(mv);
             foreach (var tmprougui in mv.Com.SubNameDecals)
             {
@@ -50,7 +52,7 @@ namespace AVS.Patches
             }
             if (mv is VehicleTypes.Submarine sub)
             {
-                sub.PaintVehicleName(mv.subName.GetName(), mv.nameColor, mv.baseColor);
+                sub.PaintVehicleName(mv.subName.GetName(), mv.NameColor.RGB, mv.BaseColor.RGB);
             }
         }
 
@@ -63,9 +65,10 @@ namespace AVS.Patches
             {
                 return;
             }
+            var col = new VehicleComponents.VehicleColor(color, hsb);
             if (index == 0)
             {
-                mv.SetBaseColor(hsb, color);
+                mv.SetBaseColor(col);
             }
             else if (index == 1)
             {
@@ -76,11 +79,11 @@ namespace AVS.Patches
             }
             else if (index == 2)
             {
-                mv.SetInteriorColor(hsb, color);
+                mv.SetInteriorColor(col);
             }
             else if (index == 3)
             {
-                mv.SetStripeColor(hsb, color);
+                mv.SetStripeColor(col);
             }
             else
             {

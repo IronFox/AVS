@@ -37,7 +37,7 @@ namespace AVS.Assets
         /// <summary>
         /// Gets the default engine instance for the mod vehicle.
         /// </summary>
-        public static ModVehicleEngine DefaultEngine { get; private set; }
+        public static AbstractEngine DefaultEngine { get; private set; }
 
         /// <summary>
         /// Loads and assigns static sprite assets from internal and asset bundle sources.

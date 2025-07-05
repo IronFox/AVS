@@ -22,7 +22,7 @@ namespace AVS.Patches
 				hasFuel = true,
 				isPowered = true
 			};
-			__result = mv.powerMan.EvaluatePowerStatus() == goodPS;
+			__result = mv.PowerManager.EvaluatePowerStatus() == goodPS;
 			return false;
 		}
 	}
@@ -63,7 +63,7 @@ namespace AVS.Patches
 					// we found the ModVehicle from whose fabricator we're trying to drain power
 					float WantToSpend = 5f;
 					float SpendTolerance = 4.99f;
-					float energySpent = mv.powerMan.TrySpendEnergy(WantToSpend);
+					float energySpent = mv.PowerManager.TrySpendEnergy(WantToSpend);
 					__result = SpendTolerance <= energySpent;
 					return false;
 				}

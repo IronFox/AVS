@@ -1,7 +1,5 @@
 ﻿using BepInEx.Configuration;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace AVS
 {
@@ -25,10 +23,7 @@ namespace AVS
         internal ConfigEntry<bool> IsEnabled { get; set; }
         internal ConfigEntry<float> AutopilotVolume { get; set; }
         internal ConfigEntry<float> EngineVolume { get; set; }
-        internal ConfigEntry<string> AutopilotVoice { get; set; }
-        internal ConfigEntry<string> EngineSounds { get; set; }
         internal ConfigEntry<int> NumUpgrades { get; set; }
-        internal ConfigEntry<bool> IsArms { get; set; }
         internal ConfigEntry<bool> UseCustomRecipe { get; set; }
         internal ConfigEntry<uGUI_VehicleHUD.HUDChoice> HUDChoice { get; set; }
         internal List<ConfigEntry<bool>> ExternalToggles = new List<ConfigEntry<bool>>();
@@ -38,30 +33,6 @@ namespace AVS
     internal class VFConfig
     {
         //internal static ConfigFile config;
-        internal static void GrabNewVoiceLines(object sender, EventArgs e)
-        {
-            if (Player.main != null)
-            {
-                foreach (var tmp in VoiceManager.voices.Where(x => x != null && x.mv && x.mv.GetComponent<TechTag>()))
-                {
-                    string voiceName = VehicleConfig.main[tmp.mv.GetType().ToString()].AutopilotVoice.Value;
-                    VoiceManager.UpdateDefaultVoice(tmp.mv, voiceName);
-                    tmp.SetVoice(VoiceManager.GetVoice(voiceName));
-                }
-            }
-        }
-        internal static void GrabNewEngineSounds(object sender, EventArgs e)
-        {
-            if (Player.main != null)
-            {
-                foreach (var tmp in EngineSoundsManager.engines.Where(x => x != null && x.MV && x.MV.GetComponent<TechTag>()))
-                {
-                    string soundsName = VehicleConfig.main[tmp.MV.GetType().ToString()].EngineSounds.Value;
-                    EngineSoundsManager.UpdateDefaultVoice(tmp.MV, soundsName);
-                    tmp.SetEngineSounds(EngineSoundsManager.GetVoice(soundsName));
-                }
-            }
-        }
         internal static void Setup(ModVehicle mv)
         {
             //config = MainPatcher.Instance.Config;

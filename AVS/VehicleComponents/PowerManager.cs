@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace AVS
 {
@@ -15,7 +10,7 @@ namespace AVS
      * This is trivial for lights,
      * but a bit more difficult for driving
      */
-    public class PowerManager : MonoBehaviour, IAutoPilotListener, ILightsStatusListener
+    public class PowerManager : MonoBehaviour, ILightsStatusListener
     {
         public struct PowerStatus
         {
@@ -68,7 +63,7 @@ namespace AVS
             mv.energyInterface.GetValues(out float charge, out _);
             return new PowerStatus
             {
-                isPowered = mv.isPoweredOn,
+                isPowered = mv.IsPoweredOn,
                 hasFuel = charge > 0
             };
         }
@@ -109,14 +104,14 @@ namespace AVS
             {
                 float scalarFactor = 1.0f;
                 float basePowerConsumptionPerSecond = .15f;
-                float upgradeModifier = Mathf.Pow(0.85f, mv.numEfficiencyModules);
+                float upgradeModifier = Mathf.Pow(0.85f, mv.NumEfficiencyModules);
                 TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.deltaTime);
             }
             if (isAutoPiloting)
             {
                 float scalarFactor = 1.0f;
                 float basePowerConsumptionPerSecond = 3f;
-                float upgradeModifier = Mathf.Pow(0.85f, mv.numEfficiencyModules);
+                float upgradeModifier = Mathf.Pow(0.85f, mv.NumEfficiencyModules);
                 TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.deltaTime);
             }
         }
@@ -203,24 +198,6 @@ namespace AVS
                     }
                 }
             }
-        }
-        void IAutoPilotListener.OnAutoLevelBegin()
-        {
-            isAutoLeveling = true;
-        }
-        void IAutoPilotListener.OnAutoLevelEnd()
-        {
-            isAutoLeveling = false;
-        }
-
-        void IAutoPilotListener.OnAutoPilotBegin()
-        {
-            isAutoPiloting = true;
-        }
-
-        void IAutoPilotListener.OnAutoPilotEnd()
-        {
-            isAutoPiloting = false;
         }
 
         void ILightsStatusListener.OnFloodLightsOff()

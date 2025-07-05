@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.Engines;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -77,6 +78,7 @@ namespace AVS.Composition
         /// <param name="leviathanGrabPoint">
         /// Leviathan grab point. Optional.
         /// </param>
+        /// <param name="engine">The engine that powers the vehicle. Must not be null.</param>
         /// <exception cref="ArgumentNullException">
         /// Thrown if <paramref name="pilotSeat"/> is null or if <c>PilotSeat.Seat</c> is null.
         /// </exception>
@@ -85,6 +87,7 @@ namespace AVS.Composition
             GameObject storageRootObject,
             GameObject modulesRootObject,
             IReadOnlyList<VehicleParts.VehicleHatchStruct> hatches,
+            AbstractEngine engine,
             GameObject collisionModel = null,
             IReadOnlyList<VehicleParts.VehicleBattery> batteries = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades> upgrades = null,
@@ -102,6 +105,7 @@ namespace AVS.Composition
             IReadOnlyList<Transform> lavaLarvaAttachPoints = null,
             GameObject leviathanGrabPoint = null
         ) : base(
+            engine: engine,
             storageRootObject: storageRootObject,
             modulesRootObject: modulesRootObject,
             hatches: hatches,

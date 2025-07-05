@@ -1,80 +1,216 @@
-﻿using AVS.VehicleComponents;
+﻿using AVS.Interfaces;
+using AVS.VehicleComponents;
+using System;
 using System.Collections;
 using UnityEngine;
 
 namespace AVS
 {
-    public class AutoPilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener, IPowerListener, ILightsStatusListener, IAutoPilotListener, IScuttleListener
+    internal readonly struct ThresholdWindow
+    {
+        public ThresholdWindow(float from, float to, AutopilotStatus eventIfContained)
+        {
+            From = from;
+            To = to;
+            EventIfContained = eventIfContained;
+        }
+
+        public float From { get; }
+        public float To { get; }
+        public AutopilotStatus EventIfContained { get; }
+
+        public bool Contains(float value)
+        {
+            return value >= From && value < To;
+        }
+    }
+
+    internal class CommonValueThresholdTracker
+    {
+        protected readonly AutopilotStatus[] _statuses;
+        protected int _previousLevel;
+        public AutopilotStatus CurrentStatus => _statuses[_previousLevel];
+
+        protected CommonValueThresholdTracker(AutopilotStatus[] statuses)
+        {
+            if (statuses == null)
+                throw new System.ArgumentNullException();
+            _statuses = statuses;
+        }
+
+        // Returns the index of the highest threshold <= value, or -1 if below all
+        protected int GetLevel(float[] thresholds, float value, float factor)
+        {
+            try
+            {
+                int level = 0;
+                for (int i = 0; i < thresholds.Length; i++)
+                {
+                    if (value >= thresholds[i] * factor)
+                        level = i + 1;
+                    else
+                        break;
+                }
+                return level;
+            }
+            catch (System.Exception e)
+            {
+                Logger.Exception($"Error finding level ({value} in {thresholds} x{factor}): ", e);
+                throw;
+            }
+        }
+
+        internal void SetLevel(int v)
+        {
+            if (v < 0 || v >= _statuses.Length)
+                throw new IndexOutOfRangeException($"Invalid level index {v} for events {_statuses.Length}");
+            _previousLevel = v;
+        }
+        internal void SetLevel(AutopilotStatus v)
+        {
+            SetLevel(Array.IndexOf(_statuses, v));
+        }
+
+    }
+
+    /// <summary>
+    /// Tracker for statuses where high values indicate worse status.
+    /// </summary>
+    internal class PositiveValueThresholdTracker : CommonValueThresholdTracker
+    {
+
+
+        public PositiveValueThresholdTracker(params AutopilotStatus[] statuses)
+            : base(statuses)
+        { }
+
+
+        // Call this on update. Returns the event to signal, or null if no event.
+        public AutopilotStatusChange? Update(float value, params float[] thresholds)
+        {
+            if (thresholds == null || thresholds.Length == 0)
+            {
+                Logger.Error("No thresholds provided for PositiveValueThresholdTracker.Update");
+                return null;
+            }
+            try
+            {
+                var upLevel = GetLevel(thresholds, value, 1f);
+                var downLevel = GetLevel(thresholds, value, 0.95f);
+
+                try
+                {
+
+                    if (upLevel > _previousLevel)
+                    {
+                        // Level increased
+                        var was = CurrentStatus;
+                        _previousLevel = upLevel;
+                        return new AutopilotStatusChange(was, _statuses[upLevel]);
+                    }
+                    else if (downLevel < _previousLevel)
+                    {
+                        // Level decreased
+                        var was = CurrentStatus;
+                        _previousLevel = downLevel;
+                        return new AutopilotStatusChange(was, _statuses[downLevel]);
+                    }
+                    else
+                        return null; // No change in level, no event to signal
+                }
+                catch (System.IndexOutOfRangeException e)
+                {
+                    Logger.Exception($"Error in AutopilotEvent Update ({upLevel},{downLevel}): ", e);
+                    throw;
+                }
+            }
+            catch (System.Exception e)
+            {
+                Logger.Exception("Error finding levels: ", e);
+                throw;
+            }
+        }
+
+    }
+
+
+    /// <summary>
+    /// Tracker for statuses where lower values indicate worse status.
+    /// </summary>
+    internal class NegativeValueThresholdTracker : CommonValueThresholdTracker
+    {
+
+        public NegativeValueThresholdTracker(params AutopilotStatus[] statuses)
+            : base(statuses)
+        {
+            _previousLevel = statuses.Length - 1; // Start at the highest level
+        }
+
+        // Call this on update. Returns the event to signal, or null if no event.
+        public AutopilotStatusChange? Update(float value, params float[] thresholds)
+        {
+            var upLevel = GetLevel(thresholds, value, 1.05f);
+            var downLevel = GetLevel(thresholds, value, 1f);
+            if (upLevel > _previousLevel)
+            {
+                // Level increased
+                var was = CurrentStatus;
+                _previousLevel = upLevel;
+                return new AutopilotStatusChange(was, _statuses[upLevel]);
+            }
+            else if (downLevel < _previousLevel)
+            {
+                // Level decreased
+                var was = CurrentStatus;
+                _previousLevel = downLevel;
+                return new AutopilotStatusChange(was, _statuses[downLevel]);
+            }
+            else
+                return null; // No change in level, no event to signal
+        }
+
+    }
+
+
+    public class AutoPilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener, IPowerListener, ILightsStatusListener, IScuttleListener
     {
         public EnergyInterface aiEI;
-        public AutoPilotVoice apVoice;
+        public VoiceQueue apVoice;
         public ModVehicle mv => GetComponent<ModVehicle>();
         public LiveMixin liveMixin => mv.liveMixin;
         public EnergyInterface eInterf => mv.energyInterface;
 
-        public enum HealthState
-        {
-            Safe,
-            Low,
-            Critical,
-            DoomImminent
-        }
-        public HealthState healthStatus;
-        public enum PowerState
-        {
-            Safe,
-            Low,
-            NearMT,
-            Depleted,
-            OxygenOffline
-        }
-        public PowerState powerStatus;
-        public enum DepthState
-        {
-            Safe,
-            Perilous,
-            Lethal
-        }
-        public DepthState depthStatus;
+
+        private PositiveValueThresholdTracker DepthTracker { get; }
+            = new PositiveValueThresholdTracker(
+                AutopilotStatus.DepthSafe,
+                AutopilotStatus.DepthNearCrush,
+                AutopilotStatus.DepthBeyondCrush
+            );
+        private NegativeValueThresholdTracker HealthTracker { get; }
+            = new NegativeValueThresholdTracker(
+                AutopilotStatus.HealthCritical,
+                AutopilotStatus.HealthLow,
+                AutopilotStatus.HealthSafe
+            );
+
+        private NegativeValueThresholdTracker PowerTracker { get; }
+            = new NegativeValueThresholdTracker(
+                AutopilotStatus.PowerDead,
+                AutopilotStatus.PowerCritical,
+                AutopilotStatus.PowerLow,
+                AutopilotStatus.PowerSafe
+            );
+
+        public AutopilotStatus HealthStatus => HealthTracker.CurrentStatus;
+        public AutopilotStatus PowerStatus => PowerTracker.CurrentStatus;
+        public AutopilotStatus DepthStatus => DepthTracker.CurrentStatus;
         public enum DangerState
         {
             Safe,
             LeviathanNearby,
         }
-        public DangerState dangerStatus;
-
-        //private float timeOfLastLevelTap = 0f;
-        //private const float doubleTapWindow = 1f;
-        //private float PitchDelta => transform.rotation.eulerAngles.x >= 180 ? 360 - transform.rotation.eulerAngles.x : transform.rotation.eulerAngles.x;
-        //private float RollDelta => transform.rotation.eulerAngles.z >= 180 ? 360 - transform.rotation.eulerAngles.z : transform.rotation.eulerAngles.z;
-        //private float smoothTime = 0.3f;
-        public float autoLevelRate = 11f;
-        private bool _autoLeveling = false;
-        public bool autoLeveling
-        {
-            get
-            {
-                return _autoLeveling;
-            }
-            private set
-            {
-                if (value)
-                {
-                    if (!_autoLeveling)
-                    {
-                        NotifyStatus(AutoPilotStatus.OnAutoLevelBegin);
-                    }
-                }
-                else
-                {
-                    if (_autoLeveling)
-                    {
-                        NotifyStatus(AutoPilotStatus.OnAutoLevelEnd);
-                    }
-                }
-                _autoLeveling = value;
-            }
-        }
+        public AutopilotStatus DangerStatus { get; private set; } = AutopilotStatus.LeviathanSafe;
 
 #pragma warning disable CS0414
         private bool isDead = false;
@@ -82,13 +218,11 @@ namespace AVS
 
         public void Awake()
         {
-            mv.voice = apVoice = mv.gameObject.EnsureComponent<AutoPilotVoice>();
-            mv.voice.voice = VoiceManager.GetDefaultVoice(mv);
+            //mv.voice = apVoice = mv.gameObject.EnsureComponent<VoiceQueue>();
+            //mv.voice = apVoice = mv.gameObject.EnsureComponent<VoiceQueue>();
+            //mv.voice.voice = VoiceManager.GetDefaultVoice(mv);
             mv.gameObject.EnsureComponent<AutoPilotNavigator>();
-            healthStatus = HealthState.Safe;
-            powerStatus = PowerState.Safe;
-            depthStatus = DepthState.Safe;
-            dangerStatus = DangerState.Safe;
+            DangerStatus = AutopilotStatus.LeviathanSafe;
         }
         public void Start()
         {
@@ -104,10 +238,15 @@ namespace AVS
 
         public void Update()
         {
-            UpdateHealthState();
-            UpdatePowerState();
-            UpdateDepthState();
             MaybeRefillOxygen();
+
+            var listeners = mv.GetComponentsInChildren<IAutopilotEventListener>();
+            if (listeners.Length == 0)
+                return;
+
+            UpdateHealthState(listeners);
+            UpdatePowerState(listeners);
+            UpdateDepthState(listeners);
 
             //if (mv is Submarine s && s.DoesAutolevel && mv.VFEngine is Engines.ModVehicleEngine)
             //{
@@ -161,113 +300,56 @@ namespace AVS
         //        }
         //    }
         //}
-        private void UpdateHealthState()
+        private void UpdateHealthState(IAutopilotEventListener[] listeners)
         {
-            float percentHealth = (liveMixin.health / liveMixin.maxHealth);
-            if (percentHealth < .05f)
+            try
             {
-                if (healthStatus < HealthState.DoomImminent)
-                {
-                    apVoice.EnqueueClip(apVoice.voice.HullFailureImminent);
-                }
-                healthStatus = HealthState.DoomImminent;
+                Emit(listeners, HealthTracker.Update(liveMixin.health, liveMixin.maxHealth * 0.1f, liveMixin.maxHealth * 0.4f));
             }
-            else if (percentHealth < .25f)
+            catch (System.Exception e)
             {
-                if (healthStatus < HealthState.Critical)
-                {
-                    apVoice.EnqueueClip(apVoice.voice.HullIntegrityCritical);
-                }
-                healthStatus = HealthState.Critical;
-            }
-            else if (percentHealth < .40f)
-            {
-                if (healthStatus < HealthState.Low)
-                {
-                    apVoice.EnqueueClip(apVoice.voice.HullIntegrityLow);
-                }
-                healthStatus = HealthState.Low;
-            }
-            else
-            {
-                healthStatus = HealthState.Safe;
+                Logger.Exception("Error updating health state: ", e);
             }
         }
-        private void UpdatePowerState()
+        private void UpdatePowerState(IAutopilotEventListener[] listeners)
         {
-            mv.GetEnergyValues(out float totalPower, out float totalCapacity);
-            if (totalPower < 0.1)
+            try
             {
-                if (powerStatus < PowerState.OxygenOffline)
-                {
-                    apVoice.EnqueueClip(apVoice.voice.OxygenProductionOffline);
-                }
-                powerStatus = PowerState.OxygenOffline;
+                mv.GetEnergyValues(out float totalPower, out float totalCapacity);
+                Emit(listeners, PowerTracker.Update(totalPower, 0.1f, 0.1f * totalCapacity, 0.3f * totalCapacity));
             }
-            else if (totalPower < 5)
+            catch (System.Exception e)
             {
-                if (powerStatus < PowerState.Depleted)
-                {
-                    apVoice.EnqueueClip(apVoice.voice.BatteriesDepleted);
-                }
-                powerStatus = PowerState.Depleted;
-            }
-            else if (totalPower < 0.1f * totalCapacity)
-            {
-                if (powerStatus < PowerState.NearMT)
-                {
-                    apVoice.EnqueueClip(apVoice.voice.BatteriesNearlyEmpty);
-                }
-                powerStatus = PowerState.NearMT;
-            }
-            else if (totalPower < 0.3f * totalCapacity)
-            {
-                if (powerStatus < PowerState.Low)
-                {
-                    apVoice.EnqueueClip(apVoice.voice.PowerLow);
-                }
-                powerStatus = PowerState.Low;
-            }
-            else
-            {
-                powerStatus = PowerState.Safe;
+                Logger.Exception("Error updating power state: ", e);
             }
         }
-        private void UpdateDepthState()
+        private void UpdateDepthState(IAutopilotEventListener[] listeners)
         {
-            float crushDepth = GetComponent<CrushDamage>().crushDepth * -1;
-            float perilousDepth = crushDepth * 0.9f;
-            float depth = transform.position.y;
+            try
+            {
+                float crushDepth = GetComponent<CrushDamage>().crushDepth;
+                float perilousDepth = crushDepth * 0.9f;
+                float depth = transform.position.y;
 
-            DepthState newDepthState = DepthState.Safe;
-            if (depth < perilousDepth)
-            {
-                if (depth < crushDepth)
-                {
-                    newDepthState = DepthState.Lethal;
-                }
-                else
-                {
-                    newDepthState = DepthState.Perilous;
-                }
+                Emit(listeners, DepthTracker.Update(-depth, perilousDepth, crushDepth));
             }
-
-            if (depthStatus != newDepthState)
+            catch (System.Exception e)
             {
-                depthStatus = newDepthState;
-                switch (depthStatus)
+                Logger.Exception("Error updating depth state: ", e);
+            }
+        }
+
+        private void Emit(IAutopilotEventListener[] listeners, AutopilotStatusChange? v)
+        {
+            if (v.HasValue)
+            {
+                foreach (var listener in listeners)
                 {
-                    case DepthState.Perilous:
-                        apVoice.EnqueueClip(apVoice.voice.PassingSafeDepth);
-                        break;
-                    case DepthState.Lethal:
-                        apVoice.EnqueueClip(apVoice.voice.MaximumDepthReached);
-                        break;
-                    default:
-                        break;
+                    listener.Signal(v.Value);
                 }
             }
         }
+
         private void MaybeRefillOxygen()
         {
             float totalPower = mv.energyInterface.TotalCanProvide(out _);
@@ -278,33 +360,8 @@ namespace AVS
                 OxygenManager oxygenMgr = Player.main.oxygenMgr;
                 oxygenMgr.GetTotal(out float num, out float num2);
                 float amount = Mathf.Min(num2 - num, mv.oxygenPerSecond * Time.deltaTime) * mv.oxygenEnergyCost;
-                float secondsToAdd = mv.AIEnergyInterface.ConsumeEnergy(amount) / mv.oxygenEnergyCost;
+                float secondsToAdd = mv.aiEnergyInterface.ConsumeEnergy(amount) / mv.oxygenEnergyCost;
                 oxygenMgr.AddOxygen(secondsToAdd);
-            }
-        }
-
-        public void NotifyStatus(AutoPilotStatus vs)
-        {
-            foreach (var component in GetComponentsInChildren<IAutoPilotListener>())
-            {
-                switch (vs)
-                {
-                    case AutoPilotStatus.OnAutoLevelBegin:
-                        component.OnAutoLevelBegin();
-                        break;
-                    case AutoPilotStatus.OnAutoLevelEnd:
-                        component.OnAutoLevelEnd();
-                        break;
-                    case AutoPilotStatus.OnAutoPilotBegin:
-                        component.OnAutoPilotBegin();
-                        break;
-                    case AutoPilotStatus.OnAutoPilotEnd:
-                        component.OnAutoPilotEnd();
-                        break;
-                    default:
-                        Logger.Error("Error: tried to notify using an invalid status");
-                        break;
-                }
             }
         }
 
@@ -357,7 +414,9 @@ namespace AVS
         {
             Logger.DebugLog(mv, "OnPowerUp");
             isDead = false;
-            apVoice.EnqueueClip(apVoice.voice.EnginePoweringUp);
+            //apVoice.EnqueueClip(apVoice.voice.EnginePoweringUp);
+            var listeners = mv.GetComponentsInChildren<IAutopilotEventListener>();
+            listeners.ForEach(l => l.Signal(AutopilotEvent.PowerUp));
             if (mv.IsUnderCommand)
             {
                 IEnumerator ShakeCamera()
@@ -374,8 +433,8 @@ namespace AVS
         {
             Logger.DebugLog(mv, "OnPowerDown");
             isDead = true;
-            autoLeveling = false;
-            apVoice.EnqueueClip(apVoice.voice.EnginePoweringDown);
+            mv.GetComponentsInChildren<IAutopilotEventListener>()
+                .ForEach(l => l.Signal(AutopilotEvent.PowerDown));
         }
 
         void IPowerListener.OnBatterySafe()
@@ -401,20 +460,15 @@ namespace AVS
         void IPlayerListener.OnPlayerEntry()
         {
             Logger.DebugLog(mv, "OnPlayerEntry");
-            if (powerStatus < PowerState.NearMT && UnityEngine.Random.value < 0.5f)
-            {
-                apVoice.EnqueueClip(apVoice.voice.WelcomeAboardAllSystemsOnline);
-            }
-            else
-            {
-                apVoice.EnqueueClip(apVoice.voice.WelcomeAboard);
-            }
+            mv.GetComponentsInChildren<IAutopilotEventListener>()
+                .ForEach(l => l.Signal(AutopilotEvent.PlayerEntry));
         }
 
         void IPlayerListener.OnPlayerExit()
         {
             Logger.DebugLog(mv, "OnPlayerExit");
-            apVoice.EnqueueClip(apVoice.voice.Goodbye);
+            mv.GetComponentsInChildren<IAutopilotEventListener>()
+                .ForEach(l => l.Signal(AutopilotEvent.PlayerExit));
         }
 
         void IPlayerListener.OnPilotBegin()
@@ -430,6 +484,11 @@ namespace AVS
         void IPowerListener.OnBatteryDead()
         {
             Logger.DebugLog(mv, "OnBatteryDead");
+            var was = PowerTracker.CurrentStatus;
+            PowerTracker.SetLevel(AutopilotStatus.PowerDead); // Reset power tracker to dead state
+            mv.GetComponentsInChildren<IAutopilotEventListener>()
+                .ForEach(l => l.Signal(new AutopilotStatusChange(was, AutopilotStatus.PowerDead)));
+
         }
 
         void IPowerListener.OnBatteryRevive()
@@ -437,26 +496,6 @@ namespace AVS
             Logger.DebugLog(mv, "OnBatteryRevive");
         }
 
-        void IAutoPilotListener.OnAutoLevelBegin()
-        {
-            Logger.DebugLog(mv, "OnAutoLevelBegin");
-            apVoice.EnqueueClip(apVoice.voice.Leveling);
-        }
-
-        void IAutoPilotListener.OnAutoLevelEnd()
-        {
-            Logger.DebugLog(mv, "OnAutoLevelEnd");
-        }
-
-        void IAutoPilotListener.OnAutoPilotBegin()
-        {
-            Logger.DebugLog(mv, "OnAutoPilotBegin");
-        }
-
-        void IAutoPilotListener.OnAutoPilotEnd()
-        {
-            Logger.DebugLog(mv, "OnAutoPilotEnd");
-        }
 
         readonly float MAX_TIME_TO_WAIT = 3f;
         float timeWeStartedWaiting = 0f;
@@ -466,22 +505,22 @@ namespace AVS
             IEnumerator ResetDangerStatusEventually()
             {
                 yield return new WaitUntil(() => Mathf.Abs(Time.time - timeWeStartedWaiting) >= MAX_TIME_TO_WAIT);
-                dangerStatus = DangerState.Safe;
+                var was = DangerStatus;
+                DangerStatus = AutopilotStatus.LeviathanSafe;
+                if (was != DangerStatus)
+                    mv.GetComponentsInChildren<IAutopilotEventListener>()
+                        .ForEach(l => l.Signal(new AutopilotStatusChange(was, DangerStatus)));
             }
             StopAllCoroutines();
             timeWeStartedWaiting = Time.time;
             UWE.CoroutineHost.StartCoroutine(ResetDangerStatusEventually());
-            if (dangerStatus == DangerState.Safe)
+            if (DangerStatus == AutopilotStatus.LeviathanSafe)
             {
-                dangerStatus = DangerState.LeviathanNearby;
-                if ((new System.Random()).NextDouble() < 0.5)
-                {
-                    apVoice.EnqueueClip(apVoice.voice.LeviathanDetected);
-                }
-                else
-                {
-                    apVoice.EnqueueClip(apVoice.voice.UhOh);
-                }
+                var was = DangerStatus;
+                DangerStatus = AutopilotStatus.LeviathanNearby;
+                if (was != DangerStatus)
+                    mv.GetComponentsInChildren<IAutopilotEventListener>()
+                        .ForEach(l => l.Signal(new AutopilotStatusChange(was, DangerStatus)));
             }
         }
 

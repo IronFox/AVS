@@ -2,7 +2,7 @@
 
 namespace AVS.Engines
 {
-    public class CricketEngine : ModVehicleEngine
+    public class CricketEngine : AbstractEngine
     {
         protected override float FORWARD_TOP_SPEED => 1300;
         protected override float REVERSE_TOP_SPEED => 450;
@@ -40,8 +40,8 @@ namespace AVS.Engines
              */
             float scalarFactor = 0.08f;
             float basePowerConsumptionPerSecond = moveDirection.x + moveDirection.y + moveDirection.z;
-            float upgradeModifier = Mathf.Pow(0.85f, MV.numEfficiencyModules);
-            MV.powerMan.TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.fixedDeltaTime);
+            float upgradeModifier = Mathf.Pow(0.85f, MV.NumEfficiencyModules);
+            MV.PowerManager.TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.fixedDeltaTime);
         }
     }
 }

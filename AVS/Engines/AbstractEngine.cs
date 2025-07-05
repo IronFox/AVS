@@ -2,54 +2,52 @@
 
 namespace AVS.Engines
 {
-    public abstract class ModVehicleEngine : MonoBehaviour, IScuttleListener
+    /// <summary>
+    /// Base class for vehicle engines in the mod framework.
+    /// Handles movement, physics, and input for mod vehicles.
+    /// </summary>
+    public abstract class AbstractEngine : MonoBehaviour, IScuttleListener
     {
         private ModVehicle mv = null;
         private Rigidbody rb = null;
-        private EngineSounds _sounds = default;
+        //private EngineSounds _sounds = default;
 
         /// <summary>
         /// Center of mass for the vehicle, applied during Start().
         /// </summary>
         protected Vector3 CenterOfMass { get; set; } = Vector3.zero;
+
         /// <summary>
         /// Angular drag for the vehicle, applied during Start().
         /// </summary>
         protected float AngularDrag { get; set; } = 5f;
 
+        /// <summary>
+        /// Gets the ModVehicle component associated with this engine.
+        /// </summary>
         public ModVehicle MV =>
             mv
             ? mv
             : mv = GetComponent<ModVehicle>();
 
+        /// <summary>
+        /// Gets the Rigidbody component associated with this engine.
+        /// </summary>
         protected Rigidbody RB =>
             rb
             ? rb
             : rb = GetComponent<Rigidbody>();
 
-        public float DamageModifier { get; set; } = 1f;
-
-        public EngineSounds Sounds
-        {
-            get
-            {
-                return _sounds;
-            }
-            set
-            {
-                _sounds = value;
-                EngineSource1.clip = value.Hum;
-                EngineSource2.clip = value.Whistle;
-            }
-        }
-        private AudioSource EngineSource1;
-        private AudioSource EngineSource2;
-
         #region public_fields
-        public float WhistleFactor = 0.4f;
-        public float HumFactor = 1f;
-        public bool blockVoiceChange => false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the vehicle can move above water.
+        /// </summary>
         public virtual bool CanMoveAboveWater { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the vehicle can rotate above water.
+        /// </summary>
         public virtual bool CanRotateAboveWater { get; set; } = false;
         #endregion
 
@@ -65,6 +63,10 @@ namespace AVS.Engines
 
         protected virtual float waterDragDecay => 4.5f;
         protected virtual float airDragDecay => 1.5f;
+
+        /// <summary>
+        /// Gets the drag decay value depending on whether the vehicle is underwater.
+        /// </summary>
         protected virtual float DragDecay
         {
             get
@@ -80,7 +82,11 @@ namespace AVS.Engines
             }
         }
 
-        protected float _forwardMomentum = 0;
+        private float _forwardMomentum = 0;
+
+        /// <summary>
+        /// Gets or sets the forward momentum of the vehicle.
+        /// </summary>
         protected virtual float ForwardMomentum
         {
             get
@@ -103,6 +109,11 @@ namespace AVS.Engines
                 }
             }
         }
+
+        /// <summary>
+        /// Updates the forward momentum based on input magnitude.
+        /// </summary>
+        /// <param name="inputMagnitude">Input value for forward movement.</param>
         protected virtual void UpdateForwardMomentum(float inputMagnitude)
         {
             if (0 < inputMagnitude)
@@ -116,6 +127,10 @@ namespace AVS.Engines
         }
 
         protected float _rightMomentum = 0;
+
+        /// <summary>
+        /// Gets or sets the right (strafe) momentum of the vehicle.
+        /// </summary>
         protected virtual float RightMomentum
         {
             get
@@ -138,6 +153,11 @@ namespace AVS.Engines
                 }
             }
         }
+
+        /// <summary>
+        /// Updates the right (strafe) momentum based on input magnitude.
+        /// </summary>
+        /// <param name="inputMagnitude">Input value for right movement.</param>
         protected virtual void UpdateRightMomentum(float inputMagnitude)
         {
             if (inputMagnitude != 0)
@@ -146,7 +166,11 @@ namespace AVS.Engines
             }
         }
 
-        protected float _upMomentum = 0;
+        private float _upMomentum = 0;
+
+        /// <summary>
+        /// Gets or sets the upward momentum of the vehicle.
+        /// </summary>
         protected virtual float UpMomentum
         {
             get
@@ -169,79 +193,52 @@ namespace AVS.Engines
                 }
             }
         }
+
+        /// <summary>
+        /// Updates the upward momentum based on input magnitude.
+        /// </summary>
+        /// <param name="inputMagnitude">Input value for upward movement.</param>
         protected virtual void UpdateUpMomentum(float inputMagnitude)
         {
             UpMomentum += inputMagnitude * VERT_ACCEL * Time.fixedDeltaTime;
         }
 
-        protected float _engineHum = 0;
-        protected virtual float EngineHum
-        {
-            get
-            {
-                return _engineHum;
-            }
-            set
-            {
-                if (value < 0)
-                {
-                    _engineHum = 0;
-                }
-                else if (10 < value)
-                {
-                    _engineHum = 10;
-                }
-                else
-                {
-                    _engineHum = value;
-                }
-            }
-        }
-        protected virtual void UpdateEngineHum(float inputMagnitude)
-        {
-            if (inputMagnitude == 0)
-            {
-                inputMagnitude = -1;
-            }
-            EngineHum += inputMagnitude * Time.deltaTime;
-        }
-        protected bool isReadyToWhistle = true;
+
         #endregion
 
         #region unity_signals
+        /// <summary>
+        /// Unity Awake callback. Initializes references and registers the engine.
+        /// </summary>
         public virtual void Awake()
         {
             mv = GetComponent<ModVehicle>();
             rb = GetComponent<Rigidbody>();
             // register self with mainpatcher, for on-the-fly voice selection updating
-            EngineSoundsManager.engines.Add(this);
+            //DynamicClipLoader.engines.Add(this);
         }
-        /// <inheritdoc/>
+
+        /// <summary>
+        /// Unity Start callback. Applies center of mass and angular drag.
+        /// </summary>
         public virtual void Start()
         {
             RB.centerOfMass = CenterOfMass;
             RB.angularDrag = AngularDrag;
-
-            EngineSource1 = MV.gameObject.AddComponent<AudioSource>().Register();
-            EngineSource1.loop = true;
-            EngineSource1.playOnAwake = false;
-            EngineSource1.priority = 0;
-            EngineSource1.spread = 180;
-
-            EngineSource2 = MV.gameObject.AddComponent<AudioSource>().Register();
-            EngineSource2.loop = false;
-            EngineSource2.playOnAwake = false;
-            EngineSource2.priority = 0;
-            EngineSource1.spread = 180;
-
-            Sounds = EngineSoundsManager.GetDefaultVoice(MV);
         }
+
+        /// <summary>
+        /// Unity OnDisable callback. Stops engine sounds if needed.
+        /// </summary>
         public void OnDisable()
         {
-            EngineSource1?.Stop();
-            EngineSource2?.Stop();
+            //EngineSource1?.Stop();
+            //EngineSource2?.Stop();
         }
 
+        /// <summary>
+        /// Unity FixedUpdate callback. Handles movement and physics updates.
+        /// </summary>
         public virtual void FixedUpdate()
         {
             if (CanMove())
@@ -254,28 +251,49 @@ namespace AVS.Engines
             }
             DoFixedUpdate();
         }
-
         #endregion
 
         #region overridden_methods
+        /// <summary>
+        /// Determines if the vehicle can move.
+        /// </summary>
+        /// <returns>True if movement is allowed.</returns>
         protected virtual bool CanMove()
         {
             return MV.GetIsUnderwater() || CanMoveAboveWater;
         }
+
+        /// <summary>
+        /// Determines if the vehicle can rotate.
+        /// </summary>
+        /// <returns>True if rotation is allowed.</returns>
         protected virtual bool CanRotate()
         {
             return MV.GetIsUnderwater() || CanRotateAboveWater;
         }
+
+        /// <summary>
+        /// Performs the movement logic for the vehicle.
+        /// </summary>
         protected virtual void DoMovement()
         {
             ExecutePhysicsMove();
         }
+
+        /// <summary>
+        /// Performs additional fixed update logic, such as drag application.
+        /// </summary>
         protected virtual void DoFixedUpdate()
         {
             Vector3 moveDirection = GameInput.GetMoveDirection();
-            DoEngineSounds(moveDirection);
+            //DoEngineSounds(moveDirection);
             ApplyDrag(moveDirection);
         }
+
+        /// <summary>
+        /// Applies movement input to the vehicle.
+        /// </summary>
+        /// <param name="moveInput">Movement input vector.</param>
         protected virtual void MoveWithInput(Vector3 moveInput)
         {
             UpdateRightMomentum(moveInput.x);
@@ -283,6 +301,11 @@ namespace AVS.Engines
             UpdateForwardMomentum(moveInput.z);
             return;
         }
+
+        /// <summary>
+        /// Applies player controls to the vehicle, including acceleration modifiers.
+        /// </summary>
+        /// <param name="moveDirection">Movement direction vector.</param>
         public void ApplyPlayerControls(Vector3 moveDirection)
         {
             var modifiers = GetComponentsInChildren<VehicleAccelerationModifier>();
@@ -292,8 +315,11 @@ namespace AVS.Engines
             }
             MoveWithInput(moveDirection);
             return;
-        } // public for historical reasons
+        }
 
+        /// <summary>
+        /// Handles movement input and power drain if the player is controlling the vehicle.
+        /// </summary>
         protected virtual void DoMovementInputs()
         {
             Vector3 moveDirection = GameInput.GetMoveDirection();
@@ -303,31 +329,36 @@ namespace AVS.Engines
                 DrainPower(moveDirection);
             }
         }
+
+        /// <summary>
+        /// Drains power from the vehicle based on movement input.
+        /// </summary>
+        /// <param name="moveDirection">Movement direction vector.</param>
         public virtual void DrainPower(Vector3 moveDirection)
         {
-            /* Rationale for these values
-             * Seamoth spends this on Update
-             * base.ConsumeEngineEnergy(Time.deltaTime * this.enginePowerConsumption * vector.magnitude);
-             * where vector.magnitude in [0,3];
-             * instead of enginePowerConsumption, we have upgradeModifier, but they are similar if not identical
-             * so the power consumption is similar to that of a seamoth.
-             */
             float scalarFactor = 1.0f;
             float basePowerConsumptionPerSecond = moveDirection.x + moveDirection.y + moveDirection.z;
-            float upgradeModifier = Mathf.Pow(0.85f, MV.numEfficiencyModules);
-            MV.powerMan.TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.fixedDeltaTime);
+            float upgradeModifier = Mathf.Pow(0.85f, MV.NumEfficiencyModules);
+            MV.PowerManager.TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.fixedDeltaTime);
         }
+
+        /// <summary>
+        /// Kills all movement momentum for the vehicle.
+        /// </summary>
         public virtual void KillMomentum()
         {
             ForwardMomentum = 0f;
             RightMomentum = 0f;
             UpMomentum = 0f;
         }
+
+        /// <summary>
+        /// Controls the rotation of the vehicle based on player input.
+        /// </summary>
         public virtual void ControlRotation()
         {
             if (CanRotate())
             {
-                // Control rotation
                 float pitchFactor = 1.4f;
                 float yawFactor = 1.4f;
                 Vector2 mouseDir = GameInput.GetLookDelta();
@@ -340,6 +371,9 @@ namespace AVS.Engines
         #endregion
 
         #region virtual_methods
+        /// <summary>
+        /// Gets or sets the drag threshold speed below which momentum is killed.
+        /// </summary>
         protected virtual float DragThresholdSpeed
         {
             get
@@ -351,11 +385,13 @@ namespace AVS.Engines
 
             }
         }
+
+        /// <summary>
+        /// Applies drag to the vehicle's momentum based on movement input.
+        /// </summary>
+        /// <param name="move">Movement input vector.</param>
         protected virtual void ApplyDrag(Vector3 move)
         {
-            // Only apply drag if we aren't applying movement in that direction (or falling).
-            // That is, if we aren't holding forward, our forward momentum should decay.
-            // Kill anything under 1%
             bool isForward = move.z != 0;
             bool isRight = move.x != 0;
             bool isUp = move.y != 0;
@@ -390,58 +426,23 @@ namespace AVS.Engines
                 RB.velocity = Vector3.zero;
             }
         }
-        public virtual void ExecutePhysicsMove() // public just for AircraftLib
+
+        /// <summary>
+        /// Executes the physics-based movement for the vehicle.
+        /// </summary>
+        public virtual void ExecutePhysicsMove()
         {
             Vector3 tsm = Vector3.one;
-            // Thank you to MrPurple6411 for the note about VehicleAccelerationModifier
             gameObject.GetComponents<VehicleAccelerationModifier>().ForEach(x => x.ModifyAcceleration(ref tsm));
-            RB.AddForce(tsm.z * DamageModifier * MV.transform.forward * (ForwardMomentum / 100f) * Time.fixedDeltaTime, ForceMode.VelocityChange);
-            RB.AddForce(tsm.x * DamageModifier * MV.transform.right * (RightMomentum / 100f) * Time.fixedDeltaTime, ForceMode.VelocityChange);
-            RB.AddForce(tsm.y * DamageModifier * MV.transform.up * (UpMomentum / 100f) * Time.fixedDeltaTime, ForceMode.VelocityChange);
+            RB.AddForce(tsm.z * MV.transform.forward * (ForwardMomentum / 100f) * Time.fixedDeltaTime, ForceMode.VelocityChange);
+            RB.AddForce(tsm.x * MV.transform.right * (RightMomentum / 100f) * Time.fixedDeltaTime, ForceMode.VelocityChange);
+            RB.AddForce(tsm.y * MV.transform.up * (UpMomentum / 100f) * Time.fixedDeltaTime, ForceMode.VelocityChange);
         }
-        protected virtual void PlayEngineHum()
-        {
-            float configVolume = mv.EngineSoundVolume * SoundSystem.GetMasterVolume();
-            EngineSource1.volume = EngineHum / 10f * configVolume * HumFactor;
-            if (MV.IsPowered())
-            {
-                if (!EngineSource1.isPlaying && RB.velocity.magnitude > 0.2f) // why 0.2f ?
-                {
-                    EngineSource1.Play();
-                }
-            }
-            else
-            {
-                EngineSource1.Stop();
-            }
-        }
-        protected virtual void PlayEngineWhistle(Vector3 moveDirection)
-        {
-            if (gameObject.GetComponent<Rigidbody>().velocity.magnitude < 1)
-            {
-                isReadyToWhistle = true;
-            }
-            else
-            {
-                isReadyToWhistle = false;
-            }
-            if (EngineSource2.isPlaying)
-            {
-                if (moveDirection.magnitude == 0)
-                {
-                    EngineSource2.Stop();
-                }
-            }
-            else
-            {
-                if (isReadyToWhistle && moveDirection.magnitude > 0)
-                {
-                    float configVolume = mv.EngineSoundVolume * SoundSystem.GetMasterVolume();
-                    EngineSource2.volume = configVolume * 0.4f * WhistleFactor;
-                    EngineSource2.Play();
-                }
-            }
-        }
+
+        /// <summary>
+        /// Determines if the vehicle can take player inputs.
+        /// </summary>
+        /// <returns>True if input is allowed.</returns>
         protected virtual bool CanTakeInputs()
         {
             var fcc = MainCameraControl.main.GetComponent<FreecamController>();
@@ -452,24 +453,13 @@ namespace AVS.Engines
             }
             return MV.CanPilot() && MV.IsPlayerControlling() && !isFreecam;
         }
-        protected virtual void DoEngineSounds(Vector3 moveDirection)
-        {
-            // DoEngineSounds shouldn't depend on the movement input,
-            // it should depend on the rigidbody velocity!
-            if (CanMove() && CanTakeInputs())
-            {
-                UpdateEngineHum(moveDirection.magnitude);
-                PlayEngineWhistle(moveDirection);
-            }
-            else
-            {
-                UpdateEngineHum(-3);
-            }
-            PlayEngineHum();
-        }
         #endregion
 
         #region methods
+        /// <summary>
+        /// Gets the estimated time (in seconds) for the vehicle to come to a stop.
+        /// </summary>
+        /// <returns>Maximum time to stop among all axes.</returns>
         public float GetTimeToStop()
         {
             float timeToXStop = Mathf.Log(0.05f * STRAFE_MAX_SPEED / RightMomentum) / (Mathf.Log(.25f));
@@ -477,20 +467,19 @@ namespace AVS.Engines
             float timeToZStop = Mathf.Log(0.05f * FORWARD_TOP_SPEED / ForwardMomentum) / (Mathf.Log(.25f));
             return Mathf.Max(timeToXStop, timeToYStop, timeToZStop);
         }
-        public void SetEngineSounds(EngineSounds inputVoice)
-        {
-            if (!blockVoiceChange)
-            {
-                Sounds = inputVoice;
-            }
-        }
         #endregion
 
+        /// <summary>
+        /// Called when the vehicle is scuttled. Disables the engine.
+        /// </summary>
         void IScuttleListener.OnScuttle()
         {
             enabled = false;
         }
 
+        /// <summary>
+        /// Called when the vehicle is unscuttled. Enables the engine.
+        /// </summary>
         void IScuttleListener.OnUnscuttle()
         {
             enabled = true;
