@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using AVS.Util;
+using UnityEngine;
 
 namespace AVS.Engines
 {
@@ -36,7 +37,7 @@ namespace AVS.Engines
         protected Rigidbody RB =>
             rb
             ? rb
-            : rb = GetComponent<Rigidbody>();
+            : rb = MV.useRigidbody.Or(MV.GetComponent<Rigidbody>());
 
         #region public_fields
 
@@ -223,6 +224,7 @@ namespace AVS.Engines
         /// </summary>
         public virtual void Start()
         {
+            Logger.Log($"Starting engine on {RB.NiceName()}");
             RB.centerOfMass = CenterOfMass;
             RB.angularDrag = AngularDrag;
         }
