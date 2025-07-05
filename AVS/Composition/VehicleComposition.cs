@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.Engines;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,7 +7,8 @@ namespace AVS.Composition
 {
     /// <summary>
     /// Objects, transforms, and components as identified by the derived mod vehicle.
-    /// GameObjects and Transforms are expected to be contained by the vehicle.
+    /// GameObjects, Transforms, and Components are expected to be contained by the vehicle
+    /// or its children.
     /// </summary>
     public class VehicleComposition
     {
@@ -114,6 +116,18 @@ namespace AVS.Composition
         /// </summary>
         public GameObject LeviathanGrabPoint { get; }
 
+        /// <summary>
+        /// The engine that powers the vehicle. Must not be null.
+        /// </summary>
+        /// <remarks>
+        /// The engine must be instantiated and attached during or before querying the vehicle's
+        /// composition.
+        /// As such, it is the only part that is not just derived from the model but rather newly
+        /// created on demand.
+        /// It is contained here because the mod vehicle requires it and it must be custom defined
+        /// by the client vehicle.
+        /// </remarks>
+        public AbstractEngine Engine { get; }
 
         /// <summary>
         /// Constructs a VehicleComposition with required and optional parts.
@@ -137,10 +151,12 @@ namespace AVS.Composition
         /// <param name="subNameDecals">Sub name decals. Optional.</param>
         /// <param name="lavaLarvaAttachPoints">Lava larva attach points. Optional.</param>
         /// <param name="leviathanGrabPoint">Leviathan grab point. Optional.</param>
+        /// <param name="engine">The engine that powers the vehicle. Must not be null.</param>
         public VehicleComposition(
             GameObject storageRootObject,
             GameObject modulesRootObject,
             IReadOnlyList<VehicleParts.VehicleHatchStruct> hatches,
+            AbstractEngine engine,
             GameObject collisionModel = null,
             IReadOnlyList<VehicleParts.VehicleBattery> batteries = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades> upgrades = null,
@@ -159,13 +175,15 @@ namespace AVS.Composition
             GameObject leviathanGrabPoint = null
         )
         {
-            if (storageRootObject == null)
+            if (!storageRootObject)
                 throw new ArgumentNullException(nameof(storageRootObject));
-            if (modulesRootObject == null)
+            if (!modulesRootObject)
                 throw new ArgumentNullException(nameof(modulesRootObject));
             if (hatches == null || hatches.Count == 0)
                 throw new ArgumentException("Hatches must not be null or empty.", nameof(hatches));
-
+            if (!engine)
+                throw new ArgumentNullException(nameof(engine));
+            Engine = engine;
             LeviathanGrabPoint = leviathanGrabPoint;
             StorageRootObject = storageRootObject;
             ModulesRootObject = modulesRootObject;

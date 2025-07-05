@@ -226,14 +226,8 @@ namespace AVS.UpgradeTypes
         /// </summary>
         /// <param name="tt">The tech type to check.</param>
         /// <returns>True if the tech type is present; otherwise, false.</returns>
-        public bool HasTechType(TechType tt)
-        {
-            if (tt == TechType.None)
-            {
-                return false;
-            }
-            return TechTypes.HasTechType(tt);
-        }
+        public bool HasTechType(TechType tt) => TechTypes.HasTechType(tt);
+
 
         /// <summary>
         /// Gets the number of this upgrade currently installed in the specified vehicle.

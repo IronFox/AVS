@@ -5,6 +5,24 @@ namespace AVS.Util
 {
     public static class GameObjectHelper
     {
+        public static T CopyComponentWithFieldsTo<T>(this T original, GameObject destination) where T : Component
+        {
+            if (!original)
+            {
+                Logger.Error($"Original component of type {typeof(T).Name} is null, cannot copy.");
+                return null;
+            }
+            System.Type type = original.GetType();
+            T copy = (T)destination.EnsureComponent(type);
+            System.Reflection.FieldInfo[] fields = type.GetFields();
+            foreach (System.Reflection.FieldInfo field in fields)
+            {
+                field.SetValue(copy, field.GetValue(original));
+            }
+            return copy;
+        }
+
+
         public static GameObject Or(this GameObject a, GameObject b)
         {
             if (a)

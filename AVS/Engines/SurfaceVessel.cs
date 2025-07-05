@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace AVS.Engines
 {
-    public class SurfaceVessel : ModVehicleEngine
+    public class SurfaceVessel : AbstractEngine
     {
         public virtual float WaterLine => 0f;
         public virtual float Buoyancy => 5f;

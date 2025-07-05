@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.Engines;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -122,6 +123,7 @@ namespace AVS.Composition
         /// <param name="subNameDecals">Sub name decals. Optional.</param>
         /// <param name="lavaLarvaAttachPoints">Lava larva attach points. Optional.</param>
         /// <param name="leviathanGrabPoint">Leviathan grab point. Optional.</param>
+        /// <param name="engine">The engine that powers the vehicle. Must not be null.</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="tetherSources"/> or <paramref name="pilotSeats"/> is null or empty.</exception>
         public SubmarineComposition(
             GameObject storageRootObject,
@@ -129,6 +131,7 @@ namespace AVS.Composition
             IReadOnlyList<GameObject> tetherSources,
             IReadOnlyList<VehicleParts.VehiclePilotSeat> pilotSeats,
             IReadOnlyList<VehicleParts.VehicleHatchStruct> hatches,
+            AbstractEngine engine,
             IReadOnlyList<VehicleParts.VehicleFloodLight> floodLights = null,
             IReadOnlyList<Light> interiorLights = null,
             IReadOnlyList<GameObject> navigationPortLights = null,
@@ -159,6 +162,7 @@ namespace AVS.Composition
             GameObject leviathanGrabPoint = null
         )
         : base(
+              engine: engine,
             hatches: hatches,
             storageRootObject: storageRootObject,
             modulesRootObject: modulesRootObject,

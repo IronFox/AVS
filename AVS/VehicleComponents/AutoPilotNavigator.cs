@@ -36,7 +36,7 @@ namespace AVS.VehicleComponents
         }
         public IEnumerator GoStraightToDestination(Vector3 dest)
         {
-            ModVehicleEngine engine = GetComponent<ModVehicleEngine>();
+            AbstractEngine engine = GetComponent<AbstractEngine>();
             if(engine == null)
             {
                 yield break;

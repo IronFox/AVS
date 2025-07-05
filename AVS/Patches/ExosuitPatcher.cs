@@ -44,21 +44,21 @@ namespace AVS.Patches
             if (exo != null)
             {
                 UpgradeTypes.SelectableActionParams param = new UpgradeTypes.SelectableActionParams
-                {
-                    vehicle = __instance,
-                    slotID = slotID,
-                    techType = techType
-                };
+                (
+                    vehicle: __instance,
+                    slotID: slotID,
+                    techType: techType
+                );
                 Admin.UpgradeRegistrar.OnSelectActions.ForEach(x => x(param));
 
                 UpgradeTypes.SelectableChargeableActionParams param2 = new UpgradeTypes.SelectableChargeableActionParams
-                {
-                    vehicle = __instance,
-                    slotID = slotID,
-                    techType = techType,
-                    charge = param.vehicle.quickSlotCharge[param.slotID],
-                    slotCharge = param.vehicle.GetSlotCharge(param.slotID)
-                };
+                (
+                    vehicle: __instance,
+                    slotID: slotID,
+                    techType: techType,
+                    charge: param.Vehicle.quickSlotCharge[param.SlotID],
+                    slotCharge: param.Vehicle.GetSlotCharge(param.SlotID)
+                );
                 Admin.UpgradeRegistrar.OnSelectChargeActions.ForEach(x => x(param2));
             }
         }

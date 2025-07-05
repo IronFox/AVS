@@ -64,14 +64,13 @@ namespace AVS.Admin
             ForCyclops = forCyclops;
         }
         /// <summary>
-        /// Determines whether the specified <see cref="TechType"/> is associated with any of the supported vehicles.
+        /// Determines whether the specified <see cref="TechType"/> is not <see cref="TechType.None" />
+        /// and equal to any of the contained types.
         /// </summary>
-        /// <param name="techType">The <see cref="TechType"/> to check for association with a vehicle.</param>
-        /// <returns><see langword="true"/> if the specified <see cref="TechType"/> is associated with  <see
-        /// langword="ForModVehicle"/>, <see langword="ForSeamoth"/>, <see langword="ForExosuit"/>,  or <see
-        /// langword="ForCyclops"/>; otherwise, <see langword="false"/>.</returns>
         public bool HasTechType(TechType techType)
         {
+            if (techType == TechType.None)
+                return false;
             return ForModVehicle == techType
                 || ForSeamoth == techType
                 || ForExosuit == techType
@@ -142,44 +141,44 @@ namespace AVS.Admin
         /// <summary>
         /// Dictionary of upgrade icons, indexed by upgrade ClassId.
         /// </summary>
-        public static Dictionary<string, Sprite> UpgradeIcons = new Dictionary<string, Sprite>();
+        public static Dictionary<string, Sprite> UpgradeIcons { get; } = new Dictionary<string, Sprite>();
 
         /// <summary>
         /// List of actions to invoke when an upgrade is added or removed.
         /// </summary>
-        internal static List<Action<AddActionParams>> OnAddActions = new List<Action<AddActionParams>>();
+        internal static List<Action<AddActionParams>> OnAddActions { get; } = new List<Action<AddActionParams>>();
         /// <summary>
         /// List of actions to invoke when a toggleable upgrade is toggled.
         /// </summary>
-        internal static List<Action<ToggleActionParams>> OnToggleActions = new List<Action<ToggleActionParams>>();
+        internal static List<Action<ToggleActionParams>> OnToggleActions { get; } = new List<Action<ToggleActionParams>>();
         /// <summary>
         /// List of actions to invoke when a selectable chargeable upgrade is selected.
         /// </summary>
-        internal static List<Action<SelectableChargeableActionParams>> OnSelectChargeActions = new List<Action<SelectableChargeableActionParams>>();
+        internal static List<Action<SelectableChargeableActionParams>> OnSelectChargeActions { get; } = new List<Action<SelectableChargeableActionParams>>();
         /// <summary>
         /// List of actions to invoke when a selectable upgrade is selected.
         /// </summary>
-        internal static List<Action<SelectableActionParams>> OnSelectActions = new List<Action<SelectableActionParams>>();
+        internal static List<Action<SelectableActionParams>> OnSelectActions { get; } = new List<Action<SelectableActionParams>>();
         /// <summary>
         /// List of actions to invoke when an arm action is performed (down).
         /// </summary>
-        internal static List<Action<ArmActionParams>> OnArmDownActions = new List<Action<ArmActionParams>>();
+        internal static List<Action<ArmActionParams>> OnArmDownActions { get; } = new List<Action<ArmActionParams>>();
         /// <summary>
         /// List of actions to invoke when an arm action is held.
         /// </summary>
-        internal static List<Action<ArmActionParams>> OnArmHeldActions = new List<Action<ArmActionParams>>();
+        internal static List<Action<ArmActionParams>> OnArmHeldActions { get; } = new List<Action<ArmActionParams>>();
         /// <summary>
         /// List of actions to invoke when an arm action is released (up).
         /// </summary>
-        internal static List<Action<ArmActionParams>> OnArmUpActions = new List<Action<ArmActionParams>>();
+        internal static List<Action<ArmActionParams>> OnArmUpActions { get; } = new List<Action<ArmActionParams>>();
         /// <summary>
         /// List of actions to invoke when an alternate arm action is performed.
         /// </summary>
-        internal static List<Action<ArmActionParams>> OnArmAltActions = new List<Action<ArmActionParams>>();
+        internal static List<Action<ArmActionParams>> OnArmAltActions { get; } = new List<Action<ArmActionParams>>();
         /// <summary>
         /// Tracks currently toggled actions for vehicles, by vehicle, slot, and coroutine.
         /// </summary>
-        internal static List<Tuple<Vehicle, int, Coroutine>> toggledActions = new List<Tuple<Vehicle, int, Coroutine>>();
+        internal static List<Tuple<Vehicle, int, Coroutine>> ToggledActions { get; } = new List<Tuple<Vehicle, int, Coroutine>>();
 
         /// <summary>
         /// Registers a ModVehicleUpgrade and sets up its icons, recipes, and actions for compatible vehicle types.
@@ -388,12 +387,12 @@ namespace AVS.Admin
                 TechType cTT = utt.ForCyclops;
                 void WrappedOnSelected(SelectableActionParams param)
                 {
-                    if (param.techType != TechType.None && (param.techType == mvTT || param.techType == sTT || param.techType == eTT || param.techType == cTT))
+                    if (param.TechType != TechType.None && (param.TechType == mvTT || param.TechType == sTT || param.TechType == eTT || param.TechType == cTT))
                     {
                         select.OnSelected(param);
-                        param.vehicle.quickSlotTimeUsed[param.slotID] = Time.time;
-                        param.vehicle.quickSlotCooldown[param.slotID] = select.Cooldown;
-                        param.vehicle.energyInterface.ConsumeEnergy(select.EnergyCost);
+                        param.Vehicle.quickSlotTimeUsed[param.SlotID] = Time.time;
+                        param.Vehicle.quickSlotCooldown[param.SlotID] = select.Cooldown;
+                        param.Vehicle.energyInterface.ConsumeEnergy(select.EnergyCost);
                     }
                 }
                 OnSelectActions.Add(WrappedOnSelected);
@@ -421,16 +420,13 @@ namespace AVS.Admin
                     Nautilus.Handlers.CraftDataHandler.SetEnergyCost(value, selectcharge.EnergyCost);
                 }
                 isPDASetup = true;
-                TechType mvTT = utt.ForModVehicle;
-                TechType sTT = utt.ForSeamoth;
-                TechType eTT = utt.ForExosuit;
-                TechType cTT = utt.ForCyclops;
+                var myType = utt;
                 void WrappedOnSelectedCharged(SelectableChargeableActionParams param)
                 {
-                    if (param.techType != TechType.None && (param.techType == mvTT || param.techType == sTT || param.techType == eTT || param.techType == cTT))
+                    if (myType.HasTechType(param.TechType))
                     {
                         selectcharge.OnSelected(param);
-                        param.vehicle.energyInterface.ConsumeEnergy(selectcharge.EnergyCost);
+                        param.Vehicle.energyInterface.ConsumeEnergy(selectcharge.EnergyCost);
                     }
                 }
                 OnSelectChargeActions.Add(WrappedOnSelectedCharged);
@@ -479,10 +475,10 @@ namespace AVS.Admin
                 TechType cTT = utt.ForCyclops;
                 void WrappedOnToggle(ToggleActionParams param)
                 {
-                    toggledActions.RemoveAll(x => x.Item3 == null);
+                    ToggledActions.RemoveAll(x => x.Item3 == null);
                     if (param.techType != TechType.None && (param.techType == mvTT || param.techType == sTT || param.techType == eTT || param.techType == cTT))
                     {
-                        var relevantActions = toggledActions.Where(x => x.Item1 == param.vehicle).Where(x => x.Item2 == param.slotID);
+                        var relevantActions = ToggledActions.Where(x => x.Item1 == param.vehicle).Where(x => x.Item2 == param.slotID);
                         if (param.active)
                         {
                             if (relevantActions.Any())
@@ -492,13 +488,13 @@ namespace AVS.Admin
                                 return;
                             }
                             var thisToggleCoroutine = param.vehicle.StartCoroutine(DoToggleAction(param, toggle.TimeToFirstActivation, toggle.RepeatRate, toggle.EnergyCostPerActivation));
-                            toggledActions.Add(new Tuple<Vehicle, int, Coroutine>(param.vehicle, param.slotID, thisToggleCoroutine));
+                            ToggledActions.Add(new Tuple<Vehicle, int, Coroutine>(param.vehicle, param.slotID, thisToggleCoroutine));
                         }
                         else
                         {
                             foreach (var innerAction in relevantActions)
                             {
-                                toggledActions.RemoveAll(x => x == innerAction);
+                                ToggledActions.RemoveAll(x => x == innerAction);
                                 param.vehicle.StopCoroutine(innerAction.Item3);
                             }
                         }

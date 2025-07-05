@@ -141,12 +141,15 @@
     <Compile Include="Admin\GameStateWatcher.cs" />
     <Compile Include="Admin\Utils.cs" />
     <Compile Include="Admin\VehicleRegistrar.cs" />
-    <Compile Include="Admin\EngineSoundsManager.cs" />
+    <Compile Include="Audio\DynamicClipLoader.cs" />
     <Compile Include="Admin\VoiceManager.cs" />
     <Compile Include="Assets\SpriteHelper.cs" />
     <Compile Include="Assets\StaticAssets.cs" />
     <Compile Include="Assets\VanillaVehicleHelpers.cs" />
     <Compile Include="Assets\AVSFabricator.cs" />
+    <Compile Include="Audio\FModException.cs" />
+    <Compile Include="Audio\FModSoundSource.cs" />
+    <Compile Include="Audio\SoundSetup.cs" />
     <Compile Include="CompatChecker.cs" />
     <Compile Include="Composition\SkimmerComposition.cs" />
     <Compile Include="Composition\SubmersibleComposition.cs" />
@@ -156,6 +159,7 @@
     <Compile Include="DepthModules\DepthModule2.cs" />
     <Compile Include="DepthModules\DepthModule1.cs" />
     <Compile Include="Engines\SurfaceVessel.cs" />
+    <Compile Include="Interfaces\IAutopilotEventListener.cs" />
     <Compile Include="Interfaces\IDockListener.cs" />
     <Compile Include="Interfaces\IScuttleListener.cs" />
     <Compile Include="LightControllers\BaseLightController.cs" />
@@ -182,6 +186,7 @@
     <Compile Include="Util\ListExt.cs" />
     <Compile Include="Util\Logging.cs" />
     <Compile Include="Util\Shaders.cs" />
+    <Compile Include="VehicleComponents\VehicleColor.cs" />
     <Compile Include="VehicleComponents\MaterialReactor.cs" />
     <Compile Include="VehicleComponents\ModVehicleDockingBay.cs" />
     <Compile Include="VehicleComponents\DockingBay.cs" />
@@ -244,8 +249,7 @@
     <Compile Include="VehicleTypes\Submersible.cs" />
     <Compile Include="UpgradeModules\UpgradeProxy.cs" />
     <Compile Include="VehicleBuilding\VehicleNautilusInterface.cs" />
-    <Compile Include="VehicleComponents\AutoPilotVoice.cs" />
-    <Compile Include="Interfaces\IAutoPilotListener.cs" />
+    <Compile Include="VehicleComponents\VoiceQueue.cs" />
     <Compile Include="Interfaces\IPlayerListener.cs" />
     <Compile Include="Interfaces\IPowerListener.cs" />
     <Compile Include="Interfaces\ILightsStatusListener.cs" />
@@ -257,7 +261,7 @@
     <Compile Include="StorageComponents\StorageInput.cs" />
     <Compile Include="StorageComponents\InnateStorageInput.cs" />
     <Compile Include="Engines\Odyssey.cs" />
-    <Compile Include="Engines\ModVehicleEngine.cs" />
+    <Compile Include="Engines\AbstractEngine.cs" />
     <Compile Include="VehicleComponents\PowerManager.cs" />
     <Compile Include="VehicleComponents\TetherSource.cs" />
     <Compile Include="VehicleBuilding\HUDBuilder.cs" />

@@ -1,4 +1,4 @@
-﻿using AVS.Engines;
+﻿using AVS.Util;
 using AVS.VehicleTypes;
 using System;
 using System.Collections;
@@ -41,7 +41,7 @@ namespace AVS
 
         public static IEnumerator Prefabricate(ModVehicle mv, PingType pingType, bool verbose)
         {
-            mv.RequireComposition();
+            mv.OnAwakeOrPrefabricate();
             VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, "Prefabricating the " + mv.gameObject.name);
             yield return UWE.CoroutineHost.StartCoroutine(SeamothHelper.EnsureSeamoth());
             if (!Instrument(mv, pingType))
@@ -64,7 +64,6 @@ namespace AVS
         #region setup_funcs
         public static bool SetupObjects(ModVehicle mv)
         {
-            mv.RequireComposition();
             // Wow, look at this:
             // This Nautilus line might be super nice if it works for us
             // allow it to be opened as a storage container:
@@ -320,42 +319,8 @@ namespace AVS
         }
         public static void SetupAIEnergyInterface(ModVehicle mv)
         {
-            if (mv.Com.BackupBatteries.Count == 0)
-            {
-                mv.AIEnergyInterface = mv.energyInterface;
-                return;
-            }
-            var seamothEnergyMixin = SeamothHelper.Seamoth.GetComponent<EnergyMixin>();
-            List<EnergyMixin> energyMixins = new List<EnergyMixin>();
-            foreach (VehicleParts.VehicleBattery vb in mv.Com.BackupBatteries)
-            {
-                // Configure energy mixin for this battery slot
-                var em = vb.BatterySlot.EnsureComponent<EnergyMixin>();
-                em.storageRoot = mv.Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
-                em.defaultBattery = seamothEnergyMixin.defaultBattery;
-                em.compatibleBatteries = new List<TechType>() { TechType.PowerCell, TechType.PrecursorIonPowerCell };
-                em.soundPowerUp = seamothEnergyMixin.soundPowerUp;
-                em.soundPowerDown = seamothEnergyMixin.soundPowerDown;
-                em.soundBatteryAdd = seamothEnergyMixin.soundBatteryAdd;
-                em.soundBatteryRemove = seamothEnergyMixin.soundBatteryRemove;
-                em.batteryModels = seamothEnergyMixin.batteryModels;
+            mv.SetupAIEnergyInterface();
 
-                energyMixins.Add(em);
-
-                var tmp = vb.BatterySlot.EnsureComponent<VehicleBatteryInput>();
-                tmp.mixin = em;
-                tmp.tooltip = "VFAutoPilotBattery";
-
-                var model = vb.BatterySlot.gameObject.EnsureComponent<StorageComponents.BatteryProxy>();
-                model.proxy = vb.BatteryProxy;
-                model.mixin = em;
-
-                SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vb.BatterySlot.transform);
-                vb.BatterySlot.EnsureComponent<SaveLoad.VFBatteryIdentifier>();
-            }
-            // Configure energy interface
-            mv.AIEnergyInterface = mv.Com.BackupBatteries.First().BatterySlot.EnsureComponent<EnergyInterface>();
-            mv.AIEnergyInterface.sources = energyMixins.ToArray();
         }
         public static void SetupLightSounds(ModVehicle mv)
         {
@@ -383,7 +348,7 @@ namespace AVS
             {
                 foreach (VehicleParts.VehicleFloodLight pc in mv.Com.HeadLights)
                 {
-                    CopyComponent(seamothHeadLight.GetComponent<LightShadowQuality>(), pc.Light);
+                    seamothHeadLight.GetComponent<LightShadowQuality>().CopyComponentWithFieldsTo(pc.Light);
                     var thisLight = pc.Light.EnsureComponent<Light>();
                     thisLight.type = LightType.Spot;
                     thisLight.spotAngle = pc.Angle;
@@ -406,7 +371,9 @@ namespace AVS
             {
                 foreach (VehicleParts.VehicleFloodLight pc in mv.Com.FloodLights)
                 {
-                    CopyComponent(seamothHeadLight.GetComponent<LightShadowQuality>(), pc.Light);
+                    seamothHeadLight
+                        .GetComponent<LightShadowQuality>()
+                        .CopyComponentWithFieldsTo(pc.Light);
                     var thisLight = pc.Light.EnsureComponent<Light>();
                     thisLight.type = LightType.Spot;
                     thisLight.spotAngle = pc.Angle;
@@ -424,44 +391,8 @@ namespace AVS
         }
         public static void SetupVolumetricLights(ModVehicle mv)
         {
-            GameObject seamothHeadLight = SeamothHelper.Seamoth.transform.Find("lights_parent/light_left").gameObject;
-            Transform seamothVL = SeamothHelper.Seamoth.transform.Find("lights_parent/light_left/x_FakeVolumletricLight"); // sic
-            MeshFilter seamothVLMF = seamothVL.GetComponent<MeshFilter>();
-            MeshRenderer seamothVLMR = seamothVL.GetComponent<MeshRenderer>();
-            List<VehicleParts.VehicleFloodLight> theseLights = mv.Com.HeadLights.ToList();
-            if (mv is VehicleTypes.Submarine subma)
-            {
-                theseLights.AddRange(subma.Com.FloodLights);
-            }
-            foreach (VehicleParts.VehicleFloodLight pc in theseLights)
-            {
-                GameObject volumetricLight = new GameObject("VolumetricLight");
-                volumetricLight.transform.SetParent(pc.Light.transform);
-                volumetricLight.transform.localPosition = Vector3.zero;
-                volumetricLight.transform.localEulerAngles = Vector3.zero;
-                volumetricLight.transform.localScale = seamothVL.localScale;
+            mv.SetupVolumetricLights();
 
-                var lvlMeshFilter = volumetricLight.AddComponent<MeshFilter>();
-                lvlMeshFilter.mesh = seamothVLMF.mesh;
-                lvlMeshFilter.sharedMesh = seamothVLMF.sharedMesh;
-
-                var lvlMeshRenderer = volumetricLight.AddComponent<MeshRenderer>();
-                lvlMeshRenderer.material = seamothVLMR.material;
-                lvlMeshRenderer.sharedMaterial = seamothVLMR.sharedMaterial;
-                lvlMeshRenderer.shadowCastingMode = seamothVLMR.shadowCastingMode;
-                lvlMeshRenderer.renderingLayerMask = seamothVLMR.renderingLayerMask;
-
-                var leftVFX = CopyComponent(seamothHeadLight.GetComponent<VFXVolumetricLight>(), pc.Light);
-                leftVFX.lightSource = pc.Light.GetComponent<Light>();
-                leftVFX.color = pc.Color;
-                leftVFX.volumGO = volumetricLight;
-                leftVFX.volumRenderer = lvlMeshRenderer;
-                leftVFX.volumMeshFilter = lvlMeshFilter;
-                leftVFX.angle = (int)pc.Angle;
-                leftVFX.range = pc.Range;
-                mv.lights.Add(pc.Light);
-                mv.volumetricLights.Add(volumetricLight);
-            }
         }
         public static void SetupLiveMixin(ModVehicle mv)
         {
@@ -508,19 +439,14 @@ namespace AVS
             rb.useGravity = false;
             mv.useRigidbody = rb;
         }
-        public static void SetupEngine(Submarine mv)
-        {
-            if (!mv.Engine)
-                mv.Engine = mv.gameObject.AddComponent<OdysseyEngine>();
-        }
-        public static void SetupEngine(Submersible mv)
-        {
-            if (!mv.Engine)
-                mv.Engine = mv.gameObject.AddComponent<CricketEngine>();
-        }
+
         public static void SetupWorldForces(ModVehicle mv)
         {
-            mv.worldForces = CopyComponent<WorldForces>(SeamothHelper.Seamoth.GetComponent<SeaMoth>().worldForces, mv.gameObject);
+            Logger.Log("Setting up world forces for " + mv.name);
+            mv.worldForces = SeamothHelper.Seamoth
+                        .GetComponent<SeaMoth>()
+                        .worldForces
+                        .CopyComponentWithFieldsTo(mv.gameObject);
             mv.worldForces.useRigidbody = mv.useRigidbody;
             mv.worldForces.underwaterGravity = 0f;
             mv.worldForces.aboveWaterGravity = 9.8f;
@@ -528,11 +454,8 @@ namespace AVS
         }
         public static void SetupHudPing(ModVehicle mv, PingType pingType)
         {
-            mv.pingInstance = mv.gameObject.EnsureComponent<PingInstance>();
-            mv.pingInstance.origin = mv.transform;
-            mv.pingInstance.pingType = pingType;
-            mv.pingInstance.SetLabel("Vehicle");
-            VehicleManager.mvPings.Add(mv.pingInstance);
+            mv.PrefabSetupHudPing(pingType);
+            VehicleManager.mvPings.Add(mv.HudPingInstance);
         }
         public static void SetupVehicleConfig(ModVehicle mv)
         {
@@ -540,7 +463,7 @@ namespace AVS
             mv.stabilizeRoll = true;
             mv.controlSheme = (Vehicle.ControlSheme)12;
             mv.mainAnimator = mv.gameObject.EnsureComponent<Animator>();
-            mv.ambienceSound = CopyComponent<FMOD_StudioEventEmitter>(SeamothHelper.Seamoth.GetComponent<SeaMoth>().ambienceSound, mv.gameObject);
+            mv.SetupAmbienceSound(SeamothHelper.Seamoth.GetComponent<SeaMoth>().ambienceSound);
             mv.splashSound = SeamothHelper.Seamoth.GetComponent<SeaMoth>().splashSound;
             // TODO
             //atrama.vehicle.bubbles = CopyComponent<ParticleSystem>(seamoth.GetComponent<SeaMoth>().bubbles, atrama.vehicle.gameObject);
@@ -592,7 +515,7 @@ namespace AVS
         public static void SetupSubName(ModVehicle mv)
         {
             var subname = mv.gameObject.EnsureComponent<SubName>();
-            subname.pingInstance = mv.pingInstance;
+            subname.pingInstance = mv.HudPingInstance;
             subname.colorsInitialized = 0;
             subname.hullName = mv.Com.StorageRootObject.AddComponent<TMPro.TextMeshProUGUI>(); // DO NOT push a TMPro.TextMeshProUGUI on the root vehicle object!!!
             mv.subName = subname;
@@ -725,6 +648,7 @@ namespace AVS
         #endregion
         public static bool Instrument(ModVehicle mv, PingType pingType)
         {
+            Logger.Log("Instrumenting " + mv.name + $" {mv.Id}");
             mv.Com.StorageRootObject.EnsureComponent<ChildObjectIdentifier>();
             mv.modulesRoot = mv.Com.ModulesRootObject.EnsureComponent<ChildObjectIdentifier>();
 
@@ -767,16 +691,11 @@ namespace AVS
             SetupDenyBuildingTags(mv);
             mv.collisionModel = mv.Com.CollisionModel;
 
-            if (mv as Submarine != null)
+            if (mv is Submarine sub)
             {
-                SetupEngine(mv as Submarine);
-                SetupFloodLights(mv as Submarine);
+                SetupFloodLights(sub);
                 PowerRelay powerRelay = mv.gameObject.AddComponent<PowerRelay>(); // See PowerRelayPatcher. Allows Submarines to recharge batteries.
-                SetupSubRoot(mv as Submarine, powerRelay); // depends on SetupWorldForces
-            }
-            if (mv as Submersible != null)
-            {
-                SetupEngine(mv as Submersible);
+                SetupSubRoot(sub, powerRelay); // depends on SetupWorldForces
             }
 
 
@@ -842,18 +761,6 @@ namespace AVS
                 }
             }
         }
-        public static T CopyComponent<T>(T original, GameObject destination) where T : Component
-        {
-            System.Type type = original.GetType();
-            Component copy = destination.EnsureComponent(type);
-            System.Reflection.FieldInfo[] fields = type.GetFields();
-            foreach (System.Reflection.FieldInfo field in fields)
-            {
-                field.SetValue(copy, field.GetValue(original));
-            }
-            return copy as T;
-        }
-
         public static string GetPingTypeString(CachedEnumString<PingType> cache, PingType inputType)
         {
             foreach (VehicleEntry ve in VehicleManager.vehicleTypes)

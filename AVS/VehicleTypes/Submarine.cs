@@ -1,6 +1,7 @@
 ﻿using AVS.Composition;
 using AVS.Configuration;
 using AVS.Util;
+using AVS.VehicleComponents;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -222,7 +223,7 @@ namespace AVS.VehicleTypes
         }
         public override void SubConstructionComplete()
         {
-            if (!pingInstance.enabled)
+            if (!HudPingInstance.enabled)
             {
                 // Setup the color picker with the submarine's name
                 var active = transform.Find("ColorPicker/EditScreen/Active");
@@ -295,9 +296,13 @@ namespace AVS.VehicleTypes
             full = 2048,
             half = 1024
         }
+        public void PaintVehicleSection(string materialName, VehicleColor col)
+            => PaintVehicleSection(materialName, col.RGB);
         public virtual void PaintVehicleSection(string materialName, Color col)
         {
         }
+        public void PaintVehicleName(string name, VehicleColor nameColor, VehicleColor hullColor)
+            => PaintVehicleName(name, nameColor.RGB, hullColor.RGB);
         public virtual void PaintVehicleName(string name, Color nameColor, Color hullColor)
         {
             OnNameChange(name);
@@ -305,20 +310,20 @@ namespace AVS.VehicleTypes
 
         public bool IsDefaultTexture = true;
 
-        public override void SetBaseColor(Vector3 hsb, Color color)
+        public override void SetBaseColor(VehicleColor color)
         {
-            base.SetBaseColor(hsb, color);
-            PaintVehicleSection("ExteriorMainColor", baseColor);
+            base.SetBaseColor(color);
+            PaintVehicleSection("ExteriorMainColor", color.RGB);
         }
-        public override void SetInteriorColor(Vector3 hsb, Color color)
+        public override void SetInteriorColor(VehicleColor color)
         {
-            base.SetInteriorColor(hsb, color);
-            PaintVehicleSection("ExteriorPrimaryAccent", interiorColor);
+            base.SetInteriorColor(color);
+            PaintVehicleSection("ExteriorPrimaryAccent", color.RGB);
         }
-        public override void SetStripeColor(Vector3 hsb, Color color)
+        public override void SetStripeColor(VehicleColor color)
         {
-            base.SetStripeColor(hsb, color);
-            PaintVehicleSection("ExteriorSecondaryAccent", stripeColor);
+            base.SetStripeColor(color);
+            PaintVehicleSection("ExteriorSecondaryAccent", color.RGB);
         }
 
         public virtual void SetColorPickerUIColor(string name, Color col)
@@ -345,23 +350,24 @@ namespace AVS.VehicleTypes
             {
                 case "MainExterior":
                     IsDefaultTexture = false;
-                    baseColor = eventData.color;
+                    base.SetBaseColor(new VehicleColor(eventData.color));
                     break;
                 case "PrimaryAccent":
                     IsDefaultTexture = false;
-                    interiorColor = eventData.color;
+                    base.SetInteriorColor(new VehicleColor(eventData.color));
                     break;
                 case "SecondaryAccent":
                     IsDefaultTexture = false;
-                    stripeColor = eventData.color;
+                    base.SetStripeColor(new VehicleColor(eventData.color));
                     break;
                 case "NameLabel":
-                    nameColor = eventData.color;
+                    base.SetNameColor(new VehicleColor(eventData.color));
                     break;
                 default:
                     break;
             }
-            ActualEditScreen.transform.Find("Active/MainExterior/SelectedColor").GetComponent<Image>().color = baseColor;
+            ActualEditScreen.transform.Find("Active/MainExterior/SelectedColor")
+                .GetComponent<Image>().color = BaseColor.RGB;
         }
         public virtual void OnNameChange(string e) // why is this independent from OnNameChange?
         {
@@ -372,16 +378,17 @@ namespace AVS.VehicleTypes
         }
         public virtual void OnColorSubmit() // called by color picker submit button
         {
-            SetBaseColor(Vector3.zero, baseColor);
-            SetInteriorColor(Vector3.zero, interiorColor);
-            SetStripeColor(Vector3.zero, stripeColor);
+            SetBaseColor(BaseColor);
+            SetInteriorColor(InteriorColor);
+            SetStripeColor(StripeColor);
+            SetNameColor(NameColor);
             if (IsDefaultTexture)
             {
                 PaintVehicleDefaultStyle(GetName());
             }
             else
             {
-                PaintVehicleName(GetName(), nameColor, baseColor);
+                PaintVehicleName(GetName(), NameColor.RGB, BaseColor.RGB);
             }
             return;
         }

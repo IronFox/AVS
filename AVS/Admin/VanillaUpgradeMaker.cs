@@ -167,11 +167,11 @@ namespace AVS.Admin
                 .WithOnModuleUsed((Vehicle vehicleInstance, int slotId, float charge, float chargeFraction) =>
                 {
                     UpgradeTypes.SelectableActionParams selectParams = new UpgradeTypes.SelectableActionParams
-                    {
-                        vehicle = vehicleInstance,
-                        slotID = slotId,
-                        techType = info.TechType
-                    };
+                    (
+                        vehicle: vehicleInstance,
+                        slotID: slotId,
+                        techType: info.TechType
+                    );
                     upgrade.OnSelected(selectParams);
                 });
         }
@@ -198,13 +198,13 @@ namespace AVS.Admin
                 .WithOnModuleUsed((Vehicle vehicleInstance, int slotId, float charge, float chargeFraction) =>
                 {
                     UpgradeTypes.SelectableChargeableActionParams chargeParams = new UpgradeTypes.SelectableChargeableActionParams
-                    {
-                        vehicle = vehicleInstance,
-                        slotID = slotId,
-                        techType = info.TechType,
-                        charge = charge,
-                        slotCharge = chargeFraction
-                    };
+                    (
+                        vehicle: vehicleInstance,
+                        slotID: slotId,
+                        techType: info.TechType,
+                        charge: charge,
+                        slotCharge: chargeFraction
+                    );
                     upgrade.OnSelected(chargeParams);
                 });
         }

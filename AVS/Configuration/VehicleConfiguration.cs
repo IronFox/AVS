@@ -1,5 +1,6 @@
 ﻿using AVS.Assets;
 using AVS.Util;
+using AVS.VehicleComponents;
 using UnityEngine;
 using static AVS.ModVehicle;
 
@@ -74,6 +75,13 @@ namespace AVS.Configuration
         public float ReaperBiteDamage { get; } = 120f;
         /// <summary>
         /// Physical mass of the vehicle. Must be greater than 0.
+        /// For reference,
+        /// Cyclop: 12000
+        /// Abyss: 5000
+        /// Atrama: 4250
+        /// Odyssey: 3500
+        /// Prawn: 1250
+        /// Seamoth: 800
         /// </summary>
         public int Mass { get; } = 1000;
         /// <summary>
@@ -153,6 +161,23 @@ namespace AVS.Configuration
         public bool IgnoreShaderNameWhenFixingMaterial { get; } = false;
 
         /// <summary>
+        /// The initial base color of the vehicle.
+        /// </summary>
+        public VehicleColor InitialBaseColor { get; set; } = VehicleColor.Default;
+        /// <summary>
+        /// The initial stripe color of the vehicle.
+        /// </summary>
+        public VehicleColor InitialStripeColor { get; set; } = VehicleColor.Default;
+        /// <summary>
+        /// The initial interior color of the vehicle.
+        /// </summary>
+        public VehicleColor InitialInteriorColor { get; set; } = VehicleColor.Default;
+        /// <summary>
+        /// The initial name color of the vehicle.
+        /// </summary>
+        public VehicleColor InitialNameColor { get; set; } = VehicleColor.Default;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="VehicleConfiguration"/> class with the specified parameters.
         /// </summary>
         /// <param name="materialFixLogging">The logging configuration for material fixes. If null, defaults to <see cref="Logging.Default"/>.</param>
@@ -172,7 +197,15 @@ namespace AVS.Configuration
         /// <param name="ghostAdultBiteDamage">Absolute damage dealt to the vehicle when it is bit by an adult ghost leviathan.</param>
         /// <param name="ghostJuvenileBiteDamage">Absolute damage dealt to the vehicle when it is bit by a juvenile ghost leviathan.</param>
         /// <param name="reaperBiteDamage">Absolute damage dealt to the vehicle when it is bit by a reaper leviathan.</param>
-        /// <param name="mass">Physical mass of the vehicle. Must be greater than 0.</param>
+        /// <param name="mass">Physical mass of the vehicle. Must be greater than 0.
+        /// For reference,
+        /// Cyclop: 12000
+        /// Abyss: 5000
+        /// Atrama: 4250
+        /// Odyssey: 3500
+        /// Prawn: 1250
+        /// Seamoth: 800
+        /// </param>
         /// <param name="numModules">Maximum number of modules that can be installed on this vehicle.</param>
         /// <param name="unlockedMessage">PDA message shown when the vehicle is unlocked.</param>
         /// <param name="baseCrushDepth">Base crush depth of the vehicle, measured in meters. Must be greater than 0.</param>
@@ -189,8 +222,16 @@ namespace AVS.Configuration
         /// <param name="cyclopsDockRotation">Rotation applied when docking the vehicle in a cyclops.</param>
         /// <param name="autoFixMaterials">True to automatically correct shaders to the vehicle's materials.</param>
         /// <param name="ignoreShaderNameWhenFixingMaterial">If true, the vehicle's shader name will not be checked when fixing materials.</param>
+        /// <param name="initialBaseColor">Initial base color of the vehicle. If null, defaults to <see cref="VehicleColor.Default"/>.</param>
+        /// <param name="initialStripeColor">Initial stripe color of the vehicle. If null, defaults to <see cref="VehicleColor.Default"/>.</param>
+        /// <param name="initialInteriorColor">Initial interior color of the vehicle. If null, defaults to <see cref="VehicleColor.Default"/>.</param>
+        /// <param name="initialNameColor">Initial name color of the vehicle. If null, defaults to <see cref="VehicleColor.Default"/>.</param>
         public VehicleConfiguration(
 
+            VehicleColor? initialBaseColor = null,
+            VehicleColor? initialStripeColor = null,
+            VehicleColor? initialInteriorColor = null,
+            VehicleColor? initialNameColor = null,
             Logging? materialFixLogging = null,
             Atlas.Sprite pingSprite = null,
             Sprite saveFileSprite = null,
@@ -234,6 +275,10 @@ namespace AVS.Configuration
             if (baseCrushDepth <= 0)
                 throw new System.ArgumentOutOfRangeException(nameof(baseCrushDepth), "BaseCrushDepth must be greater than 0.");
 
+            InitialBaseColor = initialBaseColor ?? VehicleColor.Default;
+            InitialStripeColor = initialStripeColor ?? VehicleColor.Default;
+            InitialInteriorColor = initialInteriorColor ?? VehicleColor.Default;
+            InitialNameColor = initialNameColor ?? VehicleColor.Default;
             MaterialFixLogging = materialFixLogging ?? Logging.Default;
             PingSprite = pingSprite ?? Assets.StaticAssets.DefaultPingSprite;
             SaveFileSprite = saveFileSprite ?? Assets.StaticAssets.DefaultSaveFileSprite;
