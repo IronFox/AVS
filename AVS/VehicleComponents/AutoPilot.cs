@@ -172,7 +172,7 @@ namespace AVS
     }
 
 
-    public class AutoPilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener, IPowerListener, ILightsStatusListener, IScuttleListener
+    public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener, IPowerListener, ILightsStatusListener, IScuttleListener
     {
         public EnergyInterface aiEI;
         public VoiceQueue apVoice;

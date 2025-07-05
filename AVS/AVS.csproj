@@ -267,7 +267,7 @@
     <Compile Include="VehicleBuilding\HUDBuilder.cs" />
     <Compile Include="Patches\PlayerControllerPatcher.cs" />
     <Compile Include="SaveLoad\SaveManager.cs" />
-    <Compile Include="VehicleComponents\AutoPilot.cs" />
+    <Compile Include="VehicleComponents\Autopilot.cs" />
     <Compile Include="StorageComponents\VehicleBatteryInput.cs" />
     <Compile Include="Engines\Cricket.cs" />
     <Compile Include="Engines\Atrama.cs" />

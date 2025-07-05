@@ -176,9 +176,15 @@ namespace AVS
 
         /// <summary>
         /// The voice queue for this vehicle.
+        /// Set by <see cref="Awake()"/>.
         /// </summary>
         public VoiceQueue VoiceQueue { get; private set; }
 
+        /// <summary>
+        /// Gets the AutoPilot system associated with the current instance.
+        /// Set by <see cref="Awake()"/>.
+        /// </summary>
+        public Autopilot Autopilot { get; private set; }
         ///<inheritdoc />
         public override void Awake()
         {
@@ -200,7 +206,7 @@ namespace AVS
             HeadlightsController = gameObject.EnsureComponent<HeadLightsController>();
             gameObject.AddComponent<VolumetricLightController>();
 
-            gameObject.EnsureComponent<AutoPilot>();
+            Autopilot = gameObject.EnsureComponent<Autopilot>();
 
             base.LazyInitialize();
             Com.Upgrades.ForEach(x => x.Interface.GetComponent<VehicleUpgradeConsoleInput>().equipment = modules);
@@ -977,7 +983,7 @@ namespace AVS
 
         /// <summary>
         /// Energy interface used by the AI.
-        /// At present, this is only used by the <see cref="AutoPilot" /> to refill oxygen.
+        /// At present, this is only used by the <see cref="Autopilot" /> to refill oxygen.
         /// </summary>
         /// <remarks> Prefabrication fields must remain open fields or
         /// Unity instantiation will not preserve them. We cannot fetch it during awake because
@@ -1129,9 +1135,7 @@ namespace AVS
                     { VehicleBuilder.ModuleType, VehicleModuleSlots }
                 };
 
-        public float EngineSoundVolume => 1;
-        public float AutopilotSoundVolume => 1;
-        public bool ShowAutopilotSubtitles => false;
+
 
         private void StorageModuleAction(int slotID, TechType techType, bool added)
         {
