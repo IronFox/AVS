@@ -57,7 +57,7 @@ namespace AVS.Util
         /// <param name="toEnabled">New enabled state</param>
         public static void LoggedSetActive(this GameObject gameObject, bool toEnabled)
         {
-            if (gameObject == null)
+            if (!gameObject)
             {
                 Logger.Error("GameObject is null, cannot set active state.");
                 return;
@@ -84,7 +84,7 @@ namespace AVS.Util
         /// </summary>
         public static Transform GetTransform(this GameObject gameObject)
         {
-            if (gameObject == null)
+            if (!gameObject)
                 return null;
             return gameObject.transform;
         }
@@ -95,7 +95,7 @@ namespace AVS.Util
         /// </summary>
         public static Transform GetTransform(this Component component)
         {
-            if (component == null)
+            if (!component)
                 return null;
             return component.transform;
         }
@@ -105,7 +105,7 @@ namespace AVS.Util
         /// </summary>
         public static GameObject GetGameObject(this Component component)
         {
-            if (component == null)
+            if (!component)
                 return null;
             return component.gameObject;
         }
@@ -116,7 +116,7 @@ namespace AVS.Util
         /// </summary>
         public static Texture2D GetTexture2D(this Sprite sprite)
         {
-            if (sprite == null)
+            if (!sprite)
                 return null;
             return sprite.texture;
         }
@@ -129,9 +129,7 @@ namespace AVS.Util
         public static string NiceName(this Object o)
         {
             if (!o)
-            {
                 return "<null>";
-            }
 
             string text = o.name;
             int num = text.IndexOf('(');
@@ -150,22 +148,19 @@ namespace AVS.Util
         public static string PathToString(this Transform t)
         {
             if (!t)
-            {
                 return "<null>";
-            }
 
             List<string> list = new List<string>();
             try
             {
-                while ((bool)t)
+                while (t)
                 {
                     list.Add($"{t.name}[{t.GetInstanceID()}]");
                     t = t.parent;
                 }
             }
             catch (UnityException)
-            {
-            }
+            { }
 
             list.Reverse();
             return string.Join("/", list);
@@ -216,10 +211,13 @@ namespace AVS.Util
         /// <param name="rootTransform">Hierarchy root which will not be altered. If encountered, the loop stops</param>
         public static void RequireActive(this MonoBehaviour c, Transform rootTransform)
         {
-            if (c.isActiveAndEnabled)
+            if (!c)
             {
+                Logger.Error("MonoBehaviour is null, cannot ensure active state.");
                 return;
             }
+            if (c.isActiveAndEnabled)
+                return;
 
             if (!c.enabled)
             {
@@ -228,9 +226,7 @@ namespace AVS.Util
             }
 
             if (c.isActiveAndEnabled)
-            {
                 return;
-            }
 
             Transform transform = c.transform;
             while (transform && transform != rootTransform)
@@ -240,9 +236,7 @@ namespace AVS.Util
                     Logger.Error($"{transform.gameObject} has been deactivate. Re-activating");
                     transform.gameObject.SetActive(value: false);
                     if (c.isActiveAndEnabled)
-                    {
                         return;
-                    }
                 }
 
                 transform = transform.parent;
