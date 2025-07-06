@@ -1,5 +1,5 @@
-﻿using System;
-using HarmonyLib;
+﻿using HarmonyLib;
+using System;
 
 // PURPOSE: add compatibility for better vehicle storage upgrades
 // VALUE: High. It's a very cool mod.
@@ -34,7 +34,11 @@ namespace AVS.Patches.CompatibilityPatches
 
                 if (isBetterVehicleStorageModule)
                 {
-                    InventoryItem slotItem = mv.GetSlotItem(slotID);
+                    var slotItem = mv.GetSlotItem(slotID);
+                    if (slotItem == null)
+                    {
+                        return; // No item in the slot, nothing to do.
+                    }
 
                     var GetItemsContainerFromIventoryItem = HarmonyLib.AccessTools.Method(type3, "GetItemsContainerFromIventoryItem");
                     object[] GetItemsParams = new object[] { slotItem, techType };

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace AVS.VehicleComponents
 {
@@ -12,7 +7,19 @@ namespace AVS.VehicleComponents
     // with the movements of the vehicle.
     public class SteeringWheel : MonoBehaviour
     {
-        public Rigidbody useRigidbody => GetComponentInParent<ModVehicle>()?.useRigidbody;
+        public Rigidbody? useRigidbody
+        {
+            get
+            {
+                var vh = GetComponentInParent<Vehicle>();
+                if (vh != null)
+                {
+                    return vh.useRigidbody;
+                }
+                return null;
+            }
+        }
+
         // Store the current Z rotation and the velocity used by SmoothDamp
         private float initialYawRotation = 0f;
         private float currentYawRotation = 0f;

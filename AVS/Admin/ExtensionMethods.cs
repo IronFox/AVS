@@ -16,7 +16,7 @@ namespace AVS
         /// </summary>
         /// <param name="player">The player instance.</param>
         /// <returns>The <see cref="ModVehicle"/> associated with the player, or null if not found.</returns>
-        public static ModVehicle GetModVehicle(this Player player)
+        public static ModVehicle? GetModVehicle(this Player player)
         {
             return
                 player.GetVehicle() as ModVehicle
@@ -67,9 +67,9 @@ namespace AVS
         {
             void UndockModVehicle(Vehicle thisVehicle)
             {
-                if (vehicle is ModVehicle)
+                if (vehicle is ModVehicle mv)
                 {
-                    (vehicle as ModVehicle).OnVehicleUndocked();
+                    mv.OnVehicleUndocked();
                     vehicle.useRigidbody.detectCollisions = true;
                 }
             }
@@ -82,9 +82,11 @@ namespace AVS
             VehicleDockingBay thisBay = theseBays.First();
             UWE.CoroutineHost.StartCoroutine(thisBay.MaybeToggleCyclopsCollision());
             thisBay.vehicle_docked_param = false;
-            Player toUndock = vehicle.liveMixin.IsAlive() && !Admin.ConsoleCommands.isUndockConsoleCommand ? Player.main : null;
+            var toUndock = vehicle.liveMixin.IsAlive() && !Admin.ConsoleCommands.isUndockConsoleCommand
+                ? Player.main
+                : null;
             UWE.CoroutineHost.StartCoroutine(vehicle.Undock(toUndock, thisBay.transform.position.y));
-            SkyEnvironmentChanged.Broadcast(vehicle.gameObject, (GameObject)null);
+            SkyEnvironmentChanged.Broadcast(vehicle.gameObject, (GameObject?)null);
             thisBay.dockedVehicle = null;
             UndockModVehicle(vehicle);
         }

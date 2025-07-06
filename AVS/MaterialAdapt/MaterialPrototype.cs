@@ -199,7 +199,7 @@ namespace AVS.MaterialAdapt
         /// <param name="variableNamePredicate">
         /// Optional predicate to only check/update certain shader variables by name.
         /// If non-null updates only variables for which this function returns true</param>
-        public void ApplyTo(Material m, Logging logConfig, Func<string, bool> variableNamePredicate = null)
+        public void ApplyTo(Material m, Logging logConfig, Func<string, bool>? variableNamePredicate = null)
         {
             variableNamePredicate = variableNamePredicate ?? (_ => true);
 
@@ -241,11 +241,16 @@ namespace AVS.MaterialAdapt
         /// Constructs the prototype from a given material
         /// </summary>
         /// <param name="source">Material to read. Can be null, causing <see cref="IsEmpty"/> to be set true</param>
-        public MaterialPrototype(Material source, bool loadTextures = false)
+        public MaterialPrototype(Material? source, bool loadTextures = false)
         {
             if (source == null)
             {
                 IsEmpty = true;
+                ColorVariables = Array.Empty<ColorVariable>();
+                FloatVariables = Array.Empty<FloatVariable>();
+                VectorVariables = Array.Empty<VectorVariable>();
+                TextureVariables = Array.Empty<TextureVariable>();
+
                 return;
             }
             MaterialGlobalIlluminationFlags = source.globalIlluminationFlags;
@@ -339,14 +344,11 @@ namespace AVS.MaterialAdapt
         /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
         /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
         /// if the respective material is not found</returns>
-        public static MaterialPrototype GlassFromSeamoth(Logging logConfig = default)
+        public static MaterialPrototype? GlassFromSeamoth(Logging logConfig = default)
         {
             var sm = SeamothHelper.Seamoth;
-            if (!sm)
-            {
-                logConfig.LogWarning($"Seamoth not yet available. Keep trying until it is loaded.");
+            if (sm == null)
                 return null;
-            }
             logConfig.LogExtraStep($"Found Seamoth");
             var glassMaterial = sm.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/Submersible_SeaMoth_glass_interior_geo").GetComponent<SkinnedMeshRenderer>().material;
             return new MaterialPrototype(glassMaterial, loadTextures: true);
@@ -362,15 +364,15 @@ namespace AVS.MaterialAdapt
         /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
         /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
         /// if the respective material is not found</returns>
-        public static MaterialPrototype FromSeamoth(Logging logConfig = default)
+        public static MaterialPrototype? FromSeamoth(Logging logConfig = default)
         {
             var sm = SeamothHelper.Seamoth;
-            if (!sm)
+            if (sm == null)
                 return null;
 
             logConfig.LogExtraStep($"Found Seamoth");
 
-            Material seamothMaterial = null;
+            Material? seamothMaterial = null;
             var renderers = sm.GetComponentsInChildren<MeshRenderer>();
             foreach (var renderer in renderers)
             {

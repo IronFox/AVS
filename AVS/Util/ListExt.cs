@@ -49,27 +49,27 @@ namespace AVS.Util
             return current;
         }
 
-        public static T LeastOrDefault<T>(this IEnumerable<T> source, Func<T, float> selector)
-        {
-            IEnumerator<T> enumerator = source.GetEnumerator();
-            if (!enumerator.MoveNext())
-            {
-                return default(T);
-            }
+        //public static T LeastOrDefault<T>(this IEnumerable<T> source, Func<T, float> selector)
+        //{
+        //    IEnumerator<T> enumerator = source.GetEnumerator();
+        //    if (!enumerator.MoveNext())
+        //    {
+        //        return default(T);
+        //    }
 
-            T current = enumerator.Current;
-            float num = selector(current);
-            while (enumerator.MoveNext())
-            {
-                float num2 = selector(enumerator.Current);
-                if (num2 < num)
-                {
-                    num = num2;
-                    current = enumerator.Current;
-                }
-            }
+        //    T current = enumerator.Current;
+        //    float num = selector(current);
+        //    while (enumerator.MoveNext())
+        //    {
+        //        float num2 = selector(enumerator.Current);
+        //        if (num2 < num)
+        //        {
+        //            num = num2;
+        //            current = enumerator.Current;
+        //        }
+        //    }
 
-            return current;
-        }
+        //    return current;
+        //}
     }
 }

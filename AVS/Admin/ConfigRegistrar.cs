@@ -8,13 +8,8 @@ using System.Text;
 namespace AVS.Admin
 {
     /// <summary>
-    /// Represents a configuration manager for external vehicle types, allowing retrieval and management of
-    /// configuration entries for specific vehicles.
+    /// Represents a manager for additional external configurations to be applied to vehicles.
     /// </summary>
-    /// <remarks>This class provides methods to retrieve configuration values for specific vehicles by name or
-    /// type. It also includes static methods to access predefined configurations for common vehicle types such as
-    /// Seamoth, Prawn, and Cyclops. Configuration entries are stored in a dictionary and can be accessed by their
-    /// unique names.</remarks>
     /// <typeparam name="T">The type of the configuration values managed by this instance.</typeparam>
     public class ExternalVehicleConfig<T>
     {
@@ -22,9 +17,9 @@ namespace AVS.Admin
         internal Dictionary<string, ConfigEntry<T>> ExternalConfigs = new Dictionary<string, ConfigEntry<T>>();
 
         internal static Dictionary<string, ExternalVehicleConfig<T>> main = new Dictionary<string, ExternalVehicleConfig<T>>();
-        internal static ExternalVehicleConfig<T> SeamothConfig = null;
-        internal static ExternalVehicleConfig<T> PrawnConfig = null;
-        internal static ExternalVehicleConfig<T> CyclopsConfig = null;
+        internal static ExternalVehicleConfig<T>? SeamothConfig = null;
+        internal static ExternalVehicleConfig<T>? PrawnConfig = null;
+        internal static ExternalVehicleConfig<T>? CyclopsConfig = null;
         private static ExternalVehicleConfig<T> AddNew(ModVehicle mv)
         {
             var thisConf = new ExternalVehicleConfig<T>
@@ -182,7 +177,7 @@ namespace AVS.Admin
         /// <param name="OnChange">An optional callback invoked when the configuration value changes. The callback receives the <see
         /// cref="TechType"/> of the vehicle and the new value.</param>
         /// <param name="configFile">An optional configuration file to store the setting. If not provided, a default configuration file is used.</param>
-        public static void RegisterForAllModVehicles<T>(string name, ConfigDescription description, T defaultValue, Action<TechType, T> OnChange = null, ConfigFile configFile = null)
+        public static void RegisterForAllModVehicles<T>(string name, ConfigDescription description, T defaultValue, Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
         {
             UWE.CoroutineHost.StartCoroutine(RegisterForAllInternal<T>(name, description, defaultValue, OnChange, configFile));
         }
@@ -201,7 +196,7 @@ namespace AVS.Admin
         /// cref="TechType"/> of the vehicle and the new value of the configuration option.</param>
         /// <param name="configFile">An optional <see cref="ConfigFile"/> instance to store the configuration option. If not provided, the
         /// default configuration file is used.</param>
-        public static void RegisterForModVehicle<T>(string vehicleName, string name, ConfigDescription description, T defaultValue, Action<TechType, T> OnChange = null, ConfigFile configFile = null)
+        public static void RegisterForModVehicle<T>(string vehicleName, string name, ConfigDescription description, T defaultValue, Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
         {
             UWE.CoroutineHost.StartCoroutine(RegisterForVehicleInternal<T>(vehicleName, name, description, defaultValue, OnChange, configFile));
         }
@@ -215,12 +210,12 @@ namespace AVS.Admin
         /// <param name="name">The unique name of the configuration option.</param>
         /// <param name="description">A description of the configuration option, including its purpose and constraints.</param>
         /// <param name="defaultValue">The default value for the configuration option.</param>
-        /// <param name="OnChange">An optional callback that is invoked when the configuration value changes. The new value is passed as a
+        /// <param name="onChange">An optional callback that is invoked when the configuration value changes. The new value is passed as a
         /// parameter.</param>
         /// <param name="configFile">An optional configuration file to store the setting. If not provided, a default configuration file is used.</param>
-        public static void RegisterForSeamoth<T>(string name, ConfigDescription description, T defaultValue, Action<T> OnChange = null, ConfigFile configFile = null)
+        public static void RegisterForSeamoth<T>(string name, ConfigDescription description, T defaultValue, Action<T>? onChange = null, ConfigFile? configFile = null)
         {
-            UWE.CoroutineHost.StartCoroutine(RegisterForSeamothInternal<T>(name, description, defaultValue, OnChange, configFile));
+            UWE.CoroutineHost.StartCoroutine(RegisterForSeamothInternal<T>(name, description, defaultValue, onChange, configFile));
         }
         /// <summary>
         /// Registers a configuration option for the Prawn with the specified name, description, and default
@@ -233,13 +228,13 @@ namespace AVS.Admin
         /// <param name="name">The unique name of the configuration option. This name is used to identify the option.</param>
         /// <param name="description">A description of the configuration option, including details such as its purpose or valid range of values.</param>
         /// <param name="defaultValue">The default value for the configuration option. This value is used if no other value is provided.</param>
-        /// <param name="OnChange">An optional callback that is invoked whenever the configuration value changes. The new value is passed as a
+        /// <param name="onChange">An optional callback that is invoked whenever the configuration value changes. The new value is passed as a
         /// parameter to the callback.</param>
         /// <param name="configFile">An optional configuration file object where the configuration option will be stored. If not provided, a
         /// default configuration file is used.</param>
-        public static void RegisterForPrawn<T>(string name, ConfigDescription description, T defaultValue, Action<T> OnChange = null, ConfigFile configFile = null)
+        public static void RegisterForPrawn<T>(string name, ConfigDescription description, T defaultValue, Action<T>? onChange = null, ConfigFile? configFile = null)
         {
-            UWE.CoroutineHost.StartCoroutine(RegisterForPrawnInternal<T>(name, description, defaultValue, OnChange, configFile));
+            UWE.CoroutineHost.StartCoroutine(RegisterForPrawnInternal<T>(name, description, defaultValue, onChange, configFile));
         }
         /// <summary>
         /// Registers a configuration option for the Cyclops submarine with the specified name, description, and default
@@ -255,11 +250,11 @@ namespace AVS.Admin
         /// parameter to the callback.</param>
         /// <param name="configFile">An optional configuration file where the option will be stored. If not provided, a default configuration
         /// file is used.</param>
-        public static void RegisterForCyclops<T>(string name, ConfigDescription description, T defaultValue, Action<T> OnChange = null, ConfigFile configFile = null)
+        public static void RegisterForCyclops<T>(string name, ConfigDescription description, T defaultValue, Action<T>? OnChange = null, ConfigFile? configFile = null)
         {
             UWE.CoroutineHost.StartCoroutine(RegisterForCyclopsInternal<T>(name, description, defaultValue, OnChange, configFile));
         }
-        private static IEnumerator RegisterForAllInternal<T>(string name, ConfigDescription description, T defaultValue, Action<TechType, T> OnChange = null, ConfigFile configFile = null)
+        private static IEnumerator RegisterForAllInternal<T>(string name, ConfigDescription description, T defaultValue, Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
         {
             if (typeof(T) != typeof(bool) && typeof(T) != typeof(float) && typeof(T) != typeof(KeyboardShortcut))
             {
@@ -270,11 +265,7 @@ namespace AVS.Admin
             yield return new UnityEngine.WaitUntil(() => Player.main != null);
             foreach (var pair in ExternalVehicleConfig<T>.main)
             {
-                ConfigFile config = configFile;
-                if (config == null)
-                {
-                    config = MainPatcher.Instance.Config;
-                }
+                ConfigFile config = configFile ?? MainPatcher.Instance.Config;
                 var vConf = pair.Value;
                 string vehicleName = pair.Key;
                 ConfigEntry<T> thisConf;
@@ -305,7 +296,7 @@ namespace AVS.Admin
                 vConf.ExternalConfigs.Add(name, thisConf);
             }
         }
-        private static IEnumerator RegisterForVehicleInternal<T>(string vehicleName, string name, ConfigDescription description, T defaultValue, Action<TechType, T> OnChange, ConfigFile configFile)
+        private static IEnumerator RegisterForVehicleInternal<T>(string vehicleName, string name, ConfigDescription description, T defaultValue, Action<TechType, T>? onChange, ConfigFile? configFile)
         {
             if (typeof(T) != typeof(bool) && typeof(T) != typeof(float) && typeof(T) != typeof(KeyboardShortcut))
             {
@@ -324,11 +315,9 @@ namespace AVS.Admin
                 throw new ArgumentException($"RegisterForModVehicle: vehicle name does not uniquely identify a ModVehicle: {vehicleName}. There were {MVs.Count()} matches.");
             }
             ModVehicle mv = MVs.First().mv;
-            ConfigFile config = configFile;
-            if (config == null)
-            {
+            var config = configFile;
+            if (config is null)
                 config = MainPatcher.Instance.Config;
-            }
             var vConf = ExternalVehicleConfig<T>.GetModVehicleConfig(vehicleName);
             ConfigEntry<T> thisConf;
             try
@@ -340,17 +329,17 @@ namespace AVS.Admin
                 Logger.LogException("ConfigRegistrar: Could not bind that config option. Probably you chose a non-unique name.", e);
                 yield break;
             }
-            if (OnChange != null)
+            if (onChange != null)
             {
                 void DoThisAction(object sender, EventArgs e)
                 {
-                    OnChange(mv.TechType, thisConf.Value);
+                    onChange(mv.TechType, thisConf.Value);
                 }
                 thisConf.SettingChanged += DoThisAction;
             }
             vConf.ExternalConfigs.Add(name, thisConf);
         }
-        private static IEnumerator RegisterForSeamothInternal<T>(string name, ConfigDescription description, T defaultValue, Action<T> onChange, ConfigFile configFile)
+        private static IEnumerator RegisterForSeamothInternal<T>(string name, ConfigDescription description, T defaultValue, Action<T>? onChange, ConfigFile? configFile)
         {
             if (typeof(T) != typeof(bool) && typeof(T) != typeof(float) && typeof(T) != typeof(KeyboardShortcut))
             {
@@ -359,11 +348,7 @@ namespace AVS.Admin
             }
             // wait until the player exists, so that we're sure every vehicle is done with registration
             yield return new UnityEngine.WaitUntil(() => Player.main != null);
-            ConfigFile config = configFile;
-            if (config == null)
-            {
-                config = MainPatcher.Instance.Config;
-            }
+            var config = configFile ?? MainPatcher.Instance.Config;
             var vConf = ExternalVehicleConfig<T>.GetSeamothConfig();
             ConfigEntry<T> thisConf;
             try
@@ -385,7 +370,7 @@ namespace AVS.Admin
             }
             vConf.ExternalConfigs.Add(name, thisConf);
         }
-        private static IEnumerator RegisterForPrawnInternal<T>(string name, ConfigDescription description, T defaultValue, Action<T> onChange, ConfigFile configFile)
+        private static IEnumerator RegisterForPrawnInternal<T>(string name, ConfigDescription description, T defaultValue, Action<T>? onChange, ConfigFile? configFile)
         {
             if (typeof(T) != typeof(bool) && typeof(T) != typeof(float) && typeof(T) != typeof(KeyboardShortcut))
             {
@@ -394,11 +379,7 @@ namespace AVS.Admin
             }
             // wait until the player exists, so that we're sure every vehicle is done with registration
             yield return new UnityEngine.WaitUntil(() => Player.main != null);
-            ConfigFile config = configFile;
-            if (config == null)
-            {
-                config = MainPatcher.Instance.Config;
-            }
+            var config = configFile ?? MainPatcher.Instance.Config;
             var vConf = ExternalVehicleConfig<T>.GetPrawnConfig();
             ConfigEntry<T> thisConf;
             try
@@ -420,7 +401,7 @@ namespace AVS.Admin
             }
             vConf.ExternalConfigs.Add(name, thisConf);
         }
-        private static IEnumerator RegisterForCyclopsInternal<T>(string name, ConfigDescription description, T defaultValue, Action<T> onChange, ConfigFile configFile)
+        private static IEnumerator RegisterForCyclopsInternal<T>(string name, ConfigDescription description, T defaultValue, Action<T>? onChange, ConfigFile? configFile)
         {
             if (typeof(T) != typeof(bool) && typeof(T) != typeof(float) && typeof(T) != typeof(KeyboardShortcut))
             {
@@ -429,11 +410,9 @@ namespace AVS.Admin
             }
             // wait until the player exists, so that we're sure every vehicle is done with registration
             yield return new UnityEngine.WaitUntil(() => Player.main != null);
-            ConfigFile config = configFile;
-            if (config == null)
-            {
+            var config = configFile;
+            if (config is null)
                 config = MainPatcher.Instance.Config;
-            }
             var vConf = ExternalVehicleConfig<T>.GetCyclopsConfig();
             ConfigEntry<T> thisConf;
             try

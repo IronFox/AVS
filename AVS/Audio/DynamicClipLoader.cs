@@ -10,12 +10,12 @@ namespace AVS.Audio
     /// Represents an asynchronous operation that will eventually yield a value of type <typeparamref name="T"/>.
     /// </summary>
     /// <typeparam name="T">The type of the result value.</typeparam>
-    public class AsyncPromise<T>
+    public class AsyncPromise<T> where T : UnityEngine.Object
     {
         /// <summary>
         /// Gets the value of the promise if resolved.
         /// </summary>
-        public T Value { get; private set; }
+        public T? Value { get; private set; }
 
         /// <summary>
         /// Gets a value indicating whether the promise has completed (either resolved or rejected).
@@ -29,7 +29,7 @@ namespace AVS.Audio
         /// <summary>
         /// Error message if the promise was rejected.
         /// </summary>
-        public string ErrorMessage { get; private set; }
+        public string? ErrorMessage { get; private set; }
 
         /// <summary>
         /// Resolves the promise with the specified value.

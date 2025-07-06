@@ -14,7 +14,7 @@ namespace AVS
         {
             List<GameObject> objectsInScene = new List<GameObject>();
 
-            foreach (GameObject go in Resources.FindObjectsOfTypeAll(typeof(GameObject)) as GameObject[])
+            foreach (GameObject go in Resources.FindObjectsOfTypeAll<GameObject>())
             {
                 if (go.hideFlags == HideFlags.NotEditable || go.hideFlags == HideFlags.HideAndDontSave)
                     continue;
@@ -24,12 +24,12 @@ namespace AVS
 
             return objectsInScene;
         }
-        public static GameObject TryGetVRVehicleCanvas()
+        public static GameObject? TryGetVRVehicleCanvas()
         {
             // Here we ensure we have a reference to the freshest copy of VRVehicleCanvas
             // The base game has a memory leak, in which VRVehicleCanvas is not cleaned up across exit-reload
             // so we fix that here
-            GameObject VRVehicleCanvas = null;
+            GameObject? VRVehicleCanvas = null;
             foreach (GameObject go in GetAllObjectsInScene())
             {
                 if (go.name == "VRVehicleCanvas")
@@ -44,16 +44,19 @@ namespace AVS
                     }
                 }
             }
-            if (VRVehicleCanvas)
+            if (VRVehicleCanvas != null)
             {
-                GameObject seenTag = GameObject.Instantiate(new GameObject(), VRVehicleCanvas.transform);
+                GameObject seenTag = GameObject.Instantiate(
+                    new GameObject(),
+                    VRVehicleCanvas.transform
+                    );
                 seenTag.name = "ModVehicle";
             }
             return VRVehicleCanvas;
         }
         public static void DecideBuildHUD()
         {
-            GameObject VRVehicleCanvas = TryGetVRVehicleCanvas();
+            GameObject? VRVehicleCanvas = TryGetVRVehicleCanvas();
             if (UnityEngine.XR.XRSettings.enabled)
             {
                 IsVR = true;
@@ -153,49 +156,6 @@ namespace AVS
             ret.textTemperature = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue").GetComponent<TMPro.TextMeshProUGUI>();
             ret.textTemperatureSuffix = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue/TemperatureSuffix").GetComponent<TMPro.TextMeshProUGUI>();
         }
-        public static void BuildVRHUD_OLD()
-        {
 
-            List<GameObject> GetAllObjectsInScene()
-            {
-                List<GameObject> objectsInScene = new List<GameObject>();
-
-                foreach (GameObject go in Resources.FindObjectsOfTypeAll(typeof(GameObject)) as GameObject[])
-                {
-                    if (go.hideFlags == HideFlags.NotEditable || go.hideFlags == HideFlags.HideAndDontSave)
-                        continue;
-
-                    objectsInScene.Add(go);
-                }
-
-                return objectsInScene;
-            }
-
-
-            GameObject VRVehicleCanvas = null;
-
-
-            foreach (GameObject go in GetAllObjectsInScene())
-            {
-                if (go.name == "VRVehicleCanvas")
-                {
-                    if (go.transform.Find("ModVehicle") is null)
-                    {
-                        VRVehicleCanvas = go;
-                    }
-                }
-            }
-
-            GameObject seamothHUDElementsRoot = VRVehicleCanvas.transform.Find("Seamoth").gameObject;
-            GameObject mvHUDElementsRoot = GameObject.Instantiate(seamothHUDElementsRoot, VRVehicleCanvas.transform);
-            mvHUDElementsRoot.name = "ModVehicle";
-
-            uGUI_VehicleHUD ret = uGUI.main.transform.Find("ScreenCanvas/HUD").gameObject.EnsureComponent<uGUI_VehicleHUD>();
-            ret.root = mvHUDElementsRoot;
-            ret.textHealth = mvHUDElementsRoot.transform.Find("Health").GetComponent<TMPro.TextMeshProUGUI>();
-            ret.textPower = mvHUDElementsRoot.transform.Find("Power").GetComponent<TMPro.TextMeshProUGUI>();
-            ret.textTemperature = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue").GetComponent<TMPro.TextMeshProUGUI>();
-            ret.textTemperatureSuffix = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue/TemperatureSuffix").GetComponent<TMPro.TextMeshProUGUI>();
-        }
     }
 }

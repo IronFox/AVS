@@ -5,15 +5,15 @@ namespace AVS
 {
     public abstract class StorageInput : HandTarget, IHandTarget
     {
-        public ModVehicle mv;
+        public ModVehicle? mv;
         public int slotID = -1;
-        public GameObject model;
-        public Collider collider;
+        public GameObject? model;
+        public Collider? collider;
         public float timeOpen = 0.5f;
         public float timeClose = 0.25f;
-        public FMODAsset openSound;
-        public FMODAsset closeSound;
-        protected Transform tr;
+        public FMODAsset? openSound;
+        public FMODAsset? closeSound;
+        protected Transform? tr;
         protected Vehicle.DockType dockType;
         protected bool state;
 
@@ -49,7 +49,7 @@ namespace AVS
             Utils.PlayFMODAsset(this.openSound, base.transform, 1f);
             OpenPDA();
         }
-        protected void OnClosePDA(PDA pda)
+        protected void OnClosePDA(PDA? pda)
         {
             seq.Set(0, false, null);
             gameObject.GetComponentInParent<ModVehicle>().OnStorageOpen(transform.name, false);

@@ -78,7 +78,7 @@ namespace AVS
         /// </summary>
         public VehicleComposition Com => _composition
             ?? throw new InvalidOperationException("This vehicle's composition has not yet been initialized. Please wait until ModVehicle.Awake() has been called");
-        private VehicleComposition _composition = null;
+        private VehicleComposition? _composition = null;
 
         /// <summary>
         /// Constructs the vehicle with the given configuration.
@@ -174,27 +174,34 @@ namespace AVS
         /// </summary>
         public int Id { get; } = idCounter++;
 
+        private VoiceQueue? voiceQueue;
         /// <summary>
         /// The voice queue for this vehicle.
         /// Set by <see cref="Awake()"/>.
         /// </summary>
-        public VoiceQueue VoiceQueue { get; private set; }
+        public VoiceQueue VoiceQueue => voiceQueue.OrThrow(
+            () => new InvalidOperationException($"Trying to access VoiceQueue before Awake() was called")
+            );
+
+        private Autopilot? autopilot;
 
         /// <summary>
         /// Gets the AutoPilot system associated with the current instance.
         /// Set by <see cref="Awake()"/>.
         /// </summary>
-        public Autopilot Autopilot { get; private set; }
+        public Autopilot Autopilot => autopilot.OrThrow(
+            () => new InvalidOperationException($"Trying to access Autopilot before Awake() was called")
+            );
         ///<inheritdoc />
         public override void Awake()
         {
             OnAwakeOrPrefabricate();
-            HudPingInstance = gameObject.GetComponent<PingInstance>();//created during prefab. Cannot properly create here if missing
-            VoiceQueue = gameObject.EnsureComponent<VoiceQueue>();
+            hudPingInstance = gameObject.GetComponent<PingInstance>();//created during prefab. Cannot properly create here if missing
+            voiceQueue = gameObject.EnsureComponent<VoiceQueue>();
 
             energyInterface = GetComponent<EnergyInterface>();
 
-            PowerManager = gameObject.EnsureComponent<PowerManager>();
+            powerManager = gameObject.EnsureComponent<PowerManager>();
 
             base.Awake();
             VehicleManager.EnrollVehicle(this); // Register our new vehicle with Vehicle Framework
@@ -206,7 +213,7 @@ namespace AVS
             HeadlightsController = gameObject.EnsureComponent<HeadLightsController>();
             gameObject.AddComponent<VolumetricLightController>();
 
-            Autopilot = gameObject.EnsureComponent<Autopilot>();
+            autopilot = gameObject.EnsureComponent<Autopilot>();
 
             base.LazyInitialize();
             Com.Upgrades.ForEach(x => x.Interface.GetComponent<VehicleUpgradeConsoleInput>().equipment = modules);
@@ -220,7 +227,7 @@ namespace AVS
 
         internal void SetupVolumetricLights()
         {
-            if (!SeamothHelper.Seamoth)
+            if (SeamothHelper.Seamoth == null)
             {
                 Logger.Error("SeamothHelper.Seamoth is null. Cannot setup volumetric lights.");
                 return;
@@ -390,7 +397,7 @@ namespace AVS
         /// </summary>
         /// <param name="slotID">Slot index with 0 being the first</param>
         /// <returns>Slotted inventory item or null</returns>
-        public override InventoryItem GetSlotItem(int slotID)
+        public override InventoryItem? GetSlotItem(int slotID)
         {
             if (slotID < 0 || slotID >= this.slotIDs.Length)
             {
@@ -620,7 +627,7 @@ namespace AVS
                 GameObject newAIBattery = result.Get();
                 newAIBattery.GetComponent<Battery>().charge = 200;
                 newAIBattery.transform.SetParent(Com.StorageRootObject.transform);
-                if (aiEnergyInterface)
+                if (aiEnergyInterface != null)
                 {
                     aiEnergyInterface.sources.First().battery = newAIBattery.GetComponent<Battery>();
                     aiEnergyInterface.sources.First().batterySlot.AddItem(newAIBattery.GetComponent<Pickupable>());
@@ -718,7 +725,7 @@ namespace AVS
         /// </summary>
         public virtual Vector3 GetBoundingDimensions()
         {
-            BoxCollider box = Com.BoundingBoxCollider;
+            var box = Com.BoundingBoxCollider;
             if (box == null)
             {
                 return Vector3.zero;
@@ -733,8 +740,8 @@ namespace AVS
         /// </summary>
         public virtual Vector3 GetDifferenceFromCenter()
         {
-            BoxCollider box = Com.BoundingBoxCollider;
-            if (box)
+            var box = Com.BoundingBoxCollider;
+            if (box != null)
             {
                 Vector3 colliderCenterWorld = box.transform.TransformPoint(box.center);
                 Vector3 difference = colliderCenterWorld - transform.position;
@@ -953,7 +960,13 @@ namespace AVS
         /// Unity instantiation will not preserve them.
         /// Since the vehicle has multiple custom emitters, we cannot
         /// fetch it during Awake()</remarks>
-        public FMOD_CustomEmitter lightsOnSound;
+        internal FMOD_CustomEmitter? lightsOnSound;
+
+        public FMOD_CustomEmitter LightsOffSound
+            => lightsOffSound.OrThrow(
+                () => new InvalidOperationException(
+                    $"Trying to access LightsOffSound but the prefabrication did not assign this field"));
+
         /// <summary>
         /// Sound to play when the vehicle lights are turned off.
         /// Set during prefabrication.
@@ -962,24 +975,32 @@ namespace AVS
         /// Unity instantiation will not preserve them.
         /// Since the vehicle has multiple custom emitters, we cannot
         /// fetch it during Awake()</remarks>
-        public FMOD_CustomEmitter lightsOffSound;
+        internal FMOD_CustomEmitter? lightsOffSound;
+
+        public FMOD_CustomEmitter LightsOnSound
+            => lightsOnSound.OrThrow(
+                () => new InvalidOperationException(
+                    $"Trying to access LightsOnSound but the prefabrication did not assign this field"));
 
         /// <summary>
         /// Populated during prefabrication/Awake().
         /// </summary>
         internal List<GameObject> VolumetricLights { get; } = new List<GameObject>();
 
+        private PingInstance? hudPingInstance;
         /// <summary>
         /// Marker on the HUD.
         /// Can be used to enable or disable the marker.
         /// </summary>
-        public PingInstance HudPingInstance { get; private set; }
+        public PingInstance HudPingInstance => hudPingInstance.OrThrow(
+            () => new InvalidOperationException(
+            $"Trying toa ccess HugPingInstance before Awake() was called"));
 
         /// <summary>
         /// The headlights controller for this vehicle.
         /// Set during Awake().
         /// </summary>
-        public HeadLightsController HeadlightsController { get; private set; }  //set during awake()
+        public HeadLightsController? HeadlightsController { get; private set; }  //set during awake()
 
         /// <summary>
         /// Energy interface used by the AI.
@@ -988,7 +1009,7 @@ namespace AVS
         /// <remarks> Prefabrication fields must remain open fields or
         /// Unity instantiation will not preserve them. We cannot fetch it during awake because
         /// the vehicle may have multiple energy interfaces.</remarks>
-        public EnergyInterface aiEnergyInterface;
+        public EnergyInterface? aiEnergyInterface;
 
         //private VoiceQueue voice;
         //private bool hasStarted = false;
@@ -1005,7 +1026,7 @@ namespace AVS
         /// <remarks>
         /// Copied during prefab setup.
         /// </remarks>
-        private FMOD_StudioEventEmitter ambienceSound;
+        internal FMOD_StudioEventEmitter? ambienceSound;
 
         /// <summary>
         /// The number of installed power efficiency modules.
@@ -1013,10 +1034,14 @@ namespace AVS
         /// </summary>
         public int NumEfficiencyModules { get; private set; } = 0;
 
+
+        private PowerManager? powerManager;
         /// <summary>
         /// The vehicle's power manager.
         /// </summary>
-        public PowerManager PowerManager { get; private set; }  //set during Start()
+        public PowerManager PowerManager => powerManager.OrThrow(
+            () => new InvalidOperationException(
+                $"Trying to access PowerManager before Awake() was called"));
 
         //public bool IsPlayerDry { get; private set; } = false;
         /// <summary>
@@ -1059,7 +1084,7 @@ namespace AVS
         #region internal_fields
         private bool _IsUnderCommand = false;
         private int numArmorModules = 0;
-        private string[] _slotIDs = null;
+        private string[]? _slotIDs = null;
         private VehicleColor baseColor = VehicleColor.Default;
         private VehicleColor interiorColor = VehicleColor.Default;
         private VehicleColor stripeColor = VehicleColor.Default;
@@ -1075,20 +1100,20 @@ namespace AVS
         internal void PrefabSetupHudPing(PingType pingType)
         {
             Logger.Log($"Setting up HudPingInstance for ModVehicle #{Id}");
-            HudPingInstance = gameObject.EnsureComponent<PingInstance>();
-            HudPingInstance.origin = transform;
-            HudPingInstance.pingType = pingType;
-            HudPingInstance.SetLabel("Vehicle");
+            hudPingInstance = gameObject.EnsureComponent<PingInstance>();
+            hudPingInstance.origin = transform;
+            hudPingInstance.pingType = pingType;
+            hudPingInstance.SetLabel("Vehicle");
         }
 
-        internal void SetupAIEnergyInterface()
+        internal void SetupAIEnergyInterface(GameObject seamoth)
         {
             if (Com.BackupBatteries.Count == 0)
             {
                 aiEnergyInterface = energyInterface;
                 return;
             }
-            var seamothEnergyMixin = SeamothHelper.Seamoth.GetComponent<EnergyMixin>();
+            var seamothEnergyMixin = seamoth.GetComponent<EnergyMixin>();
             List<EnergyMixin> energyMixins = new List<EnergyMixin>();
             foreach (VehicleParts.VehicleBattery vb in Com.BackupBatteries)
             {
@@ -1220,14 +1245,19 @@ namespace AVS
             if (activated)
             {
                 var modularContainer = GetSeamothStorageContainer(slotID);
+                if (modularContainer == null)
+                {
+                    Logger.Warn("Warning: failed to get modular storage container for slotID: " + slotID.ToString());
+                    return;
+                }
                 modularContainer.height = modSto.Height;
                 modularContainer.width = modSto.Width;
-                ModGetStorageInSlot(slotID, TechType.VehicleStorageModule).Resize(modSto.Width, modSto.Height);
+                ModGetStorageInSlot(slotID, TechType.VehicleStorageModule)?.Resize(modSto.Width, modSto.Height);
             }
         }
-        internal SeamothStorageContainer GetSeamothStorageContainer(int slotID)
+        internal SeamothStorageContainer? GetSeamothStorageContainer(int slotID)
         {
-            InventoryItem slotItem = this.GetSlotItem(slotID);
+            var slotItem = this.GetSlotItem(slotID);
             if (slotItem == null)
             {
                 Logger.Warn("Warning: failed to get item for that slotID: " + slotID.ToString());
@@ -1242,7 +1272,7 @@ namespace AVS
             SeamothStorageContainer component = item.GetComponent<SeamothStorageContainer>();
             return component;
         }
-        internal ItemsContainer ModGetStorageInSlot(int slotID, TechType techType)
+        internal ItemsContainer? ModGetStorageInSlot(int slotID, TechType techType)
         {
             switch (techType)
             {
@@ -1258,11 +1288,11 @@ namespace AVS
                             Logger.Error("Error: ModGetStorageInSlot called on invalid innate storage slotID");
                             return null;
                         }
-                        return vsc.container;
+                        return vsc.Container;
                     }
                 case TechType.VehicleStorageModule:
                     {
-                        SeamothStorageContainer component = GetSeamothStorageContainer(slotID);
+                        var component = GetSeamothStorageContainer(slotID);
                         if (component == null)
                         {
                             Logger.Warn("Warning: failed to get storage-container for that slotID: " + slotID.ToString());
@@ -1375,9 +1405,9 @@ namespace AVS
                 myPlayer.playerController.ForceControllerSize();
                 myPlayer.transform.parent = null;
             }
-            Submersible mvSubmersible = this as Submersible;
-            Skimmer mvSkimmer = this as Skimmer;
-            Submarine mvSubmarine = this as Submarine;
+            var mvSubmersible = this as Submersible;
+            var mvSkimmer = this as Skimmer;
+            var mvSubmarine = this as Submarine;
             if (mvSubmersible != null)
             {
                 // exit locked mode
@@ -1467,9 +1497,9 @@ namespace AVS
         }
         public bool HasRoomFor(Pickupable pickup)
         {
-            foreach (var container in Com.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().container))
+            foreach (var container in Com.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().Container))
             {
-                if (container.HasRoomFor(pickup))
+                if (container != null && container.HasRoomFor(pickup))
                 {
                     return true;
                 }
@@ -1485,9 +1515,9 @@ namespace AVS
         }
         public bool HasInStorage(TechType techType, int count = 1)
         {
-            foreach (var container in Com.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().container))
+            foreach (var container in Com.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().Container))
             {
-                if (container.Contains(techType))
+                if (container != null && container.Contains(techType))
                 {
                     if (container.GetCount(techType) >= count)
                     {
@@ -1517,9 +1547,9 @@ namespace AVS
                 }
                 return false;
             }
-            foreach (var container in Com.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().container))
+            foreach (var container in Com.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().Container))
             {
-                if (container.HasRoomFor(pickup))
+                if (container != null && container.HasRoomFor(pickup))
                 {
                     string arg = Language.main.Get(pickup.GetTechName());
                     ErrorMessage.AddMessage(Language.main.GetFormat<string>("VehicleAddedToStorage", arg));
@@ -1569,12 +1599,12 @@ namespace AVS
             int GetInnateCapacity(VehicleParts.VehicleStorage sto)
             {
                 var container = sto.Container.GetComponent<InnateStorageContainer>();
-                return container.container.sizeX * container.container.sizeY;
+                return container.Container.sizeX * container.Container.sizeY;
             }
             int GetInnateStored(VehicleParts.VehicleStorage sto)
             {
                 int ret = 0;
-                var marty = (IEnumerable<InventoryItem>)sto.Container.GetComponent<InnateStorageContainer>().container;
+                var marty = (IEnumerable<InventoryItem>)sto.Container.GetComponent<InnateStorageContainer>().Container;
                 marty.ForEach(x => ret += x.width * x.height);
                 return ret;
             }
@@ -1637,18 +1667,18 @@ namespace AVS
         }
         public static EnergyMixin GetEnergyMixinFromVehicle(Vehicle veh)
         {
-            if ((veh as ModVehicle) == null)
+            if (!(veh is ModVehicle mod))
             {
                 return veh.GetComponent<EnergyMixin>();
             }
             else
             {
-                return (veh as ModVehicle).energyInterface.sources.First();
+                return mod.energyInterface.sources.First();
             }
         }
         public static void TeleportPlayer(Vector3 destination)
         {
-            ModVehicle mv = Player.main.GetModVehicle();
+            var mv = Player.main.GetModVehicle();
             UWE.Utils.EnterPhysicsSyncSection();
             Player.main.SetCurrentSub(null, true);
             Player.main.playerController.SetEnabled(false);
@@ -1656,7 +1686,7 @@ namespace AVS
             {
                 yield return null;
                 Player.main.SetPosition(destination);
-                Player.main.SetCurrentSub(mv?.GetComponent<SubRoot>(), true);
+                Player.main.SetCurrentSub(mv.SmartGetComponent<SubRoot>(), true);
                 Player.main.playerController.SetEnabled(true);
                 yield return null;
                 UWE.Utils.ExitPhysicsSyncSection();
@@ -1712,8 +1742,9 @@ namespace AVS
                 BeginPiloting();
             }
             SetName(simpleData[mySubName]);
-            Submarine sub = this as Submarine;
-            sub?.PaintVehicleDefaultStyle(simpleData[mySubName]);
+            var sub = this as Submarine;
+            if (sub != null)
+                sub.PaintVehicleDefaultStyle(simpleData[mySubName]);
             if (Boolean.Parse(simpleData[defaultColorName]))
             {
                 yield break;
@@ -1722,13 +1753,15 @@ namespace AVS
             {
                 baseColor = new VehicleColor(rgb);
                 subName.SetColor(0, Vector3.zero, baseColor.RGB);
-                sub?.PaintVehicleName(simpleData[mySubName], Color.black, baseColor.RGB);
+                if (sub != null)
+                    sub.PaintVehicleName(simpleData[mySubName], Color.black, baseColor.RGB);
             }
             if (ColorUtility.TryParseHtmlString(simpleData[nameColorName], out rgb))
             {
                 nameColor = new VehicleColor(rgb);
                 subName.SetColor(1, Vector3.zero, nameColor.RGB);
-                sub?.PaintVehicleName(simpleData[mySubName], nameColor.RGB, baseColor.RGB);
+                if (sub != null)
+                    sub.PaintVehicleName(simpleData[mySubName], nameColor.RGB, baseColor.RGB);
             }
             if (ColorUtility.TryParseHtmlString(simpleData[interiorColorName], out rgb))
             {
@@ -1764,7 +1797,7 @@ namespace AVS
         protected virtual void OnGameLoaded() { }
 
         private const string StorageSaveName = "Storage";
-        private Dictionary<string, List<Tuple<TechType, float, TechType>>> loadedStorageData = null;
+        private Dictionary<string, List<Tuple<TechType, float, TechType>>>? loadedStorageData = null;
         private readonly Dictionary<string, List<Tuple<TechType, float, TechType>>> innateStorageSaveData = new Dictionary<string, List<Tuple<TechType, float, TechType>>>();
         internal void SaveInnateStorage(string path, List<Tuple<TechType, float, TechType>> storageData)
         {
@@ -1776,7 +1809,7 @@ namespace AVS
                 innateStorageSaveData.Clear();
             }
         }
-        internal List<Tuple<TechType, float, TechType>> ReadInnateStorage(string path)
+        internal List<Tuple<TechType, float, TechType>>? ReadInnateStorage(string path)
         {
             if (loadedStorageData == null)
             {
@@ -1797,7 +1830,7 @@ namespace AVS
         }
 
         private const string BatterySaveName = "Batteries";
-        private Dictionary<string, Tuple<TechType, float>> loadedBatteryData = null;
+        private Dictionary<string, Tuple<TechType, float>>? loadedBatteryData = null;
         private readonly Dictionary<string, Tuple<TechType, float>> batterySaveData = new Dictionary<string, Tuple<TechType, float>>();
         internal void SaveBatteryData(string path, Tuple<TechType, float> batteryData)
         {
@@ -1813,7 +1846,7 @@ namespace AVS
                 batterySaveData.Clear();
             }
         }
-        internal Tuple<TechType, float> ReadBatteryData(string path)
+        internal Tuple<TechType, float>? ReadBatteryData(string path)
         {
             if (loadedBatteryData == null)
             {
@@ -1849,7 +1882,7 @@ namespace AVS
         private GameObject GetOrCreateChild(string childName)
         {
             var child = transform.Find(childName)?.gameObject;
-            if (!child)
+            if (child == null)
             {
                 child = new GameObject(childName);
                 child.transform.SetParent(transform);

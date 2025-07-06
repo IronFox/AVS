@@ -18,7 +18,12 @@ namespace AVS.Patches
         {
             if (__instance.GetComponentInParent<ModVehicle>() != null && __instance.GetComponentInChildren<UpgradeProxy>() != null && __instance.GetComponentInChildren<UpgradeProxy>().slots != null)
             {
-                __instance.slots = __instance.GetComponentInChildren<UpgradeProxy>().slots.ToArray();
+                var proxy = __instance.GetComponentInChildren<UpgradeProxy>();
+                if (proxy == null || proxy.slots == null)
+                {
+                    return;
+                }
+                __instance.slots = proxy.slots.ToArray();
                 for (int i = 0; i < __instance.slots.Length; i++)
                 {
                     VehicleUpgradeConsoleInput.Slot slot = __instance.slots[i];
@@ -40,7 +45,7 @@ namespace AVS.Patches
             {
                 if (mv.upgradesInput == __instance)
                 {
-                    ModuleBuilder.main.BackgroundSprite = mv.Config.ModuleBackgroundImage;
+                    ModuleBuilder.Main.BackgroundSprite = mv.Config.ModuleBackgroundImage;
                     break;
                 }
             }

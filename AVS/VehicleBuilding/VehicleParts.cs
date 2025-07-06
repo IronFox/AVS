@@ -139,8 +139,8 @@ namespace AVS.VehicleParts
         public GameObject Flap { get; }
         public Vector3 AnglesOpened { get; }
         public Vector3 AnglesClosed { get; }
-        public IReadOnlyList<Transform> ModuleProxies { get; }
-        public VehicleUpgrades(GameObject @interface, GameObject flap, Vector3 openAngles, Vector3 closedAngles, IReadOnlyList<Transform> iProxies = null)
+        public IReadOnlyList<Transform>? ModuleProxies { get; }
+        public VehicleUpgrades(GameObject @interface, GameObject flap, Vector3 openAngles, Vector3 closedAngles, IReadOnlyList<Transform>? iProxies = null)
         {
             if (@interface == null)
                 throw new ArgumentNullException(nameof(@interface), "Vehicle upgrades interface cannot be null.");

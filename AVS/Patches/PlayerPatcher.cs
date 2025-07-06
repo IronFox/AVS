@@ -60,7 +60,7 @@ namespace AVS
              * "Passing 400 meters," that sort of thing.
              * I'm not sure this patch is strictly necessary.
              */
-            VehicleTypes.Submarine mv = __instance.GetVehicle() as VehicleTypes.Submarine;
+            var mv = __instance.GetVehicle() as VehicleTypes.Submarine;
             if (mv != null && !mv.IsPlayerControlling())
             {
                 //var crushDamage = __instance.gameObject.GetComponentInParent<CrushDamage>();
@@ -77,7 +77,7 @@ namespace AVS
         [HarmonyPatch(nameof(Player.Update))]
         public static void UpdatePostfix(Player __instance)
         {
-            VehicleTypes.Submarine mv = __instance.GetVehicle() as VehicleTypes.Submarine;
+            var mv = __instance.GetVehicle() as VehicleTypes.Submarine;
             if (mv == null)
             {
                 return;
@@ -97,7 +97,7 @@ namespace AVS
         [HarmonyPatch(nameof(Player.UpdateIsUnderwater))]
         public static bool UpdateIsUnderwaterPrefix(Player __instance)
         {
-            VehicleTypes.Submarine mv = __instance.GetVehicle() as VehicleTypes.Submarine;
+            var mv = __instance.GetVehicle() as VehicleTypes.Submarine;
             if (mv != null)
             {
                 // declare we aren't underwater,
@@ -113,7 +113,7 @@ namespace AVS
         [HarmonyPatch(nameof(Player.UpdateMotorMode))]
         public static bool UpdateMotorModePrefix(Player __instance)
         {
-            VehicleTypes.Submarine mv = __instance.GetVehicle() as VehicleTypes.Submarine;
+            var mv = __instance.GetVehicle() as VehicleTypes.Submarine;
             if (mv != null && !mv.IsPlayerControlling())
             {
                 // ensure: if we're in a modvehicle and we're not piloting, then we're walking.
@@ -128,7 +128,7 @@ namespace AVS
         {
             if (__instance.currentMountedVehicle != null)
             {
-                ModVehicle mv = __instance.currentMountedVehicle as ModVehicle;
+                var mv = __instance.currentMountedVehicle as ModVehicle;
                 switch (mv)
                 {
                     case Submarine _:
@@ -168,7 +168,7 @@ namespace AVS
         public static bool PlayerExitLockedModePrefix(Player __instance)
         {
             // if we're in an MV, do our special way of exiting a vehicle instead
-            ModVehicle mv = __instance.GetModVehicle();
+            var mv = __instance.GetModVehicle();
             if (mv == null)
             {
                 return true;
@@ -182,7 +182,7 @@ namespace AVS
         public static void PlayerOnKillPostfix(Player __instance)
         {
             // if we're in an MV, do our special way of exiting a vehicle instead
-            ModVehicle mv = __instance.GetModVehicle();
+            var mv = __instance.GetModVehicle();
             if (mv == null)
             {
                 return;

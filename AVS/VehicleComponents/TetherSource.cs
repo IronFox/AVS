@@ -14,7 +14,7 @@ namespace AVS
      */
     public class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
     {
-        public Submarine mv = null;
+        public Submarine? mv = null;
         private bool isLive = true;
         public bool isSimple;
         public Bounds bounds
@@ -25,7 +25,7 @@ namespace AVS
                 {
                     return new Bounds(Vector3.zero, Vector3.zero);
                 }
-                BoxCollider collider = mv.Com.BoundingBoxCollider;
+                var collider = mv.Com.BoundingBoxCollider;
                 if (collider == null)
                 {
                     return new Bounds(Vector3.zero, Vector3.zero);
@@ -74,7 +74,8 @@ namespace AVS
 
         public void Start()
         {
-            if (mv.Com.BoundingBoxCollider == null || mv.Com.TetherSources.Count == 0)
+
+            if (mv == null || mv.Com.BoundingBoxCollider == null || mv.Com.TetherSources.Count == 0)
             {
                 isSimple = true;
             }
@@ -90,7 +91,7 @@ namespace AVS
 
         public void TryToDropLeash()
         {
-            if (mv.IsPlayerControlling())
+            if (mv == null || mv.IsPlayerControlling())
             {
                 return;
             }
@@ -111,7 +112,8 @@ namespace AVS
         }
         private void MVExit()
         {
-            mv.StopPiloting();
+
+            mv!.StopPiloting();
             mv.PlayerExit();
 
             // the following block is just for the gargantuan leviathan
@@ -136,6 +138,10 @@ namespace AVS
 
         public void TryToEstablishLeash()
         {
+            if (mv == null)
+            {
+                return;
+            }
             bool PlayerWithinLeash(GameObject tetherSrc)
             {
                 float radius = 0.75f;

@@ -17,7 +17,7 @@ namespace AVS.Util
         /// <summary>
         /// Logging prefix, used to identify the source of the log message.
         /// </summary>
-        public string Prefix { get; }
+        public string? Prefix { get; }
 
         /// <summary>
         /// If true, log messages will include a timestamp.
@@ -35,7 +35,7 @@ namespace AVS.Util
         /// <param name="prefix">Logging prefix, used to identify the source of the log message.</param>
         /// <param name="includeTimestamp">If true, log messages will include a timestamp.</param>
         /// <param name="logExtraSteps">If true, extra steps of the material adaptation process will be logged.</param>
-        public Logging(bool logMaterialChanges, string prefix, bool includeTimestamp, bool logExtraSteps)
+        public Logging(bool logMaterialChanges, string? prefix, bool includeTimestamp, bool logExtraSteps)
         {
             LogMaterialChanges = logMaterialChanges;
             Prefix = prefix;
@@ -150,7 +150,7 @@ namespace AVS.Util
             Logger.Log(MakeMessage(msg()));
         }
 
-        private string ValueToString<T>(T value)
+        private string? ValueToString<T>(T value)
         {
             if (value is float f0)
                 return f0.ToString(CultureInfo.InvariantCulture);

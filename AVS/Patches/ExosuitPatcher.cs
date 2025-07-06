@@ -21,7 +21,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(Vehicle.OnUpgradeModuleToggle))]
         public static void VehicleOnUpgradeModuleTogglePostfix(Vehicle __instance, int slotID, bool active)
         {
-            Exosuit exo = __instance as Exosuit;
+            var exo = __instance as Exosuit;
             if (exo != null)
             {
                 TechType techType = exo.modules.GetTechTypeInSlot(exo.slotIDs[slotID]);
@@ -40,7 +40,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(Vehicle.OnUpgradeModuleUse))]
         public static void VehicleOnUpgradeModuleUsePostfix(Vehicle __instance, TechType techType, int slotID)
         {
-            Exosuit exo = __instance as Exosuit;
+            var exo = __instance as Exosuit;
             if (exo != null)
             {
                 UpgradeTypes.SelectableActionParams param = new UpgradeTypes.SelectableActionParams

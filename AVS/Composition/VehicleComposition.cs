@@ -28,7 +28,7 @@ namespace AVS.Composition
         /// Base object containing all colliders, directly or as children.
         /// The code can handle this not being set, but it really should be set.
         /// </summary>
-        public GameObject CollisionModel { get; }
+        public GameObject? CollisionModel { get; }
 
         /// <summary>
         /// Entry/exit hatches for the submarine.
@@ -50,7 +50,7 @@ namespace AVS.Composition
         /// Single box collider that contains the entire vehicle.
         /// While the code can handle this not being set, it really should be set.
         /// </summary>
-        public BoxCollider BoundingBoxCollider { get; }
+        public BoxCollider? BoundingBoxCollider { get; }
 
         /// <summary>
         /// Empty game objects that each define a box that clips the water surface.
@@ -88,12 +88,12 @@ namespace AVS.Composition
         /// This is what the player's left hand will 'grab' while you pilot.
         /// Can be null if the vehicle does not have a steering wheel.
         /// </summary>
-        public GameObject SteeringWheelLeftHandTarget { get; } = null;
+        public GameObject? SteeringWheelLeftHandTarget { get; } = null;
         /// <summary>
         /// This is what the player's right hand will 'grab' while you pilot.
         /// Can be null if the vehicle does not have a steering wheel.
         /// </summary>
-        public GameObject SteeringWheelRightHandTarget { get; } = null;
+        public GameObject? SteeringWheelRightHandTarget { get; } = null;
 
         /// <summary>
         /// Base object building is not permitted within these colliders.
@@ -114,7 +114,7 @@ namespace AVS.Composition
         /// Leviathan grab point, used by the Leviathan to grab the vehicle.
         /// If empty, the vehicle's own object is used as the grab point.
         /// </summary>
-        public GameObject LeviathanGrabPoint { get; }
+        public GameObject? LeviathanGrabPoint { get; }
 
         /// <summary>
         /// The engine that powers the vehicle. Must not be null.
@@ -157,22 +157,22 @@ namespace AVS.Composition
             GameObject modulesRootObject,
             IReadOnlyList<VehicleParts.VehicleHatchStruct> hatches,
             AbstractEngine engine,
-            GameObject collisionModel = null,
-            IReadOnlyList<VehicleParts.VehicleBattery> batteries = null,
-            IReadOnlyList<VehicleParts.VehicleUpgrades> upgrades = null,
-            BoxCollider boundingBoxCollider = null,
-            IReadOnlyList<GameObject> waterClipProxies = null,
-            IReadOnlyList<VehicleParts.VehicleStorage> innateStorages = null,
-            IReadOnlyList<VehicleParts.VehicleStorage> modularStorages = null,
-            IReadOnlyList<VehicleParts.VehicleFloodLight> headLights = null,
-            IReadOnlyList<GameObject> canopyWindows = null,
-            IReadOnlyList<VehicleParts.VehicleBattery> backupBatteries = null,
-            GameObject steeringWheelLeftHandTarget = null,
-            GameObject steeringWheelRightHandTarget = null,
-            IReadOnlyList<Collider> denyBuildingColliders = null,
-            IReadOnlyList<TMPro.TextMeshProUGUI> subNameDecals = null,
-            IReadOnlyList<Transform> lavaLarvaAttachPoints = null,
-            GameObject leviathanGrabPoint = null
+            GameObject? collisionModel = null,
+            IReadOnlyList<VehicleParts.VehicleBattery>? batteries = null,
+            IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
+            BoxCollider? boundingBoxCollider = null,
+            IReadOnlyList<GameObject>? waterClipProxies = null,
+            IReadOnlyList<VehicleParts.VehicleStorage>? innateStorages = null,
+            IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
+            IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
+            IReadOnlyList<GameObject>? canopyWindows = null,
+            IReadOnlyList<VehicleParts.VehicleBattery>? backupBatteries = null,
+            GameObject? steeringWheelLeftHandTarget = null,
+            GameObject? steeringWheelRightHandTarget = null,
+            IReadOnlyList<Collider>? denyBuildingColliders = null,
+            IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
+            IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
+            GameObject? leviathanGrabPoint = null
         )
         {
             if (!storageRootObject)

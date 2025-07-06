@@ -36,7 +36,7 @@ namespace AVS.Admin
         /// langword="true"/> will be considered. If <see langword="null"/>, no filtering is applied.</param>
         /// <returns>The nearest object of type <typeparamref name="T"/> to the <paramref name="target"/> position that satisfies
         /// the filter, or <see langword="null"/> if no such object is found.</returns>
-        public static T FindNearestSuch(Vector3 target, Func<T, bool> filter = null)
+        public static T FindNearestSuch(Vector3 target, Func<T, bool>? filter = null)
         {
             float ComputeDistance(T thisObject)
             {

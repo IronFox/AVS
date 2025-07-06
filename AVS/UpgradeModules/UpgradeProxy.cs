@@ -7,7 +7,7 @@ namespace AVS
     public class UpgradeProxy : MonoBehaviour
     {
         public IReadOnlyList<Transform> proxies = new List<Transform>();
-        public List<VehicleUpgradeConsoleInput.Slot> slots = null;
+        public List<VehicleUpgradeConsoleInput.Slot>? slots = null;
 
         public void Awake()
         {
@@ -19,7 +19,7 @@ namespace AVS
             yield return UWE.CoroutineHost.StartCoroutine(SeamothHelper.EnsureSeamoth());
 
             slots = new List<VehicleUpgradeConsoleInput.Slot>();
-            GameObject module = SeamothHelper.Seamoth.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/engine_console_key_02_geo").gameObject;
+            var module = SeamothHelper.Seamoth!.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/engine_console_key_02_geo").gameObject;
             for (int i = 0; i < proxies.Count; i++)
             {
                 foreach (Transform tran in proxies[i])

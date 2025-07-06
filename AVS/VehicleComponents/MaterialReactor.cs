@@ -50,21 +50,21 @@ namespace AVS.VehicleComponents
     }
     public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     {
-        private ModVehicle mv;
-        private ReactorBattery reactorBattery;
+        private ModVehicle? mv;
+        private ReactorBattery? reactorBattery;
         private float capacity = 0;
         public string interactText = "Material Reactor";
         public string cannotRemoveMessage = "Can't remove items being consumed by a Material Reactor";
         public bool canViewWhitelist = true;
         public bool listPotentials = true;
-        public Action<PDA> OnClosePDAAction = null;
-        public Action<int> UpdateVisuals = null;
+        public Action<PDA>? onClosePDAAction = null;
+        public Action<int>? updateVisuals = null;
         private readonly Dictionary<TechType, float> maxEnergies = new Dictionary<TechType, float>();
         private readonly Dictionary<TechType, float> rateEnergies = new Dictionary<TechType, float>();
         private readonly Dictionary<InventoryItem, float> currentEnergies = new Dictionary<InventoryItem, float>();
         private readonly Dictionary<TechType, TechType> spentMaterialIndex = new Dictionary<TechType, TechType>();
-        private ItemsContainer container;
-        private Coroutine OutputReactorDataCoroutine = null;
+        private ItemsContainer? container;
+        private Coroutine? outputReactorDataCoroutine = null;
         private bool isInitialized = false;
         private const string saveFileName = "MaterialReactor";
         private const string newSaveFileName = "Reactor";
@@ -134,7 +134,8 @@ namespace AVS.VehicleComponents
             gameObject.AddComponent<ChildObjectIdentifier>();
             isInitialized = true;
         }
-        private void Update()
+
+        internal void Update()
         {
             if (!isInitialized)
             {
@@ -148,14 +149,14 @@ namespace AVS.VehicleComponents
             foreach (var reactant in reactants)
             {
                 float rate = rateEnergies[reactant.techType] * Time.deltaTime;
-                float consumed = mv.energyInterface.AddEnergy(rate);
+                float consumed = mv!.energyInterface.AddEnergy(rate);
                 currentEnergies[reactant] -= consumed;
             }
             List<InventoryItem> spentMaterials = new List<InventoryItem>();
             foreach (var reactantPair in currentEnergies.ToList().Where(x => x.Value <= 0))
             {
                 spentMaterials.Add(reactantPair.Key);
-                if (container._items.TryGetValue(reactantPair.Key.techType, out ItemsContainer.ItemGroup itemGroup))
+                if (container!._items.TryGetValue(reactantPair.Key.techType, out ItemsContainer.ItemGroup itemGroup))
                 {
                     List<InventoryItem> items = itemGroup.items;
                     if (items.Remove(reactantPair.Key))
@@ -179,6 +180,11 @@ namespace AVS.VehicleComponents
         }
         private IEnumerator AddMaterial(TechType toAdd)
         {
+            if (mv == null || reactorBattery == null || container == null)
+            {
+                Logger.Error("MaterialReactor: ModVehicle, ReactorBattery or Container is null, cannot add material.");
+                yield break;
+            }
             TaskResult<GameObject> result = new TaskResult<GameObject>();
             yield return CraftData.InstantiateFromPrefabAsync(toAdd, result, false);
             GameObject spentMaterial = result.Get();
@@ -199,7 +205,7 @@ namespace AVS.VehicleComponents
             {
                 currentEnergies.Add(item, maxEnergies[item.techType]);
             }
-            UpdateVisuals?.Invoke(container.count);
+            updateVisuals?.Invoke(container!.count);
             // check if it can rot, and disable all that
             Eatable eatable = item.item.gameObject.GetComponent<Eatable>();
             if (eatable != null)
@@ -233,6 +239,10 @@ namespace AVS.VehicleComponents
         }
         void IHandTarget.OnHandHover(GUIHand hand)
         {
+            if (!isInitialized || mv == null || reactorBattery == null)
+            {
+                return;
+            }
             if (container != null)
             {
                 HandReticle main = HandReticle.main;
@@ -242,9 +252,9 @@ namespace AVS.VehicleComponents
                 if (canViewWhitelist)
                 {
                     main.SetText(HandReticle.TextType.HandSubscript, Language.main.Get("VFMaterialReactorHint3"), false, GameInput.Button.RightHand);
-                    if (GameInput.GetButtonDown(GameInput.Button.RightHand) && OutputReactorDataCoroutine == null)
+                    if (GameInput.GetButtonDown(GameInput.Button.RightHand) && outputReactorDataCoroutine == null)
                     {
-                        OutputReactorDataCoroutine = UWE.CoroutineHost.StartCoroutine(OutputReactorData());
+                        outputReactorDataCoroutine = UWE.CoroutineHost.StartCoroutine(OutputReactorData());
                     }
                 }
                 else
@@ -280,11 +290,11 @@ namespace AVS.VehicleComponents
                     Logger.PDANote(pair.Key.AsString(), 4f);
                 }
             }
-            OutputReactorDataCoroutine = null;
+            outputReactorDataCoroutine = null;
         }
         private void OnClosePDA(PDA pda)
         {
-            OnClosePDAAction?.Invoke(pda);
+            onClosePDAAction?.Invoke(pda);
         }
         public float GetFuelPotential()
         {
@@ -318,19 +328,44 @@ namespace AVS.VehicleComponents
 
         void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
         {
+            if (mv == null)
+            {
+                Logger.Error("MaterialReactor: ModVehicle is null, cannot save data.");
+                return;
+            }
             SaveLoad.JsonInterface.Write<List<Tuple<TechType, float>>>(mv, newSaveFileName, GetSaveDict());
         }
         void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
         {
+            if (mv == null)
+            {
+                Logger.Error("MaterialReactor: ModVehicle is null, cannot load saved data.");
+                return;
+            }
             var saveDict = SaveLoad.JsonInterface.Read<List<Tuple<TechType, float>>>(mv, newSaveFileName);
             if (saveDict == default)
             {
                 saveDict = SaveLoad.JsonInterface.Read<List<Tuple<TechType, float>>>(mv, saveFileName);
             }
+            if (saveDict == default || saveDict.Count == 0)
+            {
+                Logger.Warn("MaterialReactor: No saved data found, skipping load.");
+                return;
+            }
             UWE.CoroutineHost.StartCoroutine(LoadSaveDict(saveDict));
         }
         private List<Tuple<TechType, float>> GetSaveDict()
         {
+            if (reactorBattery == null)
+            {
+                Logger.Error("MaterialReactor: ReactorBattery is null, cannot save data.");
+                return new List<Tuple<TechType, float>>();
+            }
+            if (container == null)
+            {
+                Logger.Error("MaterialReactor: Container is null, cannot save data.");
+                return new List<Tuple<TechType, float>>();
+            }
             List<Tuple<TechType, float>> result = new List<Tuple<TechType, float>>
             {
                 new Tuple<TechType, float>(TechType.None, reactorBattery.GetCharge())
@@ -351,6 +386,16 @@ namespace AVS.VehicleComponents
         }
         private IEnumerator LoadSaveDict(List<Tuple<TechType, float>> saveDict)
         {
+            if (saveDict == null || saveDict.Count == 0)
+            {
+                Logger.Warn("MaterialReactor: No saved data found, skipping load.");
+                yield break;
+            }
+            if (reactorBattery == null)
+            {
+                Logger.Error("MaterialReactor: ReactorBattery is null, cannot load saved data.");
+                yield break;
+            }
             foreach (var reactant in saveDict)
             {
                 if (reactant.Item1 == TechType.None)
@@ -363,7 +408,7 @@ namespace AVS.VehicleComponents
             Dictionary<InventoryItem, float> changesPending = new Dictionary<InventoryItem, float>();
             foreach (var reactant in currentEnergies)
             {
-                Tuple<TechType, float> selectedReactant = default;
+                Tuple<TechType, float>? selectedReactant = default;
                 foreach (var savedReactant in saveDict)
                 {
                     if (reactant.Key.techType == savedReactant.Item1)
@@ -373,6 +418,8 @@ namespace AVS.VehicleComponents
                         break;
                     }
                 }
+                if (selectedReactant == null)
+                    continue;
                 saveDict.Remove(selectedReactant);
             }
             foreach (var reactantToLoad in changesPending)

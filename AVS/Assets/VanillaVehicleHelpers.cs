@@ -17,13 +17,13 @@ namespace AVS
         /// <summary>
         /// Reference to the currently running coroutine for loading the Seamoth prefab.
         /// </summary>
-        private static Coroutine cor = null;
+        private static Coroutine? cor = null;
 
         /// <summary>
         /// Gets the loaded Seamoth prefab GameObject, or null if not yet loaded.
         /// The prefab is set to inactive and marked to not be destroyed on load.
         /// </summary>
-        public static GameObject Seamoth
+        public static GameObject? Seamoth
         {
             get
             {
@@ -73,13 +73,13 @@ namespace AVS
     public static class PrawnHelper
     {
         private static TaskResult<GameObject> Request { get; } = new TaskResult<GameObject>();
-        private static Coroutine cor = null;
+        private static Coroutine? cor = null;
 
         /// <summary>
         /// Gets the loaded PRAWN prefab GameObject, or null if not yet loaded.
         /// The prefab is set to inactive and marked to not be destroyed on load.
         /// </summary>
-        public static GameObject Prawn
+        public static GameObject? Prawn
         {
             get
             {

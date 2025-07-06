@@ -5,12 +5,12 @@ namespace AVS
 {
     public class VehicleBatteryInput : HandTarget, IHandTarget
     {
-        public EnergyMixin mixin;
+        public EnergyMixin? mixin;
 
         // need this SerializeField attribute or else assignment in
         // VehicleBuilder is not propogated to instances
         [SerializeField]
-        internal string tooltip;
+        internal string? tooltip;
 
         public void OnHandHover(GUIHand hand)
         {
@@ -21,7 +21,8 @@ namespace AVS
         public void OnHandClick(GUIHand hand)
         {
             gameObject.GetComponentInParent<ModVehicle>().OnAIBatteryReload();
-            mixin.InitiateReload(); // this brings up the battery-changing gui
+            if (mixin != null)
+                mixin.InitiateReload(); // this brings up the battery-changing gui
         }
     }
 }

@@ -60,7 +60,7 @@ namespace AVS.MaterialAdapt
         public MaterialFixer(
             ModVehicle owner,
             Logging? logConfig = null,
-            Func<IEnumerable<SurfaceShaderData>> materialResolver = null
+            Func<IEnumerable<SurfaceShaderData>>? materialResolver = null
             )
         {
             if (owner == null)
@@ -139,8 +139,7 @@ namespace AVS.MaterialAdapt
                 adaptation.ApplyToTarget(Logging);
         }
 
-        private MaterialPrototype HullPrototype { get; set; }
-        //private MaterialPrototype GlassPrototype { get; set; }
+        private MaterialPrototype? HullPrototype { get; set; }
 
         /// <summary>
         /// Fixes materials if necessary/possible.
@@ -170,7 +169,12 @@ namespace AVS.MaterialAdapt
                     }
                     else
                     {
-                        Shader shader = Shaders.FindMainShader();
+                        var shader = Shaders.FindMainShader();
+                        if (shader == null)
+                        {
+                            Logging.LogError($"No main shader found. Cannot adapt materials");
+                            return false;
+                        }
 
                         foreach (var data in MaterialResolver())
                         {

@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using AVS.Util;
 using HarmonyLib;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
 
 
@@ -44,7 +45,9 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(PowerRelay.GetPower))]
         public static bool GetPowerPrefix(PowerRelay __instance, ref float __result)
         {
-            ModVehicle mv = __instance?.gameObject?.GetComponent<ModVehicle>();
+            var mv = __instance
+                .SmartGetGameObject()
+                .SmartGetComponent<ModVehicle>();
             if (mv != null)
             {
                 if (mv.energyInterface != null)

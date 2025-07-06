@@ -34,7 +34,7 @@ namespace AVS
         public static IEnumerator SetupVFXConstructing(GameObject go)
         {
             yield return UWE.CoroutineHost.StartCoroutine(SeamothHelper.EnsureSeamoth());
-            GameObject seamoth = SeamothHelper.Seamoth;
+            GameObject seamoth = SeamothHelper.Seamoth!;
             VFXConstructing seamothVFXC = seamoth.GetComponent<VFXConstructing>();
             VFXConstructing rocketPlatformVfx = seamoth.GetComponentInChildren<VFXConstructing>();
             VFXConstructing vfxc = go.EnsureComponent<VFXConstructing>();
@@ -204,7 +204,7 @@ namespace AVS
         }
         public static void BuildPathsForModVehicle(ModVehicle mv, GameObject pointsRoot)
         {
-            BoxCollider box = mv.Com.BoundingBoxCollider;
+            var box = mv.Com.BoundingBoxCollider;
             if (box != null)
             {
                 Transform A = GetCornerBoxCollider(pointsRoot, box, CornerValue.lefttopfront);

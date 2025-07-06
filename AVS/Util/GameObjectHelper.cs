@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace AVS.Util
 {
@@ -12,16 +14,32 @@ namespace AVS.Util
         /// Duplicates a source component onto another object, copying all its fields in the process.
         /// </summary>
         /// <typeparam name="T">Type being copied</typeparam>
+        /// <param name="original">Original component. May be null</param>
+        /// <param name="destination">Destination owner</param>
+        /// <returns>Duplicated component</returns>
+        public static T? TryCopyComponentWithFieldsTo<T>(this T? original, GameObject destination) where T : Component
+        {
+            if (original == null)
+            {
+                Logger.Error($"Original component of type {typeof(T).Name} is null, cannot copy.");
+                return null;
+            }
+            return CopyComponentWithFieldsTo(original, destination);
+        }
+        /// <summary>
+        /// Duplicates a source component onto another object, copying all its fields in the process.
+        /// </summary>
+        /// <typeparam name="T">Type being copied</typeparam>
         /// <param name="original">Original component</param>
         /// <param name="destination">Destination owner</param>
         /// <returns>Duplicated component</returns>
         public static T CopyComponentWithFieldsTo<T>(this T original, GameObject destination) where T : Component
         {
-            if (!original)
-            {
-                Logger.Error($"Original component of type {typeof(T).Name} is null, cannot copy.");
-                return null;
-            }
+            //if (original == null)
+            //{
+            //    Logger.Error($"Original component of type {typeof(T).Name} is null, cannot copy.");
+            //    return null;
+            //}
             System.Type type = original.GetType();
             T copy = (T)destination.EnsureComponent(type);
             System.Reflection.FieldInfo[] fields = type.GetFields();
@@ -40,11 +58,34 @@ namespace AVS.Util
         /// <param name="b">Second objec to return if <paramref name="a"/> is null</param>
         /// <returns><paramref name="a"/> if not null, <paramref name="b"/> if <paramref name="a"/> is null,
         /// null if both are null</returns>
-        public static T Or<T>(this T a, T b) where T : Object
+        public static T? Or<T>(this T? a, T? b) where T : Object
         {
-            if (a)
+            if (a != null)
                 return a;
             return b;
+        }
+
+        /// <summary>
+        /// Returns the first non-null object from the two provided.
+        /// </summary>
+        /// <typeparam name="T">Type being compared</typeparam>
+        /// <param name="a">First object to return if not null</param>
+        /// <param name="b">Second objec to return if <paramref name="a"/> is null</param>. Must not be null
+        /// <returns><paramref name="a"/> if not null, <paramref name="b"/> if <paramref name="a"/> is null</returns>
+        public static T OrRequired<T>(this T? a, T b) where T : Object
+        {
+            if (a != null)
+                return a;
+            if (b != null)
+                return b;
+            throw new System.ArgumentNullException($"Both objects are null. Cannot return a valid {typeof(T).Name} object.");
+        }
+
+        public static T OrThrow<T>(this T? item, Func<Exception> exceptionFactory) where T : Object
+        {
+            if (item != null)
+                return item;
+            throw exceptionFactory();
         }
 
         /// <summary>
@@ -82,9 +123,9 @@ namespace AVS.Util
         /// Selectively returns the transform of a GameObject.
         /// Returns null if the GameObject is null.
         /// </summary>
-        public static Transform GetTransform(this GameObject gameObject)
+        public static Transform? GetTransform(this GameObject? gameObject)
         {
-            if (!gameObject)
+            if (gameObject == null)
                 return null;
             return gameObject.transform;
         }
@@ -93,9 +134,9 @@ namespace AVS.Util
         /// Selectively returns the transform of a Component.
         /// Returns null if the Component is null.
         /// </summary>
-        public static Transform GetTransform(this Component component)
+        public static Transform? GetTransform(this Component? component)
         {
-            if (!component)
+            if (component == null)
                 return null;
             return component.transform;
         }
@@ -103,9 +144,9 @@ namespace AVS.Util
         /// Selectively returns the GameObject of a Component.
         /// Returns null if the Component is null.
         /// </summary>
-        public static GameObject GetGameObject(this Component component)
+        public static GameObject? SmartGetGameObject(this Component? component)
         {
-            if (!component)
+            if (component == null)
                 return null;
             return component.gameObject;
         }
@@ -114,9 +155,9 @@ namespace AVS.Util
         /// Selectively returns the Texture2D of a Sprite.
         /// Returns null if the Sprite is null.
         /// </summary>
-        public static Texture2D GetTexture2D(this Sprite sprite)
+        public static Texture2D? GetTexture2D(this Sprite? sprite)
         {
-            if (!sprite)
+            if (sprite == null)
                 return null;
             return sprite.texture;
         }
@@ -126,9 +167,9 @@ namespace AVS.Util
         /// Includes the object's name, type, and instance ID.
         /// Returns "&lt;null&gt;" if the object is null.
         /// </summary>
-        public static string NiceName(this Object o)
+        public static string NiceName(this Object? o)
         {
-            if (!o)
+            if (o == null)
                 return "<null>";
 
             string text = o.name;
@@ -171,9 +212,9 @@ namespace AVS.Util
         /// Returns an empty enumerable if the Transform is null or has no children.
         /// </summary>
 
-        public static IEnumerable<Transform> GetChildren(this Transform transform)
+        public static IEnumerable<Transform> GetChildren(this Transform? transform)
         {
-            if (!transform)
+            if (transform == null)
             {
                 yield break;
             }
@@ -188,9 +229,9 @@ namespace AVS.Util
         /// Favors the attached Rigidbody if available, otherwise uses the Collider's GameObject.
         /// Returns null if the Collider is null.
         /// </summary>
-        public static GameObject GetGameObjectOf(Collider collider)
+        public static GameObject? GetGameObjectOf(Collider? collider)
         {
-            if (!collider)
+            if (collider == null)
                 return null;
             if (collider.attachedRigidbody)
             {
@@ -245,6 +286,70 @@ namespace AVS.Util
                 Logger.Error($"{rootTransform.gameObject} has been deactivate. Re-activating");
                 rootTransform.gameObject.SetActive(value: false);
             }
+        }
+
+        /// <summary>
+        /// Retrieves all components of type <typeparamref name="T"/> from the specified transform and its children.
+        /// </summary>
+        /// <typeparam name="T">The type of component to retrieve.</typeparam>
+        /// <param name="t">The transform from which to search for components. If <see langword="null"/>, an empty array is returned.</param>
+        /// <returns>An array of components of type <typeparamref name="T"/> found in the transform and its children.  Returns an
+        /// empty array if no components are found or if <paramref name="t"/> is <see langword="null"/>.</returns>
+        public static T[] SmartGetComponentsInChildren<T>(this Transform? t) where T : Component
+        {
+            if (t == null)
+                return Array.Empty<T>();
+            return t.GetComponentsInChildren<T>();
+        }
+
+        /// <summary>
+        /// Retrieves the first component of type <typeparamref name="T"/> from the specified transform or its children.
+        /// Returns <see langword="null"/> if the transform is <see langword="null"/> or if no such component is found.
+        /// </summary>
+        /// <typeparam name="T">The type of component to retrieve.</typeparam>
+        /// <param name="t">The transform from which to search for the component.</param>
+        /// <param name="includeInactive">Whether to include inactive child GameObjects in the search.</param>
+        /// <returns>The first component of type <typeparamref name="T"/> found, or <see langword="null"/> if none is found.</returns>
+        public static T? SmartGetComponentInChildren<T>(this Transform? t, bool includeInactive = false) where T : Component
+        {
+            if (t == null)
+                return null;
+            return t.GetComponentInChildren<T>(includeInactive);
+        }
+
+        /// <summary>
+        /// Selectively gets a component of type <typeparamref name="T"/> from a sibling component.
+        /// If the component is null, returns null.
+        /// </summary>
+        /// <typeparam name="T">Requested component type</typeparam>
+        /// <param name="c">Component to get the sibling component of</param>
+        /// <returns>Requested component or null</returns>
+        public static T? SmartGetComponent<T>(this Component? c) where T : Component
+        {
+            if (c == null)
+                return null;
+            return c.GetComponent<T>();
+        }
+
+        /// <summary>
+        /// Retrieves a component of the specified type from the given <see cref="GameObject"/>.
+        /// </summary>
+        /// <typeparam name="T">The type of the component to retrieve. Must derive from <see cref="Component"/>.</typeparam>
+        /// <param name="go">The <see cref="GameObject"/> from which to retrieve the component. Can be <see langword="null"/>.</param>
+        /// <returns>The component of type <typeparamref name="T"/> if found; otherwise, <see langword="null"/>.  Returns <see
+        /// langword="null"/> if <paramref name="go"/> is <see langword="null"/>.</returns>
+        public static T? SmartGetComponent<T>(this GameObject? go) where T : Component
+        {
+            if (go == null)
+                return null;
+            return go.GetComponent<T>();
+        }
+
+        public static Transform? SmartGetParent(this Transform? t)
+        {
+            if (t == null)
+                return null;
+            return t.parent;
         }
     }
 }

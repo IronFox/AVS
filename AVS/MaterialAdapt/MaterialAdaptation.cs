@@ -63,7 +63,7 @@ namespace AVS.MaterialAdapt
         /// Gets the addressed material
         /// </summary>
         /// <returns>Addressed material or null if the address is/has become invalid</returns>
-        public Material GetMaterial()
+        public Material? GetMaterial()
         {
             if (Renderer == null)
                 return null;

@@ -56,7 +56,7 @@ namespace AVS.Util
         /// <remarks>If the shader cannot be located, an error message is logged to the console.</remarks>
         /// <returns>The <see cref="Shader"/> instance representing the main vehicle shader,  or <see langword="null"/> if the
         /// shader cannot be found.</returns>
-        public static Shader FindMainShader()
+        public static Shader? FindMainShader()
         {
             // Find the main shader used for vehicles.
             Shader shader = Shader.Find(MainShader);
@@ -75,8 +75,8 @@ namespace AVS.Util
         /// properties.</remarks>
         public static void LogMainShaderPropertiesToDebug()
         {
-            Shader shader = FindMainShader();
-            if (!shader)
+            var shader = FindMainShader();
+            if (shader == null)
                 return;
             for (int i = 0; i < shader.GetPropertyCount(); i++)
             {

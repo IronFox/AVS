@@ -9,7 +9,7 @@ namespace AVS.VehicleComponents
         protected override void OnFinishedDocking(Vehicle dockingVehicle)
         {
             base.OnFinishedDocking(dockingVehicle);
-            if(Player.main.currentMountedVehicle == dockingVehicle)
+            if (Player.main.currentMountedVehicle == dockingVehicle)
             {
                 mv.PlayerEntry();
             }
@@ -24,6 +24,10 @@ namespace AVS.VehicleComponents
         }
         protected override void TryRechargeDockedVehicle()
         {
+            if (currentDockedVehicle == null)
+            {
+                return;
+            }
             base.TryRechargeDockedVehicle();
             mv.GetEnergyValues(out float charge, out float _);
             currentDockedVehicle.GetEnergyValues(out float dockedEnergy, out float dockedCapacity);

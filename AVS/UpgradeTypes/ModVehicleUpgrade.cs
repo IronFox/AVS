@@ -85,7 +85,7 @@ namespace AVS.UpgradeTypes
         /// <summary>
         /// The icon for this upgrade.
         /// </summary>
-        public virtual Atlas.Sprite Icon => StaticAssets.UpgradeIcon;
+        public virtual Atlas.Sprite? Icon => StaticAssets.UpgradeIcon;
 
         /// <summary>
         /// The TechType that this module unlocks together with.
@@ -106,7 +106,7 @@ namespace AVS.UpgradeTypes
         /// <summary>
         /// The sprite shown when this upgrade is unlocked.
         /// </summary>
-        public virtual Sprite UnlockedSprite => null;
+        public virtual Sprite? UnlockedSprite => null;
 
         /// <summary>
         /// The internal tab name for this upgrade in the crafting UI.
@@ -121,12 +121,12 @@ namespace AVS.UpgradeTypes
         /// <summary>
         /// The crafting path for this upgrade, if any.
         /// </summary>
-        public virtual List<CraftingNode> CraftingPath { get; set; } = null;
+        public virtual List<CraftingNode>? CraftingPath { get; set; } = null;
 
         /// <summary>
         /// The icon for the tab in the crafting UI.
         /// </summary>
-        public virtual Atlas.Sprite TabIcon => StaticAssets.UpgradeIcon;
+        public virtual Atlas.Sprite? TabIcon => StaticAssets.UpgradeIcon;
 
         /// <summary>
         /// The base recipe for this upgrade.

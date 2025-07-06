@@ -194,7 +194,11 @@ namespace AVS.Admin
             if (result)
             {
                 CraftTreeHandler.EnsureCraftingTabsAvailable(upgrade, compat);
-                UpgradeIcons.Add(upgrade.ClassId, SpriteHelper.CreateSpriteFromAtlasSprite(upgrade.Icon));
+                var icon = SpriteHelper.CreateSpriteFromAtlasSprite(upgrade.Icon);
+                if (icon != null)
+                    UpgradeIcons.Add(upgrade.ClassId, icon);
+                else
+                    Logger.Error($"UpgradeRegistrar Error: ModVehicleUpgrade {upgrade.ClassId} has a null icon! Please provide a valid icon sprite.");
                 UpgradeTechTypes utt = new UpgradeTechTypes();
                 bool isPdaRegistered = false;
                 if (!compat.skipModVehicle || upgrade.IsVehicleSpecific)

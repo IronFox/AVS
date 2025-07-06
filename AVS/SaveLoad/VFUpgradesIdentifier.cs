@@ -15,8 +15,8 @@ namespace AVS.SaveLoad
         private const string NewSaveFileName = "Upgrades";
         void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
         {
-            Dictionary<string, InventoryItem> upgradeList = mv.modules?.equipment;
-            if (upgradeList == null)
+            var upgradeList = mv.modules?.equipment;
+            if (upgradeList is null)
             {
                 return;
             }
@@ -34,7 +34,7 @@ namespace AVS.SaveLoad
             yield return new WaitUntil(() => mv.upgradesInput.equipment != null);
             mv.UnlockDefaultModuleSlots();
             var theseUpgrades = SaveLoad.JsonInterface.Read<Dictionary<string, TechType>>(mv, NewSaveFileName);
-            if(theseUpgrades == default)
+            if (theseUpgrades == default)
             {
                 theseUpgrades = SaveLoad.JsonInterface.Read<Dictionary<string, TechType>>(mv, SaveFileName);
                 if (theseUpgrades == default)
@@ -43,7 +43,7 @@ namespace AVS.SaveLoad
                     yield break;
                 }
             }
-            foreach(var upgrade in theseUpgrades.Where(x=>x.Value != TechType.None))
+            foreach (var upgrade in theseUpgrades.Where(x => x.Value != TechType.None))
             {
                 TaskResult<GameObject> result = new TaskResult<GameObject>();
                 yield return CraftData.InstantiateFromPrefabAsync(upgrade.Value, result, false);

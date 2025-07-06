@@ -14,25 +14,30 @@ namespace AVS.Assets
     public readonly struct VehicleAssets
     {
         /// <summary>
-        /// Gets the vehicle model GameObject.
+        /// Retrieved model.
+        /// Null if this asset was not loaded for a model.
         /// </summary>
-        public GameObject Model { get; }
+        public GameObject? Model { get; }
         /// <summary>
-        /// Gets the ping sprite for the vehicle.
+        /// Retrieved ping sprite.
+        /// Null if this asset was not loaded for sprite atlas.
         /// </summary>
-        public Atlas.Sprite Ping { get; }
+        public Atlas.Sprite? Ping { get; }
         /// <summary>
-        /// Gets the crafter sprite for the vehicle.
+        /// Retrieved crafter sprite.
+        /// Null if this asset was not loaded for sprite atlas.
         /// </summary>
-        public Atlas.Sprite Crafter { get; }
+        public Atlas.Sprite? Crafter { get; }
         /// <summary>
-        /// Gets the fragment GameObject for the vehicle.
+        /// Unlock sprite.
+        /// Null if this asset was not loaded for sprite atlas.
         /// </summary>
-        public GameObject Fragment { get; }
+        public Sprite? Unlock { get; }
         /// <summary>
-        /// Gets the unlock sprite for the vehicle.
+        /// Fragment GameObject.
+        /// Null if this asset was not loaded for a fragment.
         /// </summary>
-        public Sprite Unlock { get; }
+        public GameObject? Fragment { get; }
         /// <summary>
         /// Gets the asset bundle interface used to load these assets.
         /// </summary>
@@ -47,7 +52,13 @@ namespace AVS.Assets
         /// <param name="crafter">The crafter sprite.</param>
         /// <param name="fragment">The fragment GameObject.</param>
         /// <param name="unlock">The unlock sprite.</param>
-        public VehicleAssets(AssetBundleInterface abi, GameObject model, Atlas.Sprite ping, Atlas.Sprite crafter, GameObject fragment, Sprite unlock)
+        public VehicleAssets(
+            AssetBundleInterface abi,
+            GameObject? model,
+            Atlas.Sprite? ping,
+            Atlas.Sprite? crafter,
+            GameObject? fragment,
+            Sprite? unlock)
         {
             Model = model;
             Ping = ping;
@@ -71,7 +82,7 @@ namespace AVS.Assets
     public class AssetBundleInterface
     {
         internal string bundleName;
-        internal AssetBundle bundle;
+        internal AssetBundle? bundle;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AssetBundleInterface"/> class and loads the asset bundle from the specified path.
@@ -101,17 +112,23 @@ namespace AVS.Assets
         /// </summary>
         /// <param name="spriteAtlasName">The name of the sprite atlas.</param>
         /// <returns>The loaded <see cref="SpriteAtlas"/>, or null if not found.</returns>
-        internal SpriteAtlas GetSpriteAtlas(string spriteAtlasName)
+        internal SpriteAtlas? GetSpriteAtlas(string spriteAtlasName)
         {
+            if (bundle == null)
+            {
+                Logger.Error($"AssetBundle {bundleName} is not loaded. Cannot get sprite atlas");
+                return null;
+            }
+            SpriteAtlas? rs = null;
             try
             {
-                return bundle.LoadAsset<SpriteAtlas>(spriteAtlasName);
+                rs = bundle.LoadAsset<SpriteAtlas>(spriteAtlasName);
             }
             catch
             {
                 try
                 {
-                    return bundle.LoadAsset<SpriteAtlas>($"{spriteAtlasName}.spriteatlas");
+                    rs = bundle.LoadAsset<SpriteAtlas>($"{spriteAtlasName}.spriteatlas");
                 }
                 catch (Exception e)
                 {
@@ -119,6 +136,9 @@ namespace AVS.Assets
                     return null;
                 }
             }
+            if (!rs)
+                Logger.Error($"AssetBundle {bundleName} failed to get Sprite Atlas: {spriteAtlasName}.");
+            return rs;
         }
 
         /// <summary>
@@ -127,12 +147,14 @@ namespace AVS.Assets
         /// <param name="spriteAtlasName">The name of the sprite atlas.</param>
         /// <param name="spriteName">The name of the sprite.</param>
         /// <returns>The loaded <see cref="Atlas.Sprite"/>, or null if not found.</returns>
-        internal Atlas.Sprite GetSprite(string spriteAtlasName, string spriteName)
+        internal Atlas.Sprite? GetSprite(string spriteAtlasName, string spriteName)
         {
-            SpriteAtlas thisAtlas = GetSpriteAtlas(spriteAtlasName);
+            var thisAtlas = GetSpriteAtlas(spriteAtlasName);
+            if (thisAtlas == null)
+                return null;
             try
             {
-                Sprite ping = thisAtlas.GetSprite(spriteName);
+                var ping = thisAtlas.GetSprite(spriteName);
                 return new Atlas.Sprite(ping);
             }
             catch (Exception e)
@@ -148,9 +170,11 @@ namespace AVS.Assets
         /// <param name="spriteAtlasName">The name of the sprite atlas.</param>
         /// <param name="spriteName">The name of the sprite.</param>
         /// <returns>The loaded <see cref="Sprite"/>, or null if not found.</returns>
-        internal Sprite GetRawSprite(string spriteAtlasName, string spriteName)
+        internal Sprite? GetRawSprite(string spriteAtlasName, string spriteName)
         {
-            SpriteAtlas thisAtlas = GetSpriteAtlas(spriteAtlasName);
+            var thisAtlas = GetSpriteAtlas(spriteAtlasName);
+            if (thisAtlas == null)
+                return null;
             try
             {
                 return thisAtlas.GetSprite(spriteName);
@@ -167,8 +191,13 @@ namespace AVS.Assets
         /// </summary>
         /// <param name="gameObjectName">The name of the GameObject.</param>
         /// <returns>The loaded <see cref="GameObject"/>, or null if not found.</returns>
-        internal GameObject GetGameObject(string gameObjectName)
+        internal GameObject? GetGameObject(string gameObjectName)
         {
+            if (bundle == null)
+            {
+                Logger.Error($"AssetBundle {bundleName} is not loaded. Cannot get GameObject {gameObjectName}");
+                return null;
+            }
             try
             {
                 return bundle.LoadAsset<GameObject>(gameObjectName);
@@ -193,9 +222,13 @@ namespace AVS.Assets
         /// <param name="prefabName">The name of the prefab containing the audio source.</param>
         /// <param name="clipName">The name of the audio clip.</param>
         /// <returns>The loaded <see cref="AudioClip"/>, or null if not found.</returns>
-        internal AudioClip GetAudioClip(string prefabName, string clipName)
+        internal AudioClip? GetAudioClip(string prefabName, string clipName)
         {
-            return GetGameObject(prefabName)
+            var go = GetGameObject(prefabName);
+            if (go == null)
+                return null;
+            return
+                go
                 .GetComponents<AudioSource>()
                 .Select(x => x.clip)
                 .Where(x => x.name == clipName)
@@ -218,13 +251,13 @@ namespace AVS.Assets
             string directoryPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
             string bundlePath = Path.Combine(directoryPath, bundleName);
             AssetBundleInterface abi = new AssetBundleInterface(bundlePath);
-            GameObject model = null;
-            GameObject fragment = null;
-            Atlas.Sprite ping = null;
-            Atlas.Sprite crafter = null;
-            Sprite unlock = null;
+            GameObject? model = null;
+            GameObject? fragment = null;
+            Atlas.Sprite? ping = null;
+            Atlas.Sprite? crafter = null;
+            Sprite? unlock = null;
             //result.abi = abi;
-            if (modelName != "")
+            if (!string.IsNullOrEmpty(modelName))
             {
                 model = abi.GetGameObject(modelName);
             }
@@ -263,7 +296,7 @@ namespace AVS.Assets
         /// <param name="abi">The asset bundle interface.</param>
         /// <param name="modelName">The name of the GameObject.</param>
         /// <returns>The loaded <see cref="GameObject"/>, or null if not found.</returns>
-        public static GameObject LoadAdditionalGameObject(AssetBundleInterface abi, string modelName)
+        public static GameObject? LoadAdditionalGameObject(AssetBundleInterface abi, string modelName)
         {
             return abi.GetGameObject(modelName);
         }
@@ -275,7 +308,7 @@ namespace AVS.Assets
         /// <param name="SpriteAtlasName">The name of the sprite atlas.</param>
         /// <param name="SpriteName">The name of the sprite.</param>
         /// <returns>The loaded <see cref="Atlas.Sprite"/>, or null if not found.</returns>
-        public static Atlas.Sprite LoadAdditionalSprite(AssetBundleInterface abi, string SpriteAtlasName, string SpriteName)
+        public static Atlas.Sprite? LoadAdditionalSprite(AssetBundleInterface abi, string SpriteAtlasName, string SpriteName)
         {
             return abi.GetSprite(SpriteAtlasName, SpriteName);
         }
@@ -287,7 +320,7 @@ namespace AVS.Assets
         /// <param name="SpriteAtlasName">The name of the sprite atlas.</param>
         /// <param name="SpriteName">The name of the sprite.</param>
         /// <returns>The loaded <see cref="Sprite"/>, or null if not found.</returns>
-        public static Sprite LoadAdditionalRawSprite(AssetBundleInterface abi, string SpriteAtlasName, string SpriteName)
+        public static Sprite? LoadAdditionalRawSprite(AssetBundleInterface abi, string SpriteAtlasName, string SpriteName)
         {
             return abi.GetRawSprite(SpriteAtlasName, SpriteName);
         }
@@ -299,7 +332,7 @@ namespace AVS.Assets
         /// <param name="prefabName">The name of the prefab containing the audio source.</param>
         /// <param name="clipName">The name of the audio clip.</param>
         /// <returns>The loaded <see cref="AudioClip"/>, or null if not found.</returns>
-        public static AudioClip LoadAudioClip(AssetBundleInterface abi, string prefabName, string clipName)
+        public static AudioClip? LoadAudioClip(AssetBundleInterface abi, string prefabName, string clipName)
         {
             return abi.GetAudioClip(prefabName, clipName);
         }
@@ -309,7 +342,8 @@ namespace AVS.Assets
         /// </summary>
         public void CloseBundle()
         {
-            bundle.Unload(false);
+            if (bundle != null)
+                bundle.Unload(false);
         }
     }
 }

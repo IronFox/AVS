@@ -69,24 +69,24 @@ namespace AVS.Composition
         /// <summary>
         /// Optional parent game object for the flood light control panel.
         /// </summary>
-        public GameObject ControlPanel { get; } = null;
+        public GameObject? ControlPanel { get; } = null;
 
         /// <summary>
         /// Optional pre-install fabricator parent game object.
         /// If not null, a fabricator will be automatically created as child of this game object.
         /// </summary>
-        public GameObject Fabricator { get; } = null;
+        public GameObject? Fabricator { get; } = null;
 
         /// <summary>
         /// Optional color picker console game object to construct necessary components in.
         /// </summary>
-        public GameObject ColorPicker { get; } = null;
+        public GameObject? ColorPicker { get; } = null;
 
         /// <summary>
         /// Optional respawn point in case the character dies.
         /// If null, a respawn point will automatically be created in the vehicle's root object.
         /// </summary>
-        public GameObject RespawnPoint { get; } = null;
+        public GameObject? RespawnPoint { get; } = null;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SubmarineComposition"/> class with the specified components and configuration.
@@ -132,34 +132,34 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehiclePilotSeat> pilotSeats,
             IReadOnlyList<VehicleParts.VehicleHatchStruct> hatches,
             AbstractEngine engine,
-            IReadOnlyList<VehicleParts.VehicleFloodLight> floodLights = null,
-            IReadOnlyList<Light> interiorLights = null,
-            IReadOnlyList<GameObject> navigationPortLights = null,
-            IReadOnlyList<GameObject> navigationStarboardLights = null,
-            IReadOnlyList<GameObject> navigationPositionLights = null,
-            IReadOnlyList<GameObject> navigationWhiteStrobeLights = null,
-            IReadOnlyList<GameObject> navigationRedStrobeLights = null,
-            GameObject controlPanel = null,
-            GameObject fabricator = null,
-            GameObject colorPicker = null,
-            GameObject respawnPoint = null,
+            IReadOnlyList<VehicleParts.VehicleFloodLight>? floodLights = null,
+            IReadOnlyList<Light>? interiorLights = null,
+            IReadOnlyList<GameObject>? navigationPortLights = null,
+            IReadOnlyList<GameObject>? navigationStarboardLights = null,
+            IReadOnlyList<GameObject>? navigationPositionLights = null,
+            IReadOnlyList<GameObject>? navigationWhiteStrobeLights = null,
+            IReadOnlyList<GameObject>? navigationRedStrobeLights = null,
+            GameObject? controlPanel = null,
+            GameObject? fabricator = null,
+            GameObject? colorPicker = null,
+            GameObject? respawnPoint = null,
             // VehicleComposition base parameters
-            GameObject collisionModel = null,
-            IReadOnlyList<VehicleParts.VehicleBattery> batteries = null,
-            IReadOnlyList<VehicleParts.VehicleUpgrades> upgrades = null,
-            BoxCollider boundingBoxCollider = null,
-            IReadOnlyList<GameObject> waterClipProxies = null,
-            IReadOnlyList<VehicleParts.VehicleStorage> innateStorages = null,
-            IReadOnlyList<VehicleParts.VehicleStorage> modularStorages = null,
-            IReadOnlyList<VehicleParts.VehicleFloodLight> headLights = null,
-            IReadOnlyList<GameObject> canopyWindows = null,
-            IReadOnlyList<VehicleParts.VehicleBattery> backupBatteries = null,
-            GameObject steeringWheelLeftHandTarget = null,
-            GameObject steeringWheelRightHandTarget = null,
-            IReadOnlyList<Collider> denyBuildingColliders = null,
-            IReadOnlyList<TMPro.TextMeshProUGUI> subNameDecals = null,
-            IReadOnlyList<Transform> lavaLarvaAttachPoints = null,
-            GameObject leviathanGrabPoint = null
+            GameObject? collisionModel = null,
+            IReadOnlyList<VehicleParts.VehicleBattery>? batteries = null,
+            IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
+            BoxCollider? boundingBoxCollider = null,
+            IReadOnlyList<GameObject>? waterClipProxies = null,
+            IReadOnlyList<VehicleParts.VehicleStorage>? innateStorages = null,
+            IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
+            IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
+            IReadOnlyList<GameObject>? canopyWindows = null,
+            IReadOnlyList<VehicleParts.VehicleBattery>? backupBatteries = null,
+            GameObject? steeringWheelLeftHandTarget = null,
+            GameObject? steeringWheelRightHandTarget = null,
+            IReadOnlyList<Collider>? denyBuildingColliders = null,
+            IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
+            IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
+            GameObject? leviathanGrabPoint = null
         )
         : base(
               engine: engine,

@@ -8,10 +8,10 @@ namespace AVS
     public class VehicleHatch : HandTarget, IHandTarget, IDockListener
     {
         private bool isLive = true;
-        public ModVehicle mv;
-        public Transform EntryLocation;
-        public Transform ExitLocation;
-        public Transform SurfaceExitLocation;
+        public ModVehicle? mv;
+        public Transform? entryLocation;
+        public Transform? exitLocation;
+        public Transform? surfaceExitLocation;
         public string EnterHint = Language.main.Get("VFEnterVehicle");
         public string ExitHint = Language.main.Get("VFExitVehicle");
 
@@ -22,9 +22,9 @@ namespace AVS
                 return;
             }
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
-            if ((mv as Submarine != null))
+            if (mv is Submarine sub)
             {
-                if ((mv as Submarine).IsPlayerInside())
+                if (sub.IsPlayerInside())
                 {
                     HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, ExitHint);
                 }
@@ -47,14 +47,19 @@ namespace AVS
             }
             Player.main.rigidBody.velocity = Vector3.zero;
             Player.main.rigidBody.angularVelocity = Vector3.zero;
-            if ((mv as Submarine != null))
+            if (mv is Submarine sub)
             {
-                if ((mv as Submarine).IsPlayerInside())
+                if (sub.IsPlayerInside())
                 {
                     mv.PlayerExit();
                     if (mv.transform.position.y < -3f)
                     {
-                        Player.main.transform.position = ExitLocation.position;
+                        if (exitLocation == null)
+                        {
+                            Logger.Error("Error: exitLocation is null. Cannot exit vehicle.");
+                            return;
+                        }
+                        Player.main.transform.position = exitLocation.position;
                     }
                     else
                     {
@@ -63,15 +68,22 @@ namespace AVS
                 }
                 else
                 {
-                    Player.main.transform.position = EntryLocation.position;
-                    (mv as Submarine).PlayerEntry();
+                    if (entryLocation == null)
+                    {
+                        Logger.Error("Error: entryLocation is null. Cannot enter vehicle.");
+                        return;
+                    }
+
+
+                    Player.main.transform.position = entryLocation.position;
+                    sub.PlayerEntry();
                 }
             }
-            else if (mv is Submersible sub && !mv.isScuttled)
+            else if (mv is Submersible sub2 && !mv.isScuttled)
             {
-                Player.main.transform.position = sub.Com.PilotSeat.SitLocation.transform.position;
-                Player.main.transform.rotation = sub.Com.PilotSeat.SitLocation.transform.rotation;
-                (mv as Submersible).PlayerEntry();
+                Player.main.transform.position = sub2.Com.PilotSeat.SitLocation.transform.position;
+                Player.main.transform.rotation = sub2.Com.PilotSeat.SitLocation.transform.rotation;
+                sub2.PlayerEntry();
             }
             /*
 			if (mv as Walker != null)
@@ -100,7 +112,12 @@ namespace AVS
                     Logger.Error("Error: Failed to exit vehicle too many times. Stopping.");
                     yield break;
                 }
-                Player.main.transform.position = SurfaceExitLocation.position;
+                if (surfaceExitLocation == null)
+                {
+                    Logger.Error("Error: surfaceExitLocation is null. Cannot exit vehicle to surface.");
+                    yield break;
+                }
+                Player.main.transform.position = surfaceExitLocation.position;
                 tryCount++;
                 yield return null;
             }

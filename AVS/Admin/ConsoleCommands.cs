@@ -109,7 +109,7 @@ namespace AVS.Admin
             }
 
             float distanceToPlayer = float.PositiveInfinity;
-            VehicleDockingBay closestBay = null;
+            VehicleDockingBay? closestBay = null;
             foreach (var marty in Patches.VehicleDockingBayPatch.dockingBays.Where(x => x != null))
             {
                 float thisDistance = Vector3.Distance(Player.main.transform.position, marty.transform.position);
@@ -134,7 +134,7 @@ namespace AVS.Admin
             {
                 ErrorMessage.AddError("vfdestroy error: no vehicle type specified. Ex: \"vfdestroy exosuit\"");
             }
-            string vehicleType = (string)notif.data[0];
+            var vehicleType = notif.data?[0] as string;
             ErrorMessage.AddWarning($"vfdestroy doing destroy on {vehicleType}");
             Vehicle found = GameObjectManager<Vehicle>.FindNearestSuch(Player.main.transform.position, x => x.name.Equals($"{vehicleType}(Clone)", System.StringComparison.OrdinalIgnoreCase));
             if (found == null)

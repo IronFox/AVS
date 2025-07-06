@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using UnityEngine;
 using System.Reflection;
 
 namespace AVS.Localization
@@ -44,12 +42,12 @@ namespace AVS.Localization
         PrawnTab,
         CyclopsTab
     }
-    public static class Localizer<TEnum> where TEnum: struct, Enum
+    public static class Localizer<TEnum> where TEnum : struct, Enum
     {
-        private static LocalDict<TEnum> main = null;
+        private static LocalDict<TEnum>? main = null;
         public static string GetString(TEnum value)
         {
-            if(main == null)
+            if (main == null)
             {
                 string modPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
                 main = LocalizationManager.LoadLanguageFiles<TEnum>(modPath);
@@ -64,7 +62,7 @@ namespace AVS.Localization
                 else
                 {
                     Logger.Error("Couldn't get a localized value for that enum: " + value.ToString());
-                    foreach(var but in languageDict)
+                    foreach (var but in languageDict)
                     {
                         Logger.Warn(but.Key.ToString() + " : " + but.Value);
                     }

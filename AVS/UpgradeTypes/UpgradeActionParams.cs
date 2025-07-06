@@ -21,7 +21,7 @@ namespace AVS.UpgradeTypes
     public readonly struct SelectableChargeableActionParams
     {
         public Vehicle Vehicle { get; }
-        public SubRoot Cyclops { get; }
+        public SubRoot? Cyclops { get; }
         public int SlotID { get; }
         /// <summary>
         /// The tech type of the upgrade being acted upon.
@@ -36,7 +36,7 @@ namespace AVS.UpgradeTypes
             TechType techType,
             float charge,
             float slotCharge,
-            SubRoot cyclops = null
+            SubRoot? cyclops = null
             )
         {
             Vehicle = vehicle;
@@ -56,7 +56,7 @@ namespace AVS.UpgradeTypes
         /// <summary>
         /// Reference to the owning Cyclops vehicle, if any. May be null.
         /// </summary>
-        public SubRoot Cyclops { get; }
+        public SubRoot? Cyclops { get; }
         /// <summary>
         /// The index of the slot in which the upgrade is located.
         /// </summary>
@@ -69,7 +69,7 @@ namespace AVS.UpgradeTypes
             Vehicle vehicle,
             int slotID,
             TechType techType,
-            SubRoot cyclops = null)
+            SubRoot? cyclops = null)
         {
             Vehicle = vehicle;
             Cyclops = cyclops;

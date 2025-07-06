@@ -1,4 +1,5 @@
-﻿using AVS.VehicleTypes;
+﻿using AVS.Util;
+using AVS.VehicleTypes;
 using HarmonyLib;
 using System;
 using System.Collections;
@@ -47,7 +48,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(DockedVehicleHandTarget.OnHandHover))]
         public static void OnHandHoverPostfix(DockedVehicleHandTarget __instance)
         {
-            ModVehicle mv = __instance.dockingBay.GetDockedVehicle() as ModVehicle;
+            var mv = __instance.dockingBay.GetDockedVehicle() as ModVehicle;
             if (mv != null)
             {
                 string text = mv.subName.hullName.text;
@@ -84,7 +85,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(DockedVehicleHandTarget.OnHandClick))]
         public static bool OnHandClickPrefix(DockedVehicleHandTarget __instance, GUIHand hand)
         {
-            ModVehicle mv = __instance.dockingBay.GetDockedVehicle() as ModVehicle;
+            var mv = __instance.dockingBay.GetDockedVehicle() as ModVehicle;
             if (mv == null)
             {
                 return true;
@@ -100,7 +101,7 @@ namespace AVS.Patches
 
             mv.IsUndockingAnimating = true;
             string subRootName = __instance.dockingBay.subRoot.name.ToLower();
-            Transform moonpoolMaybe = __instance.dockingBay.transform.parent?.parent;
+            var moonpoolMaybe = __instance.dockingBay.transform.parent.SmartGetParent();
             if (subRootName.Contains("cyclops"))
             {
                 __instance.dockingBay.transform.parent.parent.parent.Find("CyclopsCollision").gameObject.SetActive(false);
@@ -116,7 +117,7 @@ namespace AVS.Patches
             if (__instance.dockingBay.dockedVehicle != null)
             {
                 UWE.CoroutineHost.StartCoroutine(__instance.dockingBay.dockedVehicle.Undock(Player.main, __instance.dockingBay.transform.position.y));
-                SkyEnvironmentChanged.Broadcast(__instance.dockingBay.dockedVehicle.gameObject, (GameObject)null);
+                SkyEnvironmentChanged.Broadcast(__instance.dockingBay.dockedVehicle.gameObject, (GameObject?)null);
             }
             __instance.dockingBay.dockedVehicle = null;
 
@@ -135,6 +136,10 @@ namespace AVS.Patches
             {
                 float GetVehicleTop()
                 {
+                    if (mv.Com.BoundingBoxCollider == null)
+                    {
+                        return mv.transform.position.y + (mv.transform.lossyScale.y * 0.5f);
+                    }
                     Vector3 worldCenter = mv.Com.BoundingBoxCollider.transform.TransformPoint(mv.Com.BoundingBoxCollider.center);
                     return worldCenter.y + (mv.Com.BoundingBoxCollider.size.y * 0.5f * mv.Com.BoundingBoxCollider.transform.lossyScale.y);
                 }
@@ -156,7 +161,7 @@ namespace AVS.Patches
                     UWE.CoroutineHost.StartCoroutine(ReEnableCollisionsInAMoment());
                 }
             }
-            SkyEnvironmentChanged.Broadcast(mv.gameObject, (GameObject)null);
+            SkyEnvironmentChanged.Broadcast(mv.gameObject, (GameObject?)null);
             mv.OnVehicleUndocked();
 
 

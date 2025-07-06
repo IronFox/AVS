@@ -1,6 +1,6 @@
-﻿using System;
+﻿using HarmonyLib;
+using System;
 using System.Collections.Generic;
-using HarmonyLib;
 using System.Reflection.Emit;
 
 // PURPOSE: Allow ModVehicles to use (and have displayed) custom ping sprites.
@@ -26,7 +26,7 @@ namespace AVS
                     x.RemoveInstruction()
                     .InsertAndAdvance(Transpilers.EmitDelegate<Func<CachedEnumString<PingType>, PingType, string>>(VehicleBuilder.GetPingTypeString))
                     .RemoveInstruction()
-                    .Insert(Transpilers.EmitDelegate<Func<SpriteManager.Group, string, Atlas.Sprite>>(VehicleBuilder.GetPingTypeSprite))
+                    .Insert(Transpilers.EmitDelegate<Func<SpriteManager.Group, string, Atlas.Sprite?>>(VehicleBuilder.GetPingTypeSprite))
                 );
             return newInstructions.InstructionEnumeration();
         }

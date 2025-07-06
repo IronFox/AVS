@@ -21,7 +21,7 @@ namespace AVS.Audio
         /// <param name="cfg">The sound configuration to instantiate</param>
         /// <param name="startingPosition">The position where the sound should start playing</param>
         /// <returns></returns>
-        internal static FModSound Instantiate(SoundSetup cfg, Vector3 startingPosition)
+        internal static FModSound? Instantiate(SoundSetup cfg, Vector3 startingPosition)
         {
 
             try
@@ -125,7 +125,7 @@ namespace AVS.Audio
     /// </summary>
     public class FModSoundSource : Component
     {
-        private FModSound sound;
+        private FModSound? sound;
         private SoundSetup config;
         private SoundSettings settings;
         private bool reset = false;
@@ -182,10 +182,10 @@ namespace AVS.Audio
             }
 
 
-            if (!sound.Update(this))
+            if (sound is null || !sound.Update(this))
             {
                 sound = null;//there is something going on in this case. better just unset and don't touch it
-                Logger.Error($"FModComponent.sound({sound.Channel.handle}).Update() returned false. Self-destructing");
+                Logger.Error($"FModComponent.sound({sound?.Channel.handle}).Update() returned false. Self-destructing");
                 Destroy(this);
             }
         }
@@ -203,7 +203,7 @@ namespace AVS.Audio
         private bool Recovered { get; set; }
 
         private Vector3 lastPosition;
-        private FModSoundSource lastOwner;
+        private FModSoundSource? lastOwner;
 
         public FModSound(SoundSetup config, FMOD.Channel channel, Sound sound, VECTOR[] rolloffArray)
         {

@@ -19,8 +19,8 @@ namespace AVS.VehicleComponents
 
     public abstract class DockingBay : MonoBehaviour
     {
-        public Vehicle currentDockedVehicle { get; protected set; }
-        private Coroutine dockAnimation = null;
+        public Vehicle? currentDockedVehicle { get; protected set; }
+        private Coroutine? dockAnimation = null;
 
         public abstract Transform GetDockedPosition(Vehicle dockedVehicle);
         public abstract Transform PlayerExitLocation { get; }
@@ -81,20 +81,24 @@ namespace AVS.VehicleComponents
         }
         protected virtual void UpdateDockedVehicle()
         {
+            if (currentDockedVehicle == null)
+            {
+                return;
+            }
             currentDockedVehicle.transform.position = GetDockedPosition(currentDockedVehicle).position;
             currentDockedVehicle.transform.rotation = GetDockedPosition(currentDockedVehicle).rotation;
             currentDockedVehicle.liveMixin.shielded = true;
             currentDockedVehicle.useRigidbody.detectCollisions = false;
             currentDockedVehicle.crushDamage.enabled = false;
             currentDockedVehicle.UpdateCollidersForDocking(true);
-            if (currentDockedVehicle is SeaMoth)
+            if (currentDockedVehicle is SeaMoth sm)
             {
-                (currentDockedVehicle as SeaMoth).toggleLights.SetLightsActive(false);
+                sm.toggleLights.SetLightsActive(false);
                 currentDockedVehicle.GetComponent<SeaMoth>().enabled = true; // why is this necessary?
             }
             else if (currentDockedVehicle is ModVehicle mv)
             {
-                if (mv.HeadlightsController.IsLightsOn)
+                if (mv.HeadlightsController != null && mv.HeadlightsController.IsLightsOn)
                 {
                     mv.HeadlightsController.Toggle();
                 }
@@ -146,6 +150,10 @@ namespace AVS.VehicleComponents
         }
         protected virtual void OnStartedUndocking(bool withPlayer)
         {
+            if (currentDockedVehicle == null)
+            {
+                return;
+            }
             HandleDockDoors(currentDockedVehicle.GetTechType(), true);
             currentDockedVehicle.useRigidbody.velocity = Vector3.zero;
             currentDockedVehicle.transform.SetParent(this.transform.parent);
@@ -170,6 +178,10 @@ namespace AVS.VehicleComponents
         }
         protected virtual IEnumerator DoUndockingAnimations()
         {
+            if (currentDockedVehicle == null)
+            {
+                yield break;
+            }
             UndockAction(currentDockedVehicle);
             // wait until the vehicle is "just" far enough away.
             // Should probably disallow undocking if a collider is too close, lest we clip into it.
@@ -177,6 +189,10 @@ namespace AVS.VehicleComponents
         }
         protected virtual void OnFinishedUndocking(bool hasPlayer)
         {
+            if (currentDockedVehicle == null)
+            {
+                return;
+            }
             currentDockedVehicle.liveMixin.shielded = false;
             currentDockedVehicle.useRigidbody.detectCollisions = true;
             currentDockedVehicle.crushDamage.enabled = true;

@@ -42,13 +42,16 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(PlaceTool.LateUpdate))]
         public static void LateUpdatePrefix(PlaceTool __instance)
         {
-            SubRoot subroot = Player.main?.currentSub;
+            if (Player.main == null)
+                return;
+
+            var subroot = Player.main.currentSub;
             if (subroot != null && subroot.GetComponent<VehicleTypes.Submarine>())
             {
                 if (__instance.usingPlayer != null)
                 {
                     Transform aimTransform = Builder.GetAimTransform();
-                    if(aimTransform == null)
+                    if (aimTransform == null)
                     {
                         return;
                     }
@@ -59,7 +62,7 @@ namespace AVS.Patches
                     for (int i = 0; i < num; i++)
                     {
                         RaycastHit raycastHit2 = UWE.Utils.sharedHitBuffer[i];
-                        if(raycastHit2.collider == null || raycastHit2.collider.gameObject == null)
+                        if (raycastHit2.collider == null || raycastHit2.collider.gameObject == null)
                         {
                             return;
                         }

@@ -24,9 +24,9 @@ namespace AVS
 
         private void DeactivateAll()
         {
-            root.SetActive(false);
+            root!.SetActive(false);
         }
-        private bool ShouldIDie(ModVehicle mv, PDA pda)
+        private bool ShouldIDie(ModVehicle? mv, PDA? pda)
         {
             if (mv == null || pda == null)
             {
@@ -77,7 +77,7 @@ namespace AVS
                 DeactivateAll();
                 return;
             }
-            ModVehicle mv = Player.main.GetModVehicle();
+            var mv = Player.main.GetModVehicle();
             PDA pda = Player.main.GetPDA();
             if (ShouldIDie(mv, pda))
             {
@@ -85,7 +85,7 @@ namespace AVS
                 return;
             }
 
-            root.transform.localPosition = Vector3.zero;
+            root!.transform.localPosition = Vector3.zero;
 
             bool mvflag = !pda.isInUse;
             if (root.activeSelf != mvflag)
@@ -103,50 +103,62 @@ namespace AVS
 
         public void UpdateHealth()
         {
-            Player.main.GetModVehicle().GetHUDValues(out float num, out float num2);
-            int num3 = Mathf.CeilToInt(num * 100f);
-            if (lastHealth != num3)
+            var mv = Player.main.GetModVehicle();
+            if (mv != null)
             {
-                lastHealth = num3;
-                textHealth.text = IntStringCache.GetStringForInt(lastHealth);
+                mv.GetHUDValues(out float num, out float num2);
+                int num3 = Mathf.CeilToInt(num * 100f);
+                if (lastHealth != num3)
+                {
+                    lastHealth = num3;
+                    textHealth!.text = IntStringCache.GetStringForInt(lastHealth);
+                }
             }
         }
         public void UpdateTemperature()
         {
-            float temperature = Player.main.GetModVehicle().GetTemperature();
-            temperatureSmoothValue = ((temperatureSmoothValue < -10000f) ? temperature : Mathf.SmoothDamp(temperatureSmoothValue, temperature, ref temperatureVelocity, 1f));
-            int tempNum;
-            //if (MainPatcher.NautilusConfig.IsFahrenheit)
-            //{
-            //    tempNum = Mathf.CeilToInt(temperatureSmoothValue * 1.8f + 32);
-            //}
-            //else
+            var mv = Player.main.GetModVehicle();
+            if (mv != null)
             {
-                tempNum = Mathf.CeilToInt(temperatureSmoothValue);
-            }
-            if (lastTemperature != tempNum)
-            {
-                lastTemperature = tempNum;
-                textTemperature.text = IntStringCache.GetStringForInt(lastTemperature);
-                textTemperatureSuffix.color = new Color32(byte.MaxValue, 220, 0, byte.MaxValue);
+                float temperature = mv.GetTemperature();
+                temperatureSmoothValue = ((temperatureSmoothValue < -10000f) ? temperature : Mathf.SmoothDamp(temperatureSmoothValue, temperature, ref temperatureVelocity, 1f));
+                int tempNum;
                 //if (MainPatcher.NautilusConfig.IsFahrenheit)
                 //{
-                //    textTemperatureSuffix.text = "°F";
+                //    tempNum = Mathf.CeilToInt(temperatureSmoothValue * 1.8f + 32);
                 //}
                 //else
                 {
-                    textTemperatureSuffix.text = Language.main.GetFormat("ThermometerFormat");
+                    tempNum = Mathf.CeilToInt(temperatureSmoothValue);
+                }
+                if (lastTemperature != tempNum)
+                {
+                    lastTemperature = tempNum;
+                    textTemperature!.text = IntStringCache.GetStringForInt(lastTemperature);
+                    textTemperatureSuffix!.color = new Color32(byte.MaxValue, 220, 0, byte.MaxValue);
+                    //if (MainPatcher.NautilusConfig.IsFahrenheit)
+                    //{
+                    //    textTemperatureSuffix.text = "°F";
+                    //}
+                    //else
+                    {
+                        textTemperatureSuffix.text = Language.main.GetFormat("ThermometerFormat");
+                    }
                 }
             }
         }
         public void UpdatePower()
         {
-            Player.main.GetModVehicle().GetHUDValues(out float num, out float num2);
-            int num4 = Mathf.CeilToInt(num2 * 100f);
-            if (lastPower != num4)
+            var mv = Player.main.GetModVehicle();
+            if (mv != null)
             {
-                lastPower = num4;
-                textPower.text = IntStringCache.GetStringForInt(lastPower);
+                mv.GetHUDValues(out float num, out float num2);
+                int num4 = Mathf.CeilToInt(num2 * 100f);
+                if (lastPower != num4)
+                {
+                    lastPower = num4;
+                    textPower!.text = IntStringCache.GetStringForInt(lastPower);
+                }
             }
         }
 
@@ -156,30 +168,34 @@ namespace AVS
             {
                 return;
             }
-            Player.main.GetModVehicle().GetStorageValues(out int stored, out int capacity);
-            if (capacity > 0)
+            var mv = Player.main.GetModVehicle();
+            if (mv != null)
             {
-                int ratio = (100 * stored) / capacity;
-                textStorage.text = ratio.ToString();
-            }
-            else
-            {
-                textStorage.text = 100.ToString();
+                mv.GetStorageValues(out int stored, out int capacity);
+                if (capacity > 0)
+                {
+                    int ratio = (100 * stored) / capacity;
+                    textStorage.text = ratio.ToString();
+                }
+                else
+                {
+                    textStorage.text = 100.ToString();
+                }
             }
         }
         public const float temperatureSmoothTime = 1f;
         [AssertNotNull]
-        public GameObject root;
+        public GameObject? root;
         [AssertNotNull]
-        public TextMeshProUGUI textHealth;
+        public TextMeshProUGUI? textHealth;
         [AssertNotNull]
-        public TextMeshProUGUI textPower;
+        public TextMeshProUGUI? textPower;
         [AssertNotNull]
-        public TextMeshProUGUI textTemperature;
+        public TextMeshProUGUI? textTemperature;
         [AssertNotNull]
-        public TextMeshProUGUI textTemperatureSuffix;
+        public TextMeshProUGUI? textTemperatureSuffix;
         [AssertNotNull]
-        public TextMeshProUGUI textStorage;
+        public TextMeshProUGUI? textStorage;
         public int lastHealth = int.MinValue;
         public int lastPower = int.MinValue;
         public int lastTemperature = int.MinValue;

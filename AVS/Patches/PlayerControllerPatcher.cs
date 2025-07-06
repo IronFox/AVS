@@ -17,7 +17,7 @@ namespace AVS
         [HarmonyPatch(nameof(PlayerController.HandleUnderWaterState))]
         public static bool HandleUnderWaterStatePrefix(PlayerController __instance)
         {
-            VehicleTypes.Submarine mv = Player.main.GetVehicle() as VehicleTypes.Submarine;
+            var mv = Player.main.GetVehicle() as VehicleTypes.Submarine;
             if (mv != null && !mv.IsPlayerControlling())
             {
                 __instance.inVehicle = true;

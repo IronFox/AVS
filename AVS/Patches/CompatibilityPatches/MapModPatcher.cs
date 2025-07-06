@@ -18,13 +18,19 @@ namespace AVS.Patches.CompatibilityPatches
         public static bool Prefix(object __instance)
         {
             FieldInfo field = __instance.GetType().GetField("ping");
-            PingInstance ping = field.GetValue(__instance) as PingInstance;
-            foreach(var mvPIs in VehicleManager.mvPings)
+            var ping = field.GetValue(__instance) as PingInstance;
+            if (ping == null)
+            {
+                return true;
+            }
+            foreach (var mvPIs in VehicleManager.mvPings)
             {
                 if (mvPIs.pingType == ping.pingType)
                 {
-                    FieldInfo field2 = __instance.GetType().GetField("icon");
-                    uGUI_Icon icon = field2.GetValue(__instance) as uGUI_Icon;
+                    var field2 = __instance.GetType().GetField("icon");
+                    var icon = field2?.GetValue(__instance) as uGUI_Icon;
+                    if (icon == null)
+                        continue; // If we don't have an icon, we can't modify it
                     icon.sprite = SpriteManager.Get(TechType.Exosuit);
                     foreach (var mvType in VehicleManager.vehicleTypes)
                     {

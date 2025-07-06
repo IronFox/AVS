@@ -28,22 +28,33 @@ namespace AVS.VehicleTypes
             return _subComposition;
         }
 
-        private SubmarineComposition _subComposition;
+        private SubmarineComposition? _subComposition;
         public new SubmarineComposition Com =>
             _subComposition
             ?? throw new InvalidOperationException("This vehicle's composition has not yet been initialized. Please wait until Submarine.Awake() has been called");
 
 
-        public ControlPanel controlPanelLogic;
+        public ControlPanel? controlPanelLogic; //must remain public field
+
         private bool isPilotSeated = false;
         private bool isPlayerInside = false; // You can be inside a scuttled submarine yet not dry.
 
-        public Transform thisStopPilotingLocation;
+        public Transform? thisStopPilotingLocation; // must remain public field
 
-        public FloodLightsController floodlights;
-        public InteriorLightsController interiorlights;
-        public NavigationLightsController navlights;
-        public GameObject fabricator = null; //fabricator
+        /// <summary>
+        /// Flood light controller created during Awake.
+        /// </summary>
+        public FloodLightsController? Floodlights { get; private set; }
+        /// <summary>
+        /// Interior light controller created during Awake.
+        /// </summary>
+        public InteriorLightsController? Interiorlights { get; private set; }
+        /// <summary>
+        /// Nav light controller created during Awake.
+        /// </summary>
+        public NavigationLightsController? Navlights { get; private set; }
+
+        public GameObject? fabricator = null; //fabricator. Must remain public field
 
 
         public override bool CanPilot()
@@ -54,9 +65,9 @@ namespace AVS.VehicleTypes
         public override void Awake()
         {
             base.Awake();
-            floodlights = gameObject.AddComponent<FloodLightsController>();
-            interiorlights = gameObject.AddComponent<InteriorLightsController>();
-            navlights = gameObject.AddComponent<NavigationLightsController>();
+            Floodlights = gameObject.AddComponent<FloodLightsController>();
+            Interiorlights = gameObject.AddComponent<InteriorLightsController>();
+            Navlights = gameObject.AddComponent<NavigationLightsController>();
             gameObject.EnsureComponent<TetherSource>().mv = this;
             controlPanelLogic?.Init();
         }
@@ -70,7 +81,7 @@ namespace AVS.VehicleTypes
             {
                 if (Com.ColorPicker.transform.Find("EditScreen") == null)
                 {
-                    UWE.CoroutineHost.StartCoroutine(SetupColorPicker());
+                    UWE.CoroutineHost.StartCoroutine(SetupColorPicker(Com.ColorPicker));
                 }
                 else
                 {
@@ -328,12 +339,20 @@ namespace AVS.VehicleTypes
 
         public virtual void SetColorPickerUIColor(string name, Color col)
         {
-            ActualEditScreen.transform.Find("Active/" + name + "/SelectedColor").GetComponent<Image>().color = col;
+            if (ActualEditScreen != null)
+                ActualEditScreen.transform.Find("Active/" + name + "/SelectedColor").GetComponent<Image>().color = col;
         }
         public virtual void OnColorChange(ColorChangeEventData eventData)
         {
             // determine which tab is selected
             // call the desired function
+
+            if (ActualEditScreen == null)
+            {
+                Logger.Error("Error: ActualEditScreen is null. Color picker cannot be used.");
+                return;
+            }
+
             List<string> tabnames = new List<string>() { "MainExterior", "PrimaryAccent", "SecondaryAccent", "NameLabel" };
             string selectedTab = "";
             foreach (string tab in tabnames)
@@ -393,9 +412,9 @@ namespace AVS.VehicleTypes
             return;
         }
 
-        public GameObject ActualEditScreen { get; private set; } = null;
+        public GameObject? ActualEditScreen { get; private set; } = null;
 
-        public IEnumerator SetupColorPicker()
+        public IEnumerator SetupColorPicker(GameObject colorPickerParent)
         {
             UnityAction CreateAction(string name)
             {
@@ -411,9 +430,9 @@ namespace AVS.VehicleTypes
                 return Action;
             }
 
-            GameObject console = Resources.FindObjectsOfTypeAll<BaseUpgradeConsoleGeometry>()?.ToList().Find(x => x.gameObject.name.Contains("Short")).gameObject;
+            GameObject? console = Resources.FindObjectsOfTypeAll<BaseUpgradeConsoleGeometry>()?.ToList().Find(x => x.gameObject.name.Contains("Short")).SmartGetGameObject();
 
-            if (console is null)
+            if (console == null)
             {
                 yield return UWE.CoroutineHost.StartCoroutine(Builder.BeginAsync(TechType.BaseUpgradeConsole));
                 Builder.ghostModel.GetComponentInChildren<BaseGhost>().OnPlace();
@@ -428,7 +447,7 @@ namespace AVS.VehicleTypes
             Vector3 originalLocalScale = ActualEditScreen.transform.localScale;
 
 
-            GameObject frame = Com.ColorPicker;
+            var frame = colorPickerParent;
             ActualEditScreen.transform.SetParent(frame.transform);
             ActualEditScreen.transform.localPosition = new Vector3(.15f, .28f, 0.01f);
             ActualEditScreen.transform.localEulerAngles = new Vector3(0, 180, 0);

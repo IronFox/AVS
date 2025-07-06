@@ -98,7 +98,7 @@ namespace AVS.Admin
                 TraceCraftingPath(vType, upgrade.CraftingPath, (x, y) => AddCraftingTab(x, y.name, y.displayName, y.icon));
             }
         }
-        internal static string[] TraceCraftingPath(VehicleType vType, List<CraftingNode> path, Action<string[], CraftingNode> perNodeAction)
+        internal static string[] TraceCraftingPath(VehicleType vType, List<CraftingNode> path, Action<string[], CraftingNode>? perNodeAction)
         {
             string[] pathCurrently = UpgradeTypeToPath(vType);
             foreach (var node in path)
@@ -108,11 +108,11 @@ namespace AVS.Admin
             }
             return pathCurrently;
         }
-        private static string[] AddCraftingTab(VehicleType vType, string tabName, string displayName, Atlas.Sprite icon)
+        private static string[] AddCraftingTab(VehicleType vType, string tabName, string displayName, Atlas.Sprite? icon)
         {
             return AddCraftingTab(UpgradeTypeToPath(vType), tabName, displayName, icon);
         }
-        private static string[] AddCraftingTab(string[] thisPath, string tabName, string displayName, Atlas.Sprite icon)
+        private static string[] AddCraftingTab(string[] thisPath, string tabName, string displayName, Atlas.Sprite? icon)
         {
             string[] resultPath = thisPath.Append(tabName).ToArray();
             if (!IsKnownPath(resultPath))

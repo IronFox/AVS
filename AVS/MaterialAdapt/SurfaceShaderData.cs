@@ -25,7 +25,7 @@ namespace AVS.MaterialAdapt
         /// In order to be applicable as
         /// specular reflectivity map, its alpha value must be filled such.
         /// </summary>
-        public Texture MainTex { get; }
+        public Texture? MainTex { get; }
 
         /// <summary>
         /// Smoothness value (typically 0-1)
@@ -35,15 +35,15 @@ namespace AVS.MaterialAdapt
         /// Metallic texture. In order to be applicable as
         /// specular reflectivity map, its alpha value must be filled such.
         /// </summary>
-        public Texture MetallicTexture { get; }
+        public Texture? MetallicTexture { get; }
         /// <summary>
         /// Normal map. Null if none
         /// </summary>
-        public Texture BumpMap { get; }
+        public Texture? BumpMap { get; }
         /// <summary>
         /// Emission texture. Null if none
         /// </summary>
-        public Texture EmissionTexture { get; }
+        public Texture? EmissionTexture { get; }
         /// <summary>
         /// Texture channel to derive the smoothness (specular) appearance from
         /// 0 = Metallic
@@ -55,7 +55,7 @@ namespace AVS.MaterialAdapt
         /// The specular reflectivity texture to use for this material.
         /// Only the alpha channel is used.
         /// </summary>
-        public Texture SpecularTexture
+        public Texture? SpecularTexture
         {
             get
             {
@@ -82,12 +82,12 @@ namespace AVS.MaterialAdapt
         public SurfaceShaderData(
             Color color,
             Color emissionColor,
-            Texture mainTex,
+            Texture? mainTex,
             float smoothness,
             int smoothnessTextureChannel,
-            Texture metallicTexture,
-            Texture bumpMap,
-            Texture emissionTexture,
+            Texture? metallicTexture,
+            Texture? bumpMap,
+            Texture? emissionTexture,
             MaterialAddress source)
         {
             Source = source;
@@ -120,7 +120,7 @@ namespace AVS.MaterialAdapt
             }
         }
 
-        private static Texture GetTexture(Material m, string name, Logging logConfig)
+        private static Texture? GetTexture(Material m, string name, Logging logConfig)
         {
             if (!m.HasProperty(name))
             {
@@ -179,7 +179,7 @@ namespace AVS.MaterialAdapt
 
 
 
-        private static SurfaceShaderData From(MaterialAddress target, Material m, Logging logConfig, bool ignoreShaderName = false)
+        private static SurfaceShaderData? From(MaterialAddress target, Material m, Logging logConfig, bool ignoreShaderName = false)
         {
 
             if (m.shader.name != "Standard" && !ignoreShaderName)
@@ -215,7 +215,7 @@ namespace AVS.MaterialAdapt
         /// return null otherwise</param>
         /// <returns>Read surface shader data or null if the shader name did not match
         /// or the target is (no longer) valid</returns>
-        public static SurfaceShaderData From(MaterialAddress source, Logging logConfig, bool ignoreShaderName = false)
+        public static SurfaceShaderData? From(MaterialAddress source, Logging logConfig, bool ignoreShaderName = false)
         {
             var material = source.GetMaterial();
             if (material == null)
@@ -243,7 +243,7 @@ namespace AVS.MaterialAdapt
         /// return null otherwise</param>
         /// <returns>Read surface shader data or null if the shader name did not match
         /// or the target is (no longer) valid</returns>
-        public static SurfaceShaderData From(Renderer renderer, int materialIndex, Logging logConfig = default, bool ignoreShaderName = false)
+        public static SurfaceShaderData? From(Renderer renderer, int materialIndex, Logging logConfig = default, bool ignoreShaderName = false)
         {
             return From(new MaterialAddress(renderer, materialIndex), logConfig);
         }
@@ -287,7 +287,7 @@ namespace AVS.MaterialAdapt
             else
             {
                 var tex = existingSpecTex as Texture2D;
-                if (!tex || existingSpecTex.name != DummyTexName)
+                if (tex == null || existingSpecTex.name != DummyTexName)
                 {
                     logConfig.LogExtraStep($"Source has no smoothness alpha texture. Setting to {Smoothness}");
                     var gray = uniformShininess ?? Smoothness;

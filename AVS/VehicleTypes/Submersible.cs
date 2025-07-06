@@ -23,7 +23,7 @@ namespace AVS.VehicleTypes
             return _subComposition;
         }
 
-        private SubmersibleComposition _subComposition;
+        private SubmersibleComposition? _subComposition;
         public new SubmersibleComposition Com =>
             _subComposition
             ?? throw new InvalidOperationException("This vehicle's composition has not yet been initialized. Please wait until Submersible.Awake() has been called");

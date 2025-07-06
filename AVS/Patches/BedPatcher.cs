@@ -15,7 +15,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(Bed.EnterInUseMode))]
         public static void BedEnterInUseModePostfix(Bed __instance)
         {
-            VehicleTypes.Submarine sub = Player.main.GetVehicle() as VehicleTypes.Submarine;
+            var sub = Player.main.GetVehicle() as VehicleTypes.Submarine;
             if (sub != null && __instance.inUseMode == Bed.InUseMode.Sleeping)
             {
                 // freeze the sub
@@ -28,7 +28,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(Bed.Update))]
         public static void UpdatePostfix(Bed __instance)
         {
-            VehicleTypes.Submarine sub = Player.main.GetVehicle() as VehicleTypes.Submarine;
+            var sub = Player.main.GetVehicle() as VehicleTypes.Submarine;
             if (sub != null && __instance.inUseMode == Bed.InUseMode.Sleeping)
             {
                 sub.transform.eulerAngles = myRotation;

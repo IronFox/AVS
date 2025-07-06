@@ -13,12 +13,12 @@ namespace AVS.Configuration
         /// Sprite to show when the camera is sufficiently far away.
         /// Also used on the map, if used.
         /// </summary>
-        public Atlas.Sprite PingSprite { get; } = Assets.StaticAssets.DefaultPingSprite;
+        public Atlas.Sprite? PingSprite { get; } = Assets.StaticAssets.DefaultPingSprite;
         /// <summary>
         /// Sprite to attach to the save file in the preview.
         /// Should be very abstract, ideally just an outline.
         /// </summary>
-        public Sprite SaveFileSprite { get; } = Assets.StaticAssets.DefaultSaveFileSprite;
+        public Sprite? SaveFileSprite { get; } = Assets.StaticAssets.DefaultSaveFileSprite;
         /// <summary>
         /// Construction recipe.
         /// </summary>
@@ -28,7 +28,7 @@ namespace AVS.Configuration
         /// If so, the imported recipe is passed to <see cref="ModVehicle.OnRecipeOverride(Nautilus.Crafting.RecipeData)"/> before being applied.
         /// </summary>
         public bool AllowRecipeOverride { get; } = true;
-        public Sprite UnlockedSprite { get; } = null;
+        public Sprite? UnlockedSprite { get; } = null;
         /// <summary>
         /// Localized description of the vehicle.
         /// </summary>
@@ -40,15 +40,15 @@ namespace AVS.Configuration
         /// <summary>
         /// Image to show in the encyclopedia entry, if any.
         /// </summary>
-        public Sprite EncyclopediaImage { get; } = null;
+        public Sprite? EncyclopediaImage { get; } = null;
         /// <summary>
         /// The sprite to show in the crafting menu of the mobile vehicle bay.
         /// </summary>
-        public Atlas.Sprite CraftingSprite { get; } = StaticAssets.ModVehicleIcon;
+        public Atlas.Sprite? CraftingSprite { get; } = StaticAssets.ModVehicleIcon;
         /// <summary>
         /// The image to show in the background of the vehicle's module menu.
         /// </summary>
-        public Sprite ModuleBackgroundImage { get; } = SpriteHelper.GetSpriteRaw("Sprites/VFModuleBackground.png");
+        public Sprite? ModuleBackgroundImage { get; } = SpriteHelper.GetSpriteRaw("Sprites/VFModuleBackground.png");
         /// <summary>
         /// Type that, if unlocked, also automatically unlocks this vehicle for crafting.
         /// </summary>
@@ -246,16 +246,16 @@ namespace AVS.Configuration
             VehicleColor? initialInteriorColor = null,
             VehicleColor? initialNameColor = null,
             Logging? materialFixLogging = null,
-            Atlas.Sprite pingSprite = null,
-            Sprite saveFileSprite = null,
-            Recipe recipe = null,
+            Atlas.Sprite? pingSprite = null,
+            Sprite? saveFileSprite = null,
+            Recipe? recipe = null,
             bool allowRecipeOverride = true,
-            Sprite unlockedSprite = null,
+            Sprite? unlockedSprite = null,
             string description = "A vehicle",
             string encyclopediaEntry = "",
-            Sprite encyclopediaImage = null,
-            Atlas.Sprite craftingSprite = null,
-            Sprite moduleBackgroundImage = null,
+            Sprite? encyclopediaImage = null,
+            Atlas.Sprite? craftingSprite = null,
+            Sprite? moduleBackgroundImage = null,
             TechType unlockedWith = TechType.Constructor,
             int maxHealth = 100,
             int crushDamage = 7,
@@ -279,8 +279,8 @@ namespace AVS.Configuration
             Quaternion? cyclopsDockRotation = null,
             bool autoFixMaterials = true,
             bool ignoreShaderNameWhenFixingMaterial = false,
-            Func<float> getVoiceSoundVolume = null,
-            Func<bool> getVoiceSubtitlesEnabled = null
+            Func<float>? getVoiceSoundVolume = null,
+            Func<bool>? getVoiceSubtitlesEnabled = null
         )
         {
             if (maxHealth <= 0)

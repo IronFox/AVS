@@ -38,13 +38,13 @@ namespace AVS
         {
             if (turnOn)
             {
-                MV.lightsOnSound.Stop();
-                MV.lightsOnSound.Play();
+                MV.LightsOnSound.Stop();
+                MV.LightsOnSound.Play();
             }
             else
             {
-                MV.lightsOffSound.Stop();
-                MV.lightsOffSound.Play();
+                MV.LightsOffSound.Stop();
+                MV.LightsOffSound.Play();
             }
         }
 

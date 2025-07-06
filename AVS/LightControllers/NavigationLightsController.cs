@@ -101,12 +101,12 @@ namespace AVS
             UWE.CoroutineHost.StartCoroutine(ControlLights());
         }
 
-        Rigidbody rb = null;
+        Rigidbody? rb = null;
         bool position = false;
-        Coroutine white = null;
-        Coroutine red = null;
-        Coroutine port = null;
-        Coroutine starboard = null;
+        Coroutine? white = null;
+        Coroutine? red = null;
+        Coroutine? port = null;
+        Coroutine? starboard = null;
         public const float lightBrightness = 1f;
         public const float strobeBrightness = 30f;
         private List<Material> positionMats = new List<Material>();
@@ -393,11 +393,12 @@ namespace AVS
         {
             while (true)
             {
-                if (IsLightsOn)
+                if (IsLightsOn && rb != null)
                 {
                     EnableLightClass(LightClass.Positions);
                     EnableLightClass(LightClass.Ports);
                     EnableLightClass(LightClass.Starboards);
+
                     if (white == null && 10f <= rb.velocity.magnitude)
                     {
                         EnableLightClass(LightClass.WhiteStrobes);

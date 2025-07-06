@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 using UnityEngine;
 
 namespace AVS
@@ -11,26 +7,26 @@ namespace AVS
     {
         private Vector3 scuttlePosition = Vector3.zero;
         private Vector3 initialLandRayCast = Vector3.zero;
-        private Coroutine ScuttleCor;
-        private Coroutine Establish;
-        private Coroutine Check;
+        private Coroutine? scuttleCor;
+        private Coroutine? establish;
+        private Coroutine? check;
         public void Scuttle()
         {
-            ScuttleCor = UWE.CoroutineHost.StartCoroutine(DoScuttle());
+            scuttleCor = UWE.CoroutineHost.StartCoroutine(DoScuttle());
         }
         public void Unscuttle()
         {
-            UWE.CoroutineHost.StopCoroutine(ScuttleCor);
-            UWE.CoroutineHost.StopCoroutine(Establish);
-            UWE.CoroutineHost.StopCoroutine(Check);
+            UWE.CoroutineHost.StopCoroutine(scuttleCor);
+            UWE.CoroutineHost.StopCoroutine(establish);
+            UWE.CoroutineHost.StopCoroutine(check);
             gameObject.GetComponent<Rigidbody>().isKinematic = false;
         }
         public IEnumerator DoScuttle()
         {
-            Establish = UWE.CoroutineHost.StartCoroutine(EstablishScuttlePosition());
-            yield return Establish;
-            Check = UWE.CoroutineHost.StartCoroutine(CheckScuttlePosition());
-            yield return Check;
+            establish = UWE.CoroutineHost.StartCoroutine(EstablishScuttlePosition());
+            yield return establish;
+            check = UWE.CoroutineHost.StartCoroutine(CheckScuttlePosition());
+            yield return check;
         }
         public IEnumerator EstablishScuttlePosition()
         {
@@ -51,7 +47,7 @@ namespace AVS
                 Vector3 oldPosition = transform.position;
                 yield return new WaitForSeconds(1f);
                 scuttlePosition = RaycastDownToLand(transform);
-                if(scuttlePosition == oldScuttle && Vector3.Distance(oldPosition, transform.position) < 0.1)
+                if (scuttlePosition == oldScuttle && Vector3.Distance(oldPosition, transform.position) < 0.1)
                 {
                     // If we got here,
                     // then we had the same scuttlePosition for one second,
@@ -70,7 +66,7 @@ namespace AVS
         {
             while (true)
             {
-                if(transform == null)
+                if (transform == null)
                 {
                     break;
                 }
@@ -86,7 +82,7 @@ namespace AVS
         {
             RaycastHit[] allHits;
             allHits = Physics.RaycastAll(root.position, Vector3.down, 1000f);
-            foreach(var hit in allHits)
+            foreach (var hit in allHits)
             {
                 if (hit.transform.GetComponent<TerrainChunkPieceCollider>() != null)
                 {
@@ -98,7 +94,7 @@ namespace AVS
         }
         public static bool IsDescendant(Transform child, Transform ancestor)
         {
-            if(child == ancestor)
+            if (child == ancestor)
             {
                 return true;
             }

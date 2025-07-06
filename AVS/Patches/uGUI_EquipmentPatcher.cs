@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using HarmonyLib;
+using System.Collections.Generic;
 using System.Linq;
-using HarmonyLib;
 
 // PURPOSE: PDA displays ModVehicle upgrades correctly
 // VALUE: Very high.
@@ -22,11 +22,11 @@ namespace AVS
             if (!ModuleBuilder.haveWeCalledBuildAllSlots)
             {
                 ModuleBuilder.haveWeCalledBuildAllSlots = true;
-                ModuleBuilder.main = Player.main.gameObject.AddComponent<ModuleBuilder>();
-                ModuleBuilder.main.grabComponents();
-                ModuleBuilder.main.isEquipmentInit = true;
+                ModuleBuilder._main = Player.main.gameObject.AddComponent<ModuleBuilder>();
+                ModuleBuilder.Main.GrabComponents();
+                ModuleBuilder.Main.isEquipmentInit = true;
                 ModuleBuilder.vehicleAllSlots = ___allSlots;
-                ModuleBuilder.main.BuildAllSlots();
+                ModuleBuilder.Main.BuildAllSlots();
                 ___allSlots = ModuleBuilder.vehicleAllSlots;
             }
         }

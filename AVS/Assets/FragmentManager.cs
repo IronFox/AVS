@@ -89,7 +89,7 @@ namespace AVS.Assets
         /// <param name="encyKey">The encyclopedia key for the fragment, used to link it to the encyclopedia entry</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="ArgumentException"></exception>
-        public FragmentData(IReadOnlyList<GameObject> fragments, TechType unlocks, int fragmentsToScan, float scanTime, string classID, string displayName, string description, IReadOnlyList<FragmentSpawnLocation> spawnLocations = null, string encyKey = "")
+        public FragmentData(IReadOnlyList<GameObject> fragments, TechType unlocks, int fragmentsToScan, float scanTime, string classID, string displayName, string description, IReadOnlyList<FragmentSpawnLocation>? spawnLocations = null, string encyKey = "")
         {
             Fragments = fragments ?? throw new ArgumentNullException(nameof(fragments), "Fragment list must not be empty");
             if (fragments.Count == 0)

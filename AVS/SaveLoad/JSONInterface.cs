@@ -23,7 +23,7 @@ namespace AVS.SaveLoad
             }
             Write<T>($"{fileTitle}-{prefabID.Id}", data);
         }
-        public static T Read<T>(Component comp, string fileTitle)
+        public static T? Read<T>(Component comp, string fileTitle) where T : class
         {
             if (comp == null)
             {
@@ -73,7 +73,7 @@ namespace AVS.SaveLoad
                 Logger.LogException($"Failed to write file {uniqueFileName}!", e);
             }
         }
-        public static T Read<T>(string uniqueFileName)
+        public static T? Read<T>(string uniqueFileName) where T : class
         {
             string fileName;
             try

@@ -15,7 +15,7 @@ namespace AVS.Assets
         /// </summary>
         /// <param name="name">The sprite file name.</param>
         /// <returns>The loaded <see cref="Atlas.Sprite"/>, or null if not found.</returns>
-        internal static Atlas.Sprite GetSpriteInternal(string name)
+        internal static Atlas.Sprite? GetSpriteInternal(string name)
         {
             string modPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             string fullPath = Path.Combine(modPath, "Sprites", name);
@@ -27,7 +27,7 @@ namespace AVS.Assets
         /// </summary>
         /// <param name="relativePath">The relative path to the sprite file.</param>
         /// <returns>The loaded <see cref="Atlas.Sprite"/>, or null if not found.</returns>
-        public static Atlas.Sprite GetSprite(string relativePath)
+        public static Atlas.Sprite? GetSprite(string relativePath)
         {
             string modPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
             string fullPath = Path.Combine(modPath, relativePath);
@@ -39,7 +39,7 @@ namespace AVS.Assets
         /// </summary>
         /// <param name="relativePath">The relative path to the sprite file.</param>
         /// <returns>The loaded <see cref="Sprite"/>, or null if not found.</returns>
-        public static Sprite GetSpriteRaw(string relativePath)
+        public static Sprite? GetSpriteRaw(string relativePath)
         {
             string modPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
             string fullPath = Path.Combine(modPath, relativePath);
@@ -51,9 +51,9 @@ namespace AVS.Assets
         /// </summary>
         /// <param name="fullPath">The full path to the sprite file.</param>
         /// <returns>The loaded <see cref="Atlas.Sprite"/>, or null if not found.</returns>
-        private static Atlas.Sprite GetSpriteGeneric(string fullPath)
+        private static Atlas.Sprite? GetSpriteGeneric(string fullPath)
         {
-            Sprite innerSprite = GetSpriteGenericRaw(fullPath);
+            var innerSprite = GetSpriteGenericRaw(fullPath);
             if (innerSprite != null)
             {
                 return new Atlas.Sprite(innerSprite);
@@ -66,7 +66,7 @@ namespace AVS.Assets
         /// </summary>
         /// <param name="fullPath">The full path to the sprite file.</param>
         /// <returns>The loaded <see cref="Sprite"/>, or null if not found.</returns>
-        private static Sprite GetSpriteGenericRaw(string fullPath)
+        private static Sprite? GetSpriteGenericRaw(string fullPath)
         {
             try
             {
@@ -87,8 +87,13 @@ namespace AVS.Assets
         /// </summary>
         /// <param name="sprite">The <see cref="Atlas.Sprite"/> to convert.</param>
         /// <returns>The created <see cref="Sprite"/>.</returns>
-        public static Sprite CreateSpriteFromAtlasSprite(Atlas.Sprite sprite)
+        public static Sprite? CreateSpriteFromAtlasSprite(Atlas.Sprite? sprite)
         {
+            if (sprite == null)
+            {
+                Logger.Warn("Sprite is null, cannot create Sprite from Atlas.Sprite.");
+                return null;
+            }
             Texture2D texture = sprite.texture;
             return Sprite.Create(texture, new Rect(0f, 0f, (float)texture.width, (float)texture.height), Vector2.one * 0.5f);
         }

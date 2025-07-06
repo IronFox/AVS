@@ -9,15 +9,16 @@ namespace AVS
 {
     public abstract class MainPatcher : BaseUnityPlugin
     {
-        public static MainPatcher Instance { get; private set; }
+        private static MainPatcher? _instance;
+        public static MainPatcher Instance => _instance ?? throw new InvalidOperationException("MainPatcher instance is not set. Ensure that the Awake method is called before accessing Instance.");
 
 
         public abstract string PluginId { get; }
         //internal static VFConfig VFConfig { get; private set; }
         //internal static AVSNautilusConfig NautilusConfig { get; private set; }
 
-        internal Coroutine GetVoices = null;
-        internal Coroutine GetEngineSounds = null;
+        internal Coroutine? GetVoices { get; private set; } = null;
+        internal Coroutine? GetEngineSounds { get; private set; } = null;
 
         public virtual void Awake()
         {
@@ -27,6 +28,7 @@ namespace AVS
             //NautilusConfig = Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions<AVSNautilusConfig>();
             AVS.Logger.Init(Logger);
             PrePatch();
+            UWE.CoroutineHost.StartCoroutine(PrawnHelper.EnsurePrawn());
         }
         public virtual void Start()
         {
@@ -34,20 +36,17 @@ namespace AVS
             PostPatch();
             CompatChecker.CheckAll();
             UWE.CoroutineHost.StartCoroutine(AVS.Logger.MakeAlerts());
-            UWE.CoroutineHost.StartCoroutine(PrawnHelper.EnsurePrawn());
 
         }
 
         public virtual void PrePatch()
         {
             AVS.Logger.Log("PrePatch started.");
-            AVS.Logger.Log("Assets.StaticAssets.SetupDefaultAssets()");
-            Assets.StaticAssets.SetupDefaultAssets();
             IEnumerator CollectPrefabsForBuilderReference()
             {
                 CoroutineTask<GameObject> request = CraftData.GetPrefabForTechTypeAsync(TechType.BaseUpgradeConsole, true);
                 yield return request;
-                VehicleBuilder.upgradeconsole = request.GetResult();
+                VehicleBuilder.UpgradeConsole = request.GetResult();
                 yield break;
             }
             AVS.Logger.Log("CollectPrefabsForBuilderReference started.");
@@ -185,12 +184,12 @@ namespace AVS
         }
         private void SetupInstance()
         {
-            if (Instance == null)
+            if (_instance == null)
             {
-                Instance = this;
+                _instance = this;
                 return;
             }
-            if (Instance != this)
+            if (_instance != this)
             {
                 UnityEngine.Object.Destroy(this);
                 return;

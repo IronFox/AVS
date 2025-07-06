@@ -1,16 +1,12 @@
-﻿using System;
-using System.Collections;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 using UnityEngine;
 
 namespace AVS.StorageComponents
 {
     public class BatteryProxy : MonoBehaviour
     {
-        public Transform proxy = null;
-        public EnergyMixin mixin = null;
+        public Transform? proxy = null;
+        public EnergyMixin? mixin = null;
 
         public void Awake()
         {
@@ -25,8 +21,7 @@ namespace AVS.StorageComponents
                 yield break;
             }
             yield return UWE.CoroutineHost.StartCoroutine(SeamothHelper.EnsureSeamoth());
-            var seamothEnergyMixin = SeamothHelper.Seamoth.GetComponent<EnergyMixin>();
-
+            var seamothEnergyMixin = SeamothHelper.Seamoth!.GetComponent<EnergyMixin>();
             mixin.batteryModels = new EnergyMixin.BatteryModels[seamothEnergyMixin.batteryModels.Length];
             for (int i = 0; i < seamothEnergyMixin.batteryModels.Length; i++)
             {

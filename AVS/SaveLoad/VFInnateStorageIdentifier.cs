@@ -16,7 +16,7 @@ namespace AVS.SaveLoad
         {
             InnateStorageContainer container = GetComponent<InnateStorageContainer>();
             List<Tuple<TechType, float, TechType>> result = new List<Tuple<TechType, float, TechType>>();
-            foreach (var item in container.container.ToList())
+            foreach (var item in container.Container.ToList())
             {
                 TechType thisItemType = item.item.GetTechType();
                 float batteryChargeIfApplicable = -1;
@@ -58,7 +58,13 @@ namespace AVS.SaveLoad
                 thisItem.transform.SetParent(mv.Com.StorageRootObject.transform);
                 try
                 {
-                    GetComponent<InnateStorageContainer>().container.AddItem(thisItem.EnsureComponent<Pickupable>());
+                    var ic = GetComponent<InnateStorageContainer>();
+                    if (ic == null)
+                    {
+                        Logger.Error($"InnateStorageContainer not found on {gameObject.name} for {mv.name} : {mv.subName.hullName.text}");
+                        continue;
+                    }
+                    ic.Container.AddItem(thisItem.EnsureComponent<Pickupable>());
                 }
                 catch (Exception e)
                 {

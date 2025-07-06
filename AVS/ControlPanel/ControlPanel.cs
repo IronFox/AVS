@@ -14,17 +14,17 @@ namespace AVS
         /// <summary>
         /// The submarine instance this control panel is associated with.
         /// </summary>
-        public Submarine mv;
+        public Submarine? mv;
 
-        private GameObject buttonHeadLights;
-        private GameObject buttonNavLights;
-        private GameObject buttonAutoPilot;
-        private GameObject buttonInteriorLights;
-        private GameObject button5;
-        private GameObject buttonDefaultColor;
-        private GameObject buttonFloodLights;
-        private GameObject button8;
-        private GameObject buttonPower;
+        private GameObject? buttonHeadLights;
+        private GameObject? buttonNavLights;
+        private GameObject? buttonAutoPilot;
+        private GameObject? buttonInteriorLights;
+        private GameObject? button5;
+        private GameObject? buttonDefaultColor;
+        private GameObject? buttonFloodLights;
+        private GameObject? button8;
+        private GameObject? buttonPower;
 
         /// <summary>
         /// Initializes the control panel by finding and configuring all button GameObjects and their logic.
@@ -120,7 +120,7 @@ namespace AVS
         /// </summary>
         public void HeadlightsClick()
         {
-            if (mv.HeadlightsController)
+            if (mv != null && mv.HeadlightsController != null)
             {
                 mv.HeadlightsController.Toggle();
             }
@@ -140,9 +140,9 @@ namespace AVS
         /// </summary>
         public void FloodLightsClick()
         {
-            if (mv.floodlights != null)
+            if (mv != null && mv.Floodlights != null)
             {
-                mv.floodlights.Toggle();
+                mv.Floodlights.Toggle();
             }
         }
 
@@ -160,9 +160,9 @@ namespace AVS
         /// </summary>
         public void NavLightsClick()
         {
-            if (mv.navlights != null)
+            if (mv != null && mv.Navlights != null)
             {
-                mv.navlights.Toggle();
+                mv.Navlights.Toggle();
             }
         }
 
@@ -180,9 +180,9 @@ namespace AVS
         /// </summary>
         public void InteriorLightsClick()
         {
-            if (mv.interiorlights != null)
+            if (mv != null && mv.Interiorlights != null)
             {
-                mv.interiorlights.Toggle();
+                mv.Interiorlights.Toggle();
             }
         }
 
@@ -200,7 +200,8 @@ namespace AVS
         /// </summary>
         public void DefaultColorClick()
         {
-            mv.PaintVehicleDefaultStyle(mv.GetName());
+            if (mv != null)
+                mv.PaintVehicleDefaultStyle(mv.GetName());
         }
 
         /// <summary>
@@ -217,10 +218,13 @@ namespace AVS
         /// </summary>
         public void PowerClick()
         {
-            mv.energyInterface.GetValues(out float charge, out _);
-            if (0 < charge)
+            if (mv != null)
             {
-                mv.TogglePower();
+                mv.energyInterface.GetValues(out float charge, out _);
+                if (0 < charge)
+                {
+                    mv.TogglePower();
+                }
             }
         }
 
@@ -255,7 +259,7 @@ namespace AVS
         /// </summary>
         /// <param name="button">The button GameObject.</param>
         /// <param name="active">True to enable lighting, false to disable.</param>
-        public void SetButtonLightingActive(GameObject button, bool active)
+        public void SetButtonLightingActive(GameObject? button, bool active)
         {
             if (button == null)
             {

@@ -26,9 +26,9 @@ namespace AVS.DepthModules
                 .Include(TechType.AluminumOxide, 3)
                 .Done();
         /// <inheritdoc/>
-        public override Atlas.Sprite Icon => Assets.SpriteHelper.GetSprite("Sprites/DepthIcon.png");
+        public override Atlas.Sprite? Icon { get; } = Assets.SpriteHelper.GetSprite("Sprites/DepthIcon.png");
         /// <inheritdoc/>
-        public override Atlas.Sprite TabIcon => Assets.SpriteHelper.GetSprite("Sprites/DepthIcon.png");
+        public override Atlas.Sprite? TabIcon { get; } = Assets.SpriteHelper.GetSprite("Sprites/DepthIcon.png");
         /// <inheritdoc/>
         public override string TabName => "MVDM";
         /// <inheritdoc/>

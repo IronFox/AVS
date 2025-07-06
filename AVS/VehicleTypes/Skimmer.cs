@@ -15,7 +15,7 @@ namespace AVS.VehicleTypes
             return _skimmerConfig;
         }
 
-        private SkimmerComposition _skimmerConfig;
+        private SkimmerComposition? _skimmerConfig;
         public new SkimmerComposition Com =>
             _skimmerConfig
             ?? throw new InvalidOperationException("This vehicle's composition has not yet been initialized. Please wait until Skimmer.Awake() has been called");

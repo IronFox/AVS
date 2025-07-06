@@ -50,7 +50,12 @@ namespace AVS
         internal static void CreateSaveFileData(object sender, Nautilus.Json.JsonFileEventArgs e)
         {
             // See SaveData.cs
-            SaveData data = e.Instance as SaveData;
+            var data = e.Instance as SaveData;
+            if (data == null)
+            {
+                Logger.Error($"SaveData instance is null in CreateSaveFileData. Cannot save {Patches.SaveLoadManagerPatcher.SaveFileSpritesFileName}");
+                return;
+            }
             data.UpgradeLists = SaveManager.SerializeUpgrades();
             data.InnateStorages = SaveManager.SerializeInnateStorage();
             data.ModularStorages = SaveManager.SerializeModularStorage();

@@ -174,11 +174,10 @@ namespace AVS
 
     public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener, IPowerListener, ILightsStatusListener, IScuttleListener
     {
-        public EnergyInterface aiEI;
-        public VoiceQueue apVoice;
-        public ModVehicle mv => GetComponent<ModVehicle>();
-        public LiveMixin liveMixin => mv.liveMixin;
-        public EnergyInterface eInterf => mv.energyInterface;
+        internal EnergyInterface? aiEI;
+        internal ModVehicle mv => GetComponent<ModVehicle>();
+        internal LiveMixin liveMixin => mv.liveMixin;
+        internal EnergyInterface eInterf => mv.energyInterface;
 
 
         private PositiveValueThresholdTracker DepthTracker { get; }
@@ -360,8 +359,11 @@ namespace AVS
                 OxygenManager oxygenMgr = Player.main.oxygenMgr;
                 oxygenMgr.GetTotal(out float num, out float num2);
                 float amount = Mathf.Min(num2 - num, mv.oxygenPerSecond * Time.deltaTime) * mv.oxygenEnergyCost;
-                float secondsToAdd = mv.aiEnergyInterface.ConsumeEnergy(amount) / mv.oxygenEnergyCost;
-                oxygenMgr.AddOxygen(secondsToAdd);
+                if (mv.aiEnergyInterface != null)
+                {
+                    float secondsToAdd = mv.aiEnergyInterface.ConsumeEnergy(amount) / mv.oxygenEnergyCost;
+                    oxygenMgr.AddOxygen(secondsToAdd);
+                }
             }
         }
 

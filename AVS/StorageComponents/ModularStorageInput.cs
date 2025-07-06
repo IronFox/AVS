@@ -7,7 +7,11 @@ namespace AVS
     {
         public override void OpenFromExternal()
         {
-            ItemsContainer storageInSlot = mv.ModGetStorageInSlot(slotID, TechType.VehicleStorageModule);
+            if (mv == null)
+            {
+                return;
+            }
+            var storageInSlot = mv.ModGetStorageInSlot(slotID, TechType.VehicleStorageModule);
             if (storageInSlot != null)
             {
                 PDA pda = Player.main.GetPDA();
@@ -17,7 +21,11 @@ namespace AVS
         }
         protected override void OpenPDA()
         {
-            ItemsContainer storageInSlot = mv.ModGetStorageInSlot(slotID, TechType.VehicleStorageModule);
+            if (mv == null)
+            {
+                return;
+            }
+            var storageInSlot = mv.ModGetStorageInSlot(slotID, TechType.VehicleStorageModule);
             if (storageInSlot == null)
             {
                 storageInSlot = gameObject.GetComponent<SeamothStorageContainer>().container;

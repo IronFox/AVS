@@ -22,7 +22,7 @@ namespace AVS
         [HarmonyPatch(nameof(Vehicle.OnHandHover))]
         public static bool OnHandHoverPrefix(Vehicle __instance)
         {
-            ModVehicle mv = __instance as ModVehicle;
+            var mv = __instance as ModVehicle;
             if (mv == null)
             {
                 //if (VehicleTypes.Drone.mountedDrone != null)
@@ -56,7 +56,7 @@ namespace AVS
         [HarmonyPatch(nameof(Vehicle.ApplyPhysicsMove))]
         private static bool ApplyPhysicsMovePrefix(Vehicle __instance, ref bool ___wasAboveWater, ref VehicleAccelerationModifier[] ___accelerationModifiers)
         {
-            ModVehicle mv = __instance as ModVehicle;
+            var mv = __instance as ModVehicle;
             if (mv != null)
             {
                 return false;
@@ -68,7 +68,7 @@ namespace AVS
         [HarmonyPatch(nameof(Vehicle.LazyInitialize))]
         public static bool LazyInitializePrefix(Vehicle __instance, ref EnergyInterface ___energyInterface)
         {
-            ModVehicle mv = __instance as ModVehicle;
+            var mv = __instance as ModVehicle;
             if (mv == null)
             {
                 return true;
@@ -82,7 +82,7 @@ namespace AVS
         [HarmonyPatch(nameof(Vehicle.GetAllStorages))]
         public static void GetAllStoragesPostfix(Vehicle __instance, ref List<IItemsContainer> containers)
         {
-            ModVehicle mv = __instance as ModVehicle;
+            var mv = __instance as ModVehicle;
             if (mv == null)
             {
                 return;
@@ -90,7 +90,9 @@ namespace AVS
 
             foreach (var tmp in ((ModVehicle)__instance).Com.InnateStorages)
             {
-                containers.Add(tmp.Container.GetComponent<InnateStorageContainer>().container);
+                var ic = tmp.Container.GetComponent<InnateStorageContainer>();
+                if (ic != null)
+                    containers.Add(ic.Container);
             }
         }
 
@@ -98,7 +100,7 @@ namespace AVS
         [HarmonyPatch(nameof(Vehicle.IsPowered))]
         public static void IsPoweredPostfix(Vehicle __instance, ref EnergyInterface ___energyInterface, ref bool __result)
         {
-            ModVehicle mv = __instance as ModVehicle;
+            var mv = __instance as ModVehicle;
             if (mv == null)
             {
                 return;
@@ -151,12 +153,15 @@ namespace AVS
                 }
                 yield return new WaitUntil(() => baseCell.Find("BaseMoonpool(Clone)") != null);
                 var thisBasesBays = baseCell?.GetAllComponentsInChildren<VehicleDockingBay>();
-                const float expectedMaxDistance = 5f;
-                foreach (VehicleDockingBay bay in thisBasesBays)
+                if (thisBasesBays != null)
                 {
-                    if (Vector3.Distance(__instance.transform.position, bay.transform.position) < expectedMaxDistance)
+                    const float expectedMaxDistance = 5f;
+                    foreach (VehicleDockingBay bay in thisBasesBays)
                     {
-                        bay?.DockVehicle(__instance, false);
+                        if (Vector3.Distance(__instance.transform.position, bay.transform.position) < expectedMaxDistance)
+                        {
+                            bay?.DockVehicle(__instance, false);
+                        }
                     }
                 }
             }

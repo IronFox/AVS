@@ -16,6 +16,12 @@ namespace AVS.VehicleComponents
         }
         public static Subsystem WithOnHealDamage(this Subsystem sys, Action<float> OnHealDamage)
         {
+            if (sys.liveMixin == null)
+            {
+                ErrorMessage.AddError($"The Subsystem {sys.name} does not have a LiveMixin! Dying!");
+                UnityEngine.Component.DestroyImmediate(sys);
+                return sys;
+            }
             sys.liveMixin.onHealDamage.AddHandler(sys.gameObject, new UWE.Event<float>.HandleFunction(OnHealDamage));
             return sys;
         }
@@ -37,11 +43,11 @@ namespace AVS.VehicleComponents
     }
     public class Subsystem : HandTarget, IHandTarget
     {
-        internal LiveMixin liveMixin;
-        internal Action<GUIHand> OnHandHover;
-        internal Action<GUIHand> OnHandClick;
-        internal Action<DamageInfo> OnTakeDamage;
-        internal Action OnFullyRepaired;
+        internal LiveMixin? liveMixin;
+        internal Action<GUIHand>? OnHandHover;
+        internal Action<GUIHand>? OnHandClick;
+        internal Action<DamageInfo>? OnTakeDamage;
+        internal Action? OnFullyRepaired;
 
         void IHandTarget.OnHandClick(GUIHand hand)
         {

@@ -23,14 +23,14 @@ namespace AVS.Patches.LeviathanPatches
             // This postfix basically executes the OnTouch function again but only for the GrabModVehicle case.
             if (collider.gameObject.GetComponent<Player>() != null)
             {
-                ModVehicle maybeMV = collider.gameObject.GetComponent<Player>().GetModVehicle();
+                var maybeMV = collider.gameObject.GetComponent<Player>().GetModVehicle();
                 if (maybeMV != null)
                 {
                     // Don't let the reaper grab the player from inside the ModVehicle
                     return;
                 }
             }
-            ModVehicle mv = collider.gameObject.GetComponentInParent<ModVehicle>();
+            var mv = collider.gameObject.GetComponentInParent<ModVehicle>();
             if (mv != null)
             {
                 if (__instance.liveMixin.IsAlive() && Time.time > __instance.timeLastBite + __instance.biteInterval)
@@ -74,8 +74,11 @@ namespace AVS.Patches.LeviathanPatches
             if (__instance.holdingVehicle is ModVehicle v)
             {
                 var gb = v.Com.LeviathanGrabPoint.Or(v.gameObject);
-                Vector3 diff = gb.transform.position - v.transform.position;
-                v.transform.position -= diff;
+                if (gb != null)
+                {
+                    Vector3 diff = gb.transform.position - v.transform.position;
+                    v.transform.position -= diff;
+                }
             }
         }
     }

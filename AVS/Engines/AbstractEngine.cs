@@ -9,8 +9,8 @@ namespace AVS.Engines
     /// </summary>
     public abstract class AbstractEngine : MonoBehaviour, IScuttleListener
     {
-        private ModVehicle mv = null;
-        private Rigidbody rb = null;
+        private ModVehicle? mv = null;
+        private Rigidbody? rb = null;
         //private EngineSounds _sounds = default;
 
         /// <summary>
@@ -26,18 +26,32 @@ namespace AVS.Engines
         /// <summary>
         /// Gets the ModVehicle component associated with this engine.
         /// </summary>
-        public ModVehicle MV =>
-            mv
-            ? mv
-            : mv = GetComponent<ModVehicle>();
+        public ModVehicle MV
+        {
+            get
+            {
+                if (mv != null)
+                    return mv;
+                mv = GetComponentInParent<ModVehicle>();
+                if (mv == null)
+                    throw new System.Exception($"ModVehicle component not found on {gameObject.name}. Please ensure this engine is attached to a ModVehicle or its parent.");
+                return mv;
+            }
+        }
 
         /// <summary>
         /// Gets the Rigidbody component associated with this engine.
         /// </summary>
-        protected Rigidbody RB =>
-            rb
-            ? rb
-            : rb = MV.useRigidbody.Or(MV.GetComponent<Rigidbody>());
+        protected Rigidbody RB
+        {
+            get
+            {
+                if (rb != null)
+                    return rb;
+                rb = MV.useRigidbody.OrRequired(MV.GetComponent<Rigidbody>());
+                return rb;
+            }
+        }
 
         #region public_fields
 

@@ -32,14 +32,14 @@ namespace AVS
         /// <summary>
         /// The BepInEx log source used for outputting log messages.
         /// </summary>
-        private static ManualLogSource OutLog { get; set; }
+        private static ManualLogSource? OutLog { get; set; }
 
         /// <summary>
         /// Logs an informational message.
         /// </summary>
         public static void Log(string message)
         {
-            OutLog.LogInfo(message);
+            OutLog?.LogInfo(message);
         }
 
         /// <summary>
@@ -47,7 +47,7 @@ namespace AVS
         /// </summary>
         public static void Warn(string message)
         {
-            OutLog.LogWarning(message);
+            OutLog?.LogWarning(message);
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace AVS
         /// </summary>
         public static void Error(string message)
         {
-            OutLog.LogError(message);
+            OutLog?.LogError(message);
         }
 
         /// <summary>
@@ -63,8 +63,8 @@ namespace AVS
         /// </summary>
         public static void Exception(string prefix, System.Exception e)
         {
-            OutLog.LogError(prefix + e.Message);
-            OutLog.LogError(e.StackTrace);
+            OutLog?.LogError(prefix + e.Message);
+            OutLog?.LogError(e.StackTrace);
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace AVS
         {
             if (owner?.LogDebug == true)
             {
-                OutLog.LogInfo($"[DebugLog]: {message}");
+                OutLog?.LogInfo($"[DebugLog]: {message}");
             }
         }
 
@@ -83,7 +83,7 @@ namespace AVS
         /// </summary>
         public static void DebugLog(string message)
         {
-            OutLog.LogInfo($"[DebugLog]: {message}");
+            OutLog?.LogInfo($"[DebugLog]: {message}");
         }
 
         /// <summary>

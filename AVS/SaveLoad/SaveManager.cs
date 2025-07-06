@@ -501,7 +501,7 @@ namespace AVS.SaveLoad
                 thisItem.transform.SetParent(mv.Com.StorageRootObject.transform);
                 try
                 {
-                    matchedContainer.container.AddItem(thisItem.GetComponent<Pickupable>());
+                    matchedContainer.Container.AddItem(thisItem.GetComponent<Pickupable>());
                 }
                 catch (Exception e)
                 {

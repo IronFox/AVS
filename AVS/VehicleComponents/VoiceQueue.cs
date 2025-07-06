@@ -22,17 +22,17 @@ namespace AVS
         /// The single audio clip of this voice line.
         /// If multiple clips are provided, this will be null.
         /// </summary>
-        public AudioClip Clip { get; }
+        public AudioClip? Clip { get; }
         /// <summary>
         /// Multiple audio clips of this voice line.
         /// If a single clip is provided, this will be null.
         /// </summary>
-        public IReadOnlyList<AudioClip> Clips { get; }
+        public IReadOnlyList<AudioClip>? Clips { get; }
         /// <summary>
         /// Time in seconds between each two clips in <see cref="Clips"/>.
         /// If null or with less elements than <see cref="Clips"/>(-1), trailing gaps will be 0.
         /// </summary>
-        public IReadOnlyList<float> Gaps { get; }
+        public IReadOnlyList<float>? Gaps { get; }
         /// <summary>
         /// The translation key for the text associated with this voice line.
         /// Null if no subtitle should be displayed (even if configured).
@@ -70,7 +70,7 @@ namespace AVS
         /// <param name="textTranslationKey">Text translation key of this line</param>
         /// <param name="priority">Interruption priority</param>
         /// <param name="gaps">Time in seconds between each two clips in <paramref name="clips"/>. Should have one less element than <paramref name="clips"/> or be null. </param>
-        public VoiceLine(IReadOnlyList<AudioClip> clips, IReadOnlyList<float> gaps, string textTranslationKey, int priority = 0)
+        public VoiceLine(IReadOnlyList<AudioClip> clips, IReadOnlyList<float>? gaps, string textTranslationKey, int priority = 0)
         {
             Clips = clips;
             Gaps = gaps;
@@ -130,11 +130,11 @@ namespace AVS
     /// subtitles for voice lines when enabled.</remarks>
     public class VoiceQueue : MonoBehaviour, IScuttleListener
     {
-        private ModVehicle mv;
-        private EnergyInterface aiEI;
+        private ModVehicle? mv;
+        private EnergyInterface? aiEI;
         private List<AudioSource> speakers = new List<AudioSource>();
 
-        private VoiceLine Playing { get; set; } = null;
+        private VoiceLine? Playing { get; set; } = null;
         private Queue<Queued> PartQueue { get; } = new Queue<Queued>();
         private bool isReadyToSpeak = false;
 
@@ -238,6 +238,8 @@ namespace AVS
         /// <inheritdoc/>
         public void Update()
         {
+            if (mv == null || aiEI == null)
+                return;
             foreach (var speaker in speakers)
             {
                 if (mv.IsUnderCommand)
@@ -274,6 +276,7 @@ namespace AVS
         private float timeSinceLastStart = -1f;
         private void TryPlayNextClipInQueue()
         {
+
             if (timeSinceLastStart < 0)
                 timeSinceLastStart = 0;
             else
@@ -289,7 +292,7 @@ namespace AVS
                 part = PartQueue.Dequeue();
                 foreach (var speaker in speakers)
                 {
-                    speaker.volume = part.Volume * mv.Config.GetVoiceSoundVolume() * SoundSystem.GetVoiceVolume() * SoundSystem.GetMasterVolume();
+                    speaker.volume = part.Volume * mv!.Config.GetVoiceSoundVolume() * SoundSystem.GetVoiceVolume() * SoundSystem.GetMasterVolume();
                     speaker.clip = part.Clip;
                     speaker.Play();
                     if (mv.Config.GetVoiceSubtitlesEnabled() && part.IsFirst && part.Line.TextTranslationKey != null)
@@ -308,7 +311,7 @@ namespace AVS
         /// <param name="line">Line to play</param>
         public void Play(VoiceLine line)
         {
-            if (mv && aiEI.hasCharge)
+            if (mv && aiEI != null && aiEI.hasCharge)
             {
                 if (Playing is null || Playing.Priority < line.Priority)
                 {
@@ -331,7 +334,7 @@ namespace AVS
         }
         private void CreateSubtitle(string textTranslationKey)
         {
-            Logger.PDANote($"{mv.subName.hullName.text}: {Language.main.Get(textTranslationKey)}");
+            Logger.PDANote($"{mv!.subName.hullName.text}: {Language.main.Get(textTranslationKey)}");
         }
 
     }
