@@ -170,8 +170,6 @@ namespace AVS.Util
         /// Queries all children of a Transform as an <see cref="IEnumerable{T}" /> of Transforms.
         /// Returns an empty enumerable if the Transform is null or has no children.
         /// </summary>
-        /// <param name="transform"></param>
-        /// <returns></returns>
 
         public static IEnumerable<Transform> GetChildren(this Transform transform)
         {
