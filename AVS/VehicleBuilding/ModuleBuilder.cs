@@ -59,7 +59,7 @@ namespace AVS
                 {
                     var img = equipment.transform
                         .Find(ModuleBuilder.ModuleName(0) + "/VehicleModuleBackground(Clone)")
-                        .SmartGetComponent<UnityEngine.UI.Image>();
+                        .SafeGetComponent<UnityEngine.UI.Image>();
                     if (img != null)
                         img.sprite = setSprite;
                     else
@@ -93,7 +93,7 @@ namespace AVS
             {
                 var equipment = uGUI_PDA.main.transform
                     .Find("Content/InventoryTab/Equipment")
-                    .SmartGetComponent<uGUI_Equipment>();
+                    .SafeGetComponent<uGUI_Equipment>();
                 if (equipment == null)
                 {
                     Logger.Error("Failed to find Equipment in PDA. Cannot build vehicle module slots.");
@@ -115,7 +115,7 @@ namespace AVS
             {
                 var equipment = uGUI_PDA.main.transform
                     .Find("Content/InventoryTab/Equipment")
-                    .SmartGetComponent<uGUI_Equipment>();
+                    .SafeGetComponent<uGUI_Equipment>();
                 if (equipment == null)
                 {
                     Logger.Error("Failed to find Equipment in PDA. Cannot build vehicle module slots.");
@@ -125,7 +125,7 @@ namespace AVS
                 {
                     var slot = equipment.transform
                         .Find(ModuleName(i))
-                        .SmartGetComponent<uGUI_EquipmentSlot>(); ;
+                        .SafeGetComponent<uGUI_EquipmentSlot>(); ;
                     if (slot == null)
                     {
                         // If the slot does not exist, create it
@@ -143,7 +143,7 @@ namespace AVS
             {
                 var equipment = uGUI_PDA.main.transform
                     .Find("Content/InventoryTab/Equipment")
-                    .SmartGetComponent<uGUI_Equipment>();
+                    .SafeGetComponent<uGUI_Equipment>();
                 if (equipment == null)
                 {
                     Logger.Error("Failed to find Equipment in PDA. Cannot build vehicle module slots.");
@@ -165,7 +165,7 @@ namespace AVS
             // Maybe we can grab equipment from prefab?
             equipment = uGUI_PDA.main.transform
                 .Find("Content/InventoryTab")
-                .SmartGetComponentInChildren<uGUI_Equipment>(true);
+                .SafeGetComponentInChildren<uGUI_Equipment>(true);
             if (equipment == null)
             {
                 Logger.Error("Failed to find Equipment in PDA. Cannot build vehicle module slots.");
@@ -320,7 +320,7 @@ namespace AVS
         public void LinkModule(ref GameObject thisModule)
         {
             // add background
-            var backgroundTop = thisModule.transform.Find("Background").SmartGetGameObject();
+            var backgroundTop = thisModule.transform.Find("Background").SafeGetGameObject();
             if (backgroundTop == null || genericModuleObject == null)
             {
                 Logger.Error("Background or genericModuleObject is null, cannot link module.");

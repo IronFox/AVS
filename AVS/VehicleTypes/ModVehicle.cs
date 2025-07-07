@@ -520,7 +520,7 @@ namespace AVS
                 {
                     foreach (GameObject window in Com.CanopyWindows)
                     {
-                        window.SmartSetActive(false);
+                        window.SafeSetActive(false);
                     }
                 }
                 catch (Exception)
@@ -545,7 +545,7 @@ namespace AVS
                 {
                     foreach (GameObject window in Com.CanopyWindows)
                     {
-                        window.SmartSetActive(true);
+                        window.SafeSetActive(true);
                     }
                 }
                 catch (Exception)
@@ -1686,7 +1686,7 @@ namespace AVS
             {
                 yield return null;
                 Player.main.SetPosition(destination);
-                Player.main.SetCurrentSub(mv.SmartGetComponent<SubRoot>(), true);
+                Player.main.SetCurrentSub(mv.SafeGetComponent<SubRoot>(), true);
                 Player.main.playerController.SetEnabled(true);
                 yield return null;
                 UWE.Utils.ExitPhysicsSyncSection();
@@ -1881,7 +1881,7 @@ namespace AVS
 
         private GameObject GetOrCreateChild(string childName)
         {
-            var child = transform.Find(childName).SmartGetGameObject();
+            var child = transform.Find(childName).SafeGetGameObject();
             if (child == null)
             {
                 child = new GameObject(childName);

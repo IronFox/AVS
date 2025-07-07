@@ -81,7 +81,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(ConstructorInput.OnHandClick))]
         public static bool OnHandClickPrefix(ConstructorInput __instance, GUIHand hand)
         {
-            if (__instance.constructor.buildTarget.SmartGetComponent<ModVehicle>() != null)
+            if (__instance.constructor.buildTarget.SafeGetComponent<ModVehicle>() != null)
             {
                 return false;
             }

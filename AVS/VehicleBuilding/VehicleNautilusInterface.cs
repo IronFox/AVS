@@ -50,7 +50,7 @@ namespace AVS
             {
                 Nautilus.Handlers.LanguageHandler.SetLanguageLine($"Ency_{vehicleKey}", vehicleKey);
                 Nautilus.Handlers.LanguageHandler.SetLanguageLine($"EncyDesc_{vehicleKey}", vehicle.mv.Config.EncyclopediaEntry);
-                scanningGadget.WithEncyclopediaEntry("Tech/Vehicles", null, vehicle.mv.Config.EncyclopediaImage.GetTexture2D());
+                scanningGadget.WithEncyclopediaEntry("Tech/Vehicles", null, vehicle.mv.Config.EncyclopediaImage.SafeGetTexture2D());
                 Nautilus.Handlers.StoryGoalHandler.RegisterItemGoal(vehicleKey, Story.GoalType.Encyclopedia, vehicle.mv.Config.UnlockedWith);
             }
 

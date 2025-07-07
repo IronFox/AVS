@@ -43,7 +43,7 @@ namespace AVS.Patches.CreaturePatches
 
             Player myPlayer = target.GetComponent<Player>();
             var mySub = target.GetComponent<VehicleTypes.Submarine>()
-                .Or(() => myPlayer.SmartGetVehicle<VehicleTypes.Submarine>());
+                .Or(() => myPlayer.SafeGetVehicle<VehicleTypes.Submarine>());
 
             if (mySub == null)
             {

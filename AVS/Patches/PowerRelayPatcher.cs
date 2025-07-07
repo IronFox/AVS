@@ -46,8 +46,8 @@ namespace AVS.Patches
         public static bool GetPowerPrefix(PowerRelay __instance, ref float __result)
         {
             var mv = __instance
-                .SmartGetGameObject()
-                .SmartGetComponent<ModVehicle>();
+                .SafeGetGameObject()
+                .SafeGetComponent<ModVehicle>();
             if (mv != null)
             {
                 if (mv.energyInterface != null)

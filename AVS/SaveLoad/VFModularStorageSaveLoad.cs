@@ -24,7 +24,7 @@ namespace AVS.SaveLoad
             {
                 if (mv.modules.equipment.TryGetValue(slotID, out InventoryItem result))
                 {
-                    var container = result?.item.SmartGetComponent<SeamothStorageContainer>();
+                    var container = result?.item.SafeGetComponent<SeamothStorageContainer>();
                     if (container != null && container.container != null)
                     {
                         SaveThisModularStorage(mv, container.container, slotID);

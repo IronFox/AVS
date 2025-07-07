@@ -69,7 +69,7 @@ namespace AVS.VehicleTypes
             Interiorlights = gameObject.AddComponent<InteriorLightsController>();
             Navlights = gameObject.AddComponent<NavigationLightsController>();
             gameObject.EnsureComponent<TetherSource>().mv = this;
-            controlPanelLogic.SmartDo(x => x.Init());
+            controlPanelLogic.SafeDo(x => x.Init());
         }
         public override void Start()
         {
@@ -431,7 +431,7 @@ namespace AVS.VehicleTypes
             }
 
             GameObject? console = Resources.FindObjectsOfTypeAll<BaseUpgradeConsoleGeometry>()
-                ?.ToList().Find(x => x.gameObject.name.Contains("Short")).SmartGetGameObject();
+                ?.ToList().Find(x => x.gameObject.name.Contains("Short")).SafeGetGameObject();
 
             if (console == null)
             {

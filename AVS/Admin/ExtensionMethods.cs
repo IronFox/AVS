@@ -20,7 +20,7 @@ namespace AVS
         public static ModVehicle? GetModVehicle(this Player player)
         {
             return (player.GetVehicle() as ModVehicle)
-                .Or(() => player.currentSub.SmartGetComponent<ModVehicle>());
+                .Or(() => player.currentSub.SafeGetComponent<ModVehicle>());
         }
 
         /// <summary>
@@ -74,8 +74,8 @@ namespace AVS
                 }
             }
             var theseBays = vehicle.transform.parent
-                    .SmartGetGameObject()
-                    .SmartGetComponentsInChildren<VehicleDockingBay>()
+                    .SafeGetGameObject()
+                    .SafeGetComponentsInChildren<VehicleDockingBay>()
                     .Where(x => x.dockedVehicle == vehicle);
             if (theseBays == null || theseBays.Count() == 0)
             {

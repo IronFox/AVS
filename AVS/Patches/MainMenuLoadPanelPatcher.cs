@@ -40,7 +40,7 @@ namespace AVS.Patches
             if (SaveLoadManagerPatcher.hasTechTypeGameInfo.ContainsKey(lb.saveGame))
             {
                 List<string> hasTechTypes = SaveLoadManagerPatcher.hasTechTypeGameInfo[lb.saveGame];
-                hasTechTypes.ForEach(x => lb.saveIcons.FindChild(x).SmartSetActive(true));
+                hasTechTypes.ForEach(x => lb.saveIcons.FindChild(x).SafeSetActive(true));
             }
 
             lb.saveIcons.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().spacing = 0;

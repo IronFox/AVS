@@ -153,7 +153,7 @@ namespace AVS
                     yield break;
                 }
                 yield return new WaitUntil(() => baseCell.Find("BaseMoonpool(Clone)") != null);
-                var thisBasesBays = baseCell.SmartGetComponentsInChildren<VehicleDockingBay>(true);
+                var thisBasesBays = baseCell.SafeGetComponentsInChildren<VehicleDockingBay>(true);
                 if (thisBasesBays != null)
                 {
                     const float expectedMaxDistance = 5f;

@@ -175,7 +175,7 @@ namespace AVS.Util
         /// Selectively returns the GameObject of a Component.
         /// Returns null if the Component is null.
         /// </summary>
-        public static GameObject? SmartGetGameObject(this Component? component)
+        public static GameObject? SafeGetGameObject(this Component? component)
         {
             if (component == null)
                 return null;
@@ -186,7 +186,7 @@ namespace AVS.Util
         /// Selectively returns the Texture2D of a Sprite.
         /// Returns null if the Sprite is null.
         /// </summary>
-        public static Texture2D? GetTexture2D(this Sprite? sprite)
+        public static Texture2D? SafeGetTexture2D(this Sprite? sprite)
         {
             if (sprite == null)
                 return null;
@@ -243,7 +243,7 @@ namespace AVS.Util
         /// Returns an empty enumerable if the Transform is null or has no children.
         /// </summary>
 
-        public static IEnumerable<Transform> GetChildren(this Transform? transform)
+        public static IEnumerable<Transform> SafeGetChildren(this Transform? transform)
         {
             if (transform == null)
             {
@@ -260,7 +260,7 @@ namespace AVS.Util
         /// Favors the attached Rigidbody if available, otherwise uses the Collider's GameObject.
         /// Returns null if the Collider is null.
         /// </summary>
-        public static GameObject? GetGameObjectOf(Collider? collider)
+        public static GameObject? SafeGetGameObjectOf(Collider? collider)
         {
             if (collider == null)
                 return null;
@@ -327,7 +327,7 @@ namespace AVS.Util
         /// <returns>An array of components of type <typeparamref name="T"/> found in the current component and its children.
         /// Returns an empty array if <paramref name="c"/> is <see langword="null"/> or no components of the specified
         /// type are found.</returns>
-        public static T[] SmartGetComponentsInChildren<T>(this Component? c, bool includeInactive) where T : Component
+        public static T[] SafeGetComponentsInChildren<T>(this Component? c, bool includeInactive) where T : Component
         {
             if (c == null)
                 return Array.Empty<T>();
@@ -341,7 +341,7 @@ namespace AVS.Util
         /// <param name="o">The <see cref="GameObject"/> from which to retrieve the components. Can be null.</param>
         /// <returns>An array of components of type <typeparamref name="T"/> found in the <see cref="GameObject"/> and its
         /// children.  Returns an empty array if the <paramref name="o"/> is null.</returns>
-        public static T[] SmartGetComponentsInChildren<T>(this GameObject? o) where T : Component
+        public static T[] SafeGetComponentsInChildren<T>(this GameObject? o) where T : Component
         {
             if (o == null)
                 return Array.Empty<T>();
@@ -358,7 +358,7 @@ namespace AVS.Util
         /// inactive GameObjects; otherwise, <see langword="false"/>.</param>
         /// <returns>The first component of type <typeparamref name="T"/> found in the <paramref name="o"/> or its children,  or
         /// <see langword="null"/> if no such component is found or if <paramref name="o"/> is <see langword="null"/>.</returns>
-        public static T? SmartGetComponentInChildren<T>(this GameObject? o, bool includeInactive = false) where T : Component
+        public static T? SafeGetComponentInChildren<T>(this GameObject? o, bool includeInactive = false) where T : Component
         {
             if (o == null)
                 return null;
@@ -373,7 +373,7 @@ namespace AVS.Util
         /// <param name="c">The Component from which to search for the sibling or contained component.</param>
         /// <param name="includeInactive">Whether to include inactive child GameObjects in the search.</param>
         /// <returns>The first component of type <typeparamref name="T"/> found, or <see langword="null"/> if none is found.</returns>
-        public static T? SmartGetComponentInChildren<T>(this Component? c, bool includeInactive = false) where T : Component
+        public static T? SafeGetComponentInChildren<T>(this Component? c, bool includeInactive = false) where T : Component
         {
             if (c == null)
                 return null;
@@ -387,7 +387,7 @@ namespace AVS.Util
         /// <typeparam name="T">Requested component type</typeparam>
         /// <param name="c">Component to get the sibling component of</param>
         /// <returns>Requested component or null</returns>
-        public static T? SmartGetComponent<T>(this Component? c) where T : Component
+        public static T? SafeGetComponent<T>(this Component? c) where T : Component
         {
             if (c == null)
                 return null;
@@ -403,7 +403,7 @@ namespace AVS.Util
         /// <param name="go">The <see cref="GameObject"/> from which to retrieve the component. Can be <see langword="null"/>.</param>
         /// <returns>The component of type <typeparamref name="T"/> if found; otherwise, <see langword="null"/>.  Returns <see
         /// langword="null"/> if <paramref name="go"/> is <see langword="null"/>.</returns>
-        public static T? SmartGetComponent<T>(this GameObject? go) where T : Component
+        public static T? SafeGetComponent<T>(this GameObject? go) where T : Component
         {
             if (go == null)
                 return null;
@@ -416,7 +416,7 @@ namespace AVS.Util
         /// </summary>
         /// <param name="t">The <see cref="Transform"/> whose parent is to be retrieved. Can be <see langword="null"/>.</param>
         /// <returns>The parent <see cref="Transform"/>, or <see langword="null"/> if <paramref name="t"/> is <see langword="null"/>.</returns>
-        public static Transform? SmartGetParent(this Transform? t)
+        public static Transform? SafeGetParent(this Transform? t)
         {
             if (t == null)
                 return null;
@@ -433,7 +433,7 @@ namespace AVS.Util
         /// The player's current vehicle cast to type <typeparamref name="T"/>, or <see langword="null"/> if the player is <see langword="null"/>,
         /// the player is not in a vehicle, or the vehicle is not of type <typeparamref name="T"/>.
         /// </returns>
-        public static T? SmartGetVehicle<T>(this Player? player) where T : Vehicle
+        public static T? SafeGetVehicle<T>(this Player? player) where T : Vehicle
         {
             if (player == null)
                 return null;
@@ -448,14 +448,23 @@ namespace AVS.Util
         /// </summary>
         /// <param name="gameObject">The <see cref="GameObject"/> to set active or inactive. Can be null.</param>
         /// <param name="value">The active state to set.</param>
-        public static void SmartSetActive(this GameObject? gameObject, bool value)
+        public static void SafeSetActive(this GameObject? gameObject, bool value)
         {
             if (gameObject == null)
                 return;
             gameObject.SetActive(value);
         }
 
-        public static void SmartDo<T>(this T? item, Action<T> action) where T : UnityEngine.Object
+        /// <summary>
+        /// Executes the specified action if the object is not null.
+        /// </summary>
+        /// <remarks>This method provides a safe way to perform an action on a nullable object derived
+        /// from <see cref="UnityEngine.Object"/>. If <paramref name="item"/> is null, the method does
+        /// nothing.</remarks>
+        /// <typeparam name="T">The type of the object, which must derive from <see cref="UnityEngine.Object"/>.</typeparam>
+        /// <param name="item">The object to check for null before executing the action.</param>
+        /// <param name="action">The action to execute if <paramref name="item"/> is not null.</param>
+        public static void SafeDo<T>(this T? item, Action<T> action) where T : UnityEngine.Object
         {
             if (item == null)
                 return;

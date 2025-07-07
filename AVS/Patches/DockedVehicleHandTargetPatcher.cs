@@ -101,7 +101,7 @@ namespace AVS.Patches
 
             mv.IsUndockingAnimating = true;
             string subRootName = __instance.dockingBay.subRoot.name.ToLower();
-            var moonpoolMaybe = __instance.dockingBay.transform.parent.SmartGetParent();
+            var moonpoolMaybe = __instance.dockingBay.transform.parent.SafeGetParent();
             if (subRootName.Contains("cyclops"))
             {
                 __instance.dockingBay.transform.parent.parent.parent.Find("CyclopsCollision").gameObject.SetActive(false);
