@@ -81,6 +81,7 @@ namespace AVS.Util
 
         /// <summary>
         /// Returns the first non-null object from the two provided.
+        /// Either <paramref name="a"/> or <paramref name="b"/> must not be null.
         /// </summary>
         /// <typeparam name="T">Type being compared</typeparam>
         /// <param name="a">First object to return if not null</param>
@@ -97,6 +98,7 @@ namespace AVS.Util
 
         /// <summary>
         /// Returns the first non-null object from the two provided.
+        /// Either <paramref name="a"/> or the result of <paramref name="bFactory"/> must not be null.
         /// </summary>
         /// <typeparam name="T">Type being compared</typeparam>
         /// <param name="a">First object to return if not null</param>
