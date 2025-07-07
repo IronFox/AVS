@@ -70,12 +70,43 @@ namespace AVS.Util
         /// </summary>
         /// <typeparam name="T">Type being compared</typeparam>
         /// <param name="a">First object to return if not null</param>
-        /// <param name="b">Second objec to return if <paramref name="a"/> is null</param>. Must not be null
-        /// <returns><paramref name="a"/> if not null, <paramref name="b"/> if <paramref name="a"/> is null</returns>
-        public static T OrRequired<T>(this T? a, T b) where T : Object
+        /// <param name="bFactory">Factory for the second object to return if <paramref name="a"/> is null</param>
+        /// <returns><paramref name="a"/> if not null, otherwise the result of <paramref name="bFactory"/>.</returns>
+        public static T? Or<T>(this T? a, Func<T?> bFactory) where T : Object
         {
             if (a != null)
                 return a;
+            return bFactory();
+        }
+
+        /// <summary>
+        /// Returns the first non-null object from the two provided.
+        /// </summary>
+        /// <typeparam name="T">Type being compared</typeparam>
+        /// <param name="a">First object to return if not null</param>
+        /// <param name="b">Second object to return if <paramref name="a"/> is null</param>. Must not be null
+        /// <returns><paramref name="a"/> if not null, <paramref name="b"/> if <paramref name="a"/> is null</returns>
+        public static T OrRequired<T>(this T? a, T? b) where T : Object
+        {
+            if (a != null)
+                return a;
+            if (b != null)
+                return b;
+            throw new System.ArgumentNullException($"Both objects are null. Cannot return a valid {typeof(T).Name} object.");
+        }
+
+        /// <summary>
+        /// Returns the first non-null object from the two provided.
+        /// </summary>
+        /// <typeparam name="T">Type being compared</typeparam>
+        /// <param name="a">First object to return if not null</param>
+        /// <param name="bFactory">Factory for the second object to return if <paramref name="a"/> is null</param>. Must not produce null
+        /// <returns><paramref name="a"/> if not null, <paramref name="bFactory"/>() if <paramref name="a"/> is null</returns>
+        public static T OrRequired<T>(this T? a, Func<T?> bFactory) where T : Object
+        {
+            if (a != null)
+                return a;
+            var b = bFactory();
             if (b != null)
                 return b;
             throw new System.ArgumentNullException($"Both objects are null. Cannot return a valid {typeof(T).Name} object.");
@@ -289,32 +320,64 @@ namespace AVS.Util
         }
 
         /// <summary>
-        /// Retrieves all components of type <typeparamref name="T"/> from the specified transform and its children.
+        /// Retrieves all components of type <typeparamref name="T"/> from the current component and its children.
         /// </summary>
         /// <typeparam name="T">The type of component to retrieve.</typeparam>
-        /// <param name="t">The transform from which to search for components. If <see langword="null"/>, an empty array is returned.</param>
-        /// <returns>An array of components of type <typeparamref name="T"/> found in the transform and its children.  Returns an
-        /// empty array if no components are found or if <paramref name="t"/> is <see langword="null"/>.</returns>
-        public static T[] SmartGetComponentsInChildren<T>(this Transform? t) where T : Component
+        /// <param name="c">The component from which to begin the search. If <see langword="null"/>, an empty array is returned.</param>
+        /// <returns>An array of components of type <typeparamref name="T"/> found in the current component and its children.
+        /// Returns an empty array if <paramref name="c"/> is <see langword="null"/> or no components of the specified
+        /// type are found.</returns>
+        public static T[] SmartGetComponentsInChildren<T>(this Component? c, bool includeInactive) where T : Component
         {
-            if (t == null)
+            if (c == null)
                 return Array.Empty<T>();
-            return t.GetComponentsInChildren<T>();
+            return c.GetComponentsInChildren<T>(includeInactive);
+        }
+        /// <summary>
+        /// Retrieves all components of type <typeparamref name="T"/> from the specified <see cref="GameObject"/>  and
+        /// its child objects. Returns an empty array if the <see cref="GameObject"/> is null.
+        /// </summary>
+        /// <typeparam name="T">The type of component to retrieve. Must derive from <see cref="Component"/>.</typeparam>
+        /// <param name="o">The <see cref="GameObject"/> from which to retrieve the components. Can be null.</param>
+        /// <returns>An array of components of type <typeparamref name="T"/> found in the <see cref="GameObject"/> and its
+        /// children.  Returns an empty array if the <paramref name="o"/> is null.</returns>
+        public static T[] SmartGetComponentsInChildren<T>(this GameObject? o) where T : Component
+        {
+            if (o == null)
+                return Array.Empty<T>();
+            return o.GetComponentsInChildren<T>();
         }
 
         /// <summary>
-        /// Retrieves the first component of type <typeparamref name="T"/> from the specified transform or its children.
+        /// Retrieves the first component of type <typeparamref name="T"/> in the specified <see cref="GameObject"/> or
+        /// its children.
+        /// </summary>
+        /// <typeparam name="T">The type of component to retrieve.</typeparam>
+        /// <param name="o">The <see cref="GameObject"/> to search. Can be <see langword="null"/>.</param>
+        /// <param name="includeInactive">A value indicating whether to include inactive GameObjects in the search.  <see langword="true"/> to include
+        /// inactive GameObjects; otherwise, <see langword="false"/>.</param>
+        /// <returns>The first component of type <typeparamref name="T"/> found in the <paramref name="o"/> or its children,  or
+        /// <see langword="null"/> if no such component is found or if <paramref name="o"/> is <see langword="null"/>.</returns>
+        public static T? SmartGetComponentInChildren<T>(this GameObject? o, bool includeInactive = false) where T : Component
+        {
+            if (o == null)
+                return null;
+            return o.GetComponentInChildren<T>(includeInactive);
+        }
+
+        /// <summary>
+        /// Retrieves the first component of type <typeparamref name="T"/> from the specified component or its children.
         /// Returns <see langword="null"/> if the transform is <see langword="null"/> or if no such component is found.
         /// </summary>
         /// <typeparam name="T">The type of component to retrieve.</typeparam>
-        /// <param name="t">The transform from which to search for the component.</param>
+        /// <param name="c">The Component from which to search for the sibling or contained component.</param>
         /// <param name="includeInactive">Whether to include inactive child GameObjects in the search.</param>
         /// <returns>The first component of type <typeparamref name="T"/> found, or <see langword="null"/> if none is found.</returns>
-        public static T? SmartGetComponentInChildren<T>(this Transform? t, bool includeInactive = false) where T : Component
+        public static T? SmartGetComponentInChildren<T>(this Component? c, bool includeInactive = false) where T : Component
         {
-            if (t == null)
+            if (c == null)
                 return null;
-            return t.GetComponentInChildren<T>(includeInactive);
+            return c.GetComponentInChildren<T>(includeInactive);
         }
 
         /// <summary>
@@ -332,7 +395,9 @@ namespace AVS.Util
         }
 
         /// <summary>
-        /// Retrieves a component of the specified type from the given <see cref="GameObject"/>.
+        /// Retrieves a component of the specified type from the given <see cref="GameObject"/>
+        /// only if the game object is not null.
+        /// Otherwise, returns null.
         /// </summary>
         /// <typeparam name="T">The type of the component to retrieve. Must derive from <see cref="Component"/>.</typeparam>
         /// <param name="go">The <see cref="GameObject"/> from which to retrieve the component. Can be <see langword="null"/>.</param>
@@ -345,11 +410,56 @@ namespace AVS.Util
             return go.GetComponent<T>();
         }
 
+        /// <summary>
+        /// Returns the parent <see cref="Transform"/> of the given <paramref name="t"/>,
+        /// or <see langword="null"/> if <paramref name="t"/> is <see langword="null"/>.
+        /// </summary>
+        /// <param name="t">The <see cref="Transform"/> whose parent is to be retrieved. Can be <see langword="null"/>.</param>
+        /// <returns>The parent <see cref="Transform"/>, or <see langword="null"/> if <paramref name="t"/> is <see langword="null"/>.</returns>
         public static Transform? SmartGetParent(this Transform? t)
         {
             if (t == null)
                 return null;
             return t.parent;
+        }
+
+
+        /// <summary>
+        /// Attempts to retrieve the player's current vehicle as a specific type.
+        /// </summary>
+        /// <typeparam name="T">The type of vehicle to retrieve. Must derive from <see cref="Vehicle"/>.</typeparam>
+        /// <param name="player">The player whose vehicle is being queried. Can be <see langword="null"/>.</param>
+        /// <returns>
+        /// The player's current vehicle cast to type <typeparamref name="T"/>, or <see langword="null"/> if the player is <see langword="null"/>,
+        /// the player is not in a vehicle, or the vehicle is not of type <typeparamref name="T"/>.
+        /// </returns>
+        public static T? SmartGetVehicle<T>(this Player? player) where T : Vehicle
+        {
+            if (player == null)
+                return null;
+            return player.GetVehicle() as T;
+        }
+
+
+
+        /// <summary>
+        /// Sets the active state of the specified <see cref="GameObject"/> if it is not null.
+        /// Does nothing if the <paramref name="gameObject"/> is null.
+        /// </summary>
+        /// <param name="gameObject">The <see cref="GameObject"/> to set active or inactive. Can be null.</param>
+        /// <param name="value">The active state to set.</param>
+        public static void SmartSetActive(this GameObject? gameObject, bool value)
+        {
+            if (gameObject == null)
+                return;
+            gameObject.SetActive(value);
+        }
+
+        public static void SmartDo<T>(this T? item, Action<T> action) where T : UnityEngine.Object
+        {
+            if (item == null)
+                return;
+            action(item);
         }
     }
 }

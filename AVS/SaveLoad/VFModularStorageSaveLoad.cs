@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.Util;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace AVS.SaveLoad
             {
                 if (mv.modules.equipment.TryGetValue(slotID, out InventoryItem result))
                 {
-                    var container = result?.item?.GetComponent<SeamothStorageContainer>();
+                    var container = result?.item.SmartGetComponent<SeamothStorageContainer>();
                     if (container != null && container.container != null)
                     {
                         SaveThisModularStorage(mv, container.container, slotID);

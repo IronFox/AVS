@@ -520,7 +520,7 @@ namespace AVS
                 {
                     foreach (GameObject window in Com.CanopyWindows)
                     {
-                        window?.SetActive(false);
+                        window.SmartSetActive(false);
                     }
                 }
                 catch (Exception)
@@ -545,7 +545,7 @@ namespace AVS
                 {
                     foreach (GameObject window in Com.CanopyWindows)
                     {
-                        window?.SetActive(true);
+                        window.SmartSetActive(true);
                     }
                 }
                 catch (Exception)
@@ -1881,7 +1881,7 @@ namespace AVS
 
         private GameObject GetOrCreateChild(string childName)
         {
-            var child = transform.Find(childName)?.gameObject;
+            var child = transform.Find(childName).SmartGetGameObject();
             if (child == null)
             {
                 child = new GameObject(childName);

@@ -25,10 +25,12 @@ namespace AVS.Composition
         public GameObject ModulesRootObject { get; }
 
         /// <summary>
-        /// Base object containing all colliders, directly or as children.
-        /// The code can handle this not being set, but it really should be set.
+        /// Base object containing colliders (and nothing else).
+        /// AVS can do without but the Subnautica system uses this object to switch off colliders while docked.
+        /// Therefore, this value must be set, even if the referenced game object contains nothing.
+        /// Should not be the vehicle root as this would disable everything.
         /// </summary>
-        public GameObject? CollisionModel { get; }
+        public GameObject CollisionModel { get; }
 
         /// <summary>
         /// Entry/exit hatches for the submarine.
@@ -157,7 +159,7 @@ namespace AVS.Composition
             GameObject modulesRootObject,
             IReadOnlyList<VehicleParts.VehicleHatchStruct> hatches,
             AbstractEngine engine,
-            GameObject? collisionModel = null,
+            GameObject collisionModel,
             IReadOnlyList<VehicleParts.VehicleBattery>? batteries = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,

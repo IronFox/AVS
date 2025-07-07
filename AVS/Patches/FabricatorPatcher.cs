@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.Util;
+using HarmonyLib;
 
 // PURPOSE: Ensure onboard fabricators are correctly powered. Ensure the constructor cannot build two MVs at once.
 // VALUE: High.
@@ -80,7 +81,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(ConstructorInput.OnHandClick))]
         public static bool OnHandClickPrefix(ConstructorInput __instance, GUIHand hand)
         {
-            if (__instance.constructor.building && __instance.constructor.buildTarget?.GetComponent<ModVehicle>() != null)
+            if (__instance.constructor.buildTarget.SmartGetComponent<ModVehicle>() != null)
             {
                 return false;
             }

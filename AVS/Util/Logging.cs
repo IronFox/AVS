@@ -154,7 +154,9 @@ namespace AVS.Util
         {
             if (value is float f0)
                 return f0.ToString(CultureInfo.InvariantCulture);
-            return value?.ToString();
+            if (value == null)
+                return "<null>";
+            return value.ToString();
         }
 
         /// <summary>

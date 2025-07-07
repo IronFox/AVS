@@ -48,7 +48,7 @@ namespace AVS.Engines
             {
                 if (rb != null)
                     return rb;
-                rb = MV.useRigidbody.OrRequired(MV.GetComponent<Rigidbody>());
+                rb = MV.useRigidbody.OrRequired(() => MV.GetComponent<Rigidbody>());
                 return rb;
             }
         }

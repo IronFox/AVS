@@ -35,17 +35,17 @@ namespace AVS.VehicleParts
         {
             if (ExitLocation == null)
             {
-                VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Warn, verbose, thisName + " A null PilotSeat.ExitLocation was provided. You might need this if you exit from piloting into a weird place.");
+                VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Warn, verbose, thisName + "A null PilotSeat.ExitLocation was provided. You might need this if you exit from piloting into a weird place.");
             }
 
             if (Seat == null)
             {
-                Logger.Error(thisName + " A null PilotSeat.Seat was provided. There would be no way to pilot this vehicle.");
+                Logger.Error(thisName + "A null PilotSeat.Seat was provided. There would be no way to pilot this vehicle.");
                 return false;
             }
             if (SitLocation == null)
             {
-                Logger.Error(thisName + " A null PilotSeat.SitLocation was provided. There would be no way to pilot this vehicle.");
+                Logger.Error(thisName + "A null PilotSeat.SitLocation was provided. There would be no way to pilot this vehicle.");
                 return false;
             }
             return true;
@@ -75,21 +75,21 @@ namespace AVS.VehicleParts
         {
             if (SurfaceExitLocation == null)
             {
-                VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Warn, verbose, thisName + " A null VehicleHatchStruct.SurfaceExitLocation was provided. You might need this if you exit weirdly near the surface.");
+                VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Warn, verbose, thisName + "A null VehicleHatchStruct.SurfaceExitLocation was provided. You might need this if you exit weirdly near the surface.");
             }
             if (Hatch == null)
             {
-                Logger.Error(thisName + " A null VehicleHatchStruct.Hatch was provided. There would be no way to enter/exit this vehicle.");
+                Logger.Error(thisName + "A null VehicleHatchStruct.Hatch was provided. There would be no way to enter/exit this vehicle.");
                 return false;
             }
             if (EntryLocation == null)
             {
-                Logger.Error(thisName + " A null VehicleHatchStruct.EntryLocation was provided. There would be no way to enter/exit this vehicle.");
+                Logger.Error(thisName + "A null VehicleHatchStruct.EntryLocation was provided. There would be no way to enter/exit this vehicle.");
                 return false;
             }
             if (ExitLocation == null)
             {
-                Logger.Error(thisName + " A null VehicleHatchStruct.ExitLocation was provided. There would be no way to enter/exit this vehicle.");
+                Logger.Error(thisName + "A null VehicleHatchStruct.ExitLocation was provided. There would be no way to enter/exit this vehicle.");
                 return false;
             }
             return true;
@@ -116,17 +116,17 @@ namespace AVS.VehicleParts
         {
             if (Container == null)
             {
-                Logger.Error(thisName + " A null VehicleStorage.Container was provided. There would be no way to access this storage.");
+                Logger.Error(thisName + "A null VehicleStorage.Container was provided. There would be no way to access this storage.");
                 return false;
             }
             if (Height < 0)
             {
-                Logger.Error(thisName + " A negative VehicleStorage.Height was provided. This storage would have no space.");
+                Logger.Error(thisName + "A negative VehicleStorage.Height was provided. This storage would have no space.");
                 return false;
             }
             if (Width < 0)
             {
-                Logger.Error(thisName + " A negative VehicleStorage.Width was provided. This storage would have no space.");
+                Logger.Error(thisName + "A negative VehicleStorage.Width was provided. This storage would have no space.");
                 return false;
             }
 
@@ -157,12 +157,12 @@ namespace AVS.VehicleParts
         {
             if (!Interface)
             {
-                Logger.Error(thisName + " A null VehicleUpgrades.Interface was provided. There would be no way to upgrade this vehicle.");
+                Logger.Error(thisName + "A null VehicleUpgrades.Interface was provided. There would be no way to upgrade this vehicle.");
                 return false;
             }
             if (!Flap)
             {
-                Logger.Error(thisName + " A null VehicleUpgrades.Flap was provided. The upgrades interface requires this. It will be rotated by the angles in this struct when activated. You can set the rotation angle to zero to take no action.");
+                Logger.Error(thisName + "A null VehicleUpgrades.Flap was provided. The upgrades interface requires this. It will be rotated by the angles in this struct when activated. You can set the rotation angle to zero to take no action.");
                 return false;
             }
             if (ModuleProxies is null)
@@ -194,12 +194,12 @@ namespace AVS.VehicleParts
         {
             if (!BatterySlot)
             {
-                Logger.Error(thisName + " A null VehicleBattery.BatterySlot was provided. There would be no way to access this battery.");
+                Logger.Error(thisName + "A null VehicleBattery.BatterySlot was provided. There would be no way to access this battery.");
                 return false;
             }
             if (!BatteryProxy)
             {
-                VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, thisName + " A null VehicleBattery.BatteryProxy was provided. AVS will not provide a model for this battery slot.");
+                VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, thisName + "A null VehicleBattery.BatteryProxy was provided. AVS will not provide a model for this battery slot.");
             }
             return true;
         }
@@ -232,17 +232,17 @@ namespace AVS.VehicleParts
         {
             if (Light == null)
             {
-                Logger.Error(thisName + " A null VehicleFloodLight.Light was provided. There would be nothing from which to emit light.");
+                Logger.Error(thisName + "A null VehicleFloodLight.Light was provided. There would be nothing from which to emit light.");
                 return false;
             }
             if (Intensity < 0)
             {
-                Logger.Error(thisName + " A negative VehicleFloodLight.Intensity was provided. The light would be totally dark.");
+                Logger.Error(thisName + "A negative VehicleFloodLight.Intensity was provided. The light would be totally dark.");
                 return false;
             }
             if (Range < 0)
             {
-                Logger.Error(thisName + " A negative VehicleFloodLight.Range was provided. The light would be totally dark.");
+                Logger.Error(thisName + "A negative VehicleFloodLight.Range was provided. The light would be totally dark.");
                 return false;
             }
             return true;

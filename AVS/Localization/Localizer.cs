@@ -64,7 +64,7 @@ namespace AVS.Localization
                     Logger.Error("Couldn't get a localized value for that enum: " + value.ToString());
                     foreach (var but in languageDict)
                     {
-                        Logger.Warn(but.Key.ToString() + " : " + but.Value);
+                        Logger.Warn(but.Key + ": " + but.Value);
                     }
                 }
             }

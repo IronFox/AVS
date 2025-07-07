@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.Util;
+using HarmonyLib;
 using UnityEngine;
 
 // PURPOSE: protect player's in Submarines against Warper teleport balls.
@@ -42,7 +43,7 @@ namespace AVS.Patches.CreaturePatches
 
             Player myPlayer = target.GetComponent<Player>();
             var mySub = target.GetComponent<VehicleTypes.Submarine>()
-                ?? myPlayer?.GetVehicle() as VehicleTypes.Submarine;
+                .Or(() => myPlayer.SmartGetVehicle<VehicleTypes.Submarine>());
 
             if (mySub == null)
             {

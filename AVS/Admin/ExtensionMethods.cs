@@ -1,4 +1,5 @@
 ﻿using AVS.Patches;
+using AVS.Util;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,9 +19,8 @@ namespace AVS
         /// <returns>The <see cref="ModVehicle"/> associated with the player, or null if not found.</returns>
         public static ModVehicle? GetModVehicle(this Player player)
         {
-            return
-                player.GetVehicle() as ModVehicle
-                ?? player.currentSub?.GetComponent<ModVehicle>();
+            return (player.GetVehicle() as ModVehicle)
+                .Or(() => player.currentSub.SmartGetComponent<ModVehicle>());
         }
 
         /// <summary>
@@ -73,7 +73,10 @@ namespace AVS
                     vehicle.useRigidbody.detectCollisions = true;
                 }
             }
-            var theseBays = vehicle.transform.parent?.gameObject?.GetComponentsInChildren<VehicleDockingBay>()?.Where(x => x.dockedVehicle == vehicle);
+            var theseBays = vehicle.transform.parent
+                    .SmartGetGameObject()
+                    .SmartGetComponentsInChildren<VehicleDockingBay>()
+                    .Where(x => x.dockedVehicle == vehicle);
             if (theseBays == null || theseBays.Count() == 0)
             {
                 UndockModVehicle(vehicle);

@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.Util;
+using HarmonyLib;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -152,15 +153,15 @@ namespace AVS
                     yield break;
                 }
                 yield return new WaitUntil(() => baseCell.Find("BaseMoonpool(Clone)") != null);
-                var thisBasesBays = baseCell?.GetAllComponentsInChildren<VehicleDockingBay>();
+                var thisBasesBays = baseCell.SmartGetComponentsInChildren<VehicleDockingBay>(true);
                 if (thisBasesBays != null)
                 {
                     const float expectedMaxDistance = 5f;
                     foreach (VehicleDockingBay bay in thisBasesBays)
                     {
-                        if (Vector3.Distance(__instance.transform.position, bay.transform.position) < expectedMaxDistance)
+                        if (bay != null && Vector3.Distance(__instance.transform.position, bay.transform.position) < expectedMaxDistance)
                         {
-                            bay?.DockVehicle(__instance, false);
+                            bay.DockVehicle(__instance, false);
                         }
                     }
                 }

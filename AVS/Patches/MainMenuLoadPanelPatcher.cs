@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.Util;
+using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -39,7 +40,7 @@ namespace AVS.Patches
             if (SaveLoadManagerPatcher.hasTechTypeGameInfo.ContainsKey(lb.saveGame))
             {
                 List<string> hasTechTypes = SaveLoadManagerPatcher.hasTechTypeGameInfo[lb.saveGame];
-                hasTechTypes.ForEach(x => lb.saveIcons.FindChild(x)?.gameObject.SetActive(true));
+                hasTechTypes.ForEach(x => lb.saveIcons.FindChild(x).SmartSetActive(true));
             }
 
             lb.saveIcons.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().spacing = 0;

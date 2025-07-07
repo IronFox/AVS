@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
+using System.Collections.Generic;
 using UnityEngine;
 using UWE;
-using System.Collections.Generic;
 
 // PURPOSE: Allow easy registration of AudioSources and pause them during game pause.
 // VALUE: High.
@@ -22,14 +22,14 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(FreezeTime.Set))]
         public static void FreezeTimeSetPostfix()
         {
-            audioSources?.RemoveAll(item => item == null);
+            audioSources.RemoveAll(item => item == null);
             if (FreezeTime.HasFreezers())
             {
-                audioSources?.ForEach(x => x?.Pause());
+                audioSources.ForEach(x => { if (x) x.Pause(); });
             }
             else
             {
-                audioSources?.ForEach(x => x?.UnPause());
+                audioSources.ForEach(x => { if (x) x.UnPause(); });
             }
         }
     }
