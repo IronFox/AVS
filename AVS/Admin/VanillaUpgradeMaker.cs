@@ -1,4 +1,5 @@
 ﻿using AVS.UpgradeTypes;
+using AVS.Util;
 using Nautilus.Assets.Gadgets;
 using System.Collections.Generic;
 
@@ -31,11 +32,11 @@ namespace AVS.Admin
         {
             Nautilus.Crafting.RecipeData moduleRecipe = upgrade.GetRecipe(vType).ToRecipeData();
 
-            string[] steps = upgrade.ResolvePath(vType);
+            var steps = upgrade.ResolvePath(vType);
             customPrefab
                 .SetRecipe(moduleRecipe)
                 .WithFabricatorType(Assets.AVSFabricator.TreeType)
-                .WithStepsToFabricatorTab(steps)
+                .WithStepsToFabricatorTab(steps.ToArray())
                 .WithCraftingTime(upgrade.CraftingTime);
             return customPrefab;
         }

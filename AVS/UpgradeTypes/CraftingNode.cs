@@ -1,10 +1,16 @@
 ﻿
 namespace AVS.UpgradeTypes
 {
-    public struct CraftingNode
+    public readonly struct CraftingNode
     {
-        public string name;
-        public string displayName;
-        public Atlas.Sprite icon;
+        public string Name { get; }
+        public string DisplayName { get; }
+        public Atlas.Sprite Icon { get; }
+        public CraftingNode(string name, string displayName, Atlas.Sprite icon)
+        {
+            Name = name;
+            DisplayName = displayName;
+            Icon = icon;
+        }
     }
 }

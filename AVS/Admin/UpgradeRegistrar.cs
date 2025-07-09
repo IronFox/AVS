@@ -1,5 +1,6 @@
 ﻿using AVS.Assets;
 using AVS.UpgradeTypes;
+using AVS.Util;
 using Nautilus.Assets.Gadgets;
 using System;
 using System.Collections;
@@ -270,7 +271,7 @@ namespace AVS.Admin
             };
             module_CustomPrefab.SetGameObject(moduleTemplate);
 
-            string[] steps;
+            IReadOnlyList<string> steps;
             if (upgrade.IsVehicleSpecific)
             {
                 steps = upgrade.ResolvePath(VehicleType.Custom);
@@ -288,7 +289,7 @@ namespace AVS.Admin
                 .SetRecipe(moduleRecipe)
                 .WithCraftingTime(upgrade.CraftingTime)
                 .WithFabricatorType(Assets.AVSFabricator.TreeType)
-                .WithStepsToFabricatorTab(steps);
+                .WithStepsToFabricatorTab(steps.ToArray());
             module_CustomPrefab.SetPdaGroupCategory(TechGroup.VehicleUpgrades, TechCategory.VehicleUpgrades);
             module_CustomPrefab
                 .SetEquipment(VehicleBuilder.ModuleType)

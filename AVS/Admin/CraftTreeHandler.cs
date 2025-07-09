@@ -1,5 +1,6 @@
 ﻿using AVS.Assets;
 using AVS.UpgradeTypes;
+using AVS.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,51 +10,43 @@ namespace AVS.Admin
 {
     internal static class CraftTreeHandler
     {
-        internal const string GeneralTabName = "VFGeneral";
-        private readonly static List<string[]> KnownPaths = new List<string[]>();
+        internal const string GeneralTabName = "AvsGeneral";
+        private readonly static List<IReadOnlyList<string>> KnownPaths = new List<IReadOnlyList<string>>();
         internal readonly static List<string> TabNodeTabNodes = new List<string>();
         internal readonly static List<string> CraftNodeTabNodes = new List<string>();
-        internal static string[] UpgradeTypeToPath(VehicleType path)
+        internal static string ModuleRootNode(VehicleType type)
         {
-            switch (path)
+            switch (type)
             {
                 case VehicleType.ModVehicle:
-                    return new string[] { "VFUniversal" };
-                case VehicleType.Seamoth:
-                    return new string[] { "VFSeamoth" };
-                case VehicleType.Prawn:
-                    return new string[] { "VFPrawn" };
-                case VehicleType.Cyclops:
-                    return new string[] { "VFCyclops" };
-                case VehicleType.Custom:
-                    return new string[] { "VFCustom" };
+                    return "AvsUniversal";
                 default:
-                    return new string[] { "error" };
+                    return $"Avs{type}";
             }
         }
         internal static void AddFabricatorMenus()
         {
-            var vfIcon = SpriteHelper.GetSpriteInternal("VFUpgradesIcon.png") ?? StaticAssets.ModVehicleIcon;
+            var vfIcon = SpriteHelper.GetSpriteInternal("AvsUpgradesIcon.png") ?? StaticAssets.ModVehicleIcon;
             var mvIcon = StaticAssets.UpgradeIcon;
             var seamothIcon = SpriteManager.Get(TechType.Seamoth) ?? StaticAssets.ModVehicleIcon;
             var prawnIcon = SpriteManager.Get(TechType.Exosuit) ?? StaticAssets.ModVehicleIcon;
             var cyclopsIcon = SpriteManager.Get(TechType.Cyclops) ?? StaticAssets.ModVehicleIcon;
 
             // add MV-universal tab
-            AddCraftingTab(new string[] { }, UpgradeTypeToPath(VehicleType.ModVehicle).Last(), Language.main.Get("VFMVModules"), vfIcon);
-            AddCraftingTab(UpgradeTypeToPath(VehicleType.ModVehicle), $"{GeneralTabName}{VehicleType.ModVehicle}", Language.main.Get("VFGeneralTab"), mvIcon);
+            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.ModVehicle), Language.main.Get("AvsMvModules"), vfIcon);
+            AddCraftingTab(ModuleRootNode(VehicleType.ModVehicle).ToRoList(), $"{GeneralTabName}{VehicleType.ModVehicle}", Language.main.Get("AvsGeneralTab"), mvIcon);
             // add MV-specific tab
-            AddCraftingTab(new string[] { }, UpgradeTypeToPath(VehicleType.Custom).Last(), Language.main.Get("VFSpecificModules"), vfIcon);
-            AddCraftingTab(UpgradeTypeToPath(VehicleType.Custom), $"{GeneralTabName}{VehicleType.Custom}", Language.main.Get("VFGeneralTab"), mvIcon);
+            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Custom), Language.main.Get("AvsSpecificModules"), vfIcon);
+            AddCraftingTab(ModuleRootNode(VehicleType.Custom).ToRoList(), $"{GeneralTabName}{VehicleType.Custom}", Language.main.Get("AvsGeneralTab"), mvIcon);
             // add seamoth tab
-            AddCraftingTab(new string[] { }, UpgradeTypeToPath(VehicleType.Seamoth).Last(), Language.main.Get("VFSeamothTab"), seamothIcon);
-            AddCraftingTab(UpgradeTypeToPath(VehicleType.Seamoth), $"{GeneralTabName}{VehicleType.Seamoth}", Language.main.Get("VFGeneralTab"), mvIcon);
+            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Seamoth), Language.main.Get("AvsSeamothTab"), seamothIcon);
+            AddCraftingTab(ModuleRootNode(VehicleType.Seamoth).ToRoList(), $"{GeneralTabName}{VehicleType.Seamoth}", Language.main.Get("AvsGeneralTab"), mvIcon);
             // add prawn tab
-            AddCraftingTab(new string[] { }, UpgradeTypeToPath(VehicleType.Prawn).Last(), Language.main.Get("VFPrawnTab"), prawnIcon);
-            AddCraftingTab(UpgradeTypeToPath(VehicleType.Prawn), $"{GeneralTabName}{VehicleType.Prawn}", Language.main.Get("VFGeneralTab"), mvIcon);
+            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Prawn), Language.main.Get("AvsPrawnTab"), prawnIcon);
+            AddCraftingTab(ModuleRootNode(VehicleType.Prawn).ToRoList(), $"{GeneralTabName}{VehicleType.Prawn}", Language.main.Get("AvsGeneralTab"), mvIcon);
             // add cyclops tab
-            AddCraftingTab(new string[] { }, UpgradeTypeToPath(VehicleType.Cyclops).Last(), Language.main.Get("VFCyclopsTab"), cyclopsIcon);
-            AddCraftingTab(UpgradeTypeToPath(VehicleType.Cyclops), $"{GeneralTabName}{VehicleType.Cyclops}", Language.main.Get("VFGeneralTab"), mvIcon);
+            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Cyclops), Language.main.Get("AvsCyclopsTab"), cyclopsIcon);
+            AddCraftingTab(ModuleRootNode(VehicleType.Cyclops).ToRoList(), $"{GeneralTabName}{VehicleType.Cyclops}", Language.main.Get("AvsGeneralTab"), mvIcon);
         }
         internal static void EnsureCraftingTabsAvailable(ModVehicleUpgrade upgrade, UpgradeCompat compat)
         {
@@ -95,34 +88,48 @@ namespace AVS.Admin
             }
             else
             {
-                TraceCraftingPath(vType, upgrade.CraftingPath, (x, y) => AddCraftingTab(x, y.name, y.displayName, y.icon));
+                TraceCraftingPath(vType, upgrade.CraftingPath, (x, y) => AddCraftingTab(x, y.Name, y.DisplayName, y.Icon));
             }
         }
-        internal static string[] TraceCraftingPath(VehicleType vType, List<CraftingNode> path, Action<string[], CraftingNode>? perNodeAction)
+
+        /// <summary>
+        /// Iterates through the crafting path and constructs the full path.
+        /// </summary>
+        /// <param name="vType">Type determining the root node</param>
+        /// <param name="path">Crafting nodes to append to the root node</param>
+        /// <param name="perNonLeafAction">Optional action to execute for every node except the final one</param>
+        /// <returns>Complete path</returns>
+        internal static IReadOnlyList<string> TraceCraftingPath(VehicleType vType, IReadOnlyList<CraftingNode> path, Action<IReadOnlyList<string>, CraftingNode>? perNonLeafAction)
         {
-            string[] pathCurrently = UpgradeTypeToPath(vType);
+            List<string> pathList = new List<string>
+            {
+                ModuleRootNode(vType)
+            };
             foreach (var node in path)
             {
-                perNodeAction?.Invoke(pathCurrently, node);
-                pathCurrently = pathCurrently.Append(node.name).ToArray();
+                perNonLeafAction?.Invoke(pathList, node);
+                pathList.Add(node.Name);
             }
-            return pathCurrently;
+            return pathList;
         }
-        private static string[] AddCraftingTab(VehicleType vType, string tabName, string displayName, Atlas.Sprite? icon)
+        private static IReadOnlyList<string> AddCraftingTab(VehicleType vType, string tabName, string displayName, Atlas.Sprite? icon)
         {
-            return AddCraftingTab(UpgradeTypeToPath(vType), tabName, displayName, icon);
+            return AddCraftingTab(new string[] { ModuleRootNode(vType) }, tabName, displayName, icon);
         }
-        private static string[] AddCraftingTab(string[] thisPath, string tabName, string displayName, Atlas.Sprite? icon)
+        private static IReadOnlyList<string> AddCraftingTab(IReadOnlyList<string> thisPath, string tabName, string displayName, Atlas.Sprite? icon)
         {
-            string[] resultPath = thisPath.Append(tabName).ToArray();
+            List<string> resultPath = new List<string>(thisPath)
+            {
+                tabName
+            };
             if (!IsKnownPath(resultPath))
             {
-                if (thisPath.Any() && !IsValidTabPath(thisPath))
+                if (thisPath.Count > 0 && !IsValidTabPath(thisPath))
                 {
                     throw new Exception($"CraftTreeHandler: Invalid Tab Path: there were crafting nodes in that tab: {thisPath.Last()}. Cannot mix tab nodes and crafting nodes.");
                 }
-                Nautilus.Handlers.CraftTreeHandler.AddTabNode(AVSFabricator.TreeType, tabName, displayName, icon ?? StaticAssets.UpgradeIcon, thisPath);
-                if (thisPath.Any())
+                Nautilus.Handlers.CraftTreeHandler.AddTabNode(AVSFabricator.TreeType, tabName, displayName, icon ?? StaticAssets.UpgradeIcon, thisPath.ToArray());
+                if (thisPath.Count > 0)
                 {
                     TabNodeTabNodes.Add(thisPath.Last());
                 }
@@ -130,23 +137,15 @@ namespace AVS.Admin
             }
             return resultPath;
         }
-        private static bool IsKnownPath(string[] path)
-        {
-            List<string[]> innerKnownPaths = new List<string[]>();
-            KnownPaths.ForEach(x => innerKnownPaths.Add(x));
-            innerKnownPaths.RemoveAll(x => x.Length != path.Length);
-            for (int i = 0; i < path.Length; i++)
-            {
-                innerKnownPaths.RemoveAll(x => x[i] != path[i]);
-            }
-            return innerKnownPaths.Any();
-        }
-        internal static bool IsValidTabPath(string[] steps)
+        private static bool IsKnownPath(IReadOnlyList<string> path)
+            => KnownPaths.Any(x => x.CollectionsEqual(path));
+
+        internal static bool IsValidTabPath(IReadOnlyList<string> steps)
         {
             // return false only if this tab has crafting nodes
             return !CraftNodeTabNodes.Contains(steps.Last());
         }
-        internal static bool IsValidCraftPath(string[] steps)
+        internal static bool IsValidCraftPath(IReadOnlyList<string> steps)
         {
             // return false only if this tab has tab nodes
             return !TabNodeTabNodes.Contains(steps.Last());

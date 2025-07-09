@@ -121,7 +121,7 @@ namespace AVS.UpgradeTypes
         /// <summary>
         /// The crafting path for this upgrade, if any.
         /// </summary>
-        public virtual List<CraftingNode>? CraftingPath { get; set; } = null;
+        public virtual IReadOnlyList<CraftingNode>? CraftingPath { get; set; } = null;
 
         /// <summary>
         /// The icon for the tab in the crafting UI.
@@ -246,20 +246,28 @@ namespace AVS.UpgradeTypes
         /// <summary>
         /// Resolves the crafting path for this upgrade for a given vehicle type.
         /// </summary>
-        /// <param name="vType">The vehicle type.</param>
+        /// <param name="vType">The vehicle type to determine the path root node for.</param>
         /// <returns>The crafting path as an array of strings.</returns>
-        internal string[] ResolvePath(VehicleType vType)
+        internal IReadOnlyList<string> ResolvePath(VehicleType vType)
         {
             // If TabName is string.Empty, use $"{CraftTreeHandler.GeneralTabName}{vType}"
             if (CraftingPath == null)
             {
                 if (TabName.Equals(string.Empty))
                 {
-                    return CraftTreeHandler.UpgradeTypeToPath(vType).Append($"{CraftTreeHandler.GeneralTabName}{vType}").ToArray();
+                    return new string[]
+                    {
+                        CraftTreeHandler.ModuleRootNode(vType),
+                        $"{CraftTreeHandler.GeneralTabName}{vType}"
+                    };
                 }
                 else
                 {
-                    return CraftTreeHandler.UpgradeTypeToPath(vType).Append(TabName).ToArray();
+                    return new string[]
+                    {
+                        CraftTreeHandler.ModuleRootNode(vType),
+                        TabName
+                    };
                 }
             }
             else
