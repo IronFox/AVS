@@ -15,9 +15,9 @@ namespace AVS.DepthModules
         /// <inheritdoc/>
         public override string ClassId => "AvsDepthModule1";
         /// <inheritdoc/>
-        public override string DisplayName => Language.main.Get("VFDepth1FriendlyString");
+        public override string DisplayName => Language.main.Get("AvsDepth1FriendlyString");
         /// <inheritdoc/>
-        public override string Description => Language.main.Get("VFDepth1Description");
+        public override string Description => Language.main.Get("AvsDepth1Description");
         /// <inheritdoc/>
         public override Recipe Recipe { get; } = NewRecipe
                 .StartWith(TechType.TitaniumIngot, 1)

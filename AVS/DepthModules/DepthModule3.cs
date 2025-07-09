@@ -12,9 +12,9 @@ namespace AVS.DepthModules
         /// <inheritdoc/>
         public override string ClassId => "AvsDepthModule3";
         /// <inheritdoc/>
-        public override string DisplayName => Language.main.Get("VFDepth3FriendlyString");
+        public override string DisplayName => Language.main.Get("AvsDepth3FriendlyString");
         /// <inheritdoc/>
-        public override string Description => Language.main.Get("VFDepth3Description");
+        public override string Description => Language.main.Get("AvsDepth3Description");
         /// <inheritdoc/>
         public override Recipe Recipe { get; } = NewRecipe
                 .StartWith(TechType.PlasteelIngot, 3)
