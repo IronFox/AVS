@@ -184,11 +184,11 @@ namespace AVS.MaterialAdapt
 
             if (m.shader.name != "Standard" && !ignoreShaderName)
             {
-                logConfig.LogExtraStep($"Ignoring {m} which uses shader {m.shader}");
+                logConfig.LogExtraStep($"Ignoring {m.NiceName()} which uses {m.shader.NiceName()}");
                 return null;
             }
-            logConfig.LogExtraStep($"Reading material {m} which uses shader {m.shader}");
-            return new SurfaceShaderData(
+            logConfig.LogExtraStep($"Reading {m.NiceName()} which uses {m.shader.NiceName()}");
+            var data = new SurfaceShaderData(
                 color: GetColor(m, "_Color", logConfig),
                 emissionColor: GetColor(m, "_EmissionColor", logConfig),
                 mainTex: GetTexture(m, "_MainTex", logConfig),
@@ -199,6 +199,45 @@ namespace AVS.MaterialAdapt
                 smoothnessTextureChannel: GetInt(m, "_SmoothnessTextureChannel", logConfig),
                 source: target
                 );
+
+            logConfig.LogMaterialVariableData(
+                nameof(data.Color),
+                data.Color,
+                m);
+            logConfig.LogMaterialVariableData(
+                nameof(data.EmissionColor),
+                data.EmissionColor,
+                m);
+            logConfig.LogMaterialVariableData(
+                nameof(data.MainTex),
+                data.MainTex,
+                m);
+            logConfig.LogMaterialVariableData(
+                nameof(data.Smoothness),
+                data.Smoothness,
+                m);
+            logConfig.LogMaterialVariableData(
+                nameof(data.BumpMap),
+                data.BumpMap,
+                m);
+            logConfig.LogMaterialVariableData(
+                nameof(data.EmissionTexture),
+                data.EmissionTexture,
+                m);
+            logConfig.LogMaterialVariableData(
+                nameof(data.MetallicTexture),
+                data.MetallicTexture,
+                m);
+            logConfig.LogMaterialVariableData(
+                nameof(data.SmoothnessTextureChannel),
+                data.SmoothnessTextureChannel,
+                m);
+            logConfig.LogMaterialVariableData(
+                nameof(data.SpecularTexture),
+                data.SpecularTexture,
+                m);
+
+            return data;
         }
 
         /// <summary>
@@ -251,8 +290,6 @@ namespace AVS.MaterialAdapt
 
         private const string SpecTexName = "_SpecTex";
         private const string IllumTexName = "_Illum";
-        private const string DummyTexName = "SurfaceShaderData.DummyTexture";
-        private const string DummyIllumTexName = "SurfaceShaderData.DummyIllumTexture";
         /// <summary>
         /// Applies the loaded configuration to the given material
         /// </summary>
@@ -277,37 +314,32 @@ namespace AVS.MaterialAdapt
 
             if (spec && uniformShininess is null)
             {
-                if (existingSpecTex != MetallicTexture)
+                if (existingSpecTex != spec)
                 {
-                    logConfig.LogExtraStep($"Translating smoothness alpha map {spec} to spec");
+                    logConfig.LogMaterialVariableSet(UnityEngine.Rendering.ShaderPropertyType.Texture,
+                        SpecTexName, existingSpecTex, spec, m);
+                    //                    logConfig.LogExtraStep($"Translating smoothness alpha map {spec.NiceName()} to spec");
 
-                    m.SetTexture(SpecTexName, MetallicTexture);
+                    m.SetTexture(SpecTexName, spec);
                 }
             }
             else
             {
-                var tex = existingSpecTex as Texture2D;
-                if (tex == null || existingSpecTex.name != DummyTexName)
+                if (spec)
+                    logConfig.LogExtraStep($"Specular source texture is set but uniform shininess is defined. Ignoring");
+                var tex = OnePixelTexture.Get(existingSpecTex);
+                if (tex == null)
                 {
                     logConfig.LogExtraStep($"Source has no smoothness alpha texture. Setting to {Smoothness}");
                     var gray = uniformShininess ?? Smoothness;
-                    tex = new Texture2D(1, 1, TextureFormat.RGBA32, false);
-                    tex.name = DummyTexName;
-                    tex.SetPixel(0, 0, new Color(gray, gray, gray, gray));
-                    tex.Apply();
-                    m.SetTexture(SpecTexName, tex);
+                    tex = OnePixelTexture.Create(new Color(gray, gray, gray, gray));
+                    m.SetTexture(SpecTexName, tex.Texture);
                 }
                 else
                 {
                     var gray = uniformShininess ?? Smoothness;
                     var col = new Color(gray, gray, gray, gray);
-                    var old = tex.GetPixel(0, 0);
-                    if (!old.ApproxEquals(col, 0.02f))
-                    {
-                        logConfig.LogExtraStep($"Updating smoothness alpha texture. Setting {old} -> {col}");
-                        tex.SetPixel(0, 0, col);
-                        tex.Apply();
-                    }
+                    tex.Update(col, (old, nw) => logConfig.LogExtraStep($"Updating smoothness alpha texture. Setting {old} -> {nw}"));
                 }
             }
             var existingIllumTex = m.GetTexture(IllumTexName);
@@ -324,9 +356,21 @@ namespace AVS.MaterialAdapt
             }
             else
             {
-                if (existingIllumTex != Texture2D.blackTexture)
+                if (EmissionColor != Color.black)
                 {
-                    logConfig.LogExtraStep($"Source has no illumination texture. Loading black into _Illum");
+                    var tex = OnePixelTexture.Get(existingIllumTex);
+                    if (tex != null)
+                        tex.Update(EmissionColor, (old, nw) => logConfig.LogExtraStep($"Updating emission color texture. Setting {old} -> {nw}"));
+                    else
+                    {
+                        logConfig.LogExtraStep($"Translating emission color {EmissionColor} to _Illum");
+                        tex = OnePixelTexture.Create(EmissionColor);
+                        m.SetTexture(IllumTexName, tex.Texture);
+                    }
+                }
+                else if (existingIllumTex != Texture2D.blackTexture)
+                {
+                    logConfig.LogExtraStep($"Source has no illumination texture and illumination color is black. Loading black into _Illum");
                     m.SetTexture(IllumTexName, Texture2D.blackTexture);
                 }
             }

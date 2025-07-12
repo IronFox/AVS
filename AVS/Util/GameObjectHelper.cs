@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -213,6 +214,11 @@ namespace AVS.Util
             }
 
             return $"<{o.GetType().Name}> '{text}' [{o.GetInstanceID()}]";
+        }
+
+        public static string ToStr(this float f)
+        {
+            return f.ToString("F2", CultureInfo.InvariantCulture);
         }
 
         /// <summary>

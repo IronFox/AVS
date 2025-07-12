@@ -1,4 +1,5 @@
 ﻿using AVS.Assets;
+using AVS.MaterialAdapt;
 using AVS.Util;
 using AVS.VehicleComponents;
 using System;
@@ -151,10 +152,7 @@ namespace AVS.Configuration
         /// </summary>
         public bool AutoFixMaterials { get; } = true;
 
-        /// <summary>
-        /// The logging configuration for material fixes.
-        /// </summary>
-        public Logging MaterialFixLogging { get; } = Logging.Default;
+        public IMaterialAdaptConfig MaterialAdaptConfig { get; }
 
         /// <summary>
         /// If true, the vehicle's shader name will not be checked when fixing materials.
@@ -245,7 +243,7 @@ namespace AVS.Configuration
             VehicleColor? initialStripeColor = null,
             VehicleColor? initialInteriorColor = null,
             VehicleColor? initialNameColor = null,
-            Logging? materialFixLogging = null,
+            IMaterialAdaptConfig? materialAdaptConfig = null,
             Atlas.Sprite? pingSprite = null,
             Sprite? saveFileSprite = null,
             Recipe? recipe = null,
@@ -296,7 +294,7 @@ namespace AVS.Configuration
             InitialStripeColor = initialStripeColor ?? VehicleColor.Default;
             InitialInteriorColor = initialInteriorColor ?? VehicleColor.Default;
             InitialNameColor = initialNameColor ?? VehicleColor.Default;
-            MaterialFixLogging = materialFixLogging ?? Logging.Default;
+            MaterialAdaptConfig = materialAdaptConfig ?? new DefaultMaterialAdaptConfig();
             PingSprite = pingSprite ?? Assets.StaticAssets.DefaultPingSprite;
             SaveFileSprite = saveFileSprite ?? Assets.StaticAssets.DefaultSaveFileSprite;
             Recipe = recipe ?? Recipe.Example;

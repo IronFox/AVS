@@ -96,6 +96,7 @@ namespace AVS.MaterialAdapt
         /// </summary>
         public Shader Shader { get; }
 
+
         [Obsolete("Please use MaterialAdaptation(prototype,surfaceShaderData,shader)")]
         public MaterialAdaptation(
             Renderer renderer,
@@ -143,7 +144,7 @@ namespace AVS.MaterialAdapt
                 }
                 if (m.shader != Shader)
                 {
-                    logConfig.LogExtraStep($"Applying shader {Shader.name} to target");
+                    logConfig.LogExtraStep($"Applying {Shader.NiceName()} to target");
 
                     m.shader = Shader;
                 }
@@ -177,9 +178,9 @@ namespace AVS.MaterialAdapt
                 }
                 if (m.shader != Shader)
                 {
-                    logConfig.LogExtraStep($"Applying shader {Shader.name} to target");
 
                     m.shader = Shader;
+                    logConfig.LogExtraStep($"Applied {m.shader.NiceName()} to {m.NiceName()}");
                 }
 
                 Prototype.ApplyTo(m, logConfig);
@@ -188,7 +189,7 @@ namespace AVS.MaterialAdapt
             }
             catch (Exception ex)
             {
-                logConfig.LogError($"Failed to apply MaterialAdaptation to material {Target}");
+                logConfig.LogError($"Failed to apply MaterialAdaptation to {Target}");
                 Debug.LogException(ex);
             }
         }

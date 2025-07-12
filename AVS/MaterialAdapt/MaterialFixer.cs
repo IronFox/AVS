@@ -135,8 +135,12 @@ namespace AVS.MaterialAdapt
         /// </summary>
         public void ReApply()
         {
+            //Logging.LogExtraStep($"Reapplying {adaptations.Count} material adaptations");
             foreach (MaterialAdaptation adaptation in adaptations)
+            {
+                Logging.LogExtraStep($"Reapplying {adaptation.Target.GetMaterial().NiceName()}");
                 adaptation.ApplyToTarget(Logging);
+            }
         }
 
         private MaterialPrototype? HullPrototype { get; set; }

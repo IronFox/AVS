@@ -52,7 +52,7 @@ namespace AVS.MaterialAdapt
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to set color {name} ({value}) on material {m.NiceName()}");
+                logConfig.LogError($"Failed to set color {name} ({value}) on {m.NiceName()}");
             }
         }
 
@@ -88,7 +88,7 @@ namespace AVS.MaterialAdapt
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to set {Type} {Name} ({Value}) on material {m.NiceName()}");
+                logConfig.LogError($"Failed to set {Type} {Name} ({Value}) on {m.NiceName()}");
             }
         }
     }
@@ -136,14 +136,14 @@ namespace AVS.MaterialAdapt
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to set {Type} {Name} ({Texture.NiceName()}, {Offset}, {Scale}) on material {m.NiceName()}");
+                logConfig.LogError($"Failed to set {Type} {Name} ({Texture.NiceName()}, {Offset}, {Scale}) on {m.NiceName()}");
             }
         }
     }
 
     internal readonly struct FloatVariable : IShaderVariable
     {
-        public ShaderPropertyType Type => ShaderPropertyType.Texture;
+        public ShaderPropertyType Type => ShaderPropertyType.Float;
 
 
         public float Value { get; }
@@ -167,7 +167,7 @@ namespace AVS.MaterialAdapt
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to set {Type} {Name} ({Value.ToString(CultureInfo.InvariantCulture)}) on material {m}");
+                logConfig.LogError($"Failed to set {Type} {Name} ({Value.ToString(CultureInfo.InvariantCulture)}) on {m.NiceName()}");
             }
         }
     }
@@ -386,7 +386,7 @@ namespace AVS.MaterialAdapt
                     }
                     else
                     {
-                        logConfig.LogExtraStep($"(Expected) shader mismatch on material {material.NiceName()} which uses shader {material.shader}");
+                        logConfig.LogExtraStep($"(Expected) shader mismatch on {material.NiceName()} which uses {material.shader}");
                     }
                 if (seamothMaterial != null)
                     break;

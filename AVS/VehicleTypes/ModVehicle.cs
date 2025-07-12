@@ -88,58 +88,34 @@ namespace AVS
         protected ModVehicle(VehicleConfiguration config)
         {
             Config = config ?? throw new ArgumentNullException(nameof(config), "VehicleConfiguration cannot be null");
-            MaterialFixer = new MaterialFixer(this, config.MaterialFixLogging, () => this.ResolveMaterial(config.MaterialFixLogging));
+            MaterialFixer = new MaterialFixer(this, config.MaterialAdaptConfig.LogConfig, () => this.ResolveMaterial(config.MaterialAdaptConfig));
             baseColor = config.InitialBaseColor;
             stripeColor = config.InitialStripeColor;
             nameColor = config.InitialNameColor;
             interiorColor = config.InitialInteriorColor;
         }
 
-        /// <summary>
-        /// If this method returns true,
-        /// all materials of the given game object will be excluded
-        /// from material fixing.
-        /// </summary>
-        /// <remarks>Child objects will still be processed</remarks>
-        /// <param name="go">Game object to test</param>
-        /// <returns>True if this object should not be fixed</returns>
-        protected virtual bool ExcludeFromMaterialFixing(GameObject go)
-            => go.GetComponent<Skybox>()
-            || go.name.ToLower().Contains("light")
-            || Com.CanopyWindows.Contains(go);
 
-        /// <summary>
-        /// If this method returns true,
-        /// the specific material of the given renderer will be excluded
-        /// from material fixing.
-        /// </summary>
-        /// <param name="renderer">Owning renderer</param>
-        /// <param name="materialIndex">Index of the material being processed with 0 being the first material</param>
-        /// <param name="material">Material being processed</param>
-        /// <returns>True if this material should not be fixed</returns>
-        protected virtual bool ExcludeFromMaterialFixing(Renderer renderer, int materialIndex, Material material)
-            => false;
-
-
-        private IEnumerable<SurfaceShaderData> ResolveMaterial(Logging logConfig)
+        private IEnumerable<SurfaceShaderData> ResolveMaterial(IMaterialAdaptConfig config)
         {
-            var renderers = GetComponentsInChildren<Renderer>();
+            var renderers = GetComponentsInChildren<Renderer>(true);
             foreach (var renderer in renderers)
             {
-                if (ExcludeFromMaterialFixing(renderer.gameObject))
+                if (config.IsExcludedFromMaterialFixing(renderer.gameObject, Com))
                 {
-                    // skip this renderer
+                    config.LogConfig.LogExtraStep($"Skipping renderer {renderer.NiceName()} because it is excluded from material fixing");
                     continue;
                 }
 
                 for (int i = 0; i < renderer.materials.Length; i++)
                 {
-                    if (ExcludeFromMaterialFixing(renderer, i, renderer.materials[i]))
+                    if (config.IsExcludedFromMaterialFixing(renderer, i, renderer.materials[i]))
                     {
+                        config.LogConfig.LogExtraStep($"Skipping material {i} of {renderer.NiceName()} ({renderer.materials[i].NiceName()}) because it is excluded from material fixing");
                         continue;
                     }
 
-                    var material = SurfaceShaderData.From(renderer, i, logConfig, Config.IgnoreShaderNameWhenFixingMaterial);
+                    var material = SurfaceShaderData.From(renderer, i, config.LogConfig, Config.IgnoreShaderNameWhenFixingMaterial);
                     if (material != null)
                         yield return material;
                 }
@@ -1405,62 +1381,66 @@ namespace AVS
                 myPlayer.playerController.ForceControllerSize();
                 myPlayer.transform.parent = null;
             }
-            var mvSubmersible = this as Submersible;
-            var mvSkimmer = this as Skimmer;
-            var mvSubmarine = this as Submarine;
-            if (mvSubmersible != null)
+            switch (this)
             {
-                // exit locked mode
-                DoExitActions(ref myMode);
-                myPlayer.mode = myMode;
-                mvSubmersible.StopPiloting();
-                return;
-            }
-            else if (mvSkimmer != null)
-            {
-                DoExitActions(ref myMode);
-                myPlayer.mode = myMode;
-                mvSkimmer.StopPiloting();
-                return;
-            }
-            else if (mvSubmarine != null)
-            {
-                // check if we're level by comparing pitch and roll
-                float roll = mvSubmarine.transform.rotation.eulerAngles.z;
-                float rollDelta = roll >= 180 ? 360 - roll : roll;
-                float pitch = mvSubmarine.transform.rotation.eulerAngles.x;
-                float pitchDelta = pitch >= 180 ? 360 - pitch : pitch;
-                if (!PlayerCanExitHelmControl(rollDelta, pitchDelta, mvSubmarine.useRigidbody.velocity.magnitude))
-                {
-                    if (HUDBuilder.IsVR)
+                case Submersible mvSubmersible:
+                    // exit locked mode
+                    DoExitActions(ref myMode);
+                    myPlayer.mode = myMode;
+                    mvSubmersible.StopPiloting();
+                    break;
+                case Skimmer mvSkimmer:
+                    DoExitActions(ref myMode);
+                    myPlayer.mode = myMode;
+                    mvSkimmer.StopPiloting();
+                    break;
+                case Submarine mvSubmarine:
+                    // check if we're level by comparing pitch and roll
+                    float roll = mvSubmarine.transform.rotation.eulerAngles.z;
+                    float rollDelta = roll >= 180 ? 360 - roll : roll;
+                    float pitch = mvSubmarine.transform.rotation.eulerAngles.x;
+                    float pitchDelta = pitch >= 180 ? 360 - pitch : pitch;
+                    if (!PlayerCanExitHelmControl(rollDelta, pitchDelta, mvSubmarine.useRigidbody.velocity.magnitude))
                     {
-                        Logger.PDANote($"{Language.main.Get("VFExitNotAllowed")} ({GameInput.Button.Exit})");
+                        Logger.PDANote($"{Language.main.Get("AvsExitNotAllowed")} ({GameInput.Button.Exit})");
+                        return;
+                    }
+
+
+                    mvSubmarine.Com.Engine.KillMomentum();
+                    if (mvSubmarine.Com.PilotSeats.Count == 0)
+                    {
+                        Logger.Error("Error: tried to exit a submarine without pilot seats");
+                        return;
+                    }
+
+
+                    DoExitActions(ref myMode);
+                    myPlayer.mode = myMode;
+                    mvSubmarine.StopPiloting();
+
+                    var seat = mvSubmarine.Com.PilotSeats[0];
+                    var exitLocation = seat.ExitLocation;
+                    Vector3 exit;
+                    if (exitLocation != null)
+                    {
+                        Logger.DebugLog($"Exit location defined. Deriving from seat status {seat.Seat.transform.localPosition} / {seat.Seat.transform.localRotation}");
+                        exit = exitLocation.position;
                     }
                     else
                     {
-                        Logger.PDANote($"{Language.main.Get("VFExitNotAllowed")} ({GameInput.Button.Exit})");
+                        Logger.DebugLog($"Exit location not declared in seat definition. Calculating location");
+                        // if the exit location is not set, use the calculated exit location
+                        exit = seat.CalculatedExitLocation;
                     }
-                    return;
-                }
+                    Logger.DebugLog($"Exiting submarine at {exit} (local {transform.InverseTransformPoint(exit)})");
+                    Player.main.transform.position = exit;
 
-
-                mvSubmarine.Com.Engine.KillMomentum();
-                if (mvSubmarine.Com.PilotSeats.Count == 0)
-                {
-                    Logger.Error("Error: tried to exit a submarine without pilot seats");
-                    return;
-                }
-                // teleport the player to a walking position, just behind the chair
-                Player.main.transform.position =
-                    mvSubmarine.Com.PilotSeats[0].CalculatedExitLocation;
-
-                DoExitActions(ref myMode);
-                myPlayer.mode = myMode;
-                mvSubmarine.StopPiloting();
-                return;
+                    break;
+                default:
+                    MyExitLockedMode();
+                    break;
             }
-            MyExitLockedMode();
-            return;
         }
         #endregion
 

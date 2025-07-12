@@ -15,6 +15,10 @@ namespace AVS.Util
         /// </summary>
         public bool LogMaterialChanges { get; }
         /// <summary>
+        /// If true, input material variables will be logged.
+        /// </summary>
+        public bool LogMaterialVariables { get; }
+        /// <summary>
         /// Logging prefix, used to identify the source of the log message.
         /// </summary>
         public string? Prefix { get; }
@@ -35,8 +39,9 @@ namespace AVS.Util
         /// <param name="prefix">Logging prefix, used to identify the source of the log message.</param>
         /// <param name="includeTimestamp">If true, log messages will include a timestamp.</param>
         /// <param name="logExtraSteps">If true, extra steps of the material adaptation process will be logged.</param>
-        public Logging(bool logMaterialChanges, string? prefix, bool includeTimestamp, bool logExtraSteps)
+        public Logging(bool logMaterialVariables, bool logMaterialChanges, string? prefix, bool includeTimestamp, bool logExtraSteps)
         {
+            LogMaterialVariables = logMaterialVariables;
             LogMaterialChanges = logMaterialChanges;
             Prefix = prefix;
             IncludeTimestamp = includeTimestamp;
@@ -52,6 +57,7 @@ namespace AVS.Util
         /// Default logging configuration.
         /// </summary>
         public static Logging Default { get; } = new Logging(
+            logMaterialVariables: false,
             logMaterialChanges: false,
             prefix: DefaultPrefix,
             includeTimestamp: true,
@@ -62,6 +68,7 @@ namespace AVS.Util
         /// Muted logging configuration.
         /// </summary>
         public static Logging Silent { get; } = new Logging(
+            logMaterialVariables: false,
             logMaterialChanges: false,
             prefix: DefaultPrefix,
             includeTimestamp: true,
@@ -72,6 +79,7 @@ namespace AVS.Util
         /// Verbose logging configuration.
         /// </summary>
         public static Logging Verbose { get; } = new Logging(
+            logMaterialVariables: true,
             logMaterialChanges: true,
             prefix: DefaultPrefix,
             includeTimestamp: true,
@@ -176,7 +184,69 @@ namespace AVS.Util
             Material m)
         {
             if (LogMaterialChanges)
-                Logger.Log(MakeMessage($"Setting {type} {name} ({ValueToString(old)} -> {ValueToString(value)}) on material {m.NiceName()}"));
+                Logger.Log(MakeMessage($"Setting {type} {name} ({ValueToString(old)} -> {ValueToString(value)}) on {m.NiceName()}"));
+        }
+
+        /// <summary>
+        /// Logs a material property set operation.
+        /// </summary>
+        /// <typeparam name="T">C# type being updated</typeparam>
+        /// <param name="type">Unity type being updated</param>
+        /// <param name="name">Field name being updated</param>
+        /// <param name="old">Old value</param>
+        /// <param name="value">New value</param>
+        /// <param name="m">Material affected</param>
+        public void LogMaterialVariableData(
+            ShaderPropertyType? type,
+            string name,
+            string dataAsString,
+            Material m)
+        {
+            if (LogMaterialVariables)
+                Logger.Log(MakeMessage($"{m.NiceName()} {type} variable {name} imported as {dataAsString}"));
+        }
+
+        /// <summary>
+        /// Logs a material property set operation.
+        /// </summary>
+        /// <typeparam name="T">C# type being logged</typeparam>
+        /// <param name="name">Field name being updated</param>
+        /// <param name="data">Recognized data</param>
+        /// <param name="m">Material being logged</param>
+        public void LogMaterialVariableData<T>(
+            string name,
+            T data,
+            Material m)
+        {
+            if (!LogMaterialVariables)
+                return;
+            switch (data)
+            {
+                case float f:
+                    LogMaterialVariableData(ShaderPropertyType.Float, name, f.ToString(CultureInfo.InvariantCulture), m);
+                    break;
+                case int i:
+                    LogMaterialVariableData(null, name, i.ToString(), m);
+                    break;
+                case Vector4 v:
+                    LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m);
+                    break;
+                case Vector3 v:
+                    LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m);
+                    break;
+                case Vector2 v:
+                    LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m);
+                    break;
+                case Color c:
+                    LogMaterialVariableData(ShaderPropertyType.Color, name, c.ToString(), m);
+                    break;
+                case Texture t:
+                    LogMaterialVariableData(ShaderPropertyType.Texture, name, t.NiceName(), m);
+                    break;
+                default:
+                    LogMaterialVariableData(null, name, "<unknown>", m);
+                    break;
+            }
         }
     }
 
