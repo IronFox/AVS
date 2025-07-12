@@ -414,7 +414,7 @@ namespace AVS
                     if (!ps.CheckValidity(thisName, verbose))
                         return false;
                 }
-                foreach (VehicleParts.VehicleHatchStruct vhs in mv.Com.Hatches)
+                foreach (VehicleParts.VehicleHatchDefinition vhs in mv.Com.Hatches)
                 {
                     if (!vhs.CheckValidity(thisName, verbose))
                         return false;
@@ -473,7 +473,7 @@ namespace AVS
                 }
                 if (!mv.Com.PilotSeat.CheckValidity(thisName, verbose))
                     return false;
-                foreach (VehicleParts.VehicleHatchStruct vhs in mv.Com.Hatches)
+                foreach (VehicleParts.VehicleHatchDefinition vhs in mv.Com.Hatches)
                 {
                     if (!vhs.CheckValidity(thisName, verbose))
                         return false;

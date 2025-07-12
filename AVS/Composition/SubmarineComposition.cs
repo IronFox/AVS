@@ -130,7 +130,7 @@ namespace AVS.Composition
             GameObject modulesRootObject,
             IReadOnlyList<GameObject> tetherSources,
             IReadOnlyList<VehicleParts.VehiclePilotSeat> pilotSeats,
-            IReadOnlyList<VehicleParts.VehicleHatchStruct> hatches,
+            IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             AbstractEngine engine,
             GameObject collisionModel,
             IReadOnlyList<VehicleParts.VehicleFloodLight>? floodLights = null,

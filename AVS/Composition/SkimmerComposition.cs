@@ -25,7 +25,7 @@ namespace AVS.Composition
         /// provided.</remarks>
         /// <param name="storageRootObject">The root <see cref="GameObject"/> that serves as the parent for all storage-related components.</param>
         /// <param name="modulesRootObject">The root <see cref="GameObject"/> that serves as the parent for all module-related components.</param>
-        /// <param name="hatches">A collection of hatches (<see cref="VehicleParts.VehicleHatchStruct"/>) that provide entry and exit points
+        /// <param name="hatches">A collection of hatches (<see cref="VehicleParts.VehicleHatchDefinition"/>) that provide entry and exit points
         /// for the vehicle.</param>
         /// <param name="pilotSeats">A collection of pilot seats (<see cref="VehicleParts.VehiclePilotSeat"/>) available in the vehicle. Cannot
         /// be null.</param>
@@ -58,7 +58,7 @@ namespace AVS.Composition
         public SkimmerComposition(
             GameObject storageRootObject,
             GameObject modulesRootObject,
-            IReadOnlyList<VehicleParts.VehicleHatchStruct> hatches,
+            IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             IReadOnlyList<VehicleParts.VehiclePilotSeat> pilotSeats,
             AbstractEngine engine,
             GameObject collisionModel,

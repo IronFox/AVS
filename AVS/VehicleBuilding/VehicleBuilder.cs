@@ -196,7 +196,7 @@ namespace AVS
             }
             try
             {
-                foreach (VehicleParts.VehicleHatchStruct vhs in mv.Com.Hatches)
+                foreach (VehicleParts.VehicleHatchDefinition vhs in mv.Com.Hatches)
                 {
                     var hatch = vhs.Hatch.EnsureComponent<VehicleHatch>();
                     hatch.mv = mv;
@@ -251,7 +251,7 @@ namespace AVS
             }
             try
             {
-                foreach (VehicleParts.VehicleHatchStruct vhs in mv.Com.Hatches)
+                foreach (VehicleParts.VehicleHatchDefinition vhs in mv.Com.Hatches)
                 {
                     var hatch = vhs.Hatch.EnsureComponent<VehicleHatch>();
                     hatch.mv = mv;

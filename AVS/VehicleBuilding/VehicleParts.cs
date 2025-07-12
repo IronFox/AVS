@@ -51,13 +51,13 @@ namespace AVS.VehicleParts
             return true;
         }
     }
-    public readonly struct VehicleHatchStruct
+    public readonly struct VehicleHatchDefinition
     {
         public GameObject Hatch { get; }
         public Transform EntryLocation { get; }
         public Transform ExitLocation { get; }
         public Transform SurfaceExitLocation { get; }
-        public VehicleHatchStruct(GameObject hatch, Transform entry, Transform exit, Transform surfaceExit)
+        public VehicleHatchDefinition(GameObject hatch, Transform entry, Transform exit, Transform surfaceExit)
         {
             if (exit == null)
                 throw new ArgumentNullException(nameof(exit), "Exit location cannot be null for a vehicle hatch.");

@@ -86,7 +86,7 @@ namespace AVS.Composition
             VehicleParts.VehiclePilotSeat pilotSeat,
             GameObject storageRootObject,
             GameObject modulesRootObject,
-            IReadOnlyList<VehicleParts.VehicleHatchStruct> hatches,
+            IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             AbstractEngine engine,
             GameObject collisionModel,
             IReadOnlyList<VehicleParts.VehicleBattery>? batteries = null,

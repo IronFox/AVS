@@ -36,7 +36,7 @@ namespace AVS.Composition
         /// Entry/exit hatches for the submarine.
         /// Required not empty
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleHatchStruct> Hatches { get; } = Array.Empty<VehicleParts.VehicleHatchStruct>();
+        public IReadOnlyList<VehicleParts.VehicleHatchDefinition> Hatches { get; } = Array.Empty<VehicleParts.VehicleHatchDefinition>();
 
         /// <summary>
         /// Battery definitions. Can be empty which disallows any batteries.
@@ -157,7 +157,7 @@ namespace AVS.Composition
         public VehicleComposition(
             GameObject storageRootObject,
             GameObject modulesRootObject,
-            IReadOnlyList<VehicleParts.VehicleHatchStruct> hatches,
+            IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             AbstractEngine engine,
             GameObject collisionModel,
             IReadOnlyList<VehicleParts.VehicleBattery>? batteries = null,
