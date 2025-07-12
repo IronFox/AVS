@@ -7,7 +7,7 @@ If in doubt, assume all code, that has been present in the 'Initial Commit' comm
 ## Main Differences to Vehicle Framework
 
 1) AVS is a library to be shipped with the mod, not a mod in itself. It will not update on its own.
-2) AVS has no configuration of its own. Everything configurable must come from the dependent mod or is not be modifable by the end user.
+2) AVS has no configuration of its own. Everything configurable must come from the dependent mod or won't be modifable by the end user.
 3) AVS heavily reworks the communication between the base vehicle infrastructure and the client vehicle.
 	Instead of a bazillion virtual methods, it receives input from the client vehicle via configurations through the constructor and composition resolved during Awake().
 	Both configuration and composition are readonly and verified on construct.
