@@ -1605,6 +1605,12 @@ namespace AVS
             vehicleName = name;
             subName.SetName(name);
         }
+        /// <summary>
+        /// Gets the applied local vehicle name
+        /// </summary>
+        public string VehicleName => subName != null ? subName.GetName() : vehicleName;
+
+
         #endregion
 
         #region static_methods

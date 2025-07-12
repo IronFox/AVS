@@ -12,8 +12,8 @@ namespace AVS
         public Transform? entryLocation;
         public Transform? exitLocation;
         public Transform? surfaceExitLocation;
-        public string EnterHint = Language.main.Get("VFEnterVehicle");
-        public string ExitHint = Language.main.Get("VFExitVehicle");
+        public string EnterHint => mv != null ? mv.VehicleName : Language.main.Get("AvsEnterVehicle");
+        public string ExitHint = Language.main.Get("AvsExitVehicle");
 
         public void OnHandHover(GUIHand hand)
         {
