@@ -4,6 +4,7 @@ using AVS.VehicleTypes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace AVS
@@ -89,7 +90,7 @@ namespace AVS
                     float gap = i > 0 && Gaps != null && i <= Gaps.Count
                         ? Gaps[i - 1]
                         : 0f;
-                    Logger.DebugLog($"Fetched gap at index {i} out of {string.Join(", ", Gaps ?? Array.Empty<float>())}: {gap.ToStr()} ");
+                    Logger.DebugLog($"Fetched gap at index {i} out of {string.Join(", ", Gaps?.Select(x => x.ToStr()) ?? Array.Empty<string>())}: {gap.ToStr()} ");
                     partQueue.Enqueue(new Queued(this, Clips[i], i == 0, gap));
                 }
             }
