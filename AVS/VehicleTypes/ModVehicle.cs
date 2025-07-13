@@ -407,6 +407,17 @@ namespace AVS
             worldForces.handleGravity = true;
             BuildBotManager.ResetGhostMaterial();
         }
+
+        /// <summary>
+        /// Deselects quick-slots and exits piloting
+        /// </summary>
+        public void ExitControl()
+        {
+            DeselectSlots();
+        }
+        /// <summary>
+        /// Deselects quick-slots and exits piloting
+        /// </summary>
         public override void DeselectSlots() // This happens when you press the Exit button while having a "currentMountedVehicle."
         {
             if (ignoreInput)
@@ -466,6 +477,7 @@ namespace AVS
         public virtual void BeginPiloting()
         {
             // BeginPiloting is the VF trigger to start controlling a vehicle.
+            playerSits = Config.HelmIsSeated;
             EnterVehicle(Player.main, true);
             uGUI.main.quickSlots.SetTarget(this);
             NotifyStatus(PlayerStatus.OnPilotBegin);

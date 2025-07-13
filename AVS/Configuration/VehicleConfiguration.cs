@@ -8,6 +8,9 @@ using static AVS.ModVehicle;
 
 namespace AVS.Configuration
 {
+    /// <summary>
+    /// Read-only vehicle configuration
+    /// </summary>
     public class VehicleConfiguration
     {
         /// <summary>
@@ -26,9 +29,12 @@ namespace AVS.Configuration
         public Recipe Recipe { get; } = Recipe.Example;
         /// <summary>
         /// If true, the recipe can be overridden by a JSON file created in the "recipes" folder.
-        /// If so, the imported recipe is passed to <see cref="ModVehicle.OnRecipeOverride(Nautilus.Crafting.RecipeData)"/> before being applied.
+        /// If so, the imported recipe is passed to <see cref="ModVehicle.OnRecipeOverride"/> before being applied.
         /// </summary>
         public bool AllowRecipeOverride { get; } = true;
+        /// <summary>
+        /// Optional sprite that shows in the popup when the tech type of this vehicle is unlocked
+        /// </summary>
         public Sprite? UnlockedSprite { get; } = null;
         /// <summary>
         /// Localized description of the vehicle.
@@ -152,6 +158,14 @@ namespace AVS.Configuration
         /// </summary>
         public bool AutoFixMaterials { get; } = true;
 
+        /// <summary>
+        /// True to move the player into a seated position when entering helm control
+        /// </summary>
+        public bool HelmIsSeated { get; } = true;
+
+        /// <summary>
+        /// Material adaptation configuration. If not provided, initialized with a new instance of <see cref="DefaultMaterialAdaptConfig" />
+        /// </summary>
         public IMaterialAdaptConfig MaterialAdaptConfig { get; }
 
         /// <summary>
@@ -189,7 +203,6 @@ namespace AVS.Configuration
         /// <summary>
         /// Initializes a new instance of the <see cref="VehicleConfiguration"/> class with the specified parameters.
         /// </summary>
-        /// <param name="materialFixLogging">The logging configuration for material fixes. If null, defaults to <see cref="Logging.Default"/>.</param>
         /// <param name="pingSprite">Sprite to show when the camera is sufficiently far away. Also used on the map, if used.</param>
         /// <param name="saveFileSprite">Sprite to attach to the save file in the preview. Should be very abstract, ideally just an outline.</param>
         /// <param name="recipe">Construction recipe. If null, uses <see cref="Recipe.Example"/>.</param>
@@ -237,6 +250,8 @@ namespace AVS.Configuration
         /// <param name="initialNameColor">Initial name color of the vehicle. If null, defaults to <see cref="VehicleColor.Default"/>.</param>
         /// <param name="getVoiceSoundVolume">Query function to get the sound volume for voice messages sent by the vehicle's <see cref="VoiceQueue"/> component. If null, defaults to always 1</param>
         /// <param name="getVoiceSubtitlesEnabled">Query function to get whether to show subtitles for voice messages sent by the vehicle's <see cref="VoiceQueue"/> component. If null, defaults to always false</param>
+        /// <param name="materialAdaptConfig">Optional configuration for material adaptation</param>
+        /// <param name="helmIsSeated">If set, the character is seated while controlling the helm, otherwise standing. True by default</param>
         public VehicleConfiguration(
 
             VehicleColor? initialBaseColor = null,
@@ -278,7 +293,8 @@ namespace AVS.Configuration
             bool autoFixMaterials = true,
             bool ignoreShaderNameWhenFixingMaterial = false,
             Func<float>? getVoiceSoundVolume = null,
-            Func<bool>? getVoiceSubtitlesEnabled = null
+            Func<bool>? getVoiceSubtitlesEnabled = null,
+            bool helmIsSeated = true
         )
         {
             if (maxHealth <= 0)
@@ -288,6 +304,7 @@ namespace AVS.Configuration
             if (baseCrushDepth <= 0)
                 throw new System.ArgumentOutOfRangeException(nameof(baseCrushDepth), "BaseCrushDepth must be greater than 0.");
 
+            HelmIsSeated = helmIsSeated;
             GetVoiceSoundVolume = getVoiceSoundVolume ?? (() => 1);
             GetVoiceSubtitlesEnabled = getVoiceSubtitlesEnabled ?? (() => false);
             InitialBaseColor = initialBaseColor ?? VehicleColor.Default;
