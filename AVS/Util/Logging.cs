@@ -176,34 +176,36 @@ namespace AVS.Util
         /// <param name="old">Old value</param>
         /// <param name="value">New value</param>
         /// <param name="m">Material affected</param>
+        /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         public void LogMaterialVariableSet<T>(
             ShaderPropertyType type,
             string name,
             T old,
             T value,
-            Material m)
+            Material m,
+            string?materialName)
         {
             if (LogMaterialChanges)
-                Logger.Log(MakeMessage($"Setting {type} {name} ({ValueToString(old)} -> {ValueToString(value)}) on {m.NiceName()}"));
+                Logger.Log(MakeMessage($"Setting {type} {name} ({ValueToString(old)} -> {ValueToString(value)}) on {materialName??m.NiceName()}"));
         }
 
         /// <summary>
-        /// Logs a material property set operation.
+        /// Logs a material property value.
         /// </summary>
-        /// <typeparam name="T">C# type being updated</typeparam>
         /// <param name="type">Unity type being updated</param>
         /// <param name="name">Field name being updated</param>
-        /// <param name="old">Old value</param>
-        /// <param name="value">New value</param>
+        /// <param name="dataAsString">The current value as string</param>
         /// <param name="m">Material affected</param>
+        /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         public void LogMaterialVariableData(
             ShaderPropertyType? type,
             string name,
             string dataAsString,
-            Material m)
+            Material m,
+            string? materialName)
         {
             if (LogMaterialVariables)
-                Logger.Log(MakeMessage($"{m.NiceName()} {type} variable {name} imported as {dataAsString}"));
+                Logger.Log(MakeMessage($"{materialName?? m.NiceName()} [{type}] {name} := {dataAsString}"));
         }
 
         /// <summary>
@@ -213,38 +215,40 @@ namespace AVS.Util
         /// <param name="name">Field name being updated</param>
         /// <param name="data">Recognized data</param>
         /// <param name="m">Material being logged</param>
+        /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         public void LogMaterialVariableData<T>(
             string name,
             T data,
-            Material m)
+            Material m,
+            string? materialName)
         {
             if (!LogMaterialVariables)
                 return;
             switch (data)
             {
                 case float f:
-                    LogMaterialVariableData(ShaderPropertyType.Float, name, f.ToString(CultureInfo.InvariantCulture), m);
+                    LogMaterialVariableData(ShaderPropertyType.Float, name, f.ToString(CultureInfo.InvariantCulture), m, materialName);
                     break;
                 case int i:
-                    LogMaterialVariableData(null, name, i.ToString(), m);
+                    LogMaterialVariableData(null, name, i.ToString(), m, materialName);
                     break;
                 case Vector4 v:
-                    LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m);
+                    LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m, materialName);
                     break;
                 case Vector3 v:
-                    LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m);
+                    LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m, materialName);
                     break;
                 case Vector2 v:
-                    LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m);
+                    LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m, materialName);
                     break;
                 case Color c:
-                    LogMaterialVariableData(ShaderPropertyType.Color, name, c.ToString(), m);
+                    LogMaterialVariableData(ShaderPropertyType.Color, name, c.ToString(), m, materialName);
                     break;
                 case Texture t:
-                    LogMaterialVariableData(ShaderPropertyType.Texture, name, t.NiceName(), m);
+                    LogMaterialVariableData(ShaderPropertyType.Texture, name, t.NiceName(), m, materialName);
                     break;
                 default:
-                    LogMaterialVariableData(null, name, "<unknown>", m);
+                    LogMaterialVariableData(null, name, "<unknown>", m, materialName);
                     break;
             }
         }

@@ -10,7 +10,7 @@ namespace AVS.MaterialAdapt
     /// Read-only
     /// </summary>
     /// <author>https://github.com/IronFox</author>
-    public class SurfaceShaderData
+    public class UnityMaterialData
     {
         /// <summary>
         /// Main color of the material. Black if none
@@ -77,9 +77,9 @@ namespace AVS.MaterialAdapt
         public MaterialAddress Source { get; }
 
         /// <summary>
-        /// Constructs a new instance of <see cref="SurfaceShaderData"/>
+        /// Constructs a new instance of <see cref="UnityMaterialData"/>
         /// </summary>
-        public SurfaceShaderData(
+        public UnityMaterialData(
             Color color,
             Color emissionColor,
             Texture? mainTex,
@@ -179,7 +179,7 @@ namespace AVS.MaterialAdapt
 
 
 
-        private static SurfaceShaderData? From(MaterialAddress target, Material m, Logging logConfig, bool ignoreShaderName = false)
+        private static UnityMaterialData? From(MaterialAddress target, Material m, Logging logConfig, bool ignoreShaderName = false)
         {
 
             if (m.shader.name != "Standard" && !ignoreShaderName)
@@ -187,8 +187,9 @@ namespace AVS.MaterialAdapt
                 logConfig.LogExtraStep($"Ignoring {m.NiceName()} which uses {m.shader.NiceName()}");
                 return null;
             }
-            logConfig.LogExtraStep($"Reading {m.NiceName()} which uses {m.shader.NiceName()}");
-            var data = new SurfaceShaderData(
+            var mName = target.ToString();
+            logConfig.LogExtraStep($"Reading {mName} which uses {m.shader.NiceName()}");
+            var data = new UnityMaterialData(
                 color: GetColor(m, "_Color", logConfig),
                 emissionColor: GetColor(m, "_EmissionColor", logConfig),
                 mainTex: GetTexture(m, "_MainTex", logConfig),
@@ -203,39 +204,39 @@ namespace AVS.MaterialAdapt
             logConfig.LogMaterialVariableData(
                 nameof(data.Color),
                 data.Color,
-                m);
+                m, mName);
             logConfig.LogMaterialVariableData(
                 nameof(data.EmissionColor),
                 data.EmissionColor,
-                m);
+                m, mName);
             logConfig.LogMaterialVariableData(
                 nameof(data.MainTex),
                 data.MainTex,
-                m);
+                m, mName);
             logConfig.LogMaterialVariableData(
                 nameof(data.Smoothness),
                 data.Smoothness,
-                m);
+                m, mName);
             logConfig.LogMaterialVariableData(
                 nameof(data.BumpMap),
                 data.BumpMap,
-                m);
+                m, mName);
             logConfig.LogMaterialVariableData(
                 nameof(data.EmissionTexture),
                 data.EmissionTexture,
-                m);
+                m, mName);
             logConfig.LogMaterialVariableData(
                 nameof(data.MetallicTexture),
                 data.MetallicTexture,
-                m);
+                m, mName);
             logConfig.LogMaterialVariableData(
                 nameof(data.SmoothnessTextureChannel),
                 data.SmoothnessTextureChannel,
-                m);
+                m, mName);
             logConfig.LogMaterialVariableData(
                 nameof(data.SpecularTexture),
                 data.SpecularTexture,
-                m);
+                m, mName);
 
             return data;
         }
@@ -254,7 +255,7 @@ namespace AVS.MaterialAdapt
         /// return null otherwise</param>
         /// <returns>Read surface shader data or null if the shader name did not match
         /// or the target is (no longer) valid</returns>
-        public static SurfaceShaderData? From(MaterialAddress source, Logging logConfig, bool ignoreShaderName = false)
+        public static UnityMaterialData? From(MaterialAddress source, Logging logConfig, bool ignoreShaderName = false)
         {
             var material = source.GetMaterial();
             if (material == null)
@@ -282,7 +283,7 @@ namespace AVS.MaterialAdapt
         /// return null otherwise</param>
         /// <returns>Read surface shader data or null if the shader name did not match
         /// or the target is (no longer) valid</returns>
-        public static SurfaceShaderData? From(Renderer renderer, int materialIndex, Logging logConfig = default, bool ignoreShaderName = false)
+        public static UnityMaterialData? From(Renderer renderer, int materialIndex, Logging logConfig = default, bool ignoreShaderName = false)
         {
             return From(new MaterialAddress(renderer, materialIndex), logConfig);
         }
@@ -296,10 +297,11 @@ namespace AVS.MaterialAdapt
         /// <param name="m">Target material</param>
         /// <param name="uniformShininess">If non-null, applies this level of shininess to all materials</param>
         /// <param name="logConfig">Log Configuration</param>
-        public void ApplyTo(Material m, float? uniformShininess, Logging logConfig)
+        /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
+        public void ApplyTo(Material m, float? uniformShininess, Logging logConfig, string?materialName)
         {
-            ColorVariable.Set(m, "_Color2", Color, logConfig);
-            ColorVariable.Set(m, "_Color3", Color, logConfig);
+            ColorVariable.Set(m, "_Color2", Color, logConfig, materialName);
+            ColorVariable.Set(m, "_Color3", Color, logConfig, materialName);
 
 
             //if (!MainTex && !m.mainTexture)
@@ -317,7 +319,7 @@ namespace AVS.MaterialAdapt
                 if (existingSpecTex != spec)
                 {
                     logConfig.LogMaterialVariableSet(UnityEngine.Rendering.ShaderPropertyType.Texture,
-                        SpecTexName, existingSpecTex, spec, m);
+                        SpecTexName, existingSpecTex, spec, m, materialName);
                     //                    logConfig.LogExtraStep($"Translating smoothness alpha map {spec.NiceName()} to spec");
 
                     m.SetTexture(SpecTexName, spec);
@@ -330,7 +332,7 @@ namespace AVS.MaterialAdapt
                 var tex = OnePixelTexture.Get(existingSpecTex);
                 if (tex == null)
                 {
-                    logConfig.LogExtraStep($"Source has no smoothness alpha texture. Setting to {Smoothness}");
+                    logConfig.LogExtraStep($"Source has no smoothness alpha texture. Setting to {Smoothness} on {materialName ?? m.NiceName()}");
                     var gray = uniformShininess ?? Smoothness;
                     tex = OnePixelTexture.Create(new Color(gray, gray, gray, gray));
                     m.SetTexture(SpecTexName, tex.Texture);
@@ -339,7 +341,7 @@ namespace AVS.MaterialAdapt
                 {
                     var gray = uniformShininess ?? Smoothness;
                     var col = new Color(gray, gray, gray, gray);
-                    tex.Update(col, (old, nw) => logConfig.LogExtraStep($"Updating smoothness alpha texture. Setting {old} -> {nw}"));
+                    tex.Update(col, (old, nw) => logConfig.LogExtraStep($"Updating smoothness alpha texture. Setting {old} -> {nw} in {materialName ?? m.NiceName()}"));
                 }
             }
             var existingIllumTex = m.GetTexture(IllumTexName);
@@ -348,7 +350,7 @@ namespace AVS.MaterialAdapt
             {
                 if (EmissionTexture != existingIllumTex)
                 {
-                    logConfig.LogExtraStep($"Translating emission map {EmissionTexture} to _Illum");
+                    logConfig.LogExtraStep($"Translating emission map {EmissionTexture} to {IllumTexName} on {materialName ?? m.NiceName()}");
 
                     m.SetTexture(IllumTexName, EmissionTexture);
                 }
@@ -360,17 +362,17 @@ namespace AVS.MaterialAdapt
                 {
                     var tex = OnePixelTexture.Get(existingIllumTex);
                     if (tex != null)
-                        tex.Update(EmissionColor, (old, nw) => logConfig.LogExtraStep($"Updating emission color texture. Setting {old} -> {nw}"));
+                        tex.Update(EmissionColor, (old, nw) => logConfig.LogExtraStep($"Updating emission color texture. Setting {old} -> {nw} on {materialName ?? m.NiceName()}"));
                     else
                     {
-                        logConfig.LogExtraStep($"Translating emission color {EmissionColor} to _Illum");
+                        logConfig.LogExtraStep($"Translating emission color {EmissionColor} to {IllumTexName} on {materialName ?? m.NiceName()}");
                         tex = OnePixelTexture.Create(EmissionColor);
                         m.SetTexture(IllumTexName, tex.Texture);
                     }
                 }
                 else if (existingIllumTex != Texture2D.blackTexture)
                 {
-                    logConfig.LogExtraStep($"Source has no illumination texture and illumination color is black. Loading black into _Illum");
+                    logConfig.LogExtraStep($"Source has no illumination texture and illumination color is black. Loading black into {IllumTexName} on {materialName ?? m.NiceName()}");
                     m.SetTexture(IllumTexName, Texture2D.blackTexture);
                 }
             }
@@ -381,8 +383,8 @@ namespace AVS.MaterialAdapt
         /// </summary>
         /// <param name="source">New source address</param>
         /// <returns>Clone with updated source</returns>
-        public SurfaceShaderData RedefineSource(MaterialAddress source)
-            => new SurfaceShaderData(
+        public UnityMaterialData RedefineSource(MaterialAddress source)
+            => new UnityMaterialData(
                 color: Color,
                 mainTex: MainTex,
                 emissionColor: EmissionColor,

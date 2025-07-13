@@ -18,7 +18,8 @@ namespace AVS.MaterialAdapt
         /// </summary>
         /// <param name="m">Material to update</param>
         /// <param name="logConfig">Log Configuration</param>
-        void SetTo(Material m, Logging logConfig);
+        /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
+        void SetTo(Material m, Logging logConfig, string? materialName);
     }
 
     internal readonly struct ColorVariable : IShaderVariable
@@ -32,33 +33,27 @@ namespace AVS.MaterialAdapt
             Name = n;
         }
 
-        /// <summary>
-        /// Updates a single color variable on the given material
-        /// </summary>
-        /// <param name="m">Material to change</param>
-        /// <param name="name">Variable name to change</param>
-        /// <param name="value">Color value to set</param>
-        /// <param name="logConfig">Log Configuration</param>
-        public static void Set(Material m, string name, Color value, Logging logConfig)
+        /// <inheritdoc/>
+        public static void Set(Material m, string name, Color value, Logging logConfig, string? materialName)
         {
             try
             {
                 var old = m.GetColor(name);
                 if (old == value)
                     return;
-                logConfig.LogMaterialVariableSet(ShaderPropertyType.Color, name, old, value, m);
+                logConfig.LogMaterialVariableSet(ShaderPropertyType.Color, name, old, value, m, materialName);
                 m.SetColor(name, value);
             }
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to set color {name} ({value}) on {m.NiceName()}");
+                logConfig.LogError($"Failed to set color {name} ({value}) on {materialName ?? m.NiceName()}");
             }
         }
 
-        public void SetTo(Material m, Logging logConfig)
+        public void SetTo(Material m, Logging logConfig, string? materialName)
         {
-            Set(m, Name, Value, logConfig);
+            Set(m, Name, Value, logConfig, materialName);
         }
     }
 
@@ -75,20 +70,20 @@ namespace AVS.MaterialAdapt
             Name = n;
         }
 
-        public void SetTo(Material m, Logging logConfig)
+        public void SetTo(Material m, Logging logConfig, string? materialName)
         {
             try
             {
                 var old = m.GetVector(Name);
                 if (old == Value)
                     return;
-                logConfig.LogMaterialVariableSet(Type, Name, old, Value, m);
+                logConfig.LogMaterialVariableSet(Type, Name, old, Value, m, materialName);
                 m.SetVector(Name, Value);
             }
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to set {Type} {Name} ({Value}) on {m.NiceName()}");
+                logConfig.LogError($"Failed to set {Type} {Name} ({Value}) on {materialName??m.NiceName()}");
             }
         }
     }
@@ -110,7 +105,7 @@ namespace AVS.MaterialAdapt
             Name = n;
         }
 
-        public void SetTo(Material m, Logging logConfig)
+        public void SetTo(Material m, Logging logConfig, string? materialName)
         {
             try
             {
@@ -119,24 +114,24 @@ namespace AVS.MaterialAdapt
                 var oldS = m.GetTextureScale(Name);
                 if (oldT != Texture)
                 {
-                    logConfig.LogMaterialVariableSet(Type, Name, oldT, Texture, m);
+                    logConfig.LogMaterialVariableSet(Type, Name, oldT, Texture, m, materialName);
                     m.SetTexture(Name, Texture);
                 }
                 if (oldO != Offset)
                 {
-                    logConfig.LogMaterialVariableSet(Type, Name, oldO, Offset, m);
+                    logConfig.LogMaterialVariableSet(Type, Name, oldO, Offset, m, materialName);
                     m.SetTextureOffset(Name, Offset);
                 }
                 if (oldS != Scale)
                 {
-                    logConfig.LogMaterialVariableSet(Type, Name, oldS, Scale, m);
+                    logConfig.LogMaterialVariableSet(Type, Name, oldS, Scale, m, materialName);
                     m.SetTextureScale(Name, Scale);
                 }
             }
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to set {Type} {Name} ({Texture.NiceName()}, {Offset}, {Scale}) on {m.NiceName()}");
+                logConfig.LogError($"Failed to set {Type} {Name} ({Texture.NiceName()}, {Offset}, {Scale}) on {materialName??m.NiceName()}");
             }
         }
     }
@@ -154,20 +149,20 @@ namespace AVS.MaterialAdapt
             Name = n;
         }
 
-        public void SetTo(Material m, Logging logConfig)
+        public void SetTo(Material m, Logging logConfig, string? materialName)
         {
             try
             {
                 var old = m.GetFloat(Name);
                 if (old == Value)
                     return;
-                logConfig.LogMaterialVariableSet(Type, Name, old, Value, m);
+                logConfig.LogMaterialVariableSet(Type, Name, old, Value, m, materialName);
                 m.SetFloat(Name, Value);
             }
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to set {Type} {Name} ({Value.ToString(CultureInfo.InvariantCulture)}) on {m.NiceName()}");
+                logConfig.LogError($"Failed to set {Type} {Name} ({Value.ToString(CultureInfo.InvariantCulture)}) on {materialName??m.NiceName()}");
             }
         }
     }
@@ -176,7 +171,7 @@ namespace AVS.MaterialAdapt
     /// Read-only material definition as retrieved from some existing material
     /// </summary>
     /// <author>https://github.com/IronFox</author>
-    public class MaterialPrototype
+    public class SubnauticaMaterialPrototype
     {
         /// <summary>
         /// True if this instance was created without a source material.
@@ -185,6 +180,9 @@ namespace AVS.MaterialAdapt
         public bool IsEmpty { get; private set; }
 
         private HashSet<string> ShaderKeywords { get; } = new HashSet<string>();
+        /// <summary>
+        /// Global illumination flags retrieved from the source material
+        /// </summary>
         public MaterialGlobalIlluminationFlags MaterialGlobalIlluminationFlags { get; }
         private ColorVariable[] ColorVariables { get; }
         private VectorVariable[] VectorVariables { get; }
@@ -196,25 +194,26 @@ namespace AVS.MaterialAdapt
         /// </summary>
         /// <param name="m">Target material</param>
         /// <param name="logConfig">Log Configuration</param>
+        /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         /// <param name="variableNamePredicate">
         /// Optional predicate to only check/update certain shader variables by name.
         /// If non-null updates only variables for which this function returns true</param>
-        public void ApplyTo(Material m, Logging logConfig, Func<string, bool>? variableNamePredicate = null)
+        public void ApplyTo(Material m, Logging logConfig, Func<string, bool>? variableNamePredicate = null, string?materialName = null)
         {
             variableNamePredicate = variableNamePredicate ?? (_ => true);
 
             foreach (var v in ColorVariables)
                 if (variableNamePredicate(v.Name))
-                    v.SetTo(m, logConfig);
+                    v.SetTo(m, logConfig, materialName);
             foreach (var v in VectorVariables)
                 if (variableNamePredicate(v.Name))
-                    v.SetTo(m, logConfig);
+                    v.SetTo(m, logConfig, materialName);
             foreach (var v in FloatVariables)
                 if (variableNamePredicate(v.Name))
-                    v.SetTo(m, logConfig);
+                    v.SetTo(m, logConfig, materialName);
             foreach (var v in TextureVariables)
                 if (variableNamePredicate(v.Name))
-                    v.SetTo(m, logConfig);
+                    v.SetTo(m, logConfig, materialName);
 
             if (m.globalIlluminationFlags != MaterialGlobalIlluminationFlags)
             {
@@ -241,7 +240,8 @@ namespace AVS.MaterialAdapt
         /// Constructs the prototype from a given material
         /// </summary>
         /// <param name="source">Material to read. Can be null, causing <see cref="IsEmpty"/> to be set true</param>
-        public MaterialPrototype(Material? source, bool loadTextures = false)
+        /// <param name="loadTextures">If true also load texture property values</param>
+        public SubnauticaMaterialPrototype(Material? source, bool loadTextures = false)
         {
             if (source == null)
             {
@@ -298,45 +298,6 @@ namespace AVS.MaterialAdapt
         }
 
 
-        //public static MaterialPrototype GlassFromExosuit(Logging logConfig = default)
-        //{
-
-        //    var exo = PrawnHelper.Prawn;
-        //    if (exo == null)
-        //    {
-        //        //logConfig.LogWarning($"Cyclops not yet available. Keep trying until it is loaded.");
-        //        return null;
-        //    }
-
-        //    logConfig.LogExtraStep($"Found Exosuit");
-
-        //    Material glassMaterial = null;
-        //    var renderers = exo.GetComponentsInChildren<MeshRenderer>();
-        //    foreach (var renderer in renderers)
-        //    {
-        //        for (int i = 0; i < renderer.materials.Length; i++)
-        //        {
-        //            var material = renderer.materials[i];
-        //            //logConfig.LogExtraStep($"Found glass candidate material {material.NiceName()} #{i + 1}/{renderer.materials.Length} which uses shader {material.shader}");
-        //            if (material.shader.name == "MarmosetUBER"
-        //                && material.name.StartsWith("exosuit_01_glass"))
-        //            {
-        //                logConfig.LogExtraStep($"Found material prototype: {material.NiceName()}");
-        //                glassMaterial = material;
-        //                break;
-        //            }
-        //            else
-        //            {
-        //                logConfig.LogExtraStep($"(Expected) shader mismatch on material {material.NiceName()} which uses shader {material.shader}");
-        //            }
-        //        }
-        //        if (glassMaterial != null)
-        //            break;
-        //    }
-        //    return new MaterialPrototype(glassMaterial, loadTextures: true);
-        //}
-
-
         /// <summary>
         /// Creates a material prototype for the glass material of the Seamoth.
         /// </summary>
@@ -344,14 +305,14 @@ namespace AVS.MaterialAdapt
         /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
         /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
         /// if the respective material is not found</returns>
-        public static MaterialPrototype? GlassFromSeamoth(Logging logConfig = default)
+        public static SubnauticaMaterialPrototype? GlassFromSeamoth(Logging logConfig = default)
         {
             var sm = SeamothHelper.Seamoth;
             if (sm == null)
                 return null;
             logConfig.LogExtraStep($"Found Seamoth");
             var glassMaterial = sm.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/Submersible_SeaMoth_glass_interior_geo").GetComponent<SkinnedMeshRenderer>().material;
-            return new MaterialPrototype(glassMaterial, loadTextures: true);
+            return new SubnauticaMaterialPrototype(glassMaterial, loadTextures: true);
         }
 
         /// <summary>
@@ -364,7 +325,7 @@ namespace AVS.MaterialAdapt
         /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
         /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
         /// if the respective material is not found</returns>
-        public static MaterialPrototype? FromSeamoth(Logging logConfig = default)
+        public static SubnauticaMaterialPrototype? FromSeamoth(Logging logConfig = default)
         {
             var sm = SeamothHelper.Seamoth;
             if (sm == null)
@@ -377,7 +338,7 @@ namespace AVS.MaterialAdapt
             foreach (var renderer in renderers)
             {
                 foreach (var material in renderer.materials)
-                    if (material.shader.name == "MarmosetUBER"
+                    if (material.shader.name == Shaders.MainShader
                         && material.name.StartsWith("Submersible_SeaMoth"))
                     {
                         logConfig.LogExtraStep($"Found material prototype: {material.NiceName()}");
@@ -391,7 +352,7 @@ namespace AVS.MaterialAdapt
                 if (seamothMaterial != null)
                     break;
             }
-            return new MaterialPrototype(seamothMaterial);
+            return new SubnauticaMaterialPrototype(seamothMaterial);
         }
     }
 }

@@ -26,12 +26,20 @@ namespace AVS.MaterialAdapt
         /// </summary>
         public int MaterialIndex { get; }
 
+        /// <inheritdoc/>
         public override string ToString()
         {
             if (Renderer == null)
                 return $"Dead renderer target ({RendererInstanceId}) material #{MaterialIndex + 1}";
-            return $"Renderer rarget {Renderer} material #{MaterialIndex + 1}/{Renderer.materials.Length}";
+            var m = GetMaterial();
+            return $"{Renderer.NiceName()} #{MaterialIndex + 1}/{Renderer.materials.Length}: {m.NiceName()}";
         }
+
+        /// <summary>
+        /// Constructs a new material address descriptor
+        /// </summary>
+        /// <param name="renderer">Targeted renderer</param>
+        /// <param name="materialIndex">Index of the material</param>
         public MaterialAddress(Renderer renderer, int materialIndex)
         {
             RendererInstanceId = renderer.GetInstanceID();
@@ -39,12 +47,14 @@ namespace AVS.MaterialAdapt
             MaterialIndex = materialIndex;
         }
 
+        /// <inheritdoc/>
         public override bool Equals(object obj)
         {
             return obj is MaterialAddress target &&
                     Equals(target);
         }
 
+        /// <inheritdoc/>
         public override int GetHashCode()
         {
             int hashCode = 570612675;
@@ -53,6 +63,7 @@ namespace AVS.MaterialAdapt
             return hashCode;
         }
 
+        /// <inheritdoc/>
         public bool Equals(MaterialAddress target)
         {
             return RendererInstanceId == target.RendererInstanceId &&
@@ -82,52 +93,39 @@ namespace AVS.MaterialAdapt
         /// <summary>
         /// The targeted material
         /// </summary>
-        public MaterialAddress Target => Migrated.Source;
+        public MaterialAddress Target => UnityMaterial.Source;
         /// <summary>
         /// The (shared) prototype used to modify the final material
         /// </summary>
-        public MaterialPrototype Prototype { get; }
+        public SubnauticaMaterialPrototype Prototype { get; }
         /// <summary>
         /// The data migrated from the original material as present in the mesh
         /// </summary>
-        public SurfaceShaderData Migrated { get; }
+        public UnityMaterialData UnityMaterial { get; }
         /// <summary>
         /// The shader that is to be applied to the material
         /// </summary>
         public Shader Shader { get; }
 
 
-        [Obsolete("Please use MaterialAdaptation(prototype,surfaceShaderData,shader)")]
+        /// <summary>
+        /// Constructs a new material adaptation descriptor
+        /// </summary>
+        /// <param name="prototype">The Subnautica material prototype descriptor</param>
+        /// <param name="unityMaterial">The material data extracted from the Unity material</param>
+        /// <param name="shader">The shader to use (Marmoset UBER)</param>
         public MaterialAdaptation(
-            Renderer renderer,
-            int materialIndex,
-            MaterialPrototype prototype,
-            SurfaceShaderData surfaceShaderData,
-            Shader shader
-            ) : this(new MaterialAddress(renderer, materialIndex), prototype, surfaceShaderData, shader)
-        { }
-
-        public MaterialAdaptation(
-            MaterialPrototype prototype,
-            SurfaceShaderData migrated,
+            SubnauticaMaterialPrototype prototype,
+            UnityMaterialData unityMaterial,
             Shader shader
             )
         {
             Prototype = prototype;
-            Migrated = migrated;
+            UnityMaterial = unityMaterial;
             Shader = shader;
         }
 
-
-        [Obsolete("Please use MaterialAdaptation(prototype,surfaceShaderData,shader)")]
-        private MaterialAdaptation(
-            MaterialAddress target,
-            MaterialPrototype prototype,
-            SurfaceShaderData migrated,
-            Shader shader
-            ) : this(prototype, migrated.RedefineSource(target), shader)
-        { }
-
+        
         /// <summary>
         /// Resets only variables known to be corrupted during moonpool undock
         /// </summary>
@@ -144,7 +142,7 @@ namespace AVS.MaterialAdapt
                 }
                 if (m.shader != Shader)
                 {
-                    logConfig.LogExtraStep($"Applying {Shader.NiceName()} to target");
+                    logConfig.LogExtraStep($"Applying {Shader.NiceName()} to {Target}");
 
                     m.shader = Shader;
                 }
@@ -152,7 +150,8 @@ namespace AVS.MaterialAdapt
                 Prototype.ApplyTo(m, logConfig, x =>
                        x == "_SpecInt"
                     || x == "_GlowStrength"
-                    || x == "_GlowStrengthNight");
+                    || x == "_GlowStrengthNight",
+                    Target.ToString());
 
             }
             catch (Exception ex)
@@ -166,26 +165,29 @@ namespace AVS.MaterialAdapt
         /// Reapplies all material properties to the target
         /// </summary>
         /// <param name="logConfig">Log Configuration</param>
+        /// <param name="uniformShininess">The uniform shininess to apply everywhere. If not null,
+        /// the unity material's smoothness value is disregarded</param>
         public void ApplyToTarget(Logging logConfig = default, float? uniformShininess = null)
         {
             try
             {
                 var m = Target.GetMaterial();
+                var mName = Target.ToString();
                 if (m == null)
                 {
-                    logConfig.LogWarning($"Target material is gone ({Target}). Cannot apply");
+                    logConfig.LogWarning($"Target material is gone ({mName}). Cannot apply");
                     return;
                 }
                 if (m.shader != Shader)
                 {
 
                     m.shader = Shader;
-                    logConfig.LogExtraStep($"Applied {m.shader.NiceName()} to {m.NiceName()}");
+                    logConfig.LogExtraStep($"Applied {m.shader.NiceName()} to {mName}");
                 }
 
-                Prototype.ApplyTo(m, logConfig);
+                Prototype.ApplyTo(m, logConfig, materialName: mName);
 
-                Migrated.ApplyTo(m, uniformShininess, logConfig);
+                UnityMaterial.ApplyTo(m, uniformShininess, logConfig, mName);
             }
             catch (Exception ex)
             {

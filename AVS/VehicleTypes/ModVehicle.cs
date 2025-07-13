@@ -96,7 +96,7 @@ namespace AVS
         }
 
 
-        private IEnumerable<SurfaceShaderData> ResolveMaterial(IMaterialAdaptConfig config)
+        private IEnumerable<UnityMaterialData> ResolveMaterial(IMaterialAdaptConfig config)
         {
             var renderers = GetComponentsInChildren<Renderer>(true);
             foreach (var renderer in renderers)
@@ -115,7 +115,7 @@ namespace AVS
                         continue;
                     }
 
-                    var material = SurfaceShaderData.From(renderer, i, config.LogConfig, Config.IgnoreShaderNameWhenFixingMaterial);
+                    var material = UnityMaterialData.From(renderer, i, config.LogConfig, Config.IgnoreShaderNameWhenFixingMaterial);
                     if (material != null)
                         yield return material;
                 }

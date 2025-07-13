@@ -40,7 +40,7 @@ namespace AVS.MaterialAdapt
         /// <summary>
         /// The used material resolver function.
         /// </summary>
-        public Func<IEnumerable<SurfaceShaderData>> MaterialResolver { get; }
+        public Func<IEnumerable<UnityMaterialData>> MaterialResolver { get; }
 
         /// <summary>
         /// Null or in [0,1].<br/>
@@ -60,7 +60,7 @@ namespace AVS.MaterialAdapt
         public MaterialFixer(
             ModVehicle owner,
             Logging? logConfig = null,
-            Func<IEnumerable<SurfaceShaderData>>? materialResolver = null
+            Func<IEnumerable<UnityMaterialData>>? materialResolver = null
             )
         {
             if (owner == null)
@@ -77,7 +77,7 @@ namespace AVS.MaterialAdapt
         /// <param name="ignoreShaderNames">True to return all materials, false to only return Standard materials</param>
         /// <param name="logConfig">Log Configuration</param>
         /// <returns>Enumerable of all suitable material addresses</returns>
-        public static IEnumerable<SurfaceShaderData> DefaultMaterialResolver(ModVehicle vehicle, Logging logConfig, bool ignoreShaderNames = false)
+        public static IEnumerable<UnityMaterialData> DefaultMaterialResolver(ModVehicle vehicle, Logging logConfig, bool ignoreShaderNames = false)
         {
             var renderers = vehicle.GetComponentsInChildren<Renderer>();
             foreach (var renderer in renderers)
@@ -104,7 +104,7 @@ namespace AVS.MaterialAdapt
 
                 for (int i = 0; i < renderer.materials.Length; i++)
                 {
-                    var material = SurfaceShaderData.From(renderer, i, logConfig, ignoreShaderNames);
+                    var material = UnityMaterialData.From(renderer, i, logConfig, ignoreShaderNames);
                     if (material != null)
                         yield return material;
                 }
@@ -143,7 +143,7 @@ namespace AVS.MaterialAdapt
             }
         }
 
-        private MaterialPrototype? HullPrototype { get; set; }
+        private SubnauticaMaterialPrototype? HullPrototype { get; set; }
 
         /// <summary>
         /// Fixes materials if necessary/possible.
@@ -157,7 +157,7 @@ namespace AVS.MaterialAdapt
 
             if (!materialsFixed)
             {
-                HullPrototype = HullPrototype ?? MaterialPrototype.FromSeamoth(Logging);
+                HullPrototype = HullPrototype ?? SubnauticaMaterialPrototype.FromSeamoth(Logging);
                 //GlassPrototype = GlassPrototype ?? MaterialPrototype.GlassFromExosuit(Logging.Verbose);
 
                 if (HullPrototype != null /*&& GlassPrototype != null*/)

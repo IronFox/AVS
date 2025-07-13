@@ -216,9 +216,14 @@ namespace AVS.Util
             return $"<{o.GetType().Name}> '{text}' [{o.GetInstanceID()}]";
         }
 
+        /// <summary>
+        /// Converts a float into a string using the universal decimal sign (.)
+        /// </summary>
+        /// <param name="f">Float to convert</param>
+        /// <returns>Converted float</returns>
         public static string ToStr(this float f)
         {
-            return f.ToString("F2", CultureInfo.InvariantCulture);
+            return f.ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>
