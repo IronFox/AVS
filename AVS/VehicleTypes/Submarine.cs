@@ -251,6 +251,82 @@ namespace AVS.VehicleTypes
             }
             EnsureColorPickerEnabled();
         }
+
+
+
+        /// <summary>
+        /// Attempts to recover from being unable to build anything anymore.
+        /// Observation appears to indicate this happens if the player walks beyond +-35 meters from the origin
+        /// and normally does not recover until the player exits the craft.
+        /// </summary>
+        public void TryFixLostBuildFocus()
+        {
+            Log.Write(nameof(TryFixLostBuildFocus));
+
+            if (IsUnderCommand)
+            {
+                try
+                {
+                    foreach (GameObject window in Com.CanopyWindows)
+                    {
+                        window.SafeSetActive(true);
+                    }
+                }
+                catch (Exception)
+                {
+                    //It's okay if the vehicle doesn't have a canopy
+                }
+            }
+            IsUnderCommand = false;
+            if (Player.main.GetCurrentSub() == GetComponent<SubRoot>())
+            {
+                Player.main.SetCurrentSub(null);
+            }
+            if (Player.main.GetVehicle() == this)
+            {
+                Player.main.currentMountedVehicle = null;
+            }
+            NotifyStatus(PlayerStatus.OnPlayerExit);
+            Player.main.transform.SetParent(null);
+            Player.main.TryEject(); // for DeathRun Remade Compat. See its patch in PlayerPatcher.cs
+            HudPingInstance.enabled = true;
+
+
+
+
+
+
+            if (!isScuttled && !IsUnderCommand)
+            {
+                IsUnderCommand = true;
+                Player.main.SetScubaMaskActive(false);
+                try
+                {
+                    foreach (GameObject window in Com.CanopyWindows)
+                    {
+                        window.SafeSetActive(false);
+                    }
+                }
+                catch (Exception)
+                {
+                    //It's okay if the vehicle doesn't have a canopy
+                }
+                Player.main.lastValidSub = GetComponent<SubRoot>();
+                Player.main.SetCurrentSub(GetComponent<SubRoot>(), true);
+                NotifyStatus(PlayerStatus.OnPlayerEntry);
+                HudPingInstance.enabled = false;
+
+                Player.main.transform.SetParent(transform);
+                Player.main.playerController.activeController.SetUnderWater(false);
+                Player.main.isUnderwater.Update(false);
+                Player.main.isUnderwaterForSwimming.Update(false);
+                Player.main.playerController.SetMotorMode(Player.MotorMode.Walk);
+                Player.main.motorMode = Player.MotorMode.Walk;
+                Player.main.playerMotorModeChanged.Trigger(Player.MotorMode.Walk);
+
+            }
+        }
+
         public override void PlayerExit()
         {
             isPlayerInside = false;
