@@ -9,14 +9,15 @@ namespace AVS.VehicleComponents
     public readonly struct VehicleColor : IEquatable<VehicleColor>
     {
         /// <summary>
+        /// The applied RGB color.
+        /// </summary>
+        public Color RGB { get; }
+
+        /// <summary>
         /// The HSB (Hue, Saturation, Brightness) representation of the color.
         /// Zero if not supplied. ASV does nothing with this value.
         /// </summary>
         public Vector3 HSB { get; }
-        /// <summary>
-        /// The applied RGB color.
-        /// </summary>
-        public Color RGB { get; }
 
         /// <summary>
         /// Default vehicle color.

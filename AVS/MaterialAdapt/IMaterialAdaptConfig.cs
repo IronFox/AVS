@@ -13,6 +13,13 @@ namespace AVS.MaterialAdapt
         /// Logging configuration for material adaptation.
         /// </summary>
         public Logging LogConfig { get; }
+
+
+        /// <summary>
+        /// If true, the vehicle's shader name will not be checked when filtering materials.
+        /// </summary>
+        public bool IgnoreShaderNames { get; }
+
         /// <summary>
         /// If this method returns true,
         /// all materials of the given game object will be excluded

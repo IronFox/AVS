@@ -1,6 +1,7 @@
 ﻿using AVS.Composition;
 using AVS.Configuration;
 using AVS.MaterialAdapt;
+using AVS.Saving;
 using AVS.Util;
 using AVS.VehicleComponents;
 using AVS.VehicleTypes;
@@ -53,8 +54,7 @@ namespace AVS
         /// </summary>
         public virtual GameObject VehicleRoot => gameObject;
 
-        //public virtual GameObject BoundingBox => null; // Prefer to use BoundingBoxCollider directly (don't use this)
-
+        public Logging Log { get; }
         /// <summary>
         /// Invariant vehicle configuration. Initialized during construction.
         /// Never null.
@@ -87,6 +87,9 @@ namespace AVS
         /// <exception cref="ArgumentNullException"></exception>
         protected ModVehicle(VehicleConfiguration config)
         {
+            Log = new Logging(false, false, $"V{Id}", true, false);
+
+
             Config = config ?? throw new ArgumentNullException(nameof(config), "VehicleConfiguration cannot be null");
             MaterialFixer = new MaterialFixer(this, config.MaterialAdaptConfig.LogConfig, () => this.ResolveMaterial(config.MaterialAdaptConfig));
             baseColor = config.InitialBaseColor;
@@ -115,7 +118,7 @@ namespace AVS
                         continue;
                     }
 
-                    var material = UnityMaterialData.From(renderer, i, config.LogConfig, Config.IgnoreShaderNameWhenFixingMaterial);
+                    var material = UnityMaterialData.From(renderer, i, config.LogConfig, config.IgnoreShaderNames);
                     if (material != null)
                         yield return material;
                 }
@@ -205,7 +208,7 @@ namespace AVS
         {
             if (SeamothHelper.Seamoth == null)
             {
-                Logger.Error("SeamothHelper.Seamoth is null. Cannot setup volumetric lights.");
+                Log.Error("SeamothHelper.Seamoth is null. Cannot setup volumetric lights.");
                 return;
             }
             GameObject seamothHeadLight = SeamothHelper.Seamoth.transform.Find("lights_parent/light_left").gameObject;
@@ -402,7 +405,7 @@ namespace AVS
         /// </summary>
         public override void SubConstructionComplete()
         {
-            Logger.DebugLog(this, "ModVehicle SubConstructionComplete");
+            Log.Debug(this, "ModVehicle SubConstructionComplete");
             HudPingInstance.enabled = true;
             worldForces.handleGravity = true;
             BuildBotManager.ResetGhostMaterial();
@@ -474,9 +477,10 @@ namespace AVS
         /// <summary>
         /// Enters the player into the sub, updates the quickbar and notifies the player of the piloting status.
         /// </summary>
+        /// <remarks>
+        /// For <see cref="Submarine" />s, please use <see cref="Submarine.EnterHelmControl(int)"/></remarks>
         public virtual void BeginPiloting()
         {
-            // BeginPiloting is the VF trigger to start controlling a vehicle.
             playerSits = Config.HelmIsSeated;
             EnterVehicle(Player.main, true);
             uGUI.main.quickSlots.SetTarget(this);
@@ -499,7 +503,7 @@ namespace AVS
         /// </summary>
         public virtual void PlayerEntry()
         {
-            Logger.DebugLog(this, "start modvehicle player entry");
+            Log.Debug(this, "start modvehicle player entry");
             if (!isScuttled && !IsUnderCommand)
             {
                 IsUnderCommand = true;
@@ -526,7 +530,7 @@ namespace AVS
         /// </summary>
         public virtual void PlayerExit()
         {
-            Logger.DebugLog(this, "start modvehicle player exit");
+            Log.Debug(this, "start modvehicle player exit");
             if (IsUnderCommand)
             {
                 try
@@ -561,15 +565,15 @@ namespace AVS
         /// </summary>
         public virtual void SubConstructionBeginning()
         {
-            Logger.DebugLog(this, $"ModVehicle#{this.Id} SubConstructionBeginning");
+            Log.Debug(this, $"ModVehicle#{this.Id} SubConstructionBeginning");
             if (HudPingInstance)
                 HudPingInstance.enabled = false;
             else
-                Logger.Error($"HudPingInstance is null in SubConstructionBeginning #{this.Id}");
+                Log.Error($"HudPingInstance is null in SubConstructionBeginning #{this.Id}");
             if (worldForces)
                 worldForces.handleGravity = false;
             else
-                Logger.Error($"worldForces is null in SubConstructionBeginning #{this.Id}");
+                Log.Error($"worldForces is null in SubConstructionBeginning #{this.Id}");
         }
 
         /// <summary>
@@ -604,7 +608,7 @@ namespace AVS
 
         public virtual void OnCraftEnd(TechType techType)
         {
-            Logger.Log($"OnCraftEnd called for {techType}");
+            Log.Write($"OnCraftEnd called for {techType}");
             IEnumerator GiveUsABatteryOrGiveUsDeath()
             {
                 yield return new WaitForSeconds(2.5f);
@@ -1087,7 +1091,7 @@ namespace AVS
         /// <param name="pingType"></param>
         internal void PrefabSetupHudPing(PingType pingType)
         {
-            Logger.Log($"Setting up HudPingInstance for ModVehicle #{Id}");
+            Log.Write($"Setting up HudPingInstance for ModVehicle #{Id}");
             hudPingInstance = gameObject.EnsureComponent<PingInstance>();
             hudPingInstance.origin = transform;
             hudPingInstance.pingType = pingType;
@@ -1235,7 +1239,7 @@ namespace AVS
                 var modularContainer = GetSeamothStorageContainer(slotID);
                 if (modularContainer == null)
                 {
-                    Logger.Warn("Warning: failed to get modular storage container for slotID: " + slotID.ToString());
+                    Log.Warn("Warning: failed to get modular storage container for slotID: " + slotID.ToString());
                     return;
                 }
                 modularContainer.height = modSto.Height;
@@ -1248,13 +1252,13 @@ namespace AVS
             var slotItem = this.GetSlotItem(slotID);
             if (slotItem == null)
             {
-                Logger.Warn("Warning: failed to get item for that slotID: " + slotID.ToString());
+                Log.Warn("Warning: failed to get item for that slotID: " + slotID.ToString());
                 return null;
             }
             Pickupable item = slotItem.item;
             if (item.GetTechType() != TechType.VehicleStorageModule)
             {
-                Logger.Warn("Warning: failed to get pickupable for that slotID: " + slotID.ToString());
+                Log.Warn("Warning: failed to get pickupable for that slotID: " + slotID.ToString());
                 return null;
             }
             SeamothStorageContainer component = item.GetComponent<SeamothStorageContainer>();
@@ -1273,7 +1277,7 @@ namespace AVS
                         }
                         else
                         {
-                            Logger.Error("Error: ModGetStorageInSlot called on invalid innate storage slotID");
+                            Log.Error("Error: ModGetStorageInSlot called on invalid innate storage slotID");
                             return null;
                         }
                         return vsc.Container;
@@ -1283,14 +1287,14 @@ namespace AVS
                         var component = GetSeamothStorageContainer(slotID);
                         if (component == null)
                         {
-                            Logger.Warn("Warning: failed to get storage-container for that slotID: " + slotID.ToString());
+                            Log.Warn("Warning: failed to get storage-container for that slotID: " + slotID.ToString());
                             return null;
                         }
                         return component.container;
                     }
                 default:
                     {
-                        Logger.Error("Error: tried to get storage for unsupported TechType");
+                        Log.Error("Error: tried to get storage for unsupported TechType");
                         return null;
                     }
             }
@@ -1379,80 +1383,25 @@ namespace AVS
             Player.main.sitting = false;
             Player.main.playerController.ForceControllerSize();
         }
-        private void DoExitRoutines()
+
+        internal void DoCommonExitActions(ref Player.Mode mode)
         {
             Player myPlayer = Player.main;
-            Player.Mode myMode = myPlayer.mode;
-            void DoExitActions(ref Player.Mode mode)
-            {
-                GameInput.ClearInput();
-                myPlayer.playerController.SetEnabled(true);
-                mode = Player.Mode.Normal;
-                myPlayer.playerModeChanged.Trigger(mode);
-                myPlayer.sitting = false;
-                myPlayer.playerController.ForceControllerSize();
-                myPlayer.transform.parent = null;
-            }
-            switch (this)
-            {
-                case Submersible mvSubmersible:
-                    // exit locked mode
-                    DoExitActions(ref myMode);
-                    myPlayer.mode = myMode;
-                    mvSubmersible.StopPiloting();
-                    break;
-                case Skimmer mvSkimmer:
-                    DoExitActions(ref myMode);
-                    myPlayer.mode = myMode;
-                    mvSkimmer.StopPiloting();
-                    break;
-                case Submarine mvSubmarine:
-                    // check if we're level by comparing pitch and roll
-                    float roll = mvSubmarine.transform.rotation.eulerAngles.z;
-                    float rollDelta = roll >= 180 ? 360 - roll : roll;
-                    float pitch = mvSubmarine.transform.rotation.eulerAngles.x;
-                    float pitchDelta = pitch >= 180 ? 360 - pitch : pitch;
-                    if (!PlayerCanExitHelmControl(rollDelta, pitchDelta, mvSubmarine.useRigidbody.velocity.magnitude))
-                    {
-                        Logger.PDANote($"{Language.main.Get("AvsExitNotAllowed")} ({GameInput.Button.Exit})");
-                        return;
-                    }
-
-
-                    mvSubmarine.Com.Engine.KillMomentum();
-                    if (mvSubmarine.Com.PilotSeats.Count == 0)
-                    {
-                        Logger.Error("Error: tried to exit a submarine without pilot seats");
-                        return;
-                    }
-
-
-                    DoExitActions(ref myMode);
-                    myPlayer.mode = myMode;
-                    mvSubmarine.StopPiloting();
-
-                    var seat = mvSubmarine.Com.PilotSeats[0];
-                    var exitLocation = seat.ExitLocation;
-                    Vector3 exit;
-                    if (exitLocation != null)
-                    {
-                        Logger.DebugLog($"Exit location defined. Deriving from seat status {seat.Seat.transform.localPosition} / {seat.Seat.transform.localRotation}");
-                        exit = exitLocation.position;
-                    }
-                    else
-                    {
-                        Logger.DebugLog($"Exit location not declared in seat definition. Calculating location");
-                        // if the exit location is not set, use the calculated exit location
-                        exit = seat.CalculatedExitLocation;
-                    }
-                    Logger.DebugLog($"Exiting submarine at {exit} (local {transform.InverseTransformPoint(exit)})");
-                    Player.main.transform.position = exit;
-
-                    break;
-                default:
-                    MyExitLockedMode();
-                    break;
-            }
+            GameInput.ClearInput();
+            myPlayer.playerController.SetEnabled(true);
+            mode = Player.Mode.Normal;
+            myPlayer.playerModeChanged.Trigger(mode);
+            myPlayer.sitting = false;
+            myPlayer.playerController.ForceControllerSize();
+            myPlayer.transform.parent = null;
+        }
+        /// <summary>
+        /// Executed by <see cref="DeselectSlots" />, as part of the player exiting helm control
+        /// </summary>
+        internal protected virtual void DoExitRoutines()
+        {
+            Log.Debug(this, nameof(DoExitRoutines));
+            MyExitLockedMode();
         }
         #endregion
 
@@ -1476,7 +1425,7 @@ namespace AVS
                         component.OnPilotEnd();
                         break;
                     default:
-                        Logger.Error("Error: tried to notify using an invalid status");
+                        Log.Error("Error: tried to notify using an invalid status");
                         break;
                 }
             }
@@ -1693,30 +1642,78 @@ namespace AVS
         }
         #endregion
 
+
+        /// <summary>
+        /// Allocates a new save data container for saving or loading
+        /// </summary>
+        /// <returns>Container</returns>
+        public virtual VehicleSaveData AllocateSaveData()
+            => new VehicleSaveData();
+        /// <summary>
+        /// Writes all simple key value data to the save data container.
+        /// </summary>
+        /// <param name="saveData">Container previously allocated via <see cref="AllocateSaveData"/> </param>
+        public virtual void WriteSaveData(VehicleSaveData saveData)
+        {
+            saveData.IsControlling = IsPlayerControlling();
+            saveData.IsInside = IsUnderCommand;
+            saveData.VehicleName = subName.hullName.text;
+            saveData.BaseColor = SavedColor.From(baseColor);
+            saveData.InteriorColor = SavedColor.From(interiorColor);
+            saveData.StripeColor = SavedColor.From(stripeColor);
+            saveData.NameColor = SavedColor.From(nameColor);
+        }
+
+        public virtual void LoadSaveData(VehicleSaveData? saveData)
+        {
+            if (saveData == null)
+                return;
+            if (saveData.IsInside)
+            {
+                PlayerEntry();
+            }
+            if (saveData.IsControlling)
+            {
+                BeginPiloting();
+            }
+            SetName(saveData.VehicleName);
+            saveData.BaseColor?.WriteTo(ref baseColor);
+            saveData.NameColor?.WriteTo(ref nameColor);
+            saveData.StripeColor?.WriteTo(ref stripeColor);
+            saveData.InteriorColor?.WriteTo(ref interiorColor);
+            subName.SetColor(0, baseColor.HSB, baseColor.RGB);
+            subName.SetColor(1, nameColor.HSB, nameColor.RGB);
+            subName.SetColor(2, interiorColor.HSB, interiorColor.RGB);
+            subName.SetColor(3, stripeColor.HSB, stripeColor.RGB);
+
+        }
+
         #region saveload
-        private const string isControlling = "isControlling";
-        private const string isInside = "isInside";
-        private const string mySubName = "SubName";
-        private const string baseColorName = "BaseColor";
-        private const string interiorColorName = "InteriorColor";
-        private const string stripeColorName = "StripeColor";
-        private const string nameColorName = "NameColor";
-        private const string defaultColorName = "DefaultColor";
+        //private const string isControlling = "isControlling";
+        //private const string isInside = "isInside";
+        //private const string mySubName = "SubName";
+        //private const string baseColorName = "BaseColor";
+        //private const string interiorColorName = "InteriorColor";
+        //private const string stripeColorName = "StripeColor";
+        //private const string nameColorName = "NameColor";
+        //private const string defaultColorName = "DefaultColor";
         private const string SimpleDataSaveFileName = "SimpleData";
         private void SaveSimpleData()
         {
-            Dictionary<string, string> simpleData = new Dictionary<string, string>
-            {
-                { isControlling, IsPlayerControlling() ? bool.TrueString : bool.FalseString },
-                { isInside, IsUnderCommand ? bool.TrueString : bool.FalseString },
-                { mySubName, subName.hullName.text },
-                { baseColorName, $"#{ColorUtility.ToHtmlStringRGB(baseColor.RGB)}" },
-                { interiorColorName, $"#{ColorUtility.ToHtmlStringRGB(interiorColor.RGB)}" },
-                { stripeColorName, $"#{ColorUtility.ToHtmlStringRGB(stripeColor.RGB)}" },
-                { nameColorName, $"#{ColorUtility.ToHtmlStringRGB(nameColor.RGB)}" },
-                { defaultColorName, (this is Submarine sub) && sub.IsDefaultTexture ? bool.TrueString : bool.FalseString }
-            };
-            SaveLoad.JsonInterface.Write(this, SimpleDataSaveFileName, simpleData);
+            var c = AllocateSaveData();
+            WriteSaveData(c);
+            //Dictionary<string, string> simpleData = new Dictionary<string, string>
+            //{
+            //    { isControlling, IsPlayerControlling() ? bool.TrueString : bool.FalseString },
+            //    { isInside, IsUnderCommand ? bool.TrueString : bool.FalseString },
+            //    { mySubName, subName.hullName.text },
+            //    { baseColorName, $"#{ColorUtility.ToHtmlStringRGB(baseColor.RGB)}" },
+            //    { interiorColorName, $"#{ColorUtility.ToHtmlStringRGB(interiorColor.RGB)}" },
+            //    { stripeColorName, $"#{ColorUtility.ToHtmlStringRGB(stripeColor.RGB)}" },
+            //    { nameColorName, $"#{ColorUtility.ToHtmlStringRGB(nameColor.RGB)}" },
+            //    { defaultColorName, (this is Submarine sub) && sub.IsDefaultTexture ? bool.TrueString : bool.FalseString }
+            //};
+            SaveLoad.JsonInterface.Write(this, SimpleDataSaveFileName, c);
         }
         private IEnumerator LoadSimpleData()
         {
@@ -1726,51 +1723,11 @@ namespace AVS
             // So I'll still support them.
             yield return new WaitUntil(() => Admin.GameStateWatcher.IsWorldLoaded);
             yield return new WaitUntil(() => isInitialized);
-            var simpleData = SaveLoad.JsonInterface.Read<Dictionary<string, string>>(this, SimpleDataSaveFileName);
-            if (simpleData == null || simpleData.Count == 0)
-            {
-                yield break;
-            }
-            if (bool.Parse(simpleData[isInside]))
-            {
-                PlayerEntry();
-            }
-            if (bool.Parse(simpleData[isControlling]))
-            {
-                BeginPiloting();
-            }
-            SetName(simpleData[mySubName]);
-            var sub = this as Submarine;
-            if (sub != null)
-                sub.PaintVehicleDefaultStyle(simpleData[mySubName]);
-            if (Boolean.Parse(simpleData[defaultColorName]))
-            {
-                yield break;
-            }
-            if (ColorUtility.TryParseHtmlString(simpleData[baseColorName], out var rgb))
-            {
-                baseColor = new VehicleColor(rgb);
-                subName.SetColor(0, Vector3.zero, baseColor.RGB);
-                if (sub != null)
-                    sub.PaintVehicleName(simpleData[mySubName], Color.black, baseColor.RGB);
-            }
-            if (ColorUtility.TryParseHtmlString(simpleData[nameColorName], out rgb))
-            {
-                nameColor = new VehicleColor(rgb);
-                subName.SetColor(1, Vector3.zero, nameColor.RGB);
-                if (sub != null)
-                    sub.PaintVehicleName(simpleData[mySubName], nameColor.RGB, baseColor.RGB);
-            }
-            if (ColorUtility.TryParseHtmlString(simpleData[interiorColorName], out rgb))
-            {
-                interiorColor = new VehicleColor(rgb);
-                subName.SetColor(2, Vector3.zero, interiorColor.RGB);
-            }
-            if (ColorUtility.TryParseHtmlString(simpleData[stripeColorName], out rgb))
-            {
-                stripeColor = new VehicleColor(rgb);
-                subName.SetColor(3, Vector3.zero, stripeColor.RGB);
-            }
+            var c = AllocateSaveData();
+
+            var simpleData = SaveLoad.JsonInterface.Read(c.GetType(), this, SimpleDataSaveFileName) as VehicleSaveData;
+            LoadSaveData(simpleData);
+
         }
         void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
         {

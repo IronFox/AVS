@@ -28,5 +28,15 @@ namespace AVS.VehicleTypes
             // this one is correct ?
             return isPlayerInside;
         }
+        /// <inheritdoc/>
+        protected internal override void DoExitRoutines()
+        {
+            Player myPlayer = Player.main;
+            Player.Mode myMode = myPlayer.mode;
+
+            DoCommonExitActions(ref myMode);
+            myPlayer.mode = myMode;
+            StopPiloting();
+        }
     }
 }

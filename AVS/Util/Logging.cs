@@ -97,26 +97,39 @@ namespace AVS.Util
             Logger.Log(MakeMessage(msg));
         }
 
-        private string MakeMessage(string msg)
+        private string MakeMessage(string msg, string tag = "Mod")
         {
             if (!string.IsNullOrEmpty(Prefix))
             {
                 if (IncludeTimestamp)
-                    return $"{DateTime.Now:HH:mm:ss.fff} [Mod] {Prefix}: {msg}";
+                    return $"{DateTime.Now:HH:mm:ss.fff} [{tag}] {Prefix}: {msg}";
                 return $"{Prefix}: {msg}";
             }
             else
             {
                 if (IncludeTimestamp)
-                    return $"{DateTime.Now:HH:mm:ss.fff} [Mod] {msg}";
+                    return $"{DateTime.Now:HH:mm:ss.fff} [{tag}] {msg}";
                 return msg;
+            }
+        }
+
+        /// <summary>
+        /// Logs a debug message if the filter allows it.
+        /// </summary>
+        /// <param name="filter">Filter for verbose log messages</param>
+        /// <param name="msg">Message to log</param>
+        public void Debug(ILogFilter filter, string msg)
+        {
+            if (filter.LogDebug)
+            {
+                Logger.DebugLog(MakeMessage(msg,"Debug"));
             }
         }
 
         /// <summary>
         /// Logs a regular message.
         /// </summary>
-        public void LogMessage(string msg)
+        public void Write(string msg)
         {
             Logger.Log(MakeMessage(msg));
         }
@@ -124,7 +137,7 @@ namespace AVS.Util
         /// <summary>
         /// Logs a warning message.
         /// </summary>
-        public void LogWarning(string msg)
+        public void Warn(string msg)
         {
             Logger.Warn(MakeMessage(msg));
         }
@@ -132,9 +145,16 @@ namespace AVS.Util
         /// <summary>
         /// Logs an error message.
         /// </summary>
-        public void LogError(string msg)
+        public void Error(string msg)
         {
             Logger.Error(MakeMessage(msg));
+        }
+        /// <summary>
+        /// Logs an error message.
+        /// </summary>
+        public void Error(string msg, Exception ex)
+        {
+            Logger.LogException(MakeMessage(msg), ex);
         }
 
         /// <summary>

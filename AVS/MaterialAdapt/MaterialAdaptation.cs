@@ -137,7 +137,7 @@ namespace AVS.MaterialAdapt
                 var m = Target.GetMaterial();
                 if (m == null)
                 {
-                    logConfig.LogWarning($"Target material is gone ({Target}). Cannot apply");
+                    logConfig.Warn($"Target material is gone ({Target}). Cannot apply");
                     return;
                 }
                 if (m.shader != Shader)
@@ -157,7 +157,7 @@ namespace AVS.MaterialAdapt
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to apply MaterialAdaptation to material {Target}");
+                logConfig.Error($"Failed to apply MaterialAdaptation to material {Target}");
             }
         }
 
@@ -175,7 +175,7 @@ namespace AVS.MaterialAdapt
                 var mName = Target.ToString();
                 if (m == null)
                 {
-                    logConfig.LogWarning($"Target material is gone ({mName}). Cannot apply");
+                    logConfig.Warn($"Target material is gone ({mName}). Cannot apply");
                     return;
                 }
                 if (m.shader != Shader)
@@ -191,7 +191,7 @@ namespace AVS.MaterialAdapt
             }
             catch (Exception ex)
             {
-                logConfig.LogError($"Failed to apply MaterialAdaptation to {Target}");
+                logConfig.Error($"Failed to apply MaterialAdaptation to {Target}");
                 Debug.LogException(ex);
             }
         }

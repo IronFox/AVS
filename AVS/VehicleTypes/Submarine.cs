@@ -1,7 +1,9 @@
 ﻿using AVS.Composition;
 using AVS.Configuration;
+using AVS.Saving;
 using AVS.Util;
 using AVS.VehicleComponents;
+using AVS.VehicleParts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -28,6 +30,7 @@ namespace AVS.VehicleTypes
             return _subComposition;
         }
 
+        private int currentPilotSeatIndex = 0;
         private SubmarineComposition? _subComposition;
         public new SubmarineComposition Com =>
             _subComposition
@@ -39,7 +42,6 @@ namespace AVS.VehicleTypes
         private bool isPilotSeated = false;
         private bool isPlayerInside = false; // You can be inside a scuttled submarine yet not dry.
 
-        public Transform? thisStopPilotingLocation; // must remain public field
 
         /// <summary>
         /// Flood light controller created during Awake.
@@ -56,6 +58,34 @@ namespace AVS.VehicleTypes
 
         public GameObject? fabricator = null; //fabricator. Must remain public field
 
+
+        public override VehicleSaveData AllocateSaveData()
+            => new SubmarineSaveData();
+        public override void WriteSaveData(VehicleSaveData saveData)
+        {
+            var sub = (SubmarineSaveData)saveData;
+            sub.DefaultColorName = IsDefaultTexture;
+            sub.CurrentPilotSeatIndex = currentPilotSeatIndex;
+            base.WriteSaveData(saveData);
+        }
+
+        public override void LoadSaveData(VehicleSaveData? saveData)
+        {
+            var sub = saveData as SubmarineSaveData;
+            base.LoadSaveData(saveData);
+
+            if (sub != null)
+            {
+                IsDefaultTexture = sub.DefaultColorName;
+                currentPilotSeatIndex = sub.CurrentPilotSeatIndex;
+
+
+                PaintVehicleDefaultStyle(sub.VehicleName);
+                if (IsDefaultTexture)
+                    return;
+                PaintVehicleName(sub.VehicleName, NameColor.RGB, BaseColor.RGB);
+            }
+        }
 
         public override bool CanPilot()
         {
@@ -145,6 +175,7 @@ namespace AVS.VehicleTypes
                 Com.SteeringWheelRightHandTarget.GetTransform());
             Player.main.SetCurrentSub(GetComponent<SubRoot>());
         }
+        /// <inheritdoc/>
         public override void StopPiloting()
         {
             if (Player.main.currentSub != null && Player.main.currentSub.name.ToLower().Contains("cyclops"))
@@ -164,7 +195,10 @@ namespace AVS.VehicleTypes
             if (!IsVehicleDocked && IsPlayerControlling())
             {
                 Player.main.transform.SetParent(transform);
-                if (thisStopPilotingLocation == null)
+                var exit = currentPilotSeatIndex < Com.PilotSeats.Count
+                    ? Com.PilotSeats[currentPilotSeatIndex].ExitLocation
+                    : null;
+                if (exit == null)
                 {
                     var tetherTarget = Com.TetherSources.FirstOrDefault(x => x != null);
                     if (tetherTarget != null)
@@ -177,7 +211,7 @@ namespace AVS.VehicleTypes
                 }
                 else
                 {
-                    Player.main.transform.position = thisStopPilotingLocation.position;
+                    Player.main.transform.position = exit.position;
                 }
             }
             if (isScuttled)
@@ -540,6 +574,62 @@ namespace AVS.VehicleTypes
         {
             base.UnscuttleVehicle();
             EnableFabricator(true);
+        }
+
+        internal void EnterHelmControl(int seatIndex)
+        {
+            Log.Write($"Entering helm control for seat index {seatIndex} on submarine {VehicleName}");
+            currentPilotSeatIndex = seatIndex;
+            BeginPiloting();
+        }
+
+        /// <inheritdoc/>
+        internal protected override void DoExitRoutines()
+        {
+            Log.Debug(this, nameof(Submarine)+'.'+nameof(DoExitRoutines));
+
+            // check if we're level by comparing pitch and roll
+            float roll = transform.rotation.eulerAngles.z;
+            float rollDelta = roll >= 180 ? 360 - roll : roll;
+            float pitch = transform.rotation.eulerAngles.x;
+            float pitchDelta = pitch >= 180 ? 360 - pitch : pitch;
+            if (!PlayerCanExitHelmControl(rollDelta, pitchDelta, useRigidbody.velocity.magnitude))
+            {
+                Logger.PDANote($"{Language.main.Get("AvsExitNotAllowed")} ({GameInput.Button.Exit})");
+                return;
+            }
+
+
+            Com.Engine.KillMomentum();
+            if (currentPilotSeatIndex >= Com.PilotSeats.Count)
+            {
+                Log.Error($"Error: tried to exit a submarine without pilot seats or with an incorrect selection ({currentPilotSeatIndex})");
+                return;
+            }
+
+            Player myPlayer = Player.main;
+            Player.Mode myMode = myPlayer.mode;
+
+            DoCommonExitActions(ref myMode);
+            myPlayer.mode = myMode;
+            StopPiloting();
+
+            var seat = Com.PilotSeats[currentPilotSeatIndex];
+            var exitLocation = seat.ExitLocation;
+            Vector3 exit;
+            if (exitLocation != null)
+            {
+                Log.Debug(this, $"Exit location defined. Deriving from seat status {seat.Seat.transform.localPosition} / {seat.Seat.transform.localRotation}");
+                exit = exitLocation.position;
+            }
+            else
+            {
+                Log.Debug(this, $"Exit location not declared in seat definition. Calculating location");
+                // if the exit location is not set, use the calculated exit location
+                exit = seat.CalculatedExitLocation;
+            }
+            Log.Debug(this, $"Exiting submarine at {exit} (local {transform.InverseTransformPoint(exit)})");
+            Player.main.transform.position = exit;
         }
     }
 }

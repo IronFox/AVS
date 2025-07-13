@@ -154,7 +154,7 @@ namespace AVS.Configuration
         /// </summary>
         public Quaternion CyclopsDockRotation { get; } = Quaternion.identity;
         /// <summary>
-        /// True to automatically correct shaders to the vehicle's materials.
+        /// True to automatically correct shaders of the vehicle's materials.
         /// </summary>
         public bool AutoFixMaterials { get; } = true;
 
@@ -164,14 +164,11 @@ namespace AVS.Configuration
         public bool HelmIsSeated { get; } = true;
 
         /// <summary>
-        /// Material adaptation configuration. If not provided, initialized with a new instance of <see cref="DefaultMaterialAdaptConfig" />
+        /// Material adaptation configuration. If not provided, initialized with a new instance of <see cref="DefaultMaterialAdaptConfig" />.
+        /// Effective only if <see cref="AutoFixMaterials"/> is true.
         /// </summary>
         public IMaterialAdaptConfig MaterialAdaptConfig { get; }
 
-        /// <summary>
-        /// If true, the vehicle's shader name will not be checked when fixing materials.
-        /// </summary>
-        public bool IgnoreShaderNameWhenFixingMaterial { get; } = false;
 
         /// <summary>
         /// The initial base color of the vehicle.
@@ -243,7 +240,6 @@ namespace AVS.Configuration
         /// <param name="canMoonpoolDock">True if the vehicle can be docked in a moonpool.</param>
         /// <param name="cyclopsDockRotation">Rotation applied when docking the vehicle in a cyclops.</param>
         /// <param name="autoFixMaterials">True to automatically correct shaders to the vehicle's materials.</param>
-        /// <param name="ignoreShaderNameWhenFixingMaterial">If true, the vehicle's shader name will not be checked when fixing materials.</param>
         /// <param name="initialBaseColor">Initial base color of the vehicle. If null, defaults to <see cref="VehicleColor.Default"/>.</param>
         /// <param name="initialStripeColor">Initial stripe color of the vehicle. If null, defaults to <see cref="VehicleColor.Default"/>.</param>
         /// <param name="initialInteriorColor">Initial interior color of the vehicle. If null, defaults to <see cref="VehicleColor.Default"/>.</param>
@@ -291,7 +287,6 @@ namespace AVS.Configuration
             bool canMoonpoolDock = true,
             Quaternion? cyclopsDockRotation = null,
             bool autoFixMaterials = true,
-            bool ignoreShaderNameWhenFixingMaterial = false,
             Func<float>? getVoiceSoundVolume = null,
             Func<bool>? getVoiceSubtitlesEnabled = null,
             bool helmIsSeated = true
@@ -344,7 +339,6 @@ namespace AVS.Configuration
             CanMoonpoolDock = canMoonpoolDock;
             CyclopsDockRotation = cyclopsDockRotation ?? Quaternion.identity;
             AutoFixMaterials = autoFixMaterials;
-            IgnoreShaderNameWhenFixingMaterial = ignoreShaderNameWhenFixingMaterial;
         }
 
 

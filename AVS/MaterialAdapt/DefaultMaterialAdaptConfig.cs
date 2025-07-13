@@ -19,7 +19,10 @@ namespace AVS.MaterialAdapt
         /// Default tag used to mark materials that are consider glass and should not be adapted in the default process.
         /// </summary>
         public static string GlassTag { get; } = "[glass]";
+        /// <inheritdoc/>
+        public virtual bool IgnoreShaderNames => false;
 
+        /// <inheritdoc/>
         public Logging LogConfig { get; }
 
         /// <summary>
@@ -65,7 +68,6 @@ namespace AVS.MaterialAdapt
         /// from material fixing.
         /// If you exclusion logic is based on material names only, you only need to override this method.
         /// </summary>
-        /// <param name="material">Material to check</param>
         /// <param name="lowerCaseMaterialName">Lower-case name of <paramref name="material"/></param>
         /// <returns>True if this material should not be fixed</returns>
         public virtual bool IsExcludedFromMaterialFixingByName(string lowerCaseMaterialName)

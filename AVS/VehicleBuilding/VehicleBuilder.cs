@@ -180,12 +180,12 @@ namespace AVS
         {
             try
             {
-                foreach (VehicleParts.VehiclePilotSeat ps in mv.Com.PilotSeats)
+                for (int i = 0; i < mv.Com.PilotSeats.Count; i++)
                 {
-                    mv.playerPosition = ps.SitLocation;
-                    PilotingTrigger pt = ps.Seat.EnsureComponent<PilotingTrigger>();
+                    VehicleParts.VehiclePilotSeat ps = mv.Com.PilotSeats[i];
+                    var pt = ps.Seat.EnsureComponent<PilotingTrigger>();
                     pt.mv = mv;
-                    pt.exit = ps.ExitLocation;
+                    pt.seatIndex = i;
                 }
             }
             catch (Exception e)
@@ -241,7 +241,6 @@ namespace AVS
                 mv.playerPosition = mv.Com.PilotSeat.SitLocation;
                 PilotingTrigger pt = mv.Com.PilotSeat.Seat.EnsureComponent<PilotingTrigger>();
                 pt.mv = mv;
-                pt.exit = mv.Com.PilotSeat.ExitLocation;
             }
             catch (Exception e)
             {

@@ -47,7 +47,7 @@ namespace AVS.MaterialAdapt
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to set color {name} ({value}) on {materialName ?? m.NiceName()}");
+                logConfig.Error($"Failed to set color {name} ({value}) on {materialName ?? m.NiceName()}");
             }
         }
 
@@ -83,7 +83,7 @@ namespace AVS.MaterialAdapt
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to set {Type} {Name} ({Value}) on {materialName??m.NiceName()}");
+                logConfig.Error($"Failed to set {Type} {Name} ({Value}) on {materialName??m.NiceName()}");
             }
         }
     }
@@ -131,7 +131,7 @@ namespace AVS.MaterialAdapt
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to set {Type} {Name} ({Texture.NiceName()}, {Offset}, {Scale}) on {materialName??m.NiceName()}");
+                logConfig.Error($"Failed to set {Type} {Name} ({Texture.NiceName()}, {Offset}, {Scale}) on {materialName??m.NiceName()}");
             }
         }
     }
@@ -162,7 +162,7 @@ namespace AVS.MaterialAdapt
             catch (Exception ex)
             {
                 Debug.LogException(ex);
-                logConfig.LogError($"Failed to set {Type} {Name} ({Value.ToString(CultureInfo.InvariantCulture)}) on {materialName??m.NiceName()}");
+                logConfig.Error($"Failed to set {Type} {Name} ({Value.ToString(CultureInfo.InvariantCulture)}) on {materialName??m.NiceName()}");
             }
         }
     }

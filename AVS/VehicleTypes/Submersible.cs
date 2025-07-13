@@ -28,6 +28,16 @@ namespace AVS.VehicleTypes
             _subComposition
             ?? throw new InvalidOperationException("This vehicle's composition has not yet been initialized. Please wait until Submersible.Awake() has been called");
 
+        /// <inheritdoc/>
+        protected internal override void DoExitRoutines()
+        {
+            Player myPlayer = Player.main;
+            Player.Mode myMode = myPlayer.mode;
+
+            DoCommonExitActions(ref myMode);
+            myPlayer.mode = myMode;
+            StopPiloting();
+        }
         public override bool CanPilot()
         {
             return !FPSInputModule.current.lockMovement && IsPowered();
@@ -90,7 +100,7 @@ namespace AVS.VehicleTypes
             base.PlayerEntry();
             if (!isScuttled)
             {
-                Logger.DebugLog(this, "start submersible player entry");
+                Log.Debug(this, "start submersible player entry");
                 Player.main.currentSub = null;
                 Player.main.currentMountedVehicle = this;
                 Player.main.transform.SetParent(transform);
@@ -107,8 +117,7 @@ namespace AVS.VehicleTypes
         public override void PlayerExit()
         {
             base.PlayerExit();
-            Logger.DebugLog(this, "start submersible player exit");
-            Logger.DebugLog(this, "end submersible player exit");
+            Log.Debug(this, "start submersible player exit");
             if (!IsVehicleDocked)
             {
                 Player.main.transform.SetParent(null);
@@ -118,6 +127,7 @@ namespace AVS.VehicleTypes
             {
                 UWE.CoroutineHost.StartCoroutine(EventuallyStandUp());
             }
+            Log.Debug(this, "end submersible player exit");
         }
     }
 }

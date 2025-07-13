@@ -169,14 +169,14 @@ namespace AVS.MaterialAdapt
 
                     if (HullPrototype.IsEmpty)
                     {
-                        Logging.LogError($"No material prototype found on Seamoth");
+                        Logging.Error($"No material prototype found on Seamoth");
                     }
                     else
                     {
                         var shader = Shaders.FindMainShader();
                         if (shader == null)
                         {
-                            Logging.LogError($"No main shader found. Cannot adapt materials");
+                            Logging.Error($"No main shader found. Cannot adapt materials");
                             return false;
                         }
 
@@ -191,7 +191,7 @@ namespace AVS.MaterialAdapt
                             }
                             catch (Exception ex)
                             {
-                                Logging.LogError($"Adaptation failed for material {data}: {ex}");
+                                Logging.Error($"Adaptation failed for material {data}: {ex}");
                                 Debug.LogException(ex);
                             }
                         }

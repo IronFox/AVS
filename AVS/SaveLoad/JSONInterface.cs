@@ -24,6 +24,8 @@ namespace AVS.SaveLoad
             Write<T>($"{fileTitle}-{prefabID.Id}", data);
         }
         public static T? Read<T>(Component comp, string fileTitle) where T : class
+            => Read(typeof(T), comp, fileTitle) as T;
+        public static object? Read(Type type, Component comp, string fileTitle)
         {
             if (comp == null)
             {
@@ -36,7 +38,7 @@ namespace AVS.SaveLoad
                 Logger.Error($"Could not perform JsonInterface.Read because comp had no PrefabIdentifier: {fileTitle}");
                 return default;
             }
-            return Read<T>($"{fileTitle}-{prefabID.Id}");
+            return Read(type, $"{fileTitle}-{prefabID.Id}");
         }
         public static void Write<T>(string uniqueFileName, T data)
         {
@@ -74,6 +76,8 @@ namespace AVS.SaveLoad
             }
         }
         public static T? Read<T>(string uniqueFileName) where T : class
+            => Read(typeof(T), uniqueFileName) as T;
+        public static object? Read(Type type, string uniqueFileName)
         {
             string fileName;
             try
@@ -107,7 +111,7 @@ namespace AVS.SaveLoad
             }
             try
             {
-                return JsonConvert.DeserializeObject<T>(json);
+                return JsonConvert.DeserializeObject(json,type);
             }
             catch (Exception e)
             {

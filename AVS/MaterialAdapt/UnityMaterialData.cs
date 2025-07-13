@@ -105,7 +105,7 @@ namespace AVS.MaterialAdapt
         {
             if (!m.HasProperty(name))
             {
-                logConfig.LogWarning($"Material {m} does not have expected property {name}");
+                logConfig.Warn($"Material {m} does not have expected property {name}");
                 return Color.black;
             }
             try
@@ -114,7 +114,7 @@ namespace AVS.MaterialAdapt
             }
             catch (Exception e)
             {
-                logConfig.LogError($"Material {m} does not have expected color property {name}");
+                logConfig.Error($"Material {m} does not have expected color property {name}");
                 Debug.LogException(e);
                 return Color.black;
             }
@@ -124,7 +124,7 @@ namespace AVS.MaterialAdapt
         {
             if (!m.HasProperty(name))
             {
-                logConfig.LogWarning($"Material {m} does not have expected property {name}");
+                logConfig.Warn($"Material {m} does not have expected property {name}");
                 return null;
             }
             try
@@ -133,7 +133,7 @@ namespace AVS.MaterialAdapt
             }
             catch (Exception e)
             {
-                logConfig.LogError($"Material {m} does not have expected texture property {name}");
+                logConfig.Error($"Material {m} does not have expected texture property {name}");
                 Debug.LogException(e);
                 return null;
             }
@@ -143,7 +143,7 @@ namespace AVS.MaterialAdapt
         {
             if (!m.HasProperty(name))
             {
-                logConfig.LogWarning($"Material {m} does not have expected property {name}");
+                logConfig.Warn($"Material {m} does not have expected property {name}");
                 return 0;
             }
             try
@@ -152,7 +152,7 @@ namespace AVS.MaterialAdapt
             }
             catch (Exception e)
             {
-                logConfig.LogError($"Material {m} does not have expected float property {name}");
+                logConfig.Error($"Material {m} does not have expected float property {name}");
                 Debug.LogException(e);
                 return 0;
             }
@@ -162,7 +162,7 @@ namespace AVS.MaterialAdapt
         {
             if (!m.HasProperty(name))
             {
-                logConfig.LogWarning($"Material {m} does not have expected property {name}");
+                logConfig.Warn($"Material {m} does not have expected property {name}");
                 return 0;
             }
             try
@@ -171,7 +171,7 @@ namespace AVS.MaterialAdapt
             }
             catch (Exception e)
             {
-                logConfig.LogError($"Material {m} does not have expected int property {name}");
+                logConfig.Error($"Material {m} does not have expected int property {name}");
                 Debug.LogException(e);
                 return 0;
             }
