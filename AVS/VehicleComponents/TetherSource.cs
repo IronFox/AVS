@@ -116,24 +116,24 @@ namespace AVS
             mv!.StopPiloting();
             mv.PlayerExit();
 
-            // the following block is just for the gargantuan leviathan
-            // that mod disables all vehicle colliders in GargantuanGrab.GrabVehicle
-            // but doesn't later re-enable them.
-            // I don't know why it rips the player out of its position anyways.
-            IEnumerator PleaseEnableColliders()
-            {
-                var effectedColliders = mv.GetComponentsInChildren<Collider>(true)
-                    .Where(x => !x.enabled) // collisionModel is set active again
-                    .Where(x => x != mv.Com.BoundingBoxCollider) // want this to remain disabled
-                    .ToList();
-                while (effectedColliders.Any(x => !x.enabled))
-                {
-                    yield return new WaitForSeconds(5);
-                    effectedColliders.ForEach(x => x.enabled = true);
-                    yield return new WaitForSeconds(5);
-                }
-            }
-            UWE.CoroutineHost.StartCoroutine(PleaseEnableColliders());
+            //// the following block is just for the gargantuan leviathan
+            //// that mod disables all vehicle colliders in GargantuanGrab.GrabVehicle
+            //// but doesn't later re-enable them.
+            //// I don't know why it rips the player out of its position anyways.
+            //IEnumerator PleaseEnableColliders()
+            //{
+            //    var effectedColliders = mv.GetComponentsInChildren<Collider>(true)
+            //        .Where(x => !x.enabled) // collisionModel is set active again
+            //        .Where(x => x != mv.Com.BoundingBoxCollider) // want this to remain disabled
+            //        .ToList();
+            //    while (effectedColliders.Any(x => !x.enabled))
+            //    {
+            //        yield return new WaitForSeconds(5);
+            //        effectedColliders.ForEach(x => x.enabled = true);
+            //        yield return new WaitForSeconds(5);
+            //    }
+            //}
+            //UWE.CoroutineHost.StartCoroutine(PleaseEnableColliders());
         }
 
         public void TryToEstablishLeash()
