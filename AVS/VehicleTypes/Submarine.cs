@@ -171,8 +171,8 @@ namespace AVS.VehicleTypes
             isPilotSeated = true;
             Player.main.armsController.ikToggleTime = 0;
             Player.main.armsController.SetWorldIKTarget(
-                Com.SteeringWheelLeftHandTarget.GetTransform(),
-                Com.SteeringWheelRightHandTarget.GetTransform());
+                Com.SteeringWheelLeftHandTarget.SafeGetTransform(),
+                Com.SteeringWheelRightHandTarget.SafeGetTransform());
             Player.main.SetCurrentSub(GetComponent<SubRoot>());
         }
         /// <inheritdoc/>
@@ -617,6 +617,8 @@ namespace AVS.VehicleTypes
         {
             Log.Write($"Entering helm control for seat index {seatIndex} on submarine {VehicleName}");
             currentPilotSeatIndex = seatIndex;
+            playerPosition = Com.PilotSeats[seatIndex].SitLocation;
+
             BeginPiloting();
         }
 

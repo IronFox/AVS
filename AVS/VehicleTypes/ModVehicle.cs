@@ -488,10 +488,33 @@ namespace AVS
         /// For <see cref="Submarine" />s, please use <see cref="Submarine.EnterHelmControl(int)"/></remarks>
         public virtual void BeginPiloting()
         {
-            playerSits = Config.HelmIsSeated;
-            EnterVehicle(Player.main, true);
-            uGUI.main.quickSlots.SetTarget(this);
-            NotifyStatus(PlayerStatus.OnPilotBegin);
+            Log.Debug(this, nameof(ModVehicle)+'.'+nameof(BeginPiloting));
+            if (playerPosition == null)
+                throw new NullReferenceException($"{nameof(playerPosition)} must be set before calling {nameof(ModVehicle)}.{nameof(BeginPiloting)}");
+            if (energyInterface == null)
+                throw new NullReferenceException($"{nameof(energyInterface)} must be set before calling {nameof(ModVehicle)}.{nameof(BeginPiloting)}");
+            if (mainAnimator == null)
+                throw new NullReferenceException($"{nameof(mainAnimator)} must be set before calling {nameof(ModVehicle)}.{nameof(BeginPiloting)}");
+            try
+            {
+                playerSits = Config.HelmIsSeated;
+                Log.Debug(this, $"Player.playerController := {Player.main.playerController.NiceName()}");
+                Log.Debug(this, $"Vehicle.playerSits := {playerSits}");
+                Log.Debug(this, $"Vehicle.playerPosition := {this.playerPosition.NiceName()}");
+                Log.Debug(this, $"Vehicle.customGoalOnEnter := {this.customGoalOnEnter}");
+                Log.Debug(this, $"Vehicle.energyInterface := {this.energyInterface.NiceName()}");
+                Log.Debug(this, $"Vehicle.mainAnimator := {this.mainAnimator.NiceName()}");
+                EnterVehicle(Player.main, true);
+                if (Config.HelmIsSeated)
+                    Player.main.EnterSittingMode();
+                uGUI.main.quickSlots.SetTarget(this);
+                NotifyStatus(PlayerStatus.OnPilotBegin);
+                Log.Debug(this, nameof(ModVehicle) + '.' + nameof(BeginPiloting) + " done");
+            }
+            catch (Exception ex)
+            {
+                Log.Error(nameof(ModVehicle) + '.' + nameof(BeginPiloting), ex);
+            }
         }
         /// <summary>
         /// Stops the piloting of the current vehicle and resets the control state.
@@ -1397,6 +1420,7 @@ namespace AVS
             GameInput.ClearInput();
             myPlayer.playerController.SetEnabled(true);
             mode = Player.Mode.Normal;
+            myPlayer.ExitSittingMode();
             myPlayer.playerModeChanged.Trigger(mode);
             myPlayer.sitting = false;
             myPlayer.playerController.ForceControllerSize();

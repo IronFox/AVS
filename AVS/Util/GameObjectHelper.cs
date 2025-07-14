@@ -157,7 +157,7 @@ namespace AVS.Util
         /// Selectively returns the transform of a GameObject.
         /// Returns null if the GameObject is null.
         /// </summary>
-        public static Transform? GetTransform(this GameObject? gameObject)
+        public static Transform? SafeGetTransform(this GameObject? gameObject)
         {
             if (gameObject == null)
                 return null;

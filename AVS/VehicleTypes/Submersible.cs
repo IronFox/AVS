@@ -76,7 +76,7 @@ namespace AVS.VehicleTypes
             UWE.CoroutineHost.StartCoroutine(SitDownInChair());
             //StartCoroutine(TryStandUpFromChair());
             Player.main.armsController.ikToggleTime = 0;
-            Player.main.armsController.SetWorldIKTarget(Com.SteeringWheelLeftHandTarget.GetTransform(), Com.SteeringWheelRightHandTarget.GetTransform());
+            Player.main.armsController.SetWorldIKTarget(Com.SteeringWheelLeftHandTarget.SafeGetTransform(), Com.SteeringWheelRightHandTarget.SafeGetTransform());
         }
         public override void StopPiloting()
         {
