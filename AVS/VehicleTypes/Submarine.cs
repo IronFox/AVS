@@ -226,19 +226,16 @@ namespace AVS.VehicleTypes
             yield return new WaitForSeconds(time);
             Player.main.liveMixin.invincible = false;
         }
-        // These two functions control the transition from in the water to the dry interior
+        /// <inheritdoc/>
         public override void PlayerEntry()
         {
+            Log.Debug(this, nameof(Submarine) + '.' + nameof(PlayerEntry));
             isPlayerInside = true;
             base.PlayerEntry();
             if (!isScuttled)
             {
                 Player.main.currentMountedVehicle = this;
-                if (IsVehicleDocked)
-                {
-
-                }
-                else
+                if (!IsVehicleDocked)
                 {
                     Player.main.transform.SetParent(transform);
                     Player.main.playerController.activeController.SetUnderWater(false);
@@ -250,85 +247,48 @@ namespace AVS.VehicleTypes
                 }
             }
             EnsureColorPickerEnabled();
+
+            Player.main.CancelInvoke("ValidateCurrentSub");
+            
+            Log.Debug(this, nameof(Submarine) + '.' + nameof(PlayerEntry)+" done");
         }
+        
+        ///// <summary>
+        ///// Attempts to recover from being unable to build anything anymore.
+        ///// Observation appears to indicate this happens if the player walks beyond +-35 meters from the origin
+        ///// and normally does not recover until the player exits the craft.
+        ///// </summary>
+        //public void TryFixLostBuildFocus()
+        //{
+        //    Log.Write(nameof(TryFixLostBuildFocus));
+        //    if (isScuttled || IsVehicleDocked)
+        //        return;
+
+        //    //IsUnderCommand = false;
 
 
 
-        /// <summary>
-        /// Attempts to recover from being unable to build anything anymore.
-        /// Observation appears to indicate this happens if the player walks beyond +-35 meters from the origin
-        /// and normally does not recover until the player exits the craft.
-        /// </summary>
-        public void TryFixLostBuildFocus()
-        {
-            Log.Write(nameof(TryFixLostBuildFocus));
-
-            if (IsUnderCommand)
-            {
-                try
-                {
-                    foreach (GameObject window in Com.CanopyWindows)
-                    {
-                        window.SafeSetActive(true);
-                    }
-                }
-                catch (Exception)
-                {
-                    //It's okay if the vehicle doesn't have a canopy
-                }
-            }
-            IsUnderCommand = false;
-            if (Player.main.GetCurrentSub() == GetComponent<SubRoot>())
-            {
-                Player.main.SetCurrentSub(null);
-            }
-            if (Player.main.GetVehicle() == this)
-            {
-                Player.main.currentMountedVehicle = null;
-            }
-            NotifyStatus(PlayerStatus.OnPlayerExit);
-            Player.main.transform.SetParent(null);
-            Player.main.TryEject(); // for DeathRun Remade Compat. See its patch in PlayerPatcher.cs
-            HudPingInstance.enabled = true;
+        //    Player.main.lastValidSub = GetComponent<SubRoot>();
+        //    Player.main.SetCurrentSub(GetComponent<SubRoot>(), true);
+        //    NotifyStatus(PlayerStatus.OnPlayerEntry);
 
 
 
+        //    Player.main.currentMountedVehicle = this;
+        //    Player.main.transform.SetParent(transform);
+        //    Player.main.playerController.activeController.SetUnderWater(false);
+        //    Player.main.isUnderwater.Update(false);
+        //    Player.main.isUnderwaterForSwimming.Update(false);
+        //    Player.main.playerController.SetMotorMode(Player.MotorMode.Walk);
+        //    Player.main.motorMode = Player.MotorMode.Walk;
+        //    Player.main.playerMotorModeChanged.Trigger(Player.MotorMode.Walk);
+     
+        //}
 
-
-
-            if (!isScuttled && !IsUnderCommand)
-            {
-                IsUnderCommand = true;
-                Player.main.SetScubaMaskActive(false);
-                try
-                {
-                    foreach (GameObject window in Com.CanopyWindows)
-                    {
-                        window.SafeSetActive(false);
-                    }
-                }
-                catch (Exception)
-                {
-                    //It's okay if the vehicle doesn't have a canopy
-                }
-                Player.main.lastValidSub = GetComponent<SubRoot>();
-                Player.main.SetCurrentSub(GetComponent<SubRoot>(), true);
-                NotifyStatus(PlayerStatus.OnPlayerEntry);
-                HudPingInstance.enabled = false;
-
-                Player.main.transform.SetParent(transform);
-                Player.main.playerController.activeController.SetUnderWater(false);
-                Player.main.isUnderwater.Update(false);
-                Player.main.isUnderwaterForSwimming.Update(false);
-                Player.main.playerController.SetMotorMode(Player.MotorMode.Walk);
-                Player.main.motorMode = Player.MotorMode.Walk;
-                Player.main.playerMotorModeChanged.Trigger(Player.MotorMode.Walk);
-
-            }
-        }
 
         public override void PlayerExit()
         {
+            Log.Debug(this, nameof(Submarine) + '.' + nameof(PlayerExit));
             isPlayerInside = false;
             base.PlayerExit();
             //Player.main.currentSub = null;
@@ -336,6 +296,7 @@ namespace AVS.VehicleTypes
             {
                 Player.main.transform.SetParent(null);
             }
+            Log.Debug(this, nameof(Submarine) + '.' + nameof(PlayerExit) + " done");
         }
         public override void SubConstructionBeginning()
         {
