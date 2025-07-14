@@ -129,6 +129,12 @@ namespace AVS
         internal void OnAwakeOrPrefabricate()
         {
             RequireComposition();
+            if (SubRoot == null)
+            {
+                Log.Warn("SubRoot not found during OnAwakeOrPrefabricate");
+            }
+            else
+                Log.Write("SubRoot found during OnAwakeOrPrefabricate");
         }
         /// <summary>
         /// Initialized <see cref="Com"/>.
@@ -183,6 +189,7 @@ namespace AVS
             powerManager = gameObject.EnsureComponent<PowerManager>();
 
             base.Awake();
+
             VehicleManager.EnrollVehicle(this); // Register our new vehicle with Vehicle Framework
             UpgradeOnAddedActions.Add(StorageModuleAction);
             UpgradeOnAddedActions.Add(ArmorPlatingModuleAction);
@@ -519,8 +526,8 @@ namespace AVS
                 {
                     //It's okay if the vehicle doesn't have a canopy
                 }
-                Player.main.lastValidSub = GetComponent<SubRoot>();
-                Player.main.SetCurrentSub(GetComponent<SubRoot>(), true);
+                Player.main.lastValidSub = SubRoot;
+                Player.main.SetCurrentSub(SubRoot, true);
                 NotifyStatus(PlayerStatus.OnPlayerEntry);
                 HudPingInstance.enabled = false;
             }
@@ -546,7 +553,7 @@ namespace AVS
                 }
             }
             IsUnderCommand = false;
-            if (Player.main.GetCurrentSub() == GetComponent<SubRoot>())
+            if (Player.main.GetCurrentSub() == SubRoot)
             {
                 Player.main.SetCurrentSub(null);
             }
@@ -1570,6 +1577,20 @@ namespace AVS
         /// Gets the applied local vehicle name
         /// </summary>
         public string VehicleName => subName != null ? subName.GetName() : vehicleName;
+
+        internal SubRoot? _subRoot;
+        /// <summary>
+        /// Retrieves and/or caches the SubRoot instance attached to this vehicle
+        /// </summary>
+        public SubRoot? SubRoot
+        {
+            get
+            {
+                if (_subRoot == null)
+                    _subRoot = gameObject.GetComponent<SubRoot>();
+                return _subRoot;
+            }
+        }
 
 
         #endregion
