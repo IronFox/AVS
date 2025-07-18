@@ -122,7 +122,7 @@ namespace AVS.Util
         {
             if (filter.LogDebug)
             {
-                Logger.DebugLog(MakeMessage(msg,"Debug"));
+                Logger.Log(MakeMessage(msg, "Debug"));
             }
         }
 
@@ -203,10 +203,10 @@ namespace AVS.Util
             T old,
             T value,
             Material m,
-            string?materialName)
+            string? materialName)
         {
             if (LogMaterialChanges)
-                Logger.Log(MakeMessage($"Setting {type} {name} ({ValueToString(old)} -> {ValueToString(value)}) on {materialName??m.NiceName()}"));
+                Logger.Log(MakeMessage($"Setting {type} {name} ({ValueToString(old)} -> {ValueToString(value)}) on {materialName ?? m.NiceName()}"));
         }
 
         /// <summary>
@@ -225,7 +225,7 @@ namespace AVS.Util
             string? materialName)
         {
             if (LogMaterialVariables)
-                Logger.Log(MakeMessage($"{materialName?? m.NiceName()} [{type}] {name} := {dataAsString}"));
+                Logger.Log(MakeMessage($"{materialName ?? m.NiceName()} [{type}] {name} := {dataAsString}"));
         }
 
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using AVS.BaseVehicle;
+using TMPro;
 using UnityEngine;
 
 
@@ -17,7 +18,7 @@ namespace AVS
         {
             return textStorage != null;
         }
-        private bool HasMvStorage(ModVehicle mv)
+        private bool HasMvStorage(AvsVehicle mv)
         {
             return mv.Com.InnateStorages != null || ModularStorageInput.GetAllModularStorageContainers(mv).Count > 0;
         }
@@ -26,7 +27,7 @@ namespace AVS
         {
             root!.SetActive(false);
         }
-        private bool ShouldIDie(ModVehicle? mv, PDA? pda)
+        private bool ShouldIDie(AvsVehicle? mv, PDA? pda)
         {
             if (mv == null || pda == null)
             {

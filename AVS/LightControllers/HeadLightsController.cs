@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using AVS.BaseVehicle;
+using UnityEngine;
 
 namespace AVS
 {
@@ -17,7 +18,7 @@ namespace AVS
                 return IsLightsOn;
             }
         }
-        private ModVehicle MV => GetComponent<ModVehicle>();
+        private AvsVehicle MV => GetComponent<AvsVehicle>();
         protected override void HandleLighting(bool active)
         {
             MV.Com.HeadLights.ForEach(x => x.Light.SetActive(active));

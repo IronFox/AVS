@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
@@ -33,7 +34,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(PowerRelay.Start))]
         public static bool StartPrefix(PowerRelay __instance)
         {
-            ModVehicle mv = __instance.gameObject.GetComponent<ModVehicle>();
+            AvsVehicle mv = __instance.gameObject.GetComponent<AvsVehicle>();
             if (mv != null)
             {
                 __instance.InvokeRepeating("UpdatePowerState", UnityEngine.Random.value, 0.5f);
@@ -47,7 +48,7 @@ namespace AVS.Patches
         {
             var mv = __instance
                 .SafeGetGameObject()
-                .SafeGetComponent<ModVehicle>();
+                .SafeGetComponent<AvsVehicle>();
             if (mv != null)
             {
                 if (mv.energyInterface != null)
@@ -67,7 +68,7 @@ namespace AVS.Patches
         public static bool GetMaxPowerPrefix(PowerRelay __instance, ref float __result)
         {
             if (__instance == null || __instance.gameObject == null) return true;
-            ModVehicle mv = __instance.gameObject.GetComponent<ModVehicle>();
+            AvsVehicle mv = __instance.gameObject.GetComponent<AvsVehicle>();
             if (mv == null) return true;
             if (mv.energyInterface == null || mv.energyInterface.sources == null)
             {
@@ -84,7 +85,7 @@ namespace AVS.Patches
     {
         public static bool MaybeConsumeEnergy(PowerRelay mvpr, float amount, out float amountConsumed)
         {
-            ModVehicle mv = mvpr.gameObject.GetComponent<ModVehicle>();
+            AvsVehicle mv = mvpr.gameObject.GetComponent<AvsVehicle>();
             if (mv == null)
             {
                 mvpr.ConsumeEnergy(amount, out amountConsumed);

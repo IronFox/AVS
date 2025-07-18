@@ -1,4 +1,5 @@
-﻿using AVS.Interfaces;
+﻿using AVS.BaseVehicle;
+using AVS.Interfaces;
 using AVS.VehicleComponents;
 using System;
 using System.Collections;
@@ -175,7 +176,7 @@ namespace AVS
     public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener, IPowerListener, ILightsStatusListener, IScuttleListener
     {
         internal EnergyInterface? aiEI;
-        internal ModVehicle mv => GetComponent<ModVehicle>();
+        internal AvsVehicle mv => GetComponent<AvsVehicle>();
         internal LiveMixin liveMixin => mv.liveMixin;
         internal EnergyInterface eInterf => mv.energyInterface;
 

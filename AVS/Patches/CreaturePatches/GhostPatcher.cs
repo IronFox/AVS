@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.BaseVehicle;
+using HarmonyLib;
 using UnityEngine;
 
 // PURPOSE: configure how much damage ghost leviathans can do
@@ -19,7 +20,7 @@ namespace AVS.Patches.LeviathanPatches
         [HarmonyPatch(nameof(GhostLeviathanMeleeAttack.GetBiteDamage))]
         public static void GetBiteDamagePostfix(GhostLeviathanMeleeAttack __instance, ref float __result, GameObject target)
         {
-            ModVehicle mv = target.GetComponent<ModVehicle>();
+            AvsVehicle mv = target.GetComponent<AvsVehicle>();
             if (mv == null) return;
 
             TechType techType = CraftData.GetTechType(__instance.gameObject);

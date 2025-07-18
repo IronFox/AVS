@@ -6,6 +6,17 @@ namespace AVS.Util
 {
     public static class ListExt
     {
+        public static int FindIndexOf<T>(this IReadOnlyList<T> source, Func<T, bool> predicate)
+        {
+            for (int i = 0; i < source.Count; i++)
+            {
+                if (predicate(source[i]))
+                {
+                    return i;
+                }
+            }
+            return -1;
+        }
 
         public static TSource Last<TSource>(this IReadOnlyList<TSource> source)
         {

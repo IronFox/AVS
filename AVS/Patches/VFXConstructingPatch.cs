@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
 using HarmonyLib;
 using System.Collections;
 using UnityEngine;
@@ -20,10 +21,10 @@ namespace AVS.Patches
         /// visual effect will not be updated. The method waits until the ghost material of the <paramref name="vfx"/>
         /// instance is initialized before applying any updates.</remarks>
         /// <param name="vfx">The <see cref="VFXConstructing"/> instance representing the visual effects to be updated. Must not be null.</param>
-        /// <param name="mv">The <see cref="ModVehicle"/> instance containing configuration settings for the construction process. Must
+        /// <param name="mv">The <see cref="AvsVehicle"/> instance containing configuration settings for the construction process. Must
         /// not be null.</param>
         /// <returns>An enumerator that can be used to control the execution of the color management process.</returns>
-        public static IEnumerator ManageColor(VFXConstructing vfx, ModVehicle mv)
+        public static IEnumerator ManageColor(VFXConstructing vfx, AvsVehicle mv)
         {
             if (vfx != null)
             {
@@ -48,7 +49,7 @@ namespace AVS.Patches
         /// events.
         /// </summary>
         /// <remarks>This method adjusts the construction time based on the configuration of the
-        /// associated <see cref="ModVehicle"/> component, if present. It also broadcasts and sends messages to notify
+        /// associated <see cref="AvsVehicle"/> component, if present. It also broadcasts and sends messages to notify
         /// other components of the construction process and starts a coroutine to manage additional visual effects or
         /// behaviors.</remarks>
         /// <param name="__instance">The instance of <see cref="VFXConstructing"/> being patched, representing the vehicle under construction.</param>
@@ -56,12 +57,12 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(VFXConstructing.StartConstruction))]
         public static void StartConstructionPostfix(VFXConstructing __instance)
         {
-            ModVehicle mv = __instance.GetComponent<ModVehicle>();
+            AvsVehicle mv = __instance.GetComponent<AvsVehicle>();
             if (mv != null)
             {
                 __instance.timeToConstruct = mv.Config.TimeToConstruct;
-                __instance.BroadcastMessage(nameof(ModVehicle.SubConstructionBeginning), null, (UnityEngine.SendMessageOptions)1);
-                __instance.SendMessageUpwards(nameof(ModVehicle.SubConstructionBeginning), null, (UnityEngine.SendMessageOptions)1);
+                __instance.BroadcastMessage(nameof(AvsVehicle.SubConstructionBeginning), null, (UnityEngine.SendMessageOptions)1);
+                __instance.SendMessageUpwards(nameof(AvsVehicle.SubConstructionBeginning), null, (UnityEngine.SendMessageOptions)1);
                 UWE.CoroutineHost.StartCoroutine(ManageColor(__instance, mv));
             }
         }

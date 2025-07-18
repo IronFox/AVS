@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -18,7 +19,7 @@ namespace AVS.SaveLoad
         {
             return thisSlotName.Substring("Vehicle".Length);
         }
-        internal static void SerializeAllModularStorage(ModVehicle mv)
+        internal static void SerializeAllModularStorage(AvsVehicle mv)
         {
             foreach (string slotID in mv.slotIDs)
             {
@@ -32,7 +33,7 @@ namespace AVS.SaveLoad
                 }
             }
         }
-        private static void SaveThisModularStorage(ModVehicle mv, ItemsContainer container, string slotID)
+        private static void SaveThisModularStorage(AvsVehicle mv, ItemsContainer container, string slotID)
         {
             List<Tuple<TechType, float, TechType>> result = new List<Tuple<TechType, float, TechType>>();
             foreach (var item in container.ToList())
@@ -50,7 +51,7 @@ namespace AVS.SaveLoad
             }
             JsonInterface.Write(mv, GetNewSaveFileName(slotID), result);
         }
-        internal static IEnumerator DeserializeAllModularStorage(ModVehicle mv)
+        internal static IEnumerator DeserializeAllModularStorage(AvsVehicle mv)
         {
             yield return new WaitUntil(() => Admin.GameStateWatcher.IsWorldLoaded);
             yield return new WaitUntil(() => mv.upgradesInput.equipment != null);
@@ -71,7 +72,7 @@ namespace AVS.SaveLoad
             }
             yield break;
         }
-        private static IEnumerator LoadThisModularStorage(ModVehicle mv, ItemsContainer container, string slotID)
+        private static IEnumerator LoadThisModularStorage(AvsVehicle mv, ItemsContainer container, string slotID)
         {
             var thisStorage = SaveLoad.JsonInterface.Read<List<Tuple<TechType, float, TechType>>>(mv, GetNewSaveFileName(slotID));
             if (thisStorage == default)

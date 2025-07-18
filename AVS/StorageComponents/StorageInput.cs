@@ -1,11 +1,12 @@
-﻿using UnityEngine;
+﻿using AVS.BaseVehicle;
+using UnityEngine;
 //using AVS.Localization;
 
 namespace AVS
 {
     public abstract class StorageInput : HandTarget, IHandTarget
     {
-        public ModVehicle? mv;
+        public AvsVehicle? mv;
         public int slotID = -1;
         public GameObject? model;
         public Collider? collider;
@@ -32,11 +33,11 @@ namespace AVS
 
             // go up in the transform heirarchy until we find the ModVehicle
             Transform modVe = transform;
-            while (modVe.gameObject.GetComponent<ModVehicle>() == null)
+            while (modVe.gameObject.GetComponent<AvsVehicle>() == null)
             {
                 modVe = modVe.parent;
             }
-            mv = modVe.gameObject.GetComponent<ModVehicle>();
+            mv = modVe.gameObject.GetComponent<AvsVehicle>();
             SetEnabled(true);
         }
         protected void OnDisable()
@@ -52,7 +53,7 @@ namespace AVS
         protected void OnClosePDA(PDA? pda)
         {
             seq.Set(0, false, null);
-            gameObject.GetComponentInParent<ModVehicle>().OnStorageOpen(transform.name, false);
+            gameObject.GetComponentInParent<AvsVehicle>().OnStorageOpen(transform.name, false);
             Utils.PlayFMODAsset(this.closeSound, base.transform, 1f);
         }
         protected void UpdateColliderState()
@@ -102,7 +103,7 @@ namespace AVS
         }
         public void OnHandClick(GUIHand hand)
         {
-            float timeToWait = gameObject.GetComponentInParent<ModVehicle>().OnStorageOpen(transform.name, true);
+            float timeToWait = gameObject.GetComponentInParent<AvsVehicle>().OnStorageOpen(transform.name, true);
             seq.Set(timeToWait, true, new SequenceCallback(ChangeFlapState));
         }
     }

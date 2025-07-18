@@ -2,6 +2,7 @@
 using System.Linq;
 using HarmonyLib;
 using System.Reflection.Emit;
+using AVS.BaseVehicle;
 
 // PURPOSE: ensure bleeders deal damage in an intuitive way
 // VALUE: high
@@ -18,7 +19,7 @@ namespace AVS.Patches.CreaturePatches
          */
         public static bool IsPlayerInsideModVehicle()
         {
-            return (Player.main.GetVehicle() is ModVehicle);
+            return (Player.main.GetVehicle() is AvsVehicle);
         }
         [HarmonyPatch(nameof(AttachAndSuck.OnCollisionEnter))]
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

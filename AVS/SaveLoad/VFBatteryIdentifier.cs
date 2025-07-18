@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.BaseVehicle;
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -6,7 +7,7 @@ namespace AVS.SaveLoad
 {
     internal class VFBatteryIdentifier : MonoBehaviour, IProtoTreeEventListener
     {
-        internal ModVehicle mv => GetComponentInParent<ModVehicle>();
+        internal AvsVehicle mv => GetComponentInParent<AvsVehicle>();
         const string saveFileNameSuffix = "battery";
         private string SaveFileName => SaveLoadUtils.GetSaveFileName(mv.transform, transform, saveFileNameSuffix);
 

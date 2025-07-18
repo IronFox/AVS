@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
 using HarmonyLib;
 
 // PURPOSE: Ensure onboard fabricators are correctly powered. Ensure the constructor cannot build two MVs at once.
@@ -13,7 +14,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(GhostCrafter.HasEnoughPower))]
         public static bool HasEnoughPowerPrefix(GhostCrafter __instance, ref bool __result)
         {
-            ModVehicle mv = __instance.GetComponentInParent<ModVehicle>();
+            AvsVehicle mv = __instance.GetComponentInParent<AvsVehicle>();
             if (mv is null || !GameModeUtils.RequiresPower())
             {
                 return true;
@@ -45,8 +46,8 @@ namespace AVS.Patches
                 // if powerRelay.powerPreview was null, we must be talking about a ModVehicle
                 // (it was never assigned because PowerRelay.Start is skipped for ModVehicles)
                 // so let's check for one
-                ModVehicle? mv = null;
-                foreach (ModVehicle tempMV in VehicleManager.VehiclesInPlay)
+                AvsVehicle? mv = null;
+                foreach (AvsVehicle tempMV in VehicleManager.VehiclesInPlay)
                 {
                     if (tempMV.IsUnderCommand)
                     {
@@ -81,7 +82,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(ConstructorInput.OnHandClick))]
         public static bool OnHandClickPrefix(ConstructorInput __instance, GUIHand hand)
         {
-            if (__instance.constructor.buildTarget.SafeGetComponent<ModVehicle>() != null)
+            if (__instance.constructor.buildTarget.SafeGetComponent<AvsVehicle>() != null)
             {
                 return false;
             }

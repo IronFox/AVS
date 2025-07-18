@@ -1,4 +1,5 @@
-﻿using AVS.UpgradeTypes;
+﻿using AVS.BaseVehicle;
+using AVS.UpgradeTypes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -76,7 +77,7 @@ namespace AVS.Admin
         /// <param name="param">The parameters containing the vehicle to evaluate and its associated data.</param>
         public static void EvaluateDepthModules(AddActionParams param)
         {
-            ModVehicle mv = param.vehicle.GetComponent<ModVehicle>();
+            AvsVehicle mv = param.vehicle.GetComponent<AvsVehicle>();
             if (!mv)
             {
                 Subtitles.Add("This upgrade is not compatible with this vehicle.");
@@ -121,13 +122,13 @@ namespace AVS.Admin
         {
             try
             {
-                VehicleEntry ve = VehicleManager.vehicleTypes.Where(x => x.name.Contains(name)).First();
+                VehicleEntry ve = VehicleManager.VehicleTypes.Where(x => x.name.Contains(name)).First();
                 return ve.techType;
             }
             catch
             {
                 Logger.Error("GetTechTypeFromVehicleName Error. Could not find a vehicle by the name: " + name + ". Here are all vehicle names:");
-                VehicleManager.vehicleTypes.ForEach(x => Logger.Log(x.name));
+                VehicleManager.VehicleTypes.ForEach(x => Logger.Log(x.name));
                 return 0;
             }
         }

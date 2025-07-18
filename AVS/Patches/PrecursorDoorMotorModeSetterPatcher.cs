@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.BaseVehicle;
+using HarmonyLib;
 using UnityEngine;
 
 // PURPOSE: ModVehicles that go through MoonGates should fall to the ground
@@ -26,7 +27,7 @@ namespace AVS.Patches
             {
                 gameObject = col.gameObject!;
             }
-            ModVehicle componentInHierarchy2 = UWE.Utils.GetComponentInHierarchy<ModVehicle>(gameObject);
+            AvsVehicle componentInHierarchy2 = UWE.Utils.GetComponentInHierarchy<AvsVehicle>(gameObject);
             if (componentInHierarchy2)
             {
                 PrecursorDoorMotorMode precursorDoorMotorMode = __instance.setToMotorModeOnEnter;

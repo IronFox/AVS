@@ -1,4 +1,5 @@
-﻿using AVS.VehicleTypes;
+﻿using AVS.BaseVehicle;
+using AVS.VehicleTypes;
 using HarmonyLib;
 using UnityEngine;
 
@@ -128,7 +129,7 @@ namespace AVS
         {
             if (__instance.currentMountedVehicle != null)
             {
-                var mv = __instance.currentMountedVehicle as ModVehicle;
+                var mv = __instance.currentMountedVehicle as AvsVehicle;
                 switch (mv)
                 {
                     case Submarine _:
@@ -153,7 +154,7 @@ namespace AVS
                 return true;
             }
 
-            if (__instance.currentMountedVehicle is ModVehicle && __instance.mode == Player.Mode.LockedPiloting && !Admin.Utils.IsAnAncestorTheCurrentMountedVehicle(Player.main.transform))
+            if (__instance.currentMountedVehicle is AvsVehicle && __instance.mode == Player.Mode.LockedPiloting && !Admin.Utils.IsAnAncestorTheCurrentMountedVehicle(Player.main.transform))
             {
                 Logger.Error("Mismatch between the Player's mounted vehicle and the Player's parent!");
                 // Don't skip. This is a weird problem and it needs resolved, so let it die strangely.
@@ -187,8 +188,9 @@ namespace AVS
             {
                 return;
             }
-            mv.StopPiloting();
-            mv.PlayerExit();
+            mv.Log.Write("PlayerOnKillPostfix: Player has died, exiting vehicle.");
+            mv.EndHelmControl(0);
+            mv.ClosestPlayerExit(false);
         }
     }
 }

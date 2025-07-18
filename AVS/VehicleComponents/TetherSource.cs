@@ -17,7 +17,7 @@ namespace AVS
         public Submarine? mv = null;
         private bool isLive = true;
         public bool isSimple;
-        public Bounds bounds
+        public Bounds Bounds
         {
             get
             {
@@ -99,22 +99,23 @@ namespace AVS
             {
                 if (Vector3.Distance(Player.main.transform.position, transform.position) > 10)
                 {
-                    MVExit();
+                    MVExit($"TryToDropLeash: Simple tether: Distance to vehicle center has exceded 10 meters");
                 }
             }
             else
             {
+                var bounds = Bounds;
                 if (!bounds.Contains(Player.main.transform.position))
                 {
-                    MVExit();
+                    MVExit($"TryToDropLeash: Vehicle bounding box ({bounds}) no longer contains player at ({Player.main.transform.position})");
                 }
             }
         }
-        private void MVExit()
+        private void MVExit(string reason)
         {
-
-            mv!.StopPiloting();
-            mv.PlayerExit();
+            mv!.Log.Write("TetherSource: Player exiting vehicle because " + reason);
+            mv.EndHelmControl(0);
+            mv.ClosestPlayerExit(false);
 
             //// the following block is just for the gargantuan leviathan
             //// that mod disables all vehicle colliders in GargantuanGrab.GrabVehicle
@@ -157,18 +158,18 @@ namespace AVS
                 {
                     if (Vector3.Distance(Player.main.transform.position, transform.position) < 1f)
                     {
-                        mv.PlayerEntry();
+                        mv.RegisterPlayerEntry();
                     }
-                    else if (Vector3.Distance(Player.main.transform.position, mv.Com.PilotSeats.First().Seat.transform.position) < 1f)
+                    else if (Vector3.Distance(Player.main.transform.position, mv.Com.Helms.First().Root.transform.position) < 1f)
                     {
-                        mv.PlayerEntry();
+                        mv.RegisterPlayerEntry();
                     }
                 }
                 else
                 {
-                    if (mv.Com.TetherSources.Where(x => PlayerWithinLeash(x)).Count() > 0)
+                    if (mv.Com.TetherSources.Any(PlayerWithinLeash))
                     {
-                        mv.PlayerEntry();
+                        mv.RegisterPlayerEntry();
                     }
                 }
             }

@@ -1,6 +1,7 @@
-﻿using HarmonyLib;
-using UnityEngine;
+﻿using AVS.BaseVehicle;
+using HarmonyLib;
 using System.Collections.Generic;
+using UnityEngine;
 
 // PURPOSE: Prevent ModVehicles from entering "moon gates"
 // VALUE: high, for the sake of world consistency
@@ -9,14 +10,14 @@ namespace AVS.Patches
 {
     internal class BlockModVehicle : MonoBehaviour
     {
-        private readonly Dictionary<ModVehicle, int> MVs = new Dictionary<ModVehicle, int>();
+        private readonly Dictionary<AvsVehicle, int> MVs = new Dictionary<AvsVehicle, int>();
         internal void FixedUpdate()
         {
             MVs.ForEach(x => x.Key.useRigidbody.AddForce(transform.forward * 3f, ForceMode.VelocityChange));
         }
         internal void OnTriggerEnter(Collider other)
         {
-            ModVehicle mv = other.GetComponentInParent<ModVehicle>();
+            AvsVehicle mv = other.GetComponentInParent<AvsVehicle>();
             if (mv == null)
             {
                 return;
@@ -32,7 +33,7 @@ namespace AVS.Patches
         }
         internal void OnTriggerExit(Collider other)
         {
-            ModVehicle mv = other.GetComponentInParent<ModVehicle>();
+            AvsVehicle mv = other.GetComponentInParent<AvsVehicle>();
             if (mv == null)
             {
                 return;
@@ -58,7 +59,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(BlockSeamoth.FixedUpdate))]
         public static void BlockSeamothFixedUpdatePostfix(BlockSeamoth __instance)
         {
-            if(__instance.GetComponent<BlockModVehicle>() == null)
+            if (__instance.GetComponent<BlockModVehicle>() == null)
             {
                 __instance.gameObject.AddComponent<BlockModVehicle>();
             }

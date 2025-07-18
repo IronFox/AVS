@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using AVS.BaseVehicle;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace AVS
@@ -46,7 +47,7 @@ namespace AVS
                 this.OnClosePDA(null);
             }
         }
-        public static List<ItemsContainer> GetAllModularStorageContainers(ModVehicle mv)
+        public static List<ItemsContainer> GetAllModularStorageContainers(AvsVehicle mv)
         {
             List<ItemsContainer> result = new List<ItemsContainer>();
             if (mv == null)

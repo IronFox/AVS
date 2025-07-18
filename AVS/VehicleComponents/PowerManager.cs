@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using AVS.BaseVehicle;
+using UnityEngine;
 
 namespace AVS
 {
@@ -35,7 +36,7 @@ namespace AVS
         private bool isInteriorLightsOn = false;
         private bool isAutoLeveling = false;
         private bool isAutoPiloting = false;
-        private ModVehicle mv => GetComponent<ModVehicle>();
+        private AvsVehicle mv => GetComponent<AvsVehicle>();
         private EnergyInterface ei => GetComponent<EnergyInterface>();
 
         private PowerEvent EvaluatePowerEvent()

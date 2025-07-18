@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.BaseVehicle;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace AVS.SaveLoad
 {
     internal class VFInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListener
     {
-        internal ModVehicle mv => GetComponentInParent<ModVehicle>();
+        internal AvsVehicle mv => GetComponentInParent<AvsVehicle>();
         const string saveFileNameSuffix = "innatestorage";
         private string SaveFileName => SaveLoadUtils.GetSaveFileName(mv.transform, transform, saveFileNameSuffix);
 

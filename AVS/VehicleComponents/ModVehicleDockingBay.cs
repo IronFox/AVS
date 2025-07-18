@@ -1,24 +1,25 @@
-﻿using System;
+﻿using AVS.BaseVehicle;
+using System;
 
 namespace AVS.VehicleComponents
 {
     public abstract class ModVehicleDockingBay : DockingBay
     {
-        private ModVehicle mv => GetComponent<ModVehicle>();
+        private AvsVehicle mv => GetComponent<AvsVehicle>();
         protected float rechargePerFrame = 1f;
         protected override void OnFinishedDocking(Vehicle dockingVehicle)
         {
             base.OnFinishedDocking(dockingVehicle);
             if (Player.main.currentMountedVehicle == dockingVehicle)
             {
-                mv.PlayerEntry();
+                mv.ClosestPlayerEntry();
             }
         }
         protected override void OnStartedUndocking(bool withPlayer)
         {
             if (withPlayer)
             {
-                mv.PlayerExit();
+                mv.ClosestPlayerExit(false);
             }
             base.OnStartedUndocking(withPlayer);
         }

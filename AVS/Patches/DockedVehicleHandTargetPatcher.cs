@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
 using AVS.VehicleTypes;
 using HarmonyLib;
 using System;
@@ -34,7 +35,7 @@ namespace AVS.Patches
             {
                 if (codes[i].opcode == OpCodes.Callvirt && codes[i].operand.ToString().ToLower().Contains("energymixin"))
                 {
-                    newCodes[i] = CodeInstruction.Call(typeof(ModVehicle), nameof(ModVehicle.GetEnergyMixinFromVehicle));
+                    newCodes[i] = CodeInstruction.Call(typeof(AvsVehicle), nameof(AvsVehicle.GetEnergyMixinFromVehicle));
                 }
                 else
                 {
@@ -48,13 +49,13 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(DockedVehicleHandTarget.OnHandHover))]
         public static void OnHandHoverPostfix(DockedVehicleHandTarget __instance)
         {
-            var mv = __instance.dockingBay.GetDockedVehicle() as ModVehicle;
+            var mv = __instance.dockingBay.GetDockedVehicle() as AvsVehicle;
             if (mv != null)
             {
                 string text = mv.subName.hullName.text;
                 if (mv is Submarine sub && sub.Com.Hatches.Count > 0)
                 {
-                    text = sub.Com.Hatches[0].Hatch.GetComponent<VehicleHatch>().EnterHint;
+                    text = sub.GetClosestEntryHatch().Hatch.GetComponent<VehicleHatch>().EnterHint;
                 }
                 float energyActual = 0;
                 float energyMax = 0;
@@ -85,7 +86,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(DockedVehicleHandTarget.OnHandClick))]
         public static bool OnHandClickPrefix(DockedVehicleHandTarget __instance, GUIHand hand)
         {
-            var mv = __instance.dockingBay.GetDockedVehicle() as ModVehicle;
+            var mv = __instance.dockingBay.GetDockedVehicle() as AvsVehicle;
             if (mv == null)
             {
                 return true;

@@ -1,4 +1,5 @@
-﻿using AVS.VehicleTypes;
+﻿using AVS.BaseVehicle;
+using AVS.VehicleTypes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -68,10 +69,10 @@ namespace AVS
         /// <summary>
         /// Registers a vehicle asynchronously by starting a coroutine.
         /// </summary>
-        /// <remarks>Calls <see cref="RegisterVehicle(ModVehicle, bool)"/></remarks>
+        /// <remarks>Calls <see cref="RegisterVehicle(AvsVehicle, bool)"/></remarks>
         /// <param name="mv">The mod vehicle to register.</param>
         /// <param name="verbose">Whether to enable verbose logging.</param>
-        public static void RegisterVehicleLater(ModVehicle mv, bool verbose = false)
+        public static void RegisterVehicleLater(AvsVehicle mv, bool verbose = false)
         {
             UWE.CoroutineHost.StartCoroutine(RegisterVehicle(mv, verbose));
         }
@@ -82,10 +83,10 @@ namespace AVS
         /// <param name="mv">The mod vehicle to register.</param>
         /// <param name="verbose">Whether to enable verbose logging.</param>
         /// <returns>IEnumerator for coroutine execution.</returns>
-        public static IEnumerator RegisterVehicle(ModVehicle mv, bool verbose = false)
+        public static IEnumerator RegisterVehicle(AvsVehicle mv, bool verbose = false)
         {
             mv.OnAwakeOrPrefabricate();
-            if (VehicleManager.vehicleTypes.Where(x => x.name == mv.gameObject.name).Any())
+            if (VehicleManager.VehicleTypes.Where(x => x.name == mv.gameObject.name).Any())
             {
                 VerboseLog(LogType.Warn, verbose, $"{mv.gameObject.name} was already registered.");
                 yield break;
@@ -103,7 +104,7 @@ namespace AVS
             {
                 VerboseLog(LogType.Log, verbose, $"Enqueueing the {mv.gameObject.name} for Registration.");
                 RegistrationQueue.Enqueue(() => UWE.CoroutineHost.StartCoroutine(InternalRegisterVehicle(mv, verbose)));
-                yield return new WaitUntil(() => VehicleManager.vehicleTypes.Select(x => x.mv).Contains(mv));
+                yield return new WaitUntil(() => VehicleManager.VehicleTypes.Select(x => x.mv).Contains(mv));
             }
             else
             {
@@ -118,7 +119,7 @@ namespace AVS
         /// <param name="mv">The mod vehicle to register.</param>
         /// <param name="verbose">Whether to enable verbose logging.</param>
         /// <returns>IEnumerator for coroutine execution.</returns>
-        private static IEnumerator InternalRegisterVehicle(ModVehicle mv, bool verbose)
+        private static IEnumerator InternalRegisterVehicle(AvsVehicle mv, bool verbose)
         {
             RegistrySemaphore = true;
             VerboseLog(LogType.Log, verbose, $"The {mv.gameObject.name} is beginning Registration.");
@@ -139,7 +140,7 @@ namespace AVS
         /// <param name="mv">The mod vehicle to validate.</param>
         /// <param name="verbose">Whether to enable verbose logging.</param>
         /// <returns>True if the vehicle is valid; otherwise, false.</returns>
-        public static bool ValidateAll(ModVehicle mv, bool verbose)
+        public static bool ValidateAll(AvsVehicle mv, bool verbose)
         {
             if (mv is Submarine sub1)
             {
@@ -174,7 +175,7 @@ namespace AVS
         /// <param name="mv">The mod vehicle to validate.</param>
         /// <param name="verbose">Whether to enable verbose logging.</param>
         /// <returns>True if the vehicle is valid; otherwise, false.</returns>
-        public static bool ValidateRegistration(ModVehicle mv, bool verbose)
+        public static bool ValidateRegistration(AvsVehicle mv, bool verbose)
         {
             string thisName = "";
             try
@@ -341,7 +342,7 @@ namespace AVS
         /// <returns>True if the submarine is valid; otherwise, false.</returns>
         public static bool ValidateRegistration(Submarine mv, bool verbose)
         {
-            if (!ValidateRegistration(mv as ModVehicle, verbose))
+            if (!ValidateRegistration(mv as AvsVehicle, verbose))
             {
                 return false;
             }
@@ -349,7 +350,7 @@ namespace AVS
             try
             {
                 thisName = mv.name + ": ";
-                if (mv.Com.PilotSeats.Count == 0)
+                if (mv.Com.Helms.Count == 0)
                 {
                     Logger.Error(thisName + "No ModVehicle.PilotSeats were provided. These specify what the player will click on to begin piloting the vehicle.");
                     return false;
@@ -401,15 +402,7 @@ namespace AVS
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + "A null ModVehicle.ControlPanel was provided. This is necessary to toggle floodlights.");
                 }
-                if (mv.Com.SteeringWheelLeftHandTarget == null)
-                {
-                    VerboseLog(LogType.Log, verbose, thisName + "A null ModVehicle.SteeringWheelLeftHandTarget was provided. This is what the player's left hand will 'grab' while you pilot.");
-                }
-                if (mv.Com.SteeringWheelRightHandTarget == null)
-                {
-                    VerboseLog(LogType.Log, verbose, thisName + "A null ModVehicle.SteeringWheelRightHandTarget was provided.  This is what the player's right hand will 'grab' while you pilot.");
-                }
-                foreach (VehicleParts.VehiclePilotSeat ps in mv.Com.PilotSeats)
+                foreach (VehicleParts.Helm ps in mv.Com.Helms)
                 {
                     if (!ps.CheckValidity(thisName, verbose))
                         return false;
@@ -450,7 +443,7 @@ namespace AVS
         /// <returns>True if the submersible is valid; otherwise, false.</returns>
         public static bool ValidateRegistration(Submersible mv, bool verbose)
         {
-            if (!ValidateRegistration(mv as ModVehicle, verbose))
+            if (!ValidateRegistration(mv as AvsVehicle, verbose))
             {
                 return false;
             }
@@ -462,14 +455,6 @@ namespace AVS
                 {
                     Logger.Error(thisName + "No ModVehicle.Hatches were provided. These specify how the player will enter and exit the vehicle.");
                     return false;
-                }
-                if (mv.Com.SteeringWheelLeftHandTarget == null)
-                {
-                    VerboseLog(LogType.Log, verbose, thisName + "A null ModVehicle.SteeringWheelLeftHandTarget was provided. This is what the player's left hand will 'grab' while you pilot.");
-                }
-                if (mv.Com.SteeringWheelRightHandTarget == null)
-                {
-                    VerboseLog(LogType.Log, verbose, thisName + "A null ModVehicle.SteeringWheelRightHandTarget was provided.  This is what the player's right hand will 'grab' while you pilot.");
                 }
                 if (!mv.Com.PilotSeat.CheckValidity(thisName, verbose))
                     return false;

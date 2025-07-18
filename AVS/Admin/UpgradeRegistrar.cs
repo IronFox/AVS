@@ -1,4 +1,5 @@
 ﻿using AVS.Assets;
+using AVS.BaseVehicle;
 using AVS.UpgradeTypes;
 using AVS.Util;
 using Nautilus.Assets.Gadgets;
@@ -451,11 +452,11 @@ namespace AVS.Admin
             {
                 IEnumerator DoToggleAction(ToggleActionParams param, float timeToFirstActivation, float repeatRate, float energyCostPerActivation)
                 {
-                    bool isModVehicle = param.vehicle.GetComponent<ModVehicle>() != null;
+                    bool isModVehicle = param.vehicle.GetComponent<AvsVehicle>() != null;
                     yield return new WaitForSeconds(timeToFirstActivation);
                     while (true)
                     {
-                        bool shouldStopWorking = isModVehicle ? !param.vehicle.GetComponent<ModVehicle>().IsUnderCommand : !param.vehicle.GetPilotingMode();
+                        bool shouldStopWorking = isModVehicle ? !param.vehicle.GetComponent<AvsVehicle>().IsUnderCommand : !param.vehicle.GetPilotingMode();
                         if (shouldStopWorking)
                         {
                             param.vehicle.ToggleSlot(param.slotID, false);

@@ -1,5 +1,6 @@
-﻿using AVS.VehicleTypes;
-using UnityEngine;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
+using AVS.VehicleTypes;
 //using AVS.Localization;
 
 namespace AVS
@@ -12,25 +13,29 @@ namespace AVS
         /// <summary>
         /// The owning vehicle. Assigned during instantiation
         /// </summary>
-        public ModVehicle? mv;
+        public AvsVehicle? mv;
         /// <summary>
         /// The index of the seat this trigger was attached to
         /// </summary>
-        public int seatIndex;
+        public int helmIndex;
 
         private bool isLive = true;
         void IHandTarget.OnHandClick(GUIHand hand)
         {
+            Logger.Log($"PilotingTrigger.OnHandClick: {mv?.NiceName()}");
             if (mv != null
                 && !mv.GetPilotingMode()
                 && mv.IsPowered()
                 && isLive)
             {
                 if (mv is Submarine submarine)
-                    submarine.EnterHelmControl(seatIndex);
+                    submarine.EnterHelmControl(helmIndex);
+                if (mv is Submersible sub)
+                    sub.EnterHelmControl();
                 else
-                    mv.BeginPiloting();
+                    mv.Log.Error($"Unsupported helm on vehicle {mv.NiceName()}");
             }
+            Logger.Log($"PilotingTrigger.OnHandClick end");
         }
         void IHandTarget.OnHandHover(GUIHand hand)
         {

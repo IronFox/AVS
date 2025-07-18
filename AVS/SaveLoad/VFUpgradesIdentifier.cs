@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.BaseVehicle;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace AVS.SaveLoad
     internal class VFUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
     {
         internal bool isFinished = false;
-        internal ModVehicle mv => GetComponentInParent<ModVehicle>();
+        internal AvsVehicle mv => GetComponentInParent<AvsVehicle>();
         const string saveFileNameSuffix = "upgrades";
         private string SaveFileName => SaveLoadUtils.GetSaveFileName(mv.transform, transform, saveFileNameSuffix);
         private const string NewSaveFileName = "Upgrades";

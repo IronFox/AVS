@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.BaseVehicle;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,7 +15,7 @@ namespace AVS
         {
             BuildBotBeamPoints bbbp = mv.EnsureComponent<BuildBotBeamPoints>();
             List<Transform> bbbpList = new List<Transform>();
-            ModVehicle modVehicle = mv.GetComponent<ModVehicle>();
+            AvsVehicle modVehicle = mv.GetComponent<AvsVehicle>();
             if (modVehicle != null)
             {
                 foreach (Transform child in modVehicle.collisionModel.transform.GetComponentsInChildren<Transform>())
@@ -39,7 +40,7 @@ namespace AVS
             VFXConstructing rocketPlatformVfx = seamoth.GetComponentInChildren<VFXConstructing>();
             VFXConstructing vfxc = go.EnsureComponent<VFXConstructing>();
 
-            ModVehicle mv = go.GetComponent<ModVehicle>();
+            AvsVehicle mv = go.GetComponent<AvsVehicle>();
             vfxc.timeToConstruct = mv == null ? 10f : mv.Config.TimeToConstruct;
 
             vfxc.alphaTexture = seamothVFXC.alphaTexture;
@@ -202,7 +203,7 @@ namespace AVS
             Transform H = GetCornerCube(pointsRoot, localSize, localCenter, CornerValue.rightbotback);
             BuildPathsUsingCorners(go, pointsRoot, A, B, C, D, E, F, G, H);
         }
-        public static void BuildPathsForModVehicle(ModVehicle mv, GameObject pointsRoot)
+        public static void BuildPathsForModVehicle(AvsVehicle mv, GameObject pointsRoot)
         {
             var box = mv.Com.BoundingBoxCollider;
             if (box != null)
@@ -224,7 +225,7 @@ namespace AVS
         }
         public static void BuildBotPathsHelper(GameObject go)
         {
-            ModVehicle mv = go.GetComponent<ModVehicle>();
+            AvsVehicle mv = go.GetComponent<AvsVehicle>();
             GameObject bbPointsRoot = new GameObject("BuildBotPoints");
             bbPointsRoot.transform.SetParent(go.transform);
             if (mv != null && mv.Com.BoundingBoxCollider != null)
@@ -247,7 +248,7 @@ namespace AVS
         }
         public static IEnumerator SetupBuildBotPathsForAllMVs()
         {
-            foreach (ModVehicle mv in VehicleBuilder.prefabs)
+            foreach (AvsVehicle mv in VehicleBuilder.prefabs)
             {
                 if (mv.GetComponentInChildren<BuildBotPath>(true) == null)
                 {

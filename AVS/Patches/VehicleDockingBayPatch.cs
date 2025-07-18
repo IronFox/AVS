@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.BaseVehicle;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
@@ -20,10 +21,10 @@ namespace AVS.Patches
     [HarmonyPatch(typeof(VehicleDockingBay))]
     class VehicleDockingBayPatch
     {
-        private static bool HandleMoonpool(ModVehicle mv)
+        private static bool HandleMoonpool(AvsVehicle mv)
         {
             //Vector3 boundingDimensions = mv.CyclopsDockRotation * mv.GetBoundingDimensions();
-            Vector3 boundingDimensions = mv.GetBoundingDimensions();
+            Vector3 boundingDimensions = mv.GetDockingBoundsSize();
             if (boundingDimensions == Vector3.zero)
             {
                 return false;
@@ -45,10 +46,10 @@ namespace AVS.Patches
             }
             return true;
         }
-        private static bool HandleCyclops(ModVehicle mv)
+        private static bool HandleCyclops(AvsVehicle mv)
         {
             //Vector3 boundingDimensions = mv.CyclopsDockRotation * mv.GetBoundingDimensions();
-            Vector3 boundingDimensions = mv.GetBoundingDimensions();
+            Vector3 boundingDimensions = mv.GetDockingBoundsSize();
             if (boundingDimensions == Vector3.zero)
             {
                 return false;
@@ -91,7 +92,7 @@ namespace AVS.Patches
         }
         public static bool IsThisVehicleSmallEnough(VehicleDockingBay bay, GameObject nearby)
         {
-            ModVehicle mv = UWE.Utils.GetComponentInHierarchy<ModVehicle>(nearby.gameObject);
+            AvsVehicle mv = UWE.Utils.GetComponentInHierarchy<AvsVehicle>(nearby.gameObject);
             if (mv == null)
             {
                 return true;
@@ -117,7 +118,7 @@ namespace AVS.Patches
         }
         private static void HandleMVDocked(Vehicle vehicle, VehicleDockingBay dock)
         {
-            var mv = vehicle as ModVehicle;
+            var mv = vehicle as AvsVehicle;
             if (mv != null)
             {
                 Moonpool moonpool = dock.GetComponentInParent<Moonpool>();
@@ -145,7 +146,7 @@ namespace AVS.Patches
         // This patch animates the docking bay arms as if a seamoth is docked
         public static void LateUpdatePostfix(VehicleDockingBay __instance)
         {
-            var mv = __instance.dockedVehicle as ModVehicle;
+            var mv = __instance.dockedVehicle as AvsVehicle;
             if (mv != null)
             {
                 mv.AnimateMoonPoolArms(__instance);
@@ -180,7 +181,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(VehicleDockingBay.UpdateDockedPosition))]
         public static bool UpdateDockedPositionPrefix(VehicleDockingBay __instance, Vehicle vehicle, float interpfraction)
         {
-            var mv = vehicle as ModVehicle;
+            var mv = vehicle as AvsVehicle;
             if (mv == null)
             {
                 return true;
@@ -202,7 +203,7 @@ namespace AVS.Patches
             }
             if (!mv.IsUndockingAnimating)
             {
-                vehicle.transform.position = Vector3.Lerp(__instance.startPosition, endingTransform.position, interpfraction) - mv.GetDifferenceFromCenter();
+                vehicle.transform.position = Vector3.Lerp(__instance.startPosition, endingTransform.position, interpfraction) - mv.GetDockingDifferenceFromCenter();
                 //vehicle.transform.rotation = Quaternion.Lerp(__instance.startRotation, mv.CyclopsDockRotation * endingTransform.rotation, interpfraction);
                 vehicle.transform.rotation = Quaternion.Lerp(__instance.startRotation, endingTransform.rotation, interpfraction);
             }
@@ -261,7 +262,7 @@ namespace AVS.Patches
 
         public static void MaybeStartCinematicMode(PlayerCinematicController cinematic, Player player, Vehicle vehicle)
         {
-            if (vehicle as ModVehicle == null)
+            if (vehicle as AvsVehicle == null)
             {
                 cinematic.StartCinematicMode(player);
             }

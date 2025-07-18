@@ -23,11 +23,11 @@ namespace AVS.Composition
         public IReadOnlyList<GameObject> TetherSources { get; } = Array.Empty<GameObject>();
 
         /// <summary>
-        /// The list of pilot seats in the submarine.
-        /// Each seat allows a player to pilot the submarine.
+        /// The list of helm stations in the submarine.
+        /// Each helm allows a player to pilot the submarine.
         /// Must not be empty.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehiclePilotSeat> PilotSeats { get; } = Array.Empty<VehicleParts.VehiclePilotSeat>();
+        public IReadOnlyList<VehicleParts.Helm> Helms { get; } = Array.Empty<VehicleParts.Helm>();
 
         /// <summary>
         /// Optional flood light definitions.
@@ -94,7 +94,7 @@ namespace AVS.Composition
         /// <param name="storageRootObject">The parent object for all storage objects. Must not be null and not the same as vehicle object.</param>
         /// <param name="modulesRootObject">The parent object for all modules. Must not be null and not the same as vehicle object.</param>
         /// <param name="tetherSources">The list of active tethers in the submarine. Must not be null or empty.</param>
-        /// <param name="pilotSeats">The list of pilot seats in the submarine. Must not be null or empty.</param>
+        /// <param name="helms">The list of helm stations in the submarine. Must not be null or empty.</param>
         /// <param name="hatches">Entry/exit hatches for the submarine. Must not be null or empty.</param>
         /// <param name="floodLights">Optional flood light definitions. If non-empty, these lights will be controlled using the control panel, if installed.</param>
         /// <param name="interiorLights">Optional interior light definitions. If non-empty, these lights will be controlled using the control panel, if installed.</param>
@@ -117,19 +117,17 @@ namespace AVS.Composition
         /// <param name="headLights">Headlights. Optional.</param>
         /// <param name="canopyWindows">Canopy windows. Optional.</param>
         /// <param name="backupBatteries">Backup batteries. Optional.</param>
-        /// <param name="steeringWheelLeftHandTarget">Steering wheel left hand target. Optional.</param>
-        /// <param name="steeringWheelRightHandTarget">Steering wheel right hand target. Optional.</param>
         /// <param name="denyBuildingColliders">Deny building colliders. Optional.</param>
         /// <param name="subNameDecals">Sub name decals. Optional.</param>
         /// <param name="lavaLarvaAttachPoints">Lava larva attach points. Optional.</param>
         /// <param name="leviathanGrabPoint">Leviathan grab point. Optional.</param>
         /// <param name="engine">The engine that powers the vehicle. Must not be null.</param>
-        /// <exception cref="ArgumentException">Thrown if <paramref name="tetherSources"/> or <paramref name="pilotSeats"/> is null or empty.</exception>
+        /// <exception cref="ArgumentException">Thrown if <paramref name="tetherSources"/> or <paramref name="helms"/> is null or empty.</exception>
         public SubmarineComposition(
             GameObject storageRootObject,
             GameObject modulesRootObject,
             IReadOnlyList<GameObject> tetherSources,
-            IReadOnlyList<VehicleParts.VehiclePilotSeat> pilotSeats,
+            IReadOnlyList<VehicleParts.Helm> helms,
             IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             AbstractEngine engine,
             GameObject collisionModel,
@@ -154,8 +152,6 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
             IReadOnlyList<VehicleParts.VehicleBattery>? backupBatteries = null,
-            GameObject? steeringWheelLeftHandTarget = null,
-            GameObject? steeringWheelRightHandTarget = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
@@ -176,8 +172,6 @@ namespace AVS.Composition
             headLights: headLights,
             canopyWindows: canopyWindows,
             backupBatteries: backupBatteries,
-            steeringWheelLeftHandTarget: steeringWheelLeftHandTarget,
-            steeringWheelRightHandTarget: steeringWheelRightHandTarget,
             denyBuildingColliders: denyBuildingColliders,
             subNameDecals: subNameDecals,
             lavaLarvaAttachPoints: lavaLarvaAttachPoints,
@@ -186,11 +180,11 @@ namespace AVS.Composition
         {
             if (tetherSources == null || tetherSources.Count == 0)
                 throw new ArgumentException("TetherSources must not be null or empty.", nameof(tetherSources));
-            if (pilotSeats == null || pilotSeats.Count == 0)
-                throw new ArgumentException("PilotSeats must not be null or empty.", nameof(pilotSeats));
+            if (helms == null || helms.Count == 0)
+                throw new ArgumentException("PilotSeats must not be null or empty.", nameof(helms));
 
             TetherSources = tetherSources;
-            PilotSeats = pilotSeats;
+            Helms = helms;
             FloodLights = floodLights ?? Array.Empty<VehicleParts.VehicleFloodLight>();
             InteriorLights = interiorLights ?? Array.Empty<Light>();
             NavigationPortLights = navigationPortLights ?? Array.Empty<GameObject>();

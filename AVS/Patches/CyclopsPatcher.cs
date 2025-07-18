@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.BaseVehicle;
+using HarmonyLib;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace AVS.Patches
             {
                 if (codes[i].opcode == OpCodes.Callvirt && codes[i].operand.ToString().ToLower().Contains("energymixin"))
                 {
-                    newCodes[i] = CodeInstruction.Call(typeof(ModVehicle), nameof(ModVehicle.GetEnergyMixinFromVehicle));
+                    newCodes[i] = CodeInstruction.Call(typeof(AvsVehicle), nameof(AvsVehicle.GetEnergyMixinFromVehicle));
                 }
                 else
                 {
@@ -44,7 +45,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(CyclopsVehicleStorageTerminalManager.VehicleDocked))]
         static void VehicleDockedPrefix(CyclopsVehicleStorageTerminalManager __instance, Vehicle vehicle)
         {
-            if (vehicle is ModVehicle)
+            if (vehicle is AvsVehicle)
             {
                 // TODO: make custom DockedVehicleType and associated HUD
                 __instance.dockedVehicleType = CyclopsVehicleStorageTerminalManager.DockedVehicleType.Seamoth;
@@ -67,7 +68,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(CyclopsVehicleStorageTerminalManager.VehicleDocked))]
         static void VehicleDockedPostfix(CyclopsVehicleStorageTerminalManager __instance, Vehicle vehicle)
         {
-            if (vehicle is ModVehicle mv)
+            if (vehicle is AvsVehicle mv)
             {
                 __instance.dockedVehicleType = CyclopsVehicleStorageTerminalManager.DockedVehicleType.Seamoth;
                 __instance.usingModulesUIHolder = __instance.seamothModulesUIHolder;

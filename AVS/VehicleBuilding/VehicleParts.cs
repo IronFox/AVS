@@ -4,22 +4,66 @@ using UnityEngine;
 
 namespace AVS.VehicleParts
 {
-    public readonly struct VehiclePilotSeat
+    public readonly struct Helm
     {
-        public GameObject Seat { get; }
-        public GameObject SitLocation { get; }
-        public Transform ExitLocation { get; }
-        public VehiclePilotSeat(GameObject seat,
-            GameObject sitLocation,
-            Transform exitLocation)
+        /// <summary>
+        /// True if the player is expected to be seated at this helm.
+        /// </summary>
+        public bool IsSeated { get; }
+        /// <summary>
+        /// The helm root object
+        /// </summary>
+        public GameObject Root { get; }
+        /// <summary>
+        /// The location at which the player is inserted when entering helm control
+        /// </summary>
+        public GameObject PlayerControlLocation { get; }
+        /// <summary>
+        /// The exit location when the player exits the helm. Can be null
+        /// </summary>
+        public Transform? ExitLocation { get; }
+
+
+        /// <summary>
+        /// This is what the player's left hand will 'grab' while you pilot.
+        /// Can be null if the vehicle does not have a steering wheel.
+        /// </summary>
+        public Transform? LeftHandTarget { get; }
+        /// <summary>
+        /// This is what the player's right hand will 'grab' while you pilot.
+        /// Can be null if the vehicle does not have a steering wheel.
+        /// </summary>
+        public Transform? RightHandTarget { get; }
+
+        /// <summary>
+        /// Constructs a new instance of <see cref="Helm"/>.
+        /// </summary>
+        /// <param name="root">The helm root object</param>
+        /// <param name="playerControlLocation">The location at which the player is inserted when entering helm control</param>
+        /// <param name="exitLocation"></param>
+        /// <param name="isSeated"></param>
+        /// <param name="steeringWheelLeftHandTarget"></param>
+        /// <param name="steeringWheelRightHandTarget"></param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public Helm(
+            GameObject root,
+            GameObject playerControlLocation,
+            Transform? exitLocation,
+            bool isSeated,
+            Transform? steeringWheelLeftHandTarget = null,
+            Transform? steeringWheelRightHandTarget = null
+            )
         {
-            if (seat == null)
-                throw new ArgumentNullException(nameof(seat), "Vehicle pilot seat cannot be null.");
-            if (sitLocation == null)
-                throw new ArgumentNullException(nameof(sitLocation), "Vehicle pilot sit location cannot be null.");
-            Seat = seat;
-            SitLocation = sitLocation;
+            if (root == null)
+                throw new ArgumentNullException(nameof(root), "Vehicle pilot seat root cannot be null.");
+            if (playerControlLocation == null)
+                throw new ArgumentNullException(nameof(playerControlLocation), "Vehicle pilot sit location cannot be null.");
+            LeftHandTarget = steeringWheelLeftHandTarget;
+            RightHandTarget = steeringWheelRightHandTarget;
+            Root = root;
+            PlayerControlLocation = playerControlLocation;
             ExitLocation = exitLocation;
+            IsSeated = isSeated;
         }
 
         /// <summary>
@@ -27,9 +71,18 @@ namespace AVS.VehicleParts
         /// Todo: Should the configured exit location be used instead?
         /// </summary>
         public Vector3 CalculatedExitLocation =>
-            Seat.transform.position
-                    - Seat.transform.forward * 1
-                    + Seat.transform.up * 1f;
+            Root.transform.position
+                    - Root.transform.forward * 1
+                    + Root.transform.up * 1f;
+
+        /// <summary>
+        /// Gets the exit location for the player when exiting the vehicle
+        /// or calculates one.
+        /// </summary>
+        public Vector3 AnyExitLocation =>
+            ExitLocation != null
+                ? ExitLocation.position
+                : CalculatedExitLocation;
 
         internal bool CheckValidity(string thisName, bool verbose)
         {
@@ -37,13 +90,22 @@ namespace AVS.VehicleParts
             {
                 VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Warn, verbose, thisName + "A null PilotSeat.ExitLocation was provided. You might need this if you exit from piloting into a weird place.");
             }
+            if (LeftHandTarget == null)
+            {
+                VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, thisName + "A null ModVehicle.SteeringWheelLeftHandTarget was provided. This is what the player's left hand will 'grab' while you pilot.");
+            }
+            if (RightHandTarget == null)
+            {
+                VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, thisName + "A null ModVehicle.SteeringWheelRightHandTarget was provided.  This is what the player's right hand will 'grab' while you pilot.");
+            }
 
-            if (Seat == null)
+
+            if (Root == null)
             {
                 Logger.Error(thisName + "A null PilotSeat.Seat was provided. There would be no way to pilot this vehicle.");
                 return false;
             }
-            if (SitLocation == null)
+            if (PlayerControlLocation == null)
             {
                 Logger.Error(thisName + "A null PilotSeat.SitLocation was provided. There would be no way to pilot this vehicle.");
                 return false;
@@ -55,7 +117,15 @@ namespace AVS.VehicleParts
     {
         public GameObject Hatch { get; }
         public Transform EntryLocation { get; }
+        /// <summary>
+        /// The exit transform when exiting the vehicle through this hatch.
+        /// Currently, the rotation is ignored.
+        /// </summary>
         public Transform ExitLocation { get; }
+        /// <summary>
+        /// The exit transform to use instead of <see cref="ExitLocation"/> when the submarine
+        /// is close to the water surface while exiting.
+        /// </summary>
         public Transform SurfaceExitLocation { get; }
         public VehicleHatchDefinition(GameObject hatch, Transform entry, Transform exit, Transform surfaceExit)
         {
@@ -65,6 +135,8 @@ namespace AVS.VehicleParts
                 throw new ArgumentNullException(nameof(hatch), "Vehicle hatch cannot be null.");
             if (entry == null)
                 throw new ArgumentNullException(nameof(entry), "Entry location cannot be null for a vehicle hatch.");
+            if (surfaceExit == null)
+                throw new ArgumentNullException(nameof(surfaceExit), "Surface exit location cannot be null for a vehicle hatch.");
             Hatch = hatch;
             EntryLocation = entry;
             ExitLocation = exit;

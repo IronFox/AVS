@@ -13,7 +13,7 @@ namespace AVS.Composition
         /// <summary>
         /// The pilot seats of the vehicle.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehiclePilotSeat> PilotSeats { get; } = Array.Empty<VehicleParts.VehiclePilotSeat>();
+        public IReadOnlyList<VehicleParts.Helm> PilotSeats { get; } = Array.Empty<VehicleParts.Helm>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SkimmerComposition"/> class, representing the composition of a
@@ -27,7 +27,7 @@ namespace AVS.Composition
         /// <param name="modulesRootObject">The root <see cref="GameObject"/> that serves as the parent for all module-related components.</param>
         /// <param name="hatches">A collection of hatches (<see cref="VehicleParts.VehicleHatchDefinition"/>) that provide entry and exit points
         /// for the vehicle.</param>
-        /// <param name="pilotSeats">A collection of pilot seats (<see cref="VehicleParts.VehiclePilotSeat"/>) available in the vehicle. Cannot
+        /// <param name="pilotSeats">A collection of pilot seats (<see cref="VehicleParts.Helm"/>) available in the vehicle. Cannot
         /// be null.</param>
         /// <param name="engine">The engine (<see cref="AbstractEngine"/>) that powers the vehicle. Must not be null</param>
         /// <param name="collisionModel"><see cref="GameObject"/> representing the collision model of the vehicle. Must not be null</param>
@@ -47,8 +47,6 @@ namespace AVS.Composition
         /// Can be null.</param>
         /// <param name="backupBatteries">An optional collection of backup batteries (<see cref="VehicleParts.VehicleBattery"/>) for the vehicle. Can
         /// be null.</param>
-        /// <param name="steeringWheelLeftHandTarget">An optional <see cref="GameObject"/> representing the left-hand target for the steering wheel. Can be null.</param>
-        /// <param name="steeringWheelRightHandTarget">An optional <see cref="GameObject"/> representing the right-hand target for the steering wheel. Can be null.</param>
         /// <param name="denyBuildingColliders">An optional collection of <see cref="Collider"/> instances that prevent building in certain areas. Can be
         /// null.</param>
         /// <param name="subNameDecals">An optional collection of <see cref="TMPro.TextMeshProUGUI"/> decals used to display the vehicle's name. Can
@@ -59,7 +57,7 @@ namespace AVS.Composition
             GameObject storageRootObject,
             GameObject modulesRootObject,
             IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
-            IReadOnlyList<VehicleParts.VehiclePilotSeat> pilotSeats,
+            IReadOnlyList<VehicleParts.Helm> pilotSeats,
             AbstractEngine engine,
             GameObject collisionModel,
             IReadOnlyList<VehicleParts.VehicleBattery>? batteries = null,
@@ -71,8 +69,6 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
             IReadOnlyList<VehicleParts.VehicleBattery>? backupBatteries = null,
-            GameObject? steeringWheelLeftHandTarget = null,
-            GameObject? steeringWheelRightHandTarget = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
@@ -92,15 +88,13 @@ namespace AVS.Composition
             headLights: headLights,
             canopyWindows: canopyWindows,
             backupBatteries: backupBatteries,
-            steeringWheelLeftHandTarget: steeringWheelLeftHandTarget,
-            steeringWheelRightHandTarget: steeringWheelRightHandTarget,
             denyBuildingColliders: denyBuildingColliders,
             subNameDecals: subNameDecals,
             lavaLarvaAttachPoints: lavaLarvaAttachPoints,
             leviathanGrabPoint: leviathanGrabPoint
         )
         {
-            PilotSeats = pilotSeats ?? Array.Empty<VehicleParts.VehiclePilotSeat>();
+            PilotSeats = pilotSeats ?? Array.Empty<VehicleParts.Helm>();
         }
 
 

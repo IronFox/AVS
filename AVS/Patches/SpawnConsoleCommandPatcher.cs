@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Linq;
+using AVS.BaseVehicle;
 using HarmonyLib;
 using UnityEngine;
 
@@ -26,7 +27,7 @@ namespace AVS.Patches
         }
         public static void FinishAnySpawningVehicles()
         {
-            void FinishHim(ModVehicle mv)
+            void FinishHim(AvsVehicle mv)
             {
                 mv.GetComponentInChildren<VFXConstructing>(true).constructed = 90f;
                 mv.GetComponentInChildren<VFXConstructing>(true).delay = 0f;
@@ -40,7 +41,7 @@ namespace AVS.Patches
             CoroutineTask<GameObject> request = CraftData.GetPrefabForTechTypeAsync(tt, true);
             yield return request;
             GameObject result = request.GetResult();
-            if (result != null && result.GetComponent<ModVehicle>() != null)
+            if (result != null && result.GetComponent<AvsVehicle>() != null)
             {
                 yield return new WaitForSeconds(0.5f);
                 FinishAnySpawningVehicles();

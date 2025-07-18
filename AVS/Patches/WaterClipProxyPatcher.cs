@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.BaseVehicle;
+using HarmonyLib;
 using UnityEngine;
 
 // PURPOSE: permit waterclipproxies with negative scaling to act in an intuitive way
@@ -13,7 +14,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(WaterClipProxy.UpdateMaterial))]
         static void VehicleDockedPostfix(WaterClipProxy __instance)
         {
-            ModVehicle vehicle = __instance.GetComponentInParent<ModVehicle>();
+            AvsVehicle vehicle = __instance.GetComponentInParent<AvsVehicle>();
             if (vehicle != null)
             {
                 Vector3 oldScale = __instance.transform.lossyScale;

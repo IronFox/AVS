@@ -1,10 +1,10 @@
 ﻿using AVS.Assets;
+using AVS.BaseVehicle;
 using AVS.MaterialAdapt;
-using AVS.Util;
 using AVS.VehicleComponents;
 using System;
 using UnityEngine;
-using static AVS.ModVehicle;
+using static AVS.BaseVehicle.AvsVehicle;
 
 namespace AVS.Configuration
 {
@@ -29,7 +29,7 @@ namespace AVS.Configuration
         public Recipe Recipe { get; } = Recipe.Example;
         /// <summary>
         /// If true, the recipe can be overridden by a JSON file created in the "recipes" folder.
-        /// If so, the imported recipe is passed to <see cref="ModVehicle.OnRecipeOverride"/> before being applied.
+        /// If so, the imported recipe is passed to <see cref="AvsVehicle.OnRecipeOverride"/> before being applied.
         /// </summary>
         public bool AllowRecipeOverride { get; } = true;
         /// <summary>
@@ -159,11 +159,6 @@ namespace AVS.Configuration
         public bool AutoFixMaterials { get; } = true;
 
         /// <summary>
-        /// True to move the player into a seated position when entering helm control
-        /// </summary>
-        public bool HelmIsSeated { get; } = true;
-
-        /// <summary>
         /// Material adaptation configuration. If not provided, initialized with a new instance of <see cref="DefaultMaterialAdaptConfig" />.
         /// Effective only if <see cref="AutoFixMaterials"/> is true.
         /// </summary>
@@ -247,7 +242,6 @@ namespace AVS.Configuration
         /// <param name="getVoiceSoundVolume">Query function to get the sound volume for voice messages sent by the vehicle's <see cref="VoiceQueue"/> component. If null, defaults to always 1</param>
         /// <param name="getVoiceSubtitlesEnabled">Query function to get whether to show subtitles for voice messages sent by the vehicle's <see cref="VoiceQueue"/> component. If null, defaults to always false</param>
         /// <param name="materialAdaptConfig">Optional configuration for material adaptation</param>
-        /// <param name="helmIsSeated">If set, the character is seated while controlling the helm, otherwise standing. True by default</param>
         public VehicleConfiguration(
 
             VehicleColor? initialBaseColor = null,
@@ -288,8 +282,7 @@ namespace AVS.Configuration
             Quaternion? cyclopsDockRotation = null,
             bool autoFixMaterials = true,
             Func<float>? getVoiceSoundVolume = null,
-            Func<bool>? getVoiceSubtitlesEnabled = null,
-            bool helmIsSeated = true
+            Func<bool>? getVoiceSubtitlesEnabled = null
         )
         {
             if (maxHealth <= 0)
@@ -299,7 +292,6 @@ namespace AVS.Configuration
             if (baseCrushDepth <= 0)
                 throw new System.ArgumentOutOfRangeException(nameof(baseCrushDepth), "BaseCrushDepth must be greater than 0.");
 
-            HelmIsSeated = helmIsSeated;
             GetVoiceSoundVolume = getVoiceSoundVolume ?? (() => 1);
             GetVoiceSubtitlesEnabled = getVoiceSubtitlesEnabled ?? (() => false);
             InitialBaseColor = initialBaseColor ?? VehicleColor.Default;

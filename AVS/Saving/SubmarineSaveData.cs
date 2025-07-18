@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace AVS.Saving
+﻿namespace AVS.Saving
 {
     /// <summary>
     /// Save data for submarines.
@@ -18,6 +12,7 @@ namespace AVS.Saving
         /// <summary>
         /// The seat currently used by the player to pilot this submarine.
         /// </summary>
-        public int CurrentPilotSeatIndex { get; set; }
+        public int CurrentHelmIndex { get; set; }
+
     }
 }

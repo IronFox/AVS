@@ -1,4 +1,5 @@
-﻿using AVS.Composition;
+﻿using AVS.BaseVehicle;
+using AVS.Composition;
 using AVS.Configuration;
 using AVS.Saving;
 using AVS.Util;
@@ -18,7 +19,7 @@ namespace AVS.VehicleTypes
     /*
      * Submarine is the class of self-leveling, walkable submarines
      */
-    public abstract class Submarine : ModVehicle
+    public abstract class Submarine : AvsVehicle
     {
 
         public Submarine(VehicleConfiguration config) : base(config)
@@ -30,7 +31,7 @@ namespace AVS.VehicleTypes
             return _subComposition;
         }
 
-        private int currentPilotSeatIndex = 0;
+        private int currentHelmIndex = 0;
         private SubmarineComposition? _subComposition;
         public new SubmarineComposition Com =>
             _subComposition
@@ -39,7 +40,7 @@ namespace AVS.VehicleTypes
 
         public ControlPanel? controlPanelLogic; //must remain public field
 
-        private bool isPilotSeated = false;
+        private bool isAtHelm = false;
         private bool isPlayerInside = false; // You can be inside a scuttled submarine yet not dry.
 
 
@@ -65,19 +66,19 @@ namespace AVS.VehicleTypes
         {
             var sub = (SubmarineSaveData)saveData;
             sub.DefaultColorName = IsDefaultTexture;
-            sub.CurrentPilotSeatIndex = currentPilotSeatIndex;
+            sub.CurrentHelmIndex = isAtHelm ? currentHelmIndex : -1;
             base.WriteSaveData(saveData);
         }
 
-        public override void LoadSaveData(VehicleSaveData? saveData)
+        public override void LoadData(VehicleSaveData? saveData)
         {
             var sub = saveData as SubmarineSaveData;
-            base.LoadSaveData(saveData);
+            base.LoadData(saveData);
 
             if (sub != null)
             {
                 IsDefaultTexture = sub.DefaultColorName;
-                currentPilotSeatIndex = sub.CurrentPilotSeatIndex;
+                currentHelmIndex = Math.Max(0, sub.CurrentHelmIndex);
 
 
                 PaintVehicleDefaultStyle(sub.VehicleName);
@@ -85,6 +86,13 @@ namespace AVS.VehicleTypes
                     return;
                 PaintVehicleName(sub.VehicleName, NameColor.RGB, BaseColor.RGB);
             }
+        }
+        /// <inheritdoc />
+        protected override Helm GetLoadedHelm()
+        {
+            return Com.Helms.Count > currentHelmIndex
+                ? Com.Helms[currentHelmIndex]
+                : Com.Helms[0];
         }
 
         public override bool CanPilot()
@@ -143,60 +151,62 @@ namespace AVS.VehicleTypes
         }
         public bool IsPlayerPiloting()
         {
-            return isPilotSeated;
+            return isAtHelm;
         }
-        protected IEnumerator SitDownInChair()
+        //protected IEnumerator SitDownInChair()
+        //{
+        //    Player.main.playerAnimator.SetBool("chair_sit", true);
+        //    yield return null;
+        //    Player.main.playerAnimator.SetBool("chair_sit", false);
+        //}
+        //protected IEnumerator StandUpFromChair()
+        //{
+        //    Player.main.playerAnimator.SetBool("chair_stand_up", true);
+        //    yield return null;
+        //    Player.main.playerAnimator.SetBool("chair_stand_up", false);
+        //}
+        //protected IEnumerator TryStandUpFromChair()
+        //{
+        //    yield return new WaitUntil(() => !IsPlayerControlling());
+        //    yield return new WaitForSeconds(2);
+        //    Player.main.playerAnimator.SetBool("chair_stand_up", true);
+        //    yield return null;
+        //    Player.main.playerAnimator.SetBool("chair_stand_up", false);
+        //}
+
+        /// <inheritdoc/>
+        public override Helm GetMainHelm()
+            => Com.Helms[0];
+
+
+        /// <inheritdoc/>
+        protected override void OnBeginHelmControl(Helm helm)
         {
-            Player.main.playerAnimator.SetBool("chair_sit", true);
-            yield return null;
-            Player.main.playerAnimator.SetBool("chair_sit", false);
-        }
-        protected IEnumerator StandUpFromChair()
-        {
-            Player.main.playerAnimator.SetBool("chair_stand_up", true);
-            yield return null;
-            Player.main.playerAnimator.SetBool("chair_stand_up", false);
-        }
-        protected IEnumerator TryStandUpFromChair()
-        {
-            yield return new WaitUntil(() => !IsPlayerControlling());
-            yield return new WaitForSeconds(2);
-            Player.main.playerAnimator.SetBool("chair_stand_up", true);
-            yield return null;
-            Player.main.playerAnimator.SetBool("chair_stand_up", false);
-        }
-        public override void BeginPiloting()
-        {
-            base.BeginPiloting();
-            isPilotSeated = true;
-            Player.main.armsController.ikToggleTime = 0;
-            Player.main.armsController.SetWorldIKTarget(
-                Com.SteeringWheelLeftHandTarget.SafeGetTransform(),
-                Com.SteeringWheelRightHandTarget.SafeGetTransform());
+            base.OnBeginHelmControl(helm);
+            isAtHelm = true;
+            currentHelmIndex = Com.Helms.FindIndexOf(x => x.Root == helm.Root);
+            if (currentHelmIndex < 0)
+            {
+                Logger.Error($"Error: helm {helm.Root.name} not found in submarine {VehicleName}. Defaulting to first helm.");
+                currentHelmIndex = 0;
+            }
+
             Player.main.SetCurrentSub(GetComponent<SubRoot>());
         }
+
         /// <inheritdoc/>
-        public override void StopPiloting()
+        protected override void OnEndHelmControl()
         {
-            if (Player.main.currentSub != null && Player.main.currentSub.name.ToLower().Contains("cyclops"))
-            {
-                //Unfortunately, this method shares a name with some Cyclops components.
-                // PilotingChair.ReleaseBy broadcasts a message for "StopPiloting"
-                // So because a docked vehicle is part of the Cyclops heirarchy,
-                // it tries to respond, which causes a game crash.
-                // So we'll return if the player is within a Cyclops.
-                return;
-            }
-            base.StopPiloting();
-            isPilotSeated = false;
+            base.OnEndHelmControl();
+            isAtHelm = false;
             Player.main.SetScubaMaskActive(false);
             Player.main.armsController.ikToggleTime = 0.5f;
             Player.main.armsController.SetWorldIKTarget(null, null);
             if (!IsVehicleDocked && IsPlayerControlling())
             {
                 Player.main.transform.SetParent(transform);
-                var exit = currentPilotSeatIndex < Com.PilotSeats.Count
-                    ? Com.PilotSeats[currentPilotSeatIndex].ExitLocation
+                var exit = currentHelmIndex < Com.Helms.Count
+                    ? Com.Helms[currentHelmIndex].ExitLocation
                     : null;
                 if (exit == null)
                 {
@@ -227,32 +237,30 @@ namespace AVS.VehicleTypes
             Player.main.liveMixin.invincible = false;
         }
         /// <inheritdoc/>
-        public override void PlayerEntry()
+        protected override void OnPlayerEntry()
         {
-            Log.Debug(this, nameof(Submarine) + '.' + nameof(PlayerEntry));
+            Log.Debug(this, nameof(Submarine) + '.' + nameof(OnPlayerEntry));
             isPlayerInside = true;
-            base.PlayerEntry();
-            if (!isScuttled)
-            {
-                Player.main.currentMountedVehicle = this;
-                if (!IsVehicleDocked)
-                {
-                    Player.main.transform.SetParent(transform);
-                    Player.main.playerController.activeController.SetUnderWater(false);
-                    Player.main.isUnderwater.Update(false);
-                    Player.main.isUnderwaterForSwimming.Update(false);
-                    Player.main.playerController.SetMotorMode(Player.MotorMode.Walk);
-                    Player.main.motorMode = Player.MotorMode.Walk;
-                    Player.main.playerMotorModeChanged.Trigger(Player.MotorMode.Walk);
-                }
-            }
+            //if (!isScuttled)
+            //{
+            //    if (!IsVehicleDocked)
+            //    {
+            //        Player.main.transform.SetParent(transform);
+            //        Player.main.playerController.activeController.SetUnderWater(false);
+            //        Player.main.isUnderwater.Update(false);
+            //        Player.main.isUnderwaterForSwimming.Update(false);
+            //        Player.main.playerController.SetMotorMode(Player.MotorMode.Walk);
+            //        Player.main.motorMode = Player.MotorMode.Walk;
+            //        Player.main.playerMotorModeChanged.Trigger(Player.MotorMode.Walk);
+            //    }
+            //}
             EnsureColorPickerEnabled();
 
             Player.main.CancelInvoke("ValidateCurrentSub");
-            
-            Log.Debug(this, nameof(Submarine) + '.' + nameof(PlayerEntry)+" done");
+
+            Log.Debug(this, nameof(Submarine) + '.' + nameof(OnPlayerEntry) + " done");
         }
-        
+
         ///// <summary>
         ///// Attempts to recover from being unable to build anything anymore.
         ///// Observation appears to indicate this happens if the player walks beyond +-35 meters from the origin
@@ -282,27 +290,25 @@ namespace AVS.VehicleTypes
         //    Player.main.playerController.SetMotorMode(Player.MotorMode.Walk);
         //    Player.main.motorMode = Player.MotorMode.Walk;
         //    Player.main.playerMotorModeChanged.Trigger(Player.MotorMode.Walk);
-     
+
         //}
 
-
-        public override void PlayerExit()
+        /// <inheritdoc/>
+        protected override void OnPlayerExit()
         {
-            Log.Debug(this, nameof(Submarine) + '.' + nameof(PlayerExit));
+            Log.Debug(this, nameof(Submarine) + '.' + nameof(OnPlayerExit));
             isPlayerInside = false;
-            base.PlayerExit();
-            //Player.main.currentSub = null;
-            if (!IsVehicleDocked)
-            {
-                Player.main.transform.SetParent(null);
-            }
-            Log.Debug(this, nameof(Submarine) + '.' + nameof(PlayerExit) + " done");
+            Log.Debug(this, nameof(Submarine) + '.' + nameof(OnPlayerExit) + " done");
         }
+
+        /// <inheritdoc/>
         public override void SubConstructionBeginning()
         {
             base.SubConstructionBeginning();
             PaintVehicleDefaultStyle(GetName());
         }
+
+        /// <inheritdoc/>
         public override void SubConstructionComplete()
         {
             if (!HudPingInstance.enabled)
@@ -320,13 +326,14 @@ namespace AVS.VehicleTypes
             PaintNameDefaultStyle(GetName());
         }
 
+        /// <inheritdoc/>
         public override void OnKill()
         {
             bool isplayerinthissub = IsPlayerInside();
             base.OnKill();
             if (isplayerinthissub)
             {
-                PlayerEntry();
+                ClosestPlayerEntry();
             }
         }
 
@@ -372,12 +379,7 @@ namespace AVS.VehicleTypes
             IsDefaultTexture = true;
             PaintNameDefaultStyle(name);
         }
-        public enum TextureDefinition : int
-        {
-            twice = 4096,
-            full = 2048,
-            half = 1024
-        }
+
         public void PaintVehicleSection(string materialName, VehicleColor col)
             => PaintVehicleSection(materialName, col.RGB);
         public virtual void PaintVehicleSection(string materialName, Color col)
@@ -559,9 +561,10 @@ namespace AVS.VehicleTypes
 
         public override void OnAIBatteryReload()
         {
+            base.OnAIBatteryReload();
         }
 
-        // this function returns the number of seconds to wait before opening the PDF,
+        // this function returns the number of seconds to wait before opening the PDA,
         // to show off the cool animations~
         public override float OnStorageOpen(string name, bool open)
         {
@@ -593,14 +596,15 @@ namespace AVS.VehicleTypes
         }
         public override void OnPlayerDocked(Vector3 exitLocation)
         {
-            StopPiloting();
+            EndHelmControl(0.5f);
             base.OnPlayerDocked(exitLocation);
             //UWE.CoroutineHost.StartCoroutine(TryStandUpFromChair());
         }
         public override void OnPlayerUndocked()
         {
             base.OnPlayerUndocked();
-            BeginPiloting();
+            var helm = Com.Helms[0];
+            BeginHelmControl(helm);
         }
         public override void ScuttleVehicle()
         {
@@ -613,19 +617,18 @@ namespace AVS.VehicleTypes
             EnableFabricator(true);
         }
 
-        internal void EnterHelmControl(int seatIndex)
+        internal void EnterHelmControl(int helmIndex)
         {
-            Log.Write($"Entering helm control for seat index {seatIndex} on submarine {VehicleName}");
-            currentPilotSeatIndex = seatIndex;
-            playerPosition = Com.PilotSeats[seatIndex].SitLocation;
-
-            BeginPiloting();
+            Log.Write($"Entering helm control for seat index {helmIndex} on submarine {VehicleName}");
+            BeginHelmControl(Com.Helms[helmIndex]);
         }
+
+
 
         /// <inheritdoc/>
         internal protected override void DoExitRoutines()
         {
-            Log.Debug(this, nameof(Submarine)+'.'+nameof(DoExitRoutines));
+            Log.Debug(this, nameof(Submarine) + '.' + nameof(DoExitRoutines));
 
             // check if we're level by comparing pitch and roll
             float roll = transform.rotation.eulerAngles.z;
@@ -640,9 +643,9 @@ namespace AVS.VehicleTypes
 
 
             Com.Engine.KillMomentum();
-            if (currentPilotSeatIndex >= Com.PilotSeats.Count)
+            if (currentHelmIndex >= Com.Helms.Count)
             {
-                Log.Error($"Error: tried to exit a submarine without pilot seats or with an incorrect selection ({currentPilotSeatIndex})");
+                Log.Error($"Error: tried to exit a submarine without pilot seats or with an incorrect selection ({currentHelmIndex})");
                 return;
             }
 
@@ -651,14 +654,14 @@ namespace AVS.VehicleTypes
 
             DoCommonExitActions(ref myMode);
             myPlayer.mode = myMode;
-            StopPiloting();
+            EndHelmControl(0f);
 
-            var seat = Com.PilotSeats[currentPilotSeatIndex];
+            var seat = Com.Helms[currentHelmIndex];
             var exitLocation = seat.ExitLocation;
             Vector3 exit;
             if (exitLocation != null)
             {
-                Log.Debug(this, $"Exit location defined. Deriving from seat status {seat.Seat.transform.localPosition} / {seat.Seat.transform.localRotation}");
+                Log.Debug(this, $"Exit location defined. Deriving from seat status {seat.Root.transform.localPosition} / {seat.Root.transform.localRotation}");
                 exit = exitLocation.position;
             }
             else

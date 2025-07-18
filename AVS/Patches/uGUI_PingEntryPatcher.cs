@@ -47,9 +47,9 @@ namespace AVS
         [HarmonyPatch(nameof(uGUI_PingEntry.UpdateLabel))]
         public static bool uGUI_PingEntryUpdateLabelPrefix(uGUI_PingEntry __instance, PingType type, string name)
         {
-            if(VehicleManager.mvPings.Select(x=>x.pingType).Contains(type))
+            if(VehicleManager.MvPings.Select(x=>x.pingType).Contains(type))
             {
-                foreach (var mvType in VehicleManager.vehicleTypes)
+                foreach (var mvType in VehicleManager.VehicleTypes)
                 {
                     if (mvType.pt == type)
                     {

@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.BaseVehicle;
+using HarmonyLib;
 using UnityEngine;
 
 // PURPOSE: Create ModVehicle API for changing colors via normal routines (eg MoonPool terminal)
@@ -13,7 +14,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(SubName.SetName))]
         public static void SubNameSetNamePostfix(SubName __instance)
         {
-            ModVehicle mv = __instance.GetComponent<ModVehicle>();
+            AvsVehicle mv = __instance.GetComponent<AvsVehicle>();
             if (mv == null)
             {
                 return;
@@ -27,7 +28,7 @@ namespace AVS.Patches
                 sub.PaintVehicleName(mv.subName.GetName(), mv.NameColor.RGB, mv.BaseColor.RGB);
             }
         }
-        private static void SetSubNameDecals(ModVehicle mv)
+        private static void SetSubNameDecals(AvsVehicle mv)
         {
             foreach (var tmprougui in mv.Com.SubNameDecals)
             {
@@ -36,7 +37,7 @@ namespace AVS.Patches
             }
         }
 
-        private static void SetSubNameDecalsWithColor(ModVehicle mv, Vector3 hsb, Color color)
+        private static void SetSubNameDecalsWithColor(AvsVehicle mv, Vector3 hsb, Color color)
         {
             if (mv == null)
             {
@@ -60,7 +61,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(SubName.SetColor))]
         public static void SubNameSetColorPostfix(SubName __instance, int index, Vector3 hsb, Color color)
         {
-            ModVehicle mv = __instance.GetComponent<ModVehicle>();
+            AvsVehicle mv = __instance.GetComponent<AvsVehicle>();
             if (mv == null)
             {
                 return;

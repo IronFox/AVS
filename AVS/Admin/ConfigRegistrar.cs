@@ -1,4 +1,5 @@
-﻿using BepInEx.Configuration;
+﻿using AVS.BaseVehicle;
+using BepInEx.Configuration;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace AVS.Admin
         internal static ExternalVehicleConfig<T>? SeamothConfig = null;
         internal static ExternalVehicleConfig<T>? PrawnConfig = null;
         internal static ExternalVehicleConfig<T>? CyclopsConfig = null;
-        private static ExternalVehicleConfig<T> AddNew(ModVehicle mv)
+        private static ExternalVehicleConfig<T> AddNew(AvsVehicle mv)
         {
             var thisConf = new ExternalVehicleConfig<T>
             {
@@ -56,20 +57,20 @@ namespace AVS.Admin
         /// vehicles.</exception>
         public static ExternalVehicleConfig<T> GetModVehicleConfig(string vehicleName)
         {
-            var MVs = VehicleManager.vehicleTypes.Where(x => x.name.Equals(vehicleName, StringComparison.OrdinalIgnoreCase)).ToList();
+            var MVs = VehicleManager.VehicleTypes.Where(x => x.name.Equals(vehicleName, StringComparison.OrdinalIgnoreCase)).ToList();
             if (MVs.Count == 0)
             {
                 StringBuilder sb = new StringBuilder();
-                VehicleManager.vehicleTypes.ForEach(x => sb.AppendLine(x.name));
+                VehicleManager.VehicleTypes.ForEach(x => sb.AppendLine(x.name));
                 throw new ArgumentException($"GetModVehicleConfig: vehicle name does not identify a ModVehicle: {vehicleName}. Options are: {sb}");
             }
             if (MVs.Count > 1)
             {
                 StringBuilder sb = new StringBuilder();
-                VehicleManager.vehicleTypes.ForEach(x => sb.AppendLine(x.name));
+                VehicleManager.VehicleTypes.ForEach(x => sb.AppendLine(x.name));
                 throw new ArgumentException($"GetModVehicleConfig: vehicle name does not uniquely identify a ModVehicle: {vehicleName}. There were {MVs.Count()} matches: {sb}");
             }
-            ModVehicle mv = MVs[0].mv;
+            AvsVehicle mv = MVs[0].mv;
             if (!main.ContainsKey(mv.GetType().ToString()))
             {
                 AddNew(mv);
@@ -282,7 +283,7 @@ namespace AVS.Admin
                 {
                     void DoThisAction(object sender, EventArgs e)
                     {
-                        foreach (ModVehicle innerMV in VehicleManager.vehicleTypes.Select(x => x.mv))
+                        foreach (AvsVehicle innerMV in VehicleManager.VehicleTypes.Select(x => x.mv))
                         {
                             if (innerMV.GetType().ToString() == vehicleName)
                             {
@@ -305,7 +306,7 @@ namespace AVS.Admin
             }
             // wait until the player exists, so that we're sure every vehicle is done with registration
             yield return new UnityEngine.WaitUntil(() => Player.main != null);
-            var MVs = VehicleManager.vehicleTypes.Where(x => x.name.ToLower().Contains(vehicleName.ToLower()));
+            var MVs = VehicleManager.VehicleTypes.Where(x => x.name.ToLower().Contains(vehicleName.ToLower()));
             if (!MVs.Any())
             {
                 throw new ArgumentException($"RegisterForModVehicle: vehicle name does not identify a ModVehicle: {vehicleName}");
@@ -314,7 +315,7 @@ namespace AVS.Admin
             {
                 throw new ArgumentException($"RegisterForModVehicle: vehicle name does not uniquely identify a ModVehicle: {vehicleName}. There were {MVs.Count()} matches.");
             }
-            ModVehicle mv = MVs.First().mv;
+            AvsVehicle mv = MVs.First().mv;
             var config = configFile;
             if (config is null)
                 config = MainPatcher.Instance.Config;

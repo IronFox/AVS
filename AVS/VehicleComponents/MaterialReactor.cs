@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -50,7 +51,7 @@ namespace AVS.VehicleComponents
     }
     public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     {
-        private ModVehicle? mv;
+        private AvsVehicle? mv;
         private ReactorBattery? reactorBattery;
         private float capacity = 0;
         public string interactText = "Material Reactor";
@@ -69,7 +70,7 @@ namespace AVS.VehicleComponents
         private const string saveFileName = "MaterialReactor";
         private const string newSaveFileName = "Reactor";
 
-        public void Initialize(ModVehicle modVehicle, int height, int width, string label, float totalCapacity, List<MaterialReactorData> iMaterialData)
+        public void Initialize(AvsVehicle modVehicle, int height, int width, string label, float totalCapacity, List<MaterialReactorData> iMaterialData)
         {
             if (modVehicle.GetComponentsInChildren<MaterialReactor>().Where(x => x.mv == modVehicle).Any())
             {
@@ -227,6 +228,7 @@ namespace AVS.VehicleComponents
         }
         void IHandTarget.OnHandClick(GUIHand hand)
         {
+            Logger.DebugLog($"MaterialReactor.OnHandClick: {hand.NiceName()} clicked on {gameObject.NiceName()}");
             if (container != null)
             {
                 PDA pda = Player.main.GetPDA();
@@ -236,6 +238,7 @@ namespace AVS.VehicleComponents
                     OnClosePDA(pda);
                 }
             }
+            Logger.DebugLog($"MaterialReactor.OnHandClick: Exit");
         }
         void IHandTarget.OnHandHover(GUIHand hand)
         {

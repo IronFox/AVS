@@ -1,4 +1,5 @@
-﻿using AVS.Configuration;
+﻿using AVS.BaseVehicle;
+using AVS.Configuration;
 using AVS.Util;
 using AVS.VehicleTypes;
 using System;
@@ -132,7 +133,7 @@ namespace AVS
     /// subtitles for voice lines when enabled.</remarks>
     public class VoiceQueue : MonoBehaviour, IScuttleListener
     {
-        private ModVehicle? mv;
+        private AvsVehicle? mv;
         private EnergyInterface? aiEI;
         private List<AudioSource> speakers = new List<AudioSource>();
 
@@ -167,7 +168,7 @@ namespace AVS
         public void Awake()
         {
             isReadyToSpeak = false;
-            mv = GetComponent<ModVehicle>();
+            mv = GetComponent<AvsVehicle>();
             if (mv.Com.BackupBatteries.Count > 0)
             {
                 aiEI = mv.Com.BackupBatteries[0].BatterySlot.GetComponent<EnergyInterface>();
@@ -193,9 +194,9 @@ namespace AVS
             //speakers.Add(mv.VehicleModel.EnsureComponent<AudioSource>());
             if (mv is Submarine sub)
             {
-                foreach (var ps in sub.Com.PilotSeats)
+                foreach (var ps in sub.Com.Helms)
                 {
-                    speakers.Add(ps.Seat.EnsureComponent<AudioSource>().Register());
+                    speakers.Add(ps.Root.EnsureComponent<AudioSource>().Register());
                 }
                 foreach (var ps in sub.Com.Hatches)
                 {
@@ -208,7 +209,7 @@ namespace AVS
             }
             if (mv is Submersible sub2)
             {
-                speakers.Add(sub2.Com.PilotSeat.Seat.EnsureComponent<AudioSource>().Register());
+                speakers.Add(sub2.Com.PilotSeat.Root.EnsureComponent<AudioSource>().Register());
                 foreach (var ps in sub2.Com.Hatches)
                 {
                     speakers.Add(ps.Hatch.EnsureComponent<AudioSource>().Register());

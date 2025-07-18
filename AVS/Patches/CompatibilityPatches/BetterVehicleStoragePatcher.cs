@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.BaseVehicle;
+using HarmonyLib;
 using System;
 
 // PURPOSE: add compatibility for better vehicle storage upgrades
@@ -15,7 +16,7 @@ namespace AVS.Patches.CompatibilityPatches
         [HarmonyPrefix]
         public static bool Prefix(object __instance, Equipment equipment, ref bool __result)
         {
-            if (equipment.owner.GetComponent<ModVehicle>() != null)
+            if (equipment.owner.GetComponent<AvsVehicle>() != null)
             {
                 __result = true;
                 return false;
@@ -23,7 +24,7 @@ namespace AVS.Patches.CompatibilityPatches
             return true;
         }
 
-        public static void TryUseBetterVehicleStorage(ModVehicle mv, int slotID, TechType techType)
+        public static void TryUseBetterVehicleStorage(AvsVehicle mv, int slotID, TechType techType)
         {
             var type3 = Type.GetType("BetterVehicleStorage.Managers.StorageModuleMgr, BetterVehicleStorage", false, false);
             if (type3 != null)

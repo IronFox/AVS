@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
 using HarmonyLib;
 using System.Collections;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace AVS
         [HarmonyPatch(nameof(Vehicle.OnHandHover))]
         public static bool OnHandHoverPrefix(Vehicle __instance)
         {
-            var mv = __instance as ModVehicle;
+            var mv = __instance as AvsVehicle;
             if (mv == null)
             {
                 //if (VehicleTypes.Drone.mountedDrone != null)
@@ -57,7 +58,7 @@ namespace AVS
         [HarmonyPatch(nameof(Vehicle.ApplyPhysicsMove))]
         private static bool ApplyPhysicsMovePrefix(Vehicle __instance, ref bool ___wasAboveWater, ref VehicleAccelerationModifier[] ___accelerationModifiers)
         {
-            var mv = __instance as ModVehicle;
+            var mv = __instance as AvsVehicle;
             if (mv != null)
             {
                 return false;
@@ -69,7 +70,7 @@ namespace AVS
         [HarmonyPatch(nameof(Vehicle.LazyInitialize))]
         public static bool LazyInitializePrefix(Vehicle __instance, ref EnergyInterface ___energyInterface)
         {
-            var mv = __instance as ModVehicle;
+            var mv = __instance as AvsVehicle;
             if (mv == null)
             {
                 return true;
@@ -83,13 +84,13 @@ namespace AVS
         [HarmonyPatch(nameof(Vehicle.GetAllStorages))]
         public static void GetAllStoragesPostfix(Vehicle __instance, ref List<IItemsContainer> containers)
         {
-            var mv = __instance as ModVehicle;
+            var mv = __instance as AvsVehicle;
             if (mv == null)
             {
                 return;
             }
 
-            foreach (var tmp in ((ModVehicle)__instance).Com.InnateStorages)
+            foreach (var tmp in ((AvsVehicle)__instance).Com.InnateStorages)
             {
                 var ic = tmp.Container.GetComponent<InnateStorageContainer>();
                 if (ic != null)
@@ -101,7 +102,7 @@ namespace AVS
         [HarmonyPatch(nameof(Vehicle.IsPowered))]
         public static void IsPoweredPostfix(Vehicle __instance, ref EnergyInterface ___energyInterface, ref bool __result)
         {
-            var mv = __instance as ModVehicle;
+            var mv = __instance as AvsVehicle;
             if (mv == null)
             {
                 return;
@@ -133,7 +134,7 @@ namespace AVS
             // push reference to vehicle
             // Call a static function which takes a vehicle and ControlsRotation if it's a ModVehicle
             newCodes[0] = new CodeInstruction(OpCodes.Ldarg_0);
-            newCodes[1] = CodeInstruction.Call(typeof(ModVehicle), nameof(ModVehicle.MaybeControlRotation));
+            newCodes[1] = CodeInstruction.Call(typeof(AvsVehicle), nameof(AvsVehicle.MaybeControlRotation));
             for (int i = 0; i < codes.Count; i++)
             {
                 newCodes[i + 2] = codes[i];
@@ -211,7 +212,7 @@ namespace AVS
         }
         public static PowerRelay GetPowerRelayAboveVehicle(Vehicle veh)
         {
-            if ((veh as ModVehicle) == null)
+            if ((veh as AvsVehicle) == null)
             {
                 return veh.GetComponentInParent<PowerRelay>();
             }

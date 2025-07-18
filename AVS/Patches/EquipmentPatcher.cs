@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.BaseVehicle;
+using HarmonyLib;
 using System.Collections.Generic;
 
 // PURPOSE: allow ModVehicle upgrade slots to mesh with the game systems
@@ -30,7 +31,7 @@ namespace AVS
             {
                 return;
             }
-            ModVehicle mv = __instance.owner.GetComponentInParent<ModVehicle>();
+            AvsVehicle mv = __instance.owner.GetComponentInParent<AvsVehicle>();
             if (mv == null)
             {
                 return;
@@ -47,7 +48,7 @@ namespace AVS
             {
                 return;
             }
-            ModVehicle mv = __instance.owner.GetComponentInParent<ModVehicle>();
+            AvsVehicle mv = __instance.owner.GetComponentInParent<AvsVehicle>();
             if (mv == null)
             {
                 return;
@@ -64,7 +65,7 @@ namespace AVS
             {
                 return;
             }
-            ModVehicle mv = __instance.owner.GetComponentInParent<ModVehicle>();
+            AvsVehicle mv = __instance.owner.GetComponentInParent<AvsVehicle>();
             if (mv == null)
             {
                 return;
@@ -81,7 +82,7 @@ namespace AVS
             {
                 return;
             }
-            ModVehicle mv = __instance.owner.GetComponentInParent<ModVehicle>();
+            AvsVehicle mv = __instance.owner.GetComponentInParent<AvsVehicle>();
             if (mv == null)
             {
                 return;
@@ -98,7 +99,7 @@ namespace AVS
             {
                 return;
             }
-            ModVehicle mv = __instance.owner.GetComponentInParent<ModVehicle>();
+            AvsVehicle mv = __instance.owner.GetComponentInParent<AvsVehicle>();
             if (mv == null)
             {
                 return;
@@ -115,7 +116,7 @@ namespace AVS
             {
                 return;
             }
-            ModVehicle mv = __instance.owner.GetComponentInParent<ModVehicle>();
+            AvsVehicle mv = __instance.owner.GetComponentInParent<AvsVehicle>();
             if (mv == null)
             {
                 return;

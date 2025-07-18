@@ -16,7 +16,7 @@ namespace AVS.Patches
 
         public static void AddLoadButtonSprites(MainMenuLoadButton lb)
         {
-            foreach (var ve in VehicleManager.vehicleTypes)
+            foreach (var ve in VehicleManager.VehicleTypes)
             {
                 if (ve.mv != null && ve.mv.Config.SaveFileSprite != Assets.StaticAssets.DefaultSaveFileSprite)
                 {

@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.BaseVehicle;
+using HarmonyLib;
 using System.Linq;
 using UnityEngine;
 
@@ -16,7 +17,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(VehicleUpgradeConsoleInput.UpdateVisuals))]
         public static void UpdateVisualsPostfix(VehicleUpgradeConsoleInput __instance)
         {
-            if (__instance.GetComponentInParent<ModVehicle>() != null && __instance.GetComponentInChildren<UpgradeProxy>() != null && __instance.GetComponentInChildren<UpgradeProxy>().slots != null)
+            if (__instance.GetComponentInParent<AvsVehicle>() != null && __instance.GetComponentInChildren<UpgradeProxy>() != null && __instance.GetComponentInChildren<UpgradeProxy>().slots != null)
             {
                 var proxy = __instance.GetComponentInChildren<UpgradeProxy>();
                 if (proxy == null || proxy.slots == null)

@@ -1,10 +1,11 @@
-﻿using AVS.Composition;
+﻿using AVS.BaseVehicle;
+using AVS.Composition;
 using AVS.Configuration;
 using System;
 
 namespace AVS.VehicleTypes
 {
-    public abstract class Skimmer : ModVehicle
+    public abstract class Skimmer : AvsVehicle
     {
         public Skimmer(VehicleConfiguration config) : base(config)
         { }
@@ -36,7 +37,7 @@ namespace AVS.VehicleTypes
 
             DoCommonExitActions(ref myMode);
             myPlayer.mode = myMode;
-            StopPiloting();
+            EndHelmControl(0.5f);
         }
     }
 }

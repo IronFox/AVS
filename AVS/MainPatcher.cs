@@ -70,39 +70,39 @@ namespace AVS
         {
             AVS.Logger.Log("Patch started.");
             AVS.Logger.Log("Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.SaveData>()");
-            SaveLoad.SaveData saveData = Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.SaveData>();
+            //SaveLoad.SaveData saveData = Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.SaveData>();
 
             // Update the player position before saving it
-            saveData.OnStartedSaving += (object sender, Nautilus.Json.JsonFileEventArgs e) =>
-            {
-                //try
-                //{
+            //saveData.OnStartedSaving += (object sender, Nautilus.Json.JsonFileEventArgs e) =>
+            //{
+            //    //try
+            //    //{
 
-                //    VehicleComponents.MagnetBoots.DetachAll();
-                //}
-                //catch (Exception ex)
-                //{
-                //    Eve.Logger.LogException("Failed to detach all magnet boots!", ex);
-                //}
-                //try
-                //{
-                //    VehicleManager.CreateSaveFileData(sender, e);
-                //}
-                //catch (Exception ex)
-                //{
-                //    Eve.Logger.LogException("Failed to Create Save File Data!", ex);
-                //}
-            };
+            //    //    VehicleComponents.MagnetBoots.DetachAll();
+            //    //}
+            //    //catch (Exception ex)
+            //    //{
+            //    //    Eve.Logger.LogException("Failed to detach all magnet boots!", ex);
+            //    //}
+            //    //try
+            //    //{
+            //    //    VehicleManager.CreateSaveFileData(sender, e);
+            //    //}
+            //    //catch (Exception ex)
+            //    //{
+            //    //    Eve.Logger.LogException("Failed to Create Save File Data!", ex);
+            //    //}
+            //};
 
-            saveData.OnFinishedSaving += (object sender, Nautilus.Json.JsonFileEventArgs e) =>
-            {
-                //VehicleComponents.MagnetBoots.AttachAll();
-            };
+            //saveData.OnFinishedSaving += (object sender, Nautilus.Json.JsonFileEventArgs e) =>
+            //{
+            //    //VehicleComponents.MagnetBoots.AttachAll();
+            //};
 
-            saveData.OnFinishedLoading += (object sender, Nautilus.Json.JsonFileEventArgs e) =>
-            {
-                //SaveFileData = e.Instance as SaveLoad.SaveData;
-            };
+            //saveData.OnFinishedLoading += (object sender, Nautilus.Json.JsonFileEventArgs e) =>
+            //{
+            //    //SaveFileData = e.Instance as SaveLoad.SaveData;
+            //};
 
             void SetWorldNotLoaded()
             {

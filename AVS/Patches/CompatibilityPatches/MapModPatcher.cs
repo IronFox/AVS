@@ -23,7 +23,7 @@ namespace AVS.Patches.CompatibilityPatches
             {
                 return true;
             }
-            foreach (var mvPIs in VehicleManager.mvPings)
+            foreach (var mvPIs in VehicleManager.MvPings)
             {
                 if (mvPIs.pingType == ping.pingType)
                 {
@@ -32,7 +32,7 @@ namespace AVS.Patches.CompatibilityPatches
                     if (icon == null)
                         continue; // If we don't have an icon, we can't modify it
                     icon.sprite = SpriteManager.Get(TechType.Exosuit);
-                    foreach (var mvType in VehicleManager.vehicleTypes)
+                    foreach (var mvType in VehicleManager.VehicleTypes)
                     {
                         if (mvType.pt == ping.pingType)
                         {

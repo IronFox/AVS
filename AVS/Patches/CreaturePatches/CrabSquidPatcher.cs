@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.BaseVehicle;
+using HarmonyLib;
 using UnityEngine;
 
 // PURPOSE: ensures the CrabSquid's EMP disables ModVehicles gracefully
@@ -17,7 +18,7 @@ namespace AVS.Patches.CreaturePatches
         [HarmonyPatch(nameof(EnergyMixin.electronicsDisabled), MethodType.Setter)]
         public static bool electronicsDisabled(EnergyMixin __instance, bool value)
         {
-            if (__instance.gameObject.GetComponentInParent<ModVehicle>() != null)
+            if (__instance.gameObject.GetComponentInParent<AvsVehicle>() != null)
             {
                 if (value == __instance._electronicsDisabled)
                 {
@@ -41,7 +42,7 @@ namespace AVS.Patches.CreaturePatches
         [HarmonyPatch(nameof(EMPBlast.OnTouch))]
         public static void OnTouchPostfix(EMPBlast __instance, Collider collider)
         {
-            ModVehicle maybeMV = collider.gameObject.GetComponentInParent<ModVehicle>();
+            AvsVehicle maybeMV = collider.gameObject.GetComponentInParent<AvsVehicle>();
             if (maybeMV != null)
             {
                 maybeMV.GetComponent<EnergyInterface>().DisableElectronicsForTime(__instance.disableElectronicsTime);

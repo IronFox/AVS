@@ -87,17 +87,6 @@ namespace AVS.Composition
 
 
         /// <summary>
-        /// This is what the player's left hand will 'grab' while you pilot.
-        /// Can be null if the vehicle does not have a steering wheel.
-        /// </summary>
-        public GameObject? SteeringWheelLeftHandTarget { get; } = null;
-        /// <summary>
-        /// This is what the player's right hand will 'grab' while you pilot.
-        /// Can be null if the vehicle does not have a steering wheel.
-        /// </summary>
-        public GameObject? SteeringWheelRightHandTarget { get; } = null;
-
-        /// <summary>
         /// Base object building is not permitted within these colliders.
         /// </summary>
         public IReadOnlyList<Collider> DenyBuildingColliders { get; } = Array.Empty<Collider>();
@@ -147,8 +136,6 @@ namespace AVS.Composition
         /// <param name="headLights">Headlights. Optional.</param>
         /// <param name="canopyWindows">Canopy windows. Optional.</param>
         /// <param name="backupBatteries">Backup batteries. Optional.</param>
-        /// <param name="steeringWheelLeftHandTarget">Steering wheel left hand target. Optional.</param>
-        /// <param name="steeringWheelRightHandTarget">Steering wheel right hand target. Optional.</param>
         /// <param name="denyBuildingColliders">Deny building colliders. Optional.</param>
         /// <param name="subNameDecals">Sub name decals. Optional.</param>
         /// <param name="lavaLarvaAttachPoints">Lava larva attach points. Optional.</param>
@@ -169,8 +156,6 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
             IReadOnlyList<VehicleParts.VehicleBattery>? backupBatteries = null,
-            GameObject? steeringWheelLeftHandTarget = null,
-            GameObject? steeringWheelRightHandTarget = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
@@ -200,8 +185,6 @@ namespace AVS.Composition
             HeadLights = headLights ?? Array.Empty<VehicleParts.VehicleFloodLight>();
             CanopyWindows = canopyWindows ?? Array.Empty<GameObject>();
             BackupBatteries = backupBatteries ?? Array.Empty<VehicleParts.VehicleBattery>();
-            SteeringWheelLeftHandTarget = steeringWheelLeftHandTarget;
-            SteeringWheelRightHandTarget = steeringWheelRightHandTarget;
             DenyBuildingColliders = denyBuildingColliders ?? Array.Empty<Collider>();
             SubNameDecals = subNameDecals ?? Array.Empty<TMPro.TextMeshProUGUI>();
             LavaLarvaAttachPoints = lavaLarvaAttachPoints ?? Array.Empty<Transform>();

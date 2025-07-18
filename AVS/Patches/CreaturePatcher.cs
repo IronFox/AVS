@@ -2,6 +2,7 @@
 using System.Linq;
 using UnityEngine;
 using HarmonyLib;
+using AVS.BaseVehicle;
 
 // PURPOSE: ModVehicles have an awareness of nearby leviathans
 // VALUE: Moderate. Allows for some very cool/scary moments.
@@ -34,7 +35,7 @@ namespace AVS.Patches
         [HarmonyPostfix]
         public static void Postfix(Creature __instance)
         {
-            if (!(Player.main.GetVehicle() is ModVehicle mv)) return;
+            if (!(Player.main.GetVehicle() is AvsVehicle mv)) return;
 
             if (Vector3.Distance(Player.main.transform.position, __instance.transform.position) > 150) return;
 

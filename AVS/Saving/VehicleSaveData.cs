@@ -1,12 +1,4 @@
-﻿using AVS.VehicleTypes;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using UnityEngine;
-
-namespace AVS.Saving
+﻿namespace AVS.Saving
 {
     /// <summary>
     /// Basic save data written for all vehicles
@@ -19,9 +11,10 @@ namespace AVS.Saving
         public bool IsControlling { get; set; }
 
         /// <summary>
-        /// The player is currently inside this vehicle
+        /// The hatch through which the player entered this vehicle.
+        /// -1 if the player is not inside this vehicle.
         /// </summary>
-        public bool IsInside { get; set; }
+        public int EnteredThroughHatch { get; set; }
         /// <summary>
         /// The given name of this vehicle.
         /// </summary>

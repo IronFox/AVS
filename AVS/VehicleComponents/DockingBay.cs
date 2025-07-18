@@ -1,4 +1,6 @@
-﻿using System.Collections;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
+using System.Collections;
 using UnityEngine;
 
 namespace AVS.VehicleComponents
@@ -96,7 +98,7 @@ namespace AVS.VehicleComponents
                 sm.toggleLights.SetLightsActive(false);
                 currentDockedVehicle.GetComponent<SeaMoth>().enabled = true; // why is this necessary?
             }
-            else if (currentDockedVehicle is ModVehicle mv)
+            else if (currentDockedVehicle is AvsVehicle mv)
             {
                 if (mv.HeadlightsController != null && mv.HeadlightsController.IsLightsOn)
                 {
@@ -133,21 +135,19 @@ namespace AVS.VehicleComponents
                 Player.main.SetPosition(PlayerExitLocation.position);
                 Player.main.ExitSittingMode();
                 Player.main.SetPosition(PlayerExitLocation.position);
-                ModVehicle.TeleportPlayer(PlayerExitLocation.position);
+                Character.TeleportTo(PlayerExitLocation.position);
             }
-            if (dockingVehicle is ModVehicle mv)
+            if (dockingVehicle is AvsVehicle mv)
             {
                 mv.DeselectSlots();
                 Player.main.SetPosition(PlayerExitLocation.position);
-                ModVehicle.TeleportPlayer(PlayerExitLocation.position);
+                Character.TeleportTo(PlayerExitLocation.position);
                 mv.OnVehicleDocked(Vector3.zero);
             }
             dockingVehicle.transform.SetParent(transform);
-            if (GetComponent<VehicleTypes.Submarine>() != null)
-            {
-                GetComponent<VehicleTypes.Submarine>().PlayerEntry();
-            }
+            GetComponent<VehicleTypes.Submarine>().SafeDo(x => x.ClosestPlayerEntry());
         }
+
         protected virtual void OnStartedUndocking(bool withPlayer)
         {
             if (currentDockedVehicle == null)
@@ -170,7 +170,7 @@ namespace AVS.VehicleComponents
             {
                 currentDockedVehicle.EnterVehicle(Player.main, true, true);
             }
-            if (currentDockedVehicle is ModVehicle mv)
+            if (currentDockedVehicle is AvsVehicle mv)
             {
                 mv.OnVehicleUndocked();
                 mv.useRigidbody.detectCollisions = false;

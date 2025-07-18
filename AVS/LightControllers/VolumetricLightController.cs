@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using AVS.BaseVehicle;
+using UnityEngine;
 
 namespace AVS
 {
     public class VolumetricLightController : MonoBehaviour, IPlayerListener, ILightsStatusListener
     {
-        private ModVehicle MV => GetComponent<ModVehicle>();
+        private AvsVehicle MV => GetComponent<AvsVehicle>();
         protected virtual void Awake()
         {
             if (MV.VolumetricLights.Count == 0)

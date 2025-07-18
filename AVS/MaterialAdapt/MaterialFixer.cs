@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace AVS.MaterialAdapt
         /// <summary>
         /// The owning vehicle.
         /// </summary>
-        public ModVehicle Vehicle { get; }
+        public AvsVehicle Vehicle { get; }
 
         /// <summary>
         /// Controls how debug logging should be performed
@@ -58,7 +59,7 @@ namespace AVS.MaterialAdapt
         /// mimics VF's default material selection in addition to filtering out non-standard materials</param>
         /// <param name="logConfig">Log Configuration. If null, defaults to <see cref="Logging.Default" /></param>
         public MaterialFixer(
-            ModVehicle owner,
+            AvsVehicle owner,
             Logging? logConfig = null,
             Func<IEnumerable<UnityMaterialData>>? materialResolver = null
             )
@@ -77,7 +78,7 @@ namespace AVS.MaterialAdapt
         /// <param name="ignoreShaderNames">True to return all materials, false to only return Standard materials</param>
         /// <param name="logConfig">Log Configuration</param>
         /// <returns>Enumerable of all suitable material addresses</returns>
-        public static IEnumerable<UnityMaterialData> DefaultMaterialResolver(ModVehicle vehicle, Logging logConfig, bool ignoreShaderNames = false)
+        public static IEnumerable<UnityMaterialData> DefaultMaterialResolver(AvsVehicle vehicle, Logging logConfig, bool ignoreShaderNames = false)
         {
             var renderers = vehicle.GetComponentsInChildren<Renderer>();
             foreach (var renderer in renderers)

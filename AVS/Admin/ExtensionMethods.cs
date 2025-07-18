@@ -1,4 +1,5 @@
-﻿using AVS.Patches;
+﻿using AVS.BaseVehicle;
+using AVS.Patches;
 using AVS.Util;
 using System.Collections;
 using System.Collections.Generic;
@@ -16,11 +17,11 @@ namespace AVS
         /// Queries the mod vehicle associated with the player.
         /// </summary>
         /// <param name="player">The player instance.</param>
-        /// <returns>The <see cref="ModVehicle"/> associated with the player, or null if not found.</returns>
-        public static ModVehicle? GetModVehicle(this Player player)
+        /// <returns>The <see cref="AvsVehicle"/> associated with the player, or null if not found.</returns>
+        public static AvsVehicle? GetModVehicle(this Player player)
         {
-            return (player.GetVehicle() as ModVehicle)
-                .Or(() => player.currentSub.SafeGetComponent<ModVehicle>());
+            return (player.GetVehicle() as AvsVehicle)
+                .Or(() => player.currentSub.SafeGetComponent<AvsVehicle>());
         }
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace AVS
         {
             void UndockModVehicle(Vehicle thisVehicle)
             {
-                if (vehicle is ModVehicle mv)
+                if (vehicle is AvsVehicle mv)
                 {
                     mv.OnVehicleUndocked();
                     vehicle.useRigidbody.detectCollisions = true;

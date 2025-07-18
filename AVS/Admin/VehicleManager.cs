@@ -1,4 +1,4 @@
-﻿using AVS.SaveLoad;
+﻿using AVS.BaseVehicle;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,15 +6,43 @@ using UnityEngine;
 
 namespace AVS
 {
+    /// <summary>
+    /// Provides management functions for AVS vehicles, including registration, enrollment, and loading.
+    /// </summary>
     public static class VehicleManager
     {
-        public static readonly List<ModVehicle> VehiclesInPlay = new List<ModVehicle>();
-        public static readonly List<PingInstance> mvPings = new List<PingInstance>();
-        public static readonly List<VehicleEntry> vehicleTypes = new List<VehicleEntry>();
+        /// <summary>
+        /// List of all AVS vehicles currently in play.
+        /// </summary>
+        public static List<AvsVehicle> VehiclesInPlay { get; } = new List<AvsVehicle>();
+
+        /// <summary>
+        /// List of all registered ping instances for vehicles.
+        /// </summary>
+        public static List<PingInstance> MvPings { get; } = new List<PingInstance>();
+
+        /// <summary>
+        /// List of all registered vehicle types.
+        /// </summary>
+        public static List<VehicleEntry> VehicleTypes { get; } = new List<VehicleEntry>();
+
+        /// <summary>
+        /// Registers a new <see cref="PingType"/> for a vehicle, ensuring it is unique and above the minimum value.
+        /// </summary>
+        /// <param name="pt">The initial ping type to register.</param>
+        /// <returns>The registered, unique ping type.</returns>
         public static PingType RegisterPingType(PingType pt)
         {
             return RegisterPingType(pt, false);
         }
+
+        /// <summary>
+        /// Registers a new <see cref="PingType"/> for a vehicle, ensuring it is unique and above the minimum value.
+        /// Optionally logs the registration process.
+        /// </summary>
+        /// <param name="pt">The initial ping type to register.</param>
+        /// <param name="verbose">If true, logs detailed registration steps.</param>
+        /// <returns>The registered, unique ping type.</returns>
         public static PingType RegisterPingType(PingType pt, bool verbose)
         {
             PingType ret = pt;
@@ -23,7 +51,7 @@ namespace AVS
                 VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, "PingType " + pt.ToString() + " was too small. Trying 121.");
                 ret = (PingType)121;
             }
-            while (mvPings.Where(x => x.pingType == ret).Count() > 0)
+            while (MvPings.Where(x => x.pingType == ret).Count() > 0)
             {
                 VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, "PingType " + ret.ToString() + " was taken.");
                 ret++;
@@ -31,7 +59,12 @@ namespace AVS
             VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, "Registering PingType " + ret.ToString() + ".");
             return ret;
         }
-        public static void EnrollVehicle(ModVehicle mv)
+
+        /// <summary>
+        /// Enrolls a vehicle into the <see cref="VehiclesInPlay"/> list and starts loading it if constructed.
+        /// </summary>
+        /// <param name="mv">The vehicle to enroll.</param>
+        public static void EnrollVehicle(AvsVehicle mv)
         {
             if (mv.name.Contains("Clone") && !VehiclesInPlay.Contains(mv))
             {
@@ -43,38 +76,22 @@ namespace AVS
                 }
             }
         }
-        public static void DeregisterVehicle(ModVehicle mv)
+
+        /// <summary>
+        /// Removes a vehicle from the <see cref="VehiclesInPlay"/> list.
+        /// </summary>
+        /// <param name="mv">The vehicle to deregister.</param>
+        public static void DeregisterVehicle(AvsVehicle mv)
         {
             VehiclesInPlay.Remove(mv);
         }
-        internal static void CreateSaveFileData(object sender, Nautilus.Json.JsonFileEventArgs e)
-        {
-            // See SaveData.cs
-            var data = e.Instance as SaveData;
-            if (data == null)
-            {
-                Logger.Error($"SaveData instance is null in CreateSaveFileData. Cannot save {Patches.SaveLoadManagerPatcher.SaveFileSpritesFileName}");
-                return;
-            }
-            data.UpgradeLists = SaveManager.SerializeUpgrades();
-            data.InnateStorages = SaveManager.SerializeInnateStorage();
-            data.ModularStorages = SaveManager.SerializeModularStorage();
-            data.Batteries = SaveManager.SerializeBatteries();
-            data.BackupBatteries = SaveManager.SerializeBackupBatteries();
-            data.IsPlayerInside = SaveManager.SerializePlayerInside();
-            data.AllVehiclesAesthetics = SaveManager.SerializeAesthetics();
-            data.IsPlayerControlling = SaveManager.SerializePlayerControlling();
-            data.SubNames = SaveManager.SerializeSubName();
-            JsonInterface.Write(
-                Patches.SaveLoadManagerPatcher.SaveFileSpritesFileName,
-                vehicleTypes
-                    .Select(x => x.techType)
-                    .Where(GameInfoIcon.Has)
-                    .Select(x => x.AsString())
-                    .ToList()
-                    );
-        }
-        private static IEnumerator LoadVehicle(ModVehicle mv)
+
+        /// <summary>
+        /// Coroutine that waits for the world to be ready, then calls <see cref="AvsVehicle.OnFinishedLoading"/> on the vehicle.
+        /// </summary>
+        /// <param name="mv">The vehicle to load.</param>
+        /// <returns>Coroutine enumerator.</returns>
+        private static IEnumerator LoadVehicle(AvsVehicle mv)
         {
             // See SaveData.cs
             yield return new WaitUntil(() => LargeWorldStreamer.main != null);

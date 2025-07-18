@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
 using HarmonyLib;
 using UnityEngine;
 
@@ -30,7 +31,7 @@ namespace AVS.Patches.LeviathanPatches
                     return;
                 }
             }
-            var mv = collider.gameObject.GetComponentInParent<ModVehicle>();
+            var mv = collider.gameObject.GetComponentInParent<AvsVehicle>();
             if (mv != null)
             {
                 if (__instance.liveMixin.IsAlive() && Time.time > __instance.timeLastBite + __instance.biteInterval)
@@ -57,7 +58,7 @@ namespace AVS.Patches.LeviathanPatches
         [HarmonyPatch(nameof(ReaperMeleeAttack.GetBiteDamage))]
         public static void GetBiteDamagePostfix(ReaperMeleeAttack __instance, ref float __result, GameObject target)
         {
-            ModVehicle mv = target.GetComponent<ModVehicle>();
+            AvsVehicle mv = target.GetComponent<AvsVehicle>();
             if (mv == null) return;
 
             __result = mv.Config.ReaperBiteDamage;
@@ -71,7 +72,7 @@ namespace AVS.Patches.LeviathanPatches
         [HarmonyPatch(nameof(ReaperLeviathan.Update))]
         public static void UpdatePostfix(ReaperLeviathan __instance)
         {
-            if (__instance.holdingVehicle is ModVehicle v)
+            if (__instance.holdingVehicle is AvsVehicle v)
             {
                 var gb = v.Com.LeviathanGrabPoint.Or(v.gameObject);
                 if (gb != null)

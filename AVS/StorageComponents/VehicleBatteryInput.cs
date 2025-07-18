@@ -1,4 +1,5 @@
 ﻿//using AVS.Localization;
+using AVS.BaseVehicle;
 using UnityEngine;
 
 namespace AVS
@@ -20,7 +21,7 @@ namespace AVS
 
         public void OnHandClick(GUIHand hand)
         {
-            gameObject.GetComponentInParent<ModVehicle>().OnAIBatteryReload();
+            gameObject.GetComponentInParent<AvsVehicle>().OnAIBatteryReload();
             if (mixin != null)
                 mixin.InitiateReload(); // this brings up the battery-changing gui
         }

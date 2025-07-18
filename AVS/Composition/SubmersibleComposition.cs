@@ -11,7 +11,7 @@ namespace AVS.Composition
         /// The pilot seat of the vehicle.
         /// Must not be null.
         /// </summary>
-        public VehicleParts.VehiclePilotSeat PilotSeat { get; }
+        public VehicleParts.Helm PilotSeat { get; }
 
 
         /// <summary>
@@ -60,12 +60,6 @@ namespace AVS.Composition
         /// <param name="backupBatteries">
         /// Batteries exclusively used for the AI. Optional. Can be null or empty.
         /// </param>
-        /// <param name="steeringWheelLeftHandTarget">
-        /// The object the player's left hand will 'grab' while piloting. Optional. Can be null.
-        /// </param>
-        /// <param name="steeringWheelRightHandTarget">
-        /// The object the player's right hand will 'grab' while piloting. Optional. Can be null.
-        /// </param>
         /// <param name="denyBuildingColliders">
         /// Colliders within which building is not permitted. Optional. Can be null or empty.
         /// </param>
@@ -83,7 +77,7 @@ namespace AVS.Composition
         /// Thrown if <paramref name="pilotSeat"/> is null or if <c>PilotSeat.Seat</c> is null.
         /// </exception>
         public SubmersibleComposition(
-            VehicleParts.VehiclePilotSeat pilotSeat,
+            VehicleParts.Helm pilotSeat,
             GameObject storageRootObject,
             GameObject modulesRootObject,
             IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
@@ -98,8 +92,6 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
             IReadOnlyList<VehicleParts.VehicleBattery>? backupBatteries = null,
-            GameObject? steeringWheelLeftHandTarget = null,
-            GameObject? steeringWheelRightHandTarget = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
@@ -119,15 +111,13 @@ namespace AVS.Composition
             headLights: headLights,
             canopyWindows: canopyWindows,
             backupBatteries: backupBatteries,
-            steeringWheelLeftHandTarget: steeringWheelLeftHandTarget,
-            steeringWheelRightHandTarget: steeringWheelRightHandTarget,
             denyBuildingColliders: denyBuildingColliders,
             subNameDecals: subNameDecals,
             lavaLarvaAttachPoints: lavaLarvaAttachPoints,
             leviathanGrabPoint: leviathanGrabPoint
         )
         {
-            if (pilotSeat.Seat == null)
+            if (pilotSeat.Root == null)
                 throw new ArgumentNullException(nameof(pilotSeat), "PilotSeat.Seat must not be null.");
             PilotSeat = pilotSeat;
         }

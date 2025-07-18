@@ -19,7 +19,7 @@ namespace AVS.Patches.CompatibilityPatches
                 if (GetComponentByName(mv.gameObject))
                 {
                     __result = true;
-                    mv.PlayerExit();
+                    mv.ClosestPlayerExit(true);
                 }
             }
         }

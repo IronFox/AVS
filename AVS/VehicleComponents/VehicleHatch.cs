@@ -1,5 +1,6 @@
-﻿using AVS.VehicleTypes;
-using System.Collections;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
+using AVS.VehicleTypes;
 using UnityEngine;
 //using AVS.Localization;
 
@@ -8,10 +9,8 @@ namespace AVS
     public class VehicleHatch : HandTarget, IHandTarget, IDockListener
     {
         private bool isLive = true;
-        public ModVehicle? mv;
-        public Transform? entryLocation;
-        public Transform? exitLocation;
-        public Transform? surfaceExitLocation;
+        public AvsVehicle? mv;
+        public int hatchIndex = 0; // Index of the hatch in the vehicle's list of hatches
         public string EnterHint => mv != null ? mv.VehicleName : Language.main.Get("AvsEnterVehicle");
         public string ExitHint = Language.main.Get("AvsExitVehicle");
 
@@ -41,6 +40,7 @@ namespace AVS
 
         public void OnHandClick(GUIHand hand)
         {
+            Logging.Default.Write($"VehicleHatch.OnHandClick: {mv?.NiceName()}");
             if (!isLive)
             {
                 return;
@@ -49,42 +49,27 @@ namespace AVS
             Player.main.rigidBody.angularVelocity = Vector3.zero;
             if (mv is Submarine sub)
             {
+                if (hatchIndex < 0 || hatchIndex >= sub.Com.Hatches.Count)
+                {
+                    Logging.Default.Error($"Invalid hatch index {hatchIndex} for submarine {sub.VehicleName}");
+                    return;
+                }
                 if (sub.IsPlayerInside())
                 {
-                    mv.PlayerExit();
-                    if (mv.transform.position.y < -3f)
-                    {
-                        if (exitLocation == null)
-                        {
-                            Logger.Error("Error: exitLocation is null. Cannot exit vehicle.");
-                            return;
-                        }
-                        Player.main.transform.position = exitLocation.position;
-                    }
-                    else
-                    {
-                        StartCoroutine(ExitToSurface());
-                    }
+                    mv.PlayerExit(mv.Com.Hatches[hatchIndex], true);
+
                 }
                 else
                 {
-                    if (entryLocation == null)
-                    {
-                        Logger.Error("Error: entryLocation is null. Cannot enter vehicle.");
-                        return;
-                    }
-
-
-                    Player.main.transform.position = entryLocation.position;
-                    sub.PlayerEntry();
+                    sub.PlayerEntry(mv.Com.Hatches[hatchIndex]);
                 }
             }
             else if (mv is Submersible sub2 && !mv.isScuttled)
             {
-                Player.main.transform.position = sub2.Com.PilotSeat.SitLocation.transform.position;
-                Player.main.transform.rotation = sub2.Com.PilotSeat.SitLocation.transform.rotation;
-                sub2.PlayerEntry();
+                sub2.ClosestPlayerEntry();
             }
+            Logging.Default.Write($"VehicleHatch.OnHandClick: end");
+
             /*
 			if (mv as Walker != null)
 			{
@@ -101,27 +86,7 @@ namespace AVS
 			*/
         }
 
-        public IEnumerator ExitToSurface()
-        {
-            int tryCount = 0;
-            float playerHeightBefore = Player.main.transform.position.y;
-            while (Player.main.transform.position.y < 2 + playerHeightBefore)
-            {
-                if (100 < tryCount)
-                {
-                    Logger.Error("Error: Failed to exit vehicle too many times. Stopping.");
-                    yield break;
-                }
-                if (surfaceExitLocation == null)
-                {
-                    Logger.Error("Error: surfaceExitLocation is null. Cannot exit vehicle to surface.");
-                    yield break;
-                }
-                Player.main.transform.position = surfaceExitLocation.position;
-                tryCount++;
-                yield return null;
-            }
-        }
+
 
         void IDockListener.OnDock()
         {

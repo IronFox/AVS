@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using AVS.BaseVehicle;
 using HarmonyLib;
 using UnityEngine;
 
@@ -14,7 +15,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(CellManager.RegisterGlobalEntity))]
         public static bool RegisterGlobalEntityPostfix(CellManager __instance, GameObject ent)
         {
-            if (ent.GetComponent<ModVehicle>() == null) return true;
+            if (ent.GetComponent<AvsVehicle>() == null) return true;
             
             if (__instance.streamer == null || __instance.streamer.globalRoot == null)
             {

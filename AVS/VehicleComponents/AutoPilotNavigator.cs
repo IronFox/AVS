@@ -1,11 +1,8 @@
-﻿using System;
+﻿using AVS.BaseVehicle;
+using AVS.Engines;
 using System.Collections;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
-using AVS.Engines;
-using AVS.VehicleTypes;
 
 namespace AVS.VehicleComponents
 {
@@ -13,7 +10,7 @@ namespace AVS.VehicleComponents
     {
         public void Update()
         {
-            if (GetComponent<ModVehicle>() != null && GetComponent<ModVehicle>().GetPilotingMode())
+            if (GetComponent<AvsVehicle>() != null && GetComponent<AvsVehicle>().GetPilotingMode())
             {
                 StopAllCoroutines();
                 return;
@@ -29,7 +26,7 @@ namespace AVS.VehicleComponents
             Vector3 direction = (dest - transform.position).normalized;
             Quaternion goal = Quaternion.LookRotation(direction);
             float rotationSpeed = 1f;
-            while(0.01f < Quaternion.Angle(transform.rotation, goal))
+            while (0.01f < Quaternion.Angle(transform.rotation, goal))
             {
                 transform.rotation = Quaternion.Slerp(transform.rotation, goal, rotationSpeed * Time.deltaTime);
             }
@@ -37,14 +34,14 @@ namespace AVS.VehicleComponents
         public IEnumerator GoStraightToDestination(Vector3 dest)
         {
             AbstractEngine engine = GetComponent<AbstractEngine>();
-            if(engine == null)
+            if (engine == null)
             {
                 yield break;
             }
             IEnumerator ForwardLoop(float power)
             {
                 float now = Time.time;
-                while(Time.time < now + 0.1f)
+                while (Time.time < now + 0.1f)
                 {
                     engine.ApplyPlayerControls(Vector3.forward * power);
                     engine.ExecutePhysicsMove();
@@ -75,7 +72,7 @@ namespace AVS.VehicleComponents
                 return (magnit < Vector3.Distance(transform.position, destin)) && RaycastForward(magnit);
             }
 
-            while(20 < Vector3.Distance(transform.position, dest))
+            while (20 < Vector3.Distance(transform.position, dest))
             {
                 yield return new WaitForFixedUpdate();
                 FaceDestinationFrame(dest);
@@ -87,7 +84,7 @@ namespace AVS.VehicleComponents
                 if (CheckClose(dest, 25f))
                 {
                     yield return UWE.CoroutineHost.StartCoroutine(BreakLoop());
-                    if(gameObject.GetComponent<Rigidbody>().velocity.magnitude < 0.1f)
+                    if (gameObject.GetComponent<Rigidbody>().velocity.magnitude < 0.1f)
                     {
                         Logger.PDANote(Language.main.Get("VFAutopilotHint1"));
                         yield break;

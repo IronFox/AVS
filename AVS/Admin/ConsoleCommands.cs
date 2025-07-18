@@ -69,7 +69,7 @@ namespace AVS.Admin
         }
         public void OnConsoleCommand_logvfvehicles(NotificationCenter.Notification _)
         {
-            VehicleManager.vehicleTypes.Select(x => x.techType).ForEach(x => Logger.Log(x.AsString()));
+            VehicleManager.VehicleTypes.Select(x => x.techType).ForEach(x => Logger.Log(x.AsString()));
         }
         //public void OnConsoleCommand_logvfvoices(NotificationCenter.Notification _)
         //{
@@ -82,7 +82,7 @@ namespace AVS.Admin
         private static IEnumerator ListSpawnCodes()
         {
             List<string> allCodes = new List<string>();
-            allCodes.AddRange(VehicleManager.vehicleTypes.Select(x => x.techType.AsString()));
+            allCodes.AddRange(VehicleManager.VehicleTypes.Select(x => x.techType.AsString()));
             allCodes.AddRange(UpgradeRegistrar.UpgradeIcons.Select(x => x.Key));
             foreach (string code in allCodes)
             {
