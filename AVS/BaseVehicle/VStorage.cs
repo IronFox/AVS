@@ -1,6 +1,8 @@
-﻿using AVS.VehicleParts;
+﻿using AVS.Util;
+using AVS.VehicleParts;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 namespace AVS.BaseVehicle
 {
@@ -20,21 +22,27 @@ namespace AVS.BaseVehicle
             return 0;
         }
 
-        //private GameObject GetOrCreateChild(string childName)
-        //{
-        //    var child = transform.Find(childName).SafeGetGameObject();
-        //    if (child == null)
-        //    {
-        //        child = new GameObject(childName);
-        //        child.transform.SetParent(transform);
-        //    }
-        //    return child;
-        //}
+        private GameObject GetOrCreateChild(string childName)
+        {
+            var child = transform.Find(childName).SafeGetGameObject();
+            if (child == null)
+            {
+                child = new GameObject(childName);
+                child.transform.SetParent(transform);
+            }
+            return child;
+        }
 
-        //public GameObject GetOrCreateDefaultStorageRootObject()
-        //    => GetOrCreateChild("StorageRootObject");
-        //public GameObject GetOrCreateDefaultModulesRootObject()
-        //    => GetOrCreateChild("ModulesRootObject");
+        /// <summary>
+        /// Gets or creates a storage root object named "StorageRootObject".
+        /// </summary>
+        public GameObject GetOrCreateDefaultStorageRootObject()
+            => GetOrCreateChild("StorageRootObject");
+        /// <summary>
+        /// Gets or creates a modules root object named "ModulesRootObject".
+        /// </summary>
+        public GameObject GetOrCreateDefaultModulesRootObject()
+            => GetOrCreateChild("ModulesRootObject");
 
         public bool HasRoomFor(Pickupable pickup)
         {

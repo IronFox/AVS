@@ -55,20 +55,20 @@ namespace AVS.Admin
         /// vehicle.</returns>
         /// <exception cref="ArgumentException">Thrown if <paramref name="vehicleName"/> does not match any mod vehicle, or if it matches multiple mod
         /// vehicles.</exception>
-        public static ExternalVehicleConfig<T> GetModVehicleConfig(string vehicleName)
+        public static ExternalVehicleConfig<T> GetAvsVehicleConfig(string vehicleName)
         {
             var MVs = VehicleManager.VehicleTypes.Where(x => x.name.Equals(vehicleName, StringComparison.OrdinalIgnoreCase)).ToList();
             if (MVs.Count == 0)
             {
                 StringBuilder sb = new StringBuilder();
                 VehicleManager.VehicleTypes.ForEach(x => sb.AppendLine(x.name));
-                throw new ArgumentException($"GetModVehicleConfig: vehicle name does not identify a ModVehicle: {vehicleName}. Options are: {sb}");
+                throw new ArgumentException($"{nameof(GetAvsVehicleConfig)}: vehicle name does not identify a {nameof(AvsVehicle)}: {vehicleName}. Options are: {sb}");
             }
             if (MVs.Count > 1)
             {
                 StringBuilder sb = new StringBuilder();
                 VehicleManager.VehicleTypes.ForEach(x => sb.AppendLine(x.name));
-                throw new ArgumentException($"GetModVehicleConfig: vehicle name does not uniquely identify a ModVehicle: {vehicleName}. There were {MVs.Count()} matches: {sb}");
+                throw new ArgumentException($"{nameof(GetAvsVehicleConfig)}: vehicle name does not uniquely identify a {nameof(AvsVehicle)}: {vehicleName}. There were {MVs.Count()} matches: {sb}");
             }
             AvsVehicle mv = MVs[0].mv;
             if (!main.ContainsKey(mv.GetType().ToString()))
@@ -178,7 +178,7 @@ namespace AVS.Admin
         /// <param name="OnChange">An optional callback invoked when the configuration value changes. The callback receives the <see
         /// cref="TechType"/> of the vehicle and the new value.</param>
         /// <param name="configFile">An optional configuration file to store the setting. If not provided, a default configuration file is used.</param>
-        public static void RegisterForAllModVehicles<T>(string name, ConfigDescription description, T defaultValue, Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
+        public static void RegisterForAllAvsVehicles<T>(string name, ConfigDescription description, T defaultValue, Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
         {
             UWE.CoroutineHost.StartCoroutine(RegisterForAllInternal<T>(name, description, defaultValue, OnChange, configFile));
         }
@@ -197,7 +197,7 @@ namespace AVS.Admin
         /// cref="TechType"/> of the vehicle and the new value of the configuration option.</param>
         /// <param name="configFile">An optional <see cref="ConfigFile"/> instance to store the configuration option. If not provided, the
         /// default configuration file is used.</param>
-        public static void RegisterForModVehicle<T>(string vehicleName, string name, ConfigDescription description, T defaultValue, Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
+        public static void RegisterForAvsVehicle<T>(string vehicleName, string name, ConfigDescription description, T defaultValue, Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
         {
             UWE.CoroutineHost.StartCoroutine(RegisterForVehicleInternal<T>(vehicleName, name, description, defaultValue, OnChange, configFile));
         }
@@ -309,17 +309,17 @@ namespace AVS.Admin
             var MVs = VehicleManager.VehicleTypes.Where(x => x.name.ToLower().Contains(vehicleName.ToLower()));
             if (!MVs.Any())
             {
-                throw new ArgumentException($"RegisterForModVehicle: vehicle name does not identify a ModVehicle: {vehicleName}");
+                throw new ArgumentException($"{nameof(RegisterForVehicleInternal)}: vehicle name does not identify a {nameof(AvsVehicle)}: {vehicleName}");
             }
             if (MVs.Count() > 1)
             {
-                throw new ArgumentException($"RegisterForModVehicle: vehicle name does not uniquely identify a ModVehicle: {vehicleName}. There were {MVs.Count()} matches.");
+                throw new ArgumentException($"{nameof(RegisterForVehicleInternal)}: vehicle name does not uniquely identify a {nameof(AvsVehicle)}: {vehicleName}. There were {MVs.Count()} matches.");
             }
             AvsVehicle mv = MVs.First().mv;
             var config = configFile;
             if (config is null)
                 config = MainPatcher.Instance.Config;
-            var vConf = ExternalVehicleConfig<T>.GetModVehicleConfig(vehicleName);
+            var vConf = ExternalVehicleConfig<T>.GetAvsVehicleConfig(vehicleName);
             ConfigEntry<T> thisConf;
             try
             {

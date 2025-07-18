@@ -10,7 +10,7 @@ namespace AVS.UpgradeTypes
     /// <summary>
     /// Base class for all mod vehicle upgrades. Provides core properties, recipe handling, and extension points for custom upgrades.
     /// </summary>
-    public abstract class ModVehicleUpgrade : ILogFilter
+    public abstract class AvsVehicleUpgrade : ILogFilter
     {
         /// <summary>
         /// If true, enables debug logging for this upgrade.
@@ -185,8 +185,8 @@ namespace AVS.UpgradeTypes
 
             switch (type)
             {
-                case VehicleType.ModVehicle:
-                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.ForModVehicle));
+                case VehicleType.AvsVehicle:
+                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.ForAvsVehicle));
                     break;
                 case VehicleType.Seamoth:
                     r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.ForSeamoth));

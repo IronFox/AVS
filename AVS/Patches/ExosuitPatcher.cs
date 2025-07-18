@@ -12,7 +12,7 @@ namespace AVS.Patches
      * So we patch those in Vehicle here.
      * 
      * The purpose of these patches is to let our
-     * ModVehicleUpgrades be usable.
+     * AvsVehicleUpgrades be usable.
      */
     [HarmonyPatch(typeof(Vehicle))]
     public class VehicleExosuitPatcher

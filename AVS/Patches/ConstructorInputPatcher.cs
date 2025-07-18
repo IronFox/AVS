@@ -1,5 +1,6 @@
-﻿// PURPOSE: Allow ModVehicles to be built basically anywhere (don't "need deeper water" unnecessarily)
+﻿// PURPOSE: Allow AvsVehicles to be built basically anywhere (don't "need deeper water" unnecessarily)
 // VALUE: High.
+// doesn't work atm.
 
 namespace AVS.Patches
 {

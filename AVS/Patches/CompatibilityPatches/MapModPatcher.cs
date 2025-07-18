@@ -2,7 +2,7 @@
 using System.Reflection;
 using UnityEngine;
 
-// PURPOSE: ensure ModVehicles are displayed correctly in the Map mod
+// PURPOSE: ensure AvsVehicles are displayed correctly in the Map mod
 // VALUE: High. The Map is a great mod!
 
 namespace AVS.Patches.CompatibilityPatches
@@ -11,7 +11,7 @@ namespace AVS.Patches.CompatibilityPatches
     {
         /*
          * This patch is specifically for the Map Mod.
-         * It ensures that our ModVehicles are displayed correctly as their Ping Sprites.
+         * It ensures that our AvsVehicles are displayed correctly as their Ping Sprites.
          * Without this patch, the Map Mod dies completely.
          */
         [HarmonyPrefix]

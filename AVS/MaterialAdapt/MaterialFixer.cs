@@ -57,7 +57,7 @@ namespace AVS.MaterialAdapt
         /// <param name="materialResolver">The solver function to fetch all materials to translate.
         /// If null, a default implementation is used which 
         /// mimics VF's default material selection in addition to filtering out non-standard materials</param>
-        /// <param name="logConfig">Log Configuration. If null, defaults to <see cref="Logging.Default" /></param>
+        /// <param name="logConfig">Log Configuration. If null, defaults to <see cref="Logging.MaterialAdaptationDefault" /></param>
         public MaterialFixer(
             AvsVehicle owner,
             Logging? logConfig = null,
@@ -67,7 +67,7 @@ namespace AVS.MaterialAdapt
             if (owner == null)
                 throw new ArgumentNullException(nameof(owner));
             Vehicle = owner;
-            Logging = logConfig ?? Logging.Default;
+            Logging = logConfig ?? Logging.MaterialAdaptationDefault;
             MaterialResolver = materialResolver ?? (() => DefaultMaterialResolver(owner, Logging));
         }
 

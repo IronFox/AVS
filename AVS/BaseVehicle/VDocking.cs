@@ -90,7 +90,7 @@ namespace AVS.BaseVehicle
         /// <param name="moonpool"></param>
         public virtual void AnimateMoonPoolArms(VehicleDockingBay moonpool)
         {
-            // AnimateMoonPoolArms is called in VehicleDockingBay.LateUpdate when a ModVehicle is docked in a moonpool.
+            // AnimateMoonPoolArms is called in VehicleDockingBay.LateUpdate when a AvsVehicle is docked in a moonpool.
             // This line sets the arms of the moonpool to do exactly as they do for the seamoth
             // There is also "exosuit_docked"
             SafeAnimator.SetBool(moonpool.animator, "seamoth_docked", moonpool.vehicle_docked_param && moonpool.dockedVehicle != null);

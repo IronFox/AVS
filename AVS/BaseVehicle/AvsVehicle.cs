@@ -47,7 +47,7 @@ namespace AVS.BaseVehicle
         /// <summary>
         /// Primary logging facility for this vehicle.
         /// </summary>
-        public Logging Log { get; }
+        internal Logging Log { get; }
 
         /// <summary>
         /// Invariant vehicle configuration. Initialized during construction.
@@ -71,7 +71,7 @@ namespace AVS.BaseVehicle
         /// If accessed before <see cref="Awake()"/> (or vehicle registration), InvalidOperationException will be thrown.
         /// </summary>
         public VehicleComposition Com => _composition
-            ?? throw new InvalidOperationException("This vehicle's composition has not yet been initialized. Please wait until ModVehicle.Awake() has been called");
+            ?? throw new InvalidOperationException($"This vehicle's composition has not yet been initialized. Please wait until {nameof(AvsVehicle)}.Awake() has been called");
         private VehicleComposition? _composition = null;
 
         /// <summary>
@@ -81,7 +81,7 @@ namespace AVS.BaseVehicle
         /// <exception cref="ArgumentNullException"></exception>
         protected AvsVehicle(VehicleConfiguration config)
         {
-            Log = new Logging(false, false, $"V{Id}", true, false);
+            Log = new Logging(false, false, prefix: $"V{Id}", tag: "AVS", true, false);
 
 
             Config = config ?? throw new ArgumentNullException(nameof(config), "VehicleConfiguration cannot be null");
@@ -267,9 +267,9 @@ namespace AVS.BaseVehicle
                 Language main = Language.main;
                 if (main == null)
                 {
-                    return Language.main.Get("VFVehicle");
+                    return Language.main.Get("AvsVehicle");
                 }
-                return main.Get("ModVehicle");
+                return main.Get("AvsVehicle");
             }
         }
 

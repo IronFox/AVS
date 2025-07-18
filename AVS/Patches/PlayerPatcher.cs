@@ -3,7 +3,7 @@ using AVS.VehicleTypes;
 using HarmonyLib;
 using UnityEngine;
 
-// PURPOSE: ensure the Player behaves as expected when ModVehicles are involved
+// PURPOSE: ensure the Player behaves as expected when AvsVehicle are involved
 // VALUE: Very high.
 
 namespace AVS
@@ -13,7 +13,7 @@ namespace AVS
     {
         /*
          * This collection of patches covers many topics.
-         * Generally, it regards behavior in a ModVehicle while underwater and exiting the pilot seat.
+         * Generally, it regards behavior in a AvsVehicle while underwater and exiting the pilot seat.
          * TODO: there is likely some redundancy here with PlayerControllerPatcher
          */
         [HarmonyPostfix]
@@ -42,13 +42,13 @@ namespace AVS
         [HarmonyPatch(nameof(Player.TryEject))]
         public static bool PlayerTryEjectPrefix(Player __instance)
         {
-            // Player.TryEject does not serve ModVehicles.
-            // The only reason it gets called at all, for a ModVehicle,
+            // Player.TryEject does not serve AvsVehicle.
+            // The only reason it gets called at all, for a AvsVehicle,
             // is for compatibility with DeathRun remade,
             // which spends energy on Player.TryEject.
             // So we'll gut it and call it at the appropriate time,
             // so that the DeathRun functionality can exist.
-            return __instance.GetModVehicle() == null;
+            return __instance.GetAvsVehicle() == null;
         }
 
         [HarmonyPrefix]
@@ -117,7 +117,7 @@ namespace AVS
             var mv = __instance.GetVehicle() as VehicleTypes.Submarine;
             if (mv != null && !mv.IsPlayerControlling())
             {
-                // ensure: if we're in a modvehicle and we're not piloting, then we're walking.
+                // ensure: if we're in a AvsVehicle and we're not piloting, then we're walking.
                 __instance.SetMotorMode(Player.MotorMode.Walk);
                 return false;
             }
@@ -169,7 +169,7 @@ namespace AVS
         public static bool PlayerExitLockedModePrefix(Player __instance)
         {
             // if we're in an MV, do our special way of exiting a vehicle instead
-            var mv = __instance.GetModVehicle();
+            var mv = __instance.GetAvsVehicle();
             if (mv == null)
             {
                 return true;
@@ -183,7 +183,7 @@ namespace AVS
         public static void PlayerOnKillPostfix(Player __instance)
         {
             // if we're in an MV, do our special way of exiting a vehicle instead
-            var mv = __instance.GetModVehicle();
+            var mv = __instance.GetAvsVehicle();
             if (mv == null)
             {
                 return;

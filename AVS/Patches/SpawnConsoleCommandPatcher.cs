@@ -1,10 +1,10 @@
-﻿using System.Collections;
-using System.Linq;
-using AVS.BaseVehicle;
+﻿using AVS.BaseVehicle;
 using HarmonyLib;
+using System.Collections;
+using System.Linq;
 using UnityEngine;
 
-// PURPOSE: allow the spawn console command to work for ModVehicles
+// PURPOSE: allow the spawn console command to work for AvsVehicle
 // VALUE: Moderate. Could register a new console command instead.
 
 namespace AVS.Patches

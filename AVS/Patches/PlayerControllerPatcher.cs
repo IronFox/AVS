@@ -9,9 +9,9 @@ namespace AVS
     public class PlayerControllerPatcher
     {
         /*
-         * This patch ensures the Player behaves as expected inside a ModVehicle.
+         * This patch ensures the Player behaves as expected inside a AvsVehicle.
          * That is, the player should always act as "normally grounded."
-         * This patch prevents the player from doing any swim-related behaviors while inside a ModVehicle
+         * This patch prevents the player from doing any swim-related behaviors while inside a AvsVehicle
          */
         [HarmonyPrefix]
         [HarmonyPatch(nameof(PlayerController.HandleUnderWaterState))]

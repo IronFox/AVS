@@ -6,7 +6,7 @@ using System.Linq;
 using System.Reflection.Emit;
 
 
-// PURPOSE: Allow battery charges (and Power Relay in general) to work in expected ways on ModVehicles
+// PURPOSE: Allow battery charges (and Power Relay in general) to work in expected ways on AvsVehicle
 // VALUE: High.
 
 namespace AVS.Patches

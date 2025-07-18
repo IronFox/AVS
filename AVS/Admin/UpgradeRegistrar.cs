@@ -17,9 +17,9 @@ namespace AVS.Admin
     public struct UpgradeCompat
     {
         /// <summary>
-        /// If true, skip registering for ModVehicle.
+        /// If true, skip registering for <see cref="AvsVehicle" />.
         /// </summary>
-        public bool skipModVehicle;
+        public bool skipAvsVehicle;
         /// <summary>
         /// If true, skip registering for Seamoth.
         /// </summary>
@@ -39,9 +39,9 @@ namespace AVS.Admin
     public readonly struct UpgradeTechTypes
     {
         /// <summary>
-        /// Tech type applicable for any mod vehicle.
+        /// Tech type applicable for any AVS vehicle.
         /// </summary>
-        public TechType ForModVehicle { get; }
+        public TechType ForAvsVehicle { get; }
         /// <summary>
         /// Tech type applicable for Seamoth vehicles.
         /// </summary>
@@ -58,9 +58,9 @@ namespace AVS.Admin
         /// <summary>
         /// Constructor for UpgradeTechTypes.
         /// </summary>
-        internal UpgradeTechTypes(TechType forModVehicle = TechType.None, TechType forSeamoth = TechType.None, TechType forExosuit = TechType.None, TechType forCyclops = TechType.None)
+        internal UpgradeTechTypes(TechType forAvsVehicle = TechType.None, TechType forSeamoth = TechType.None, TechType forExosuit = TechType.None, TechType forCyclops = TechType.None)
         {
-            ForModVehicle = forModVehicle;
+            ForAvsVehicle = forAvsVehicle;
             ForSeamoth = forSeamoth;
             ForExosuit = forExosuit;
             ForCyclops = forCyclops;
@@ -73,7 +73,7 @@ namespace AVS.Admin
         {
             if (techType == TechType.None)
                 return false;
-            return ForModVehicle == techType
+            return ForAvsVehicle == techType
                 || ForSeamoth == techType
                 || ForExosuit == techType
                 || ForCyclops == techType;
@@ -82,7 +82,7 @@ namespace AVS.Admin
         internal UpgradeTechTypes ReplaceSeamoth(TechType techType)
         {
             return new UpgradeTechTypes(
-                forModVehicle: ForModVehicle,
+                forAvsVehicle: ForAvsVehicle,
                 forSeamoth: techType,
                 forExosuit: ForExosuit,
                 forCyclops: ForCyclops
@@ -92,7 +92,7 @@ namespace AVS.Admin
         internal UpgradeTechTypes ReplaceExosuit(TechType techType)
         {
             return new UpgradeTechTypes(
-                forModVehicle: ForModVehicle,
+                forAvsVehicle: ForAvsVehicle,
                 forSeamoth: ForSeamoth,
                 forExosuit: techType,
                 forCyclops: ForCyclops
@@ -102,7 +102,7 @@ namespace AVS.Admin
         internal UpgradeTechTypes ReplaceCyclops(TechType techType)
         {
             return new UpgradeTechTypes(
-                forModVehicle: ForModVehicle,
+                forAvsVehicle: ForAvsVehicle,
                 forSeamoth: ForSeamoth,
                 forExosuit: ForExosuit,
                 forCyclops: techType
@@ -117,7 +117,7 @@ namespace AVS.Admin
         /// <summary>
         /// Any mod vehicle type
         /// </summary>
-        ModVehicle,
+        AvsVehicle,
         /// <summary>
         /// The Seamoth vehicle type.
         /// </summary>
@@ -183,16 +183,16 @@ namespace AVS.Admin
         internal static List<Tuple<Vehicle, int, Coroutine>> ToggledActions { get; } = new List<Tuple<Vehicle, int, Coroutine>>();
 
         /// <summary>
-        /// Registers a ModVehicleUpgrade and sets up its icons, recipes, and actions for compatible vehicle types.
+        /// Registers a AvsVehicleUpgrade and sets up its icons, recipes, and actions for compatible vehicle types.
         /// </summary>
         /// <param name="upgrade">The upgrade to register.</param>
         /// <param name="compat">Compatibility flags for vehicle types.</param>
         /// <param name="verbose">If true, enables verbose logging.</param>
         /// <returns>UpgradeTechTypes containing TechTypes for each vehicle type.</returns>
-        public static UpgradeTechTypes RegisterUpgrade(ModVehicleUpgrade upgrade, UpgradeCompat compat = default(UpgradeCompat), bool verbose = false)
+        public static UpgradeTechTypes RegisterUpgrade(AvsVehicleUpgrade upgrade, UpgradeCompat compat = default(UpgradeCompat), bool verbose = false)
         {
-            Logger.Log("Registering ModVehicleUpgrade " + upgrade.ClassId + " : " + upgrade.DisplayName);
-            bool result = ValidateModVehicleUpgrade(upgrade, compat);
+            Logger.Log($"Registering {nameof(AvsVehicleUpgrade)} " + upgrade.ClassId + " : " + upgrade.DisplayName);
+            bool result = ValidateAvsVehicleUpgrade(upgrade, compat);
             if (result)
             {
                 CraftTreeHandler.EnsureCraftingTabsAvailable(upgrade, compat);
@@ -200,13 +200,13 @@ namespace AVS.Admin
                 if (icon != null)
                     UpgradeIcons.Add(upgrade.ClassId, icon);
                 else
-                    Logger.Error($"UpgradeRegistrar Error: ModVehicleUpgrade {upgrade.ClassId} has a null icon! Please provide a valid icon sprite.");
+                    Logger.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId} has a null icon! Please provide a valid icon sprite.");
                 UpgradeTechTypes utt = new UpgradeTechTypes();
                 bool isPdaRegistered = false;
-                if (!compat.skipModVehicle || upgrade.IsVehicleSpecific)
+                if (!compat.skipAvsVehicle || upgrade.IsVehicleSpecific)
                 {
                     utt = new UpgradeTechTypes(
-                        forModVehicle: RegisterModVehicleUpgrade(upgrade)
+                        forAvsVehicle: RegisterAvsVehicleUpgrade(upgrade)
                     );
                     isPdaRegistered = true;
                 }
@@ -222,31 +222,31 @@ namespace AVS.Admin
         }
 
         /// <summary>
-        /// Validates the provided ModVehicleUpgrade and its compatibility settings.
+        /// Validates the provided <see cref="AvsVehicleUpgrade"/> and its compatibility settings.
         /// </summary>
         /// <param name="upgrade">The upgrade to validate.</param>
         /// <param name="compat">Compatibility flags.</param>
         /// <returns>True if valid, false otherwise.</returns>
-        private static bool ValidateModVehicleUpgrade(ModVehicleUpgrade upgrade, UpgradeCompat compat)
+        private static bool ValidateAvsVehicleUpgrade(AvsVehicleUpgrade upgrade, UpgradeCompat compat)
         {
-            if (compat.skipModVehicle && compat.skipSeamoth && compat.skipExosuit && compat.skipCyclops)
+            if (compat.skipAvsVehicle && compat.skipSeamoth && compat.skipExosuit && compat.skipCyclops)
             {
-                Logger.Error($"UpgradeRegistrar Error: ModVehicleUpgrade {upgrade.ClassId}: compat cannot skip all vehicle types!");
+                Logger.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId}: compat cannot skip all vehicle types!");
                 return false;
             }
             if (upgrade.ClassId.Equals(string.Empty))
             {
-                Logger.Error($"UpgradeRegistrar Error: ModVehicleUpgrade {upgrade.ClassId} cannot have empty class ID!");
+                Logger.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId} cannot have empty class ID!");
                 return false;
             }
-            if (upgrade.GetRecipe(VehicleType.ModVehicle).IsEmpty)
+            if (upgrade.GetRecipe(VehicleType.AvsVehicle).IsEmpty)
             {
-                Logger.Error($"UpgradeRegistrar Error: ModVehicleUpgrade {upgrade.ClassId} cannot have empty recipe!");
+                Logger.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId} cannot have empty recipe!");
                 return false;
             }
             if (!upgrade.UnlockAtStart)
             {
-                if (!upgrade.UnlockedSprite && !upgrade.UnlockedMessage.Equals(ModVehicleUpgrade.DefaultUnlockMessage))
+                if (!upgrade.UnlockedSprite && !upgrade.UnlockedMessage.Equals(AvsVehicleUpgrade.DefaultUnlockMessage))
                 {
                     Logger.Warn($"UpgradeRegistrar Warning: the upgrade {upgrade.ClassId} has UnlockAtStart false and UnlockedSprite null. When unlocked, its custom UnlockedMessage will not be displayed. Add an UnlockedSprite to resolve this.");
                 }
@@ -255,13 +255,13 @@ namespace AVS.Admin
         }
 
         /// <summary>
-        /// Registers the ModVehicleUpgrade for ModVehicle, sets up its prefab, recipe, and unlock conditions.
+        /// Registers the <see cref="AvsVehicleUpgrade"/> for <see cref="AvsVehicle"/>, sets up its prefab, recipe, and unlock conditions.
         /// </summary>
         /// <param name="upgrade">The upgrade to register.</param>
         /// <returns>The TechType assigned to the upgrade.</returns>
-        private static TechType RegisterModVehicleUpgrade(ModVehicleUpgrade upgrade)
+        private static TechType RegisterAvsVehicleUpgrade(AvsVehicleUpgrade upgrade)
         {
-            Nautilus.Crafting.RecipeData moduleRecipe = upgrade.GetRecipe(VehicleType.ModVehicle).ToRecipeData();
+            Nautilus.Crafting.RecipeData moduleRecipe = upgrade.GetRecipe(VehicleType.AvsVehicle).ToRecipeData();
             Nautilus.Assets.PrefabInfo module_info = Nautilus.Assets.PrefabInfo
                 .WithTechType(upgrade.ClassId, upgrade.DisplayName, upgrade.Description, unlockAtStart: upgrade.UnlockAtStart)
                 .WithIcon(upgrade.Icon);
@@ -279,7 +279,7 @@ namespace AVS.Admin
             }
             else
             {
-                steps = upgrade.ResolvePath(VehicleType.ModVehicle);
+                steps = upgrade.ResolvePath(VehicleType.AvsVehicle);
             }
             if (!CraftTreeHandler.IsValidCraftPath(steps))
             {
@@ -315,7 +315,7 @@ namespace AVS.Admin
         /// <param name="compat">Compatibility flags.</param>
         /// <param name="utt">Reference to UpgradeTechTypes to update.</param>
         /// <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
-        private static void RegisterUpgradeMethods(ModVehicleUpgrade upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, bool isPDASetup)
+        private static void RegisterUpgradeMethods(AvsVehicleUpgrade upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, bool isPDASetup)
         {
             bool isPDASetupLocal = isPDASetup;
             RegisterPassiveUpgradeActions(upgrade, compat, ref utt, ref isPDASetupLocal);
@@ -331,7 +331,7 @@ namespace AVS.Admin
         /// <param name="compat">Compatibility flags.</param>
         /// <param name="utt">Reference to UpgradeTechTypes to update.</param>
         /// <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
-        private static void RegisterPassiveUpgradeActions(ModVehicleUpgrade upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
+        private static void RegisterPassiveUpgradeActions(AvsVehicleUpgrade upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
         {
             if (upgrade is SelectableUpgrade
                 || upgrade is ToggleableUpgrade
@@ -345,7 +345,7 @@ namespace AVS.Admin
                 VanillaUpgradeMaker.CreatePassiveModule(upgrade, compat, ref utt, isPDASetup);
                 isPDASetup = true;
             }
-            TechType mvTT = utt.ForModVehicle;
+            TechType mvTT = utt.ForAvsVehicle;
             TechType sTT = utt.ForSeamoth;
             TechType eTT = utt.ForExosuit;
             TechType cTT = utt.ForCyclops;
@@ -381,13 +381,13 @@ namespace AVS.Admin
         /// <param name="compat">Compatibility flags.</param>
         /// <param name="utt">Reference to UpgradeTechTypes to update.</param>
         /// <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
-        private static void RegisterSelectableUpgradeActions(ModVehicleUpgrade upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
+        private static void RegisterSelectableUpgradeActions(AvsVehicleUpgrade upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
         {
             if (upgrade is SelectableUpgrade select)
             {
                 VanillaUpgradeMaker.CreateSelectModule(select, compat, ref utt, isPDASetup);
                 isPDASetup = true;
-                TechType mvTT = utt.ForModVehicle;
+                TechType mvTT = utt.ForAvsVehicle;
                 TechType sTT = utt.ForSeamoth;
                 TechType eTT = utt.ForExosuit;
                 TechType cTT = utt.ForCyclops;
@@ -412,7 +412,7 @@ namespace AVS.Admin
         /// <param name="compat">Compatibility flags.</param>
         /// <param name="utt">Reference to UpgradeTechTypes to update.</param>
         /// <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
-        private static void RegisterSelectableChargeableUpgradeActions(ModVehicleUpgrade upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
+        private static void RegisterSelectableChargeableUpgradeActions(AvsVehicleUpgrade upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
         {
             if (upgrade is SelectableChargeableUpgrade selectcharge)
             {
@@ -446,17 +446,17 @@ namespace AVS.Admin
         /// <param name="compat">Compatibility flags.</param>
         /// <param name="utt">Reference to UpgradeTechTypes to update.</param>
         /// <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
-        private static void RegisterToggleableUpgradeActions(ModVehicleUpgrade upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
+        private static void RegisterToggleableUpgradeActions(AvsVehicleUpgrade upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
         {
             if (upgrade is ToggleableUpgrade toggle)
             {
                 IEnumerator DoToggleAction(ToggleActionParams param, float timeToFirstActivation, float repeatRate, float energyCostPerActivation)
                 {
-                    bool isModVehicle = param.vehicle.GetComponent<AvsVehicle>() != null;
+                    var isAvsVehicle = param.vehicle.GetComponent<AvsVehicle>();
                     yield return new WaitForSeconds(timeToFirstActivation);
                     while (true)
                     {
-                        bool shouldStopWorking = isModVehicle ? !param.vehicle.GetComponent<AvsVehicle>().IsUnderCommand : !param.vehicle.GetPilotingMode();
+                        bool shouldStopWorking = isAvsVehicle ? !isAvsVehicle.IsUnderCommand : !param.vehicle.GetPilotingMode();
                         if (shouldStopWorking)
                         {
                             param.vehicle.ToggleSlot(param.slotID, false);
@@ -475,7 +475,7 @@ namespace AVS.Admin
                 }
                 VanillaUpgradeMaker.CreateToggleModule(toggle, compat, ref utt, isPDASetup);
                 isPDASetup = true;
-                TechType mvTT = utt.ForModVehicle;
+                TechType mvTT = utt.ForAvsVehicle;
                 TechType sTT = utt.ForSeamoth;
                 TechType eTT = utt.ForExosuit;
                 TechType cTT = utt.ForCyclops;

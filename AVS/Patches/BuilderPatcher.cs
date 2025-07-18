@@ -16,7 +16,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(Builder.CheckAsSubModule))]
         public static void BuilderCheckAsSubModulePostfix(ref bool __result)
         {
-            if (!(Player.main.GetModVehicle() is VehicleTypes.Submarine))
+            if (!(Player.main.GetAvsVehicle() is VehicleTypes.Submarine))
             {
                 return;
             }

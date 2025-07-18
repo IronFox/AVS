@@ -1,6 +1,6 @@
 ﻿namespace AVS.UpgradeTypes
 {
-    public abstract class ToggleableUpgrade : ModVehicleUpgrade
+    public abstract class ToggleableUpgrade : AvsVehicleUpgrade
     {
         public override string Description => "This is a toggleable upgrade module.";
         public override QuickSlotType QuickSlotType => QuickSlotType.Toggleable;

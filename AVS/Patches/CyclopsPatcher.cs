@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 
-// PURPOSE: allow the Cyclops dock terminal to display ModVehicle data. 
+// PURPOSE: allow the Cyclops dock terminal to display AvsVehicle data. 
 // VALUE: High.
 
 namespace AVS.Patches

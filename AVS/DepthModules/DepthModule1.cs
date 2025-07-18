@@ -10,7 +10,7 @@ namespace AVS.DepthModules
     /// <remarks>This module can be crafted using specific ingredients and installed on compatible vehicles to
     /// increase their maximum operational depth.  It is part of the modular vehicle upgrade system and is categorized
     /// under the "Depth Modules" tab in the crafting interface.</remarks>
-    public class DepthModule1 : ModVehicleUpgrade
+    public class DepthModule1 : AvsVehicleUpgrade
     {
         /// <inheritdoc/>
         public override string ClassId => "AvsDepthModule1";

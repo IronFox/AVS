@@ -2,7 +2,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-// PURPOSE: ModVehicles that go through MoonGates should fall to the ground
+// PURPOSE: AvsVehicle that go through MoonGates should fall to the ground
 // VALUE: High.
 
 namespace AVS.Patches

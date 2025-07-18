@@ -11,7 +11,7 @@ namespace AVS.Patches.LeviathanPatches
     class GhostPatcher
     {
         /*
-         * This patch changes how much damage Ghosts will do to ModVehicles.
+         * This patch changes how much damage Ghosts will do to AvsVehicles.
          * Ghosts will do:
          * 85 to Seamoth/Prawn
          * 250 to Cyclops

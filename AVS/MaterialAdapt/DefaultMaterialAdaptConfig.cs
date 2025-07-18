@@ -28,10 +28,11 @@ namespace AVS.MaterialAdapt
         /// <summary>
         /// Constructs a new default material adaptation configuration.
         /// </summary>
-        /// <param name="logConfig">Logging configuration to use</param>
+        /// <param name="logConfig">Optional logging configuration to use.
+        /// If null, <see cref="Logging.MaterialAdaptationDefault" /> is used</param>
         public DefaultMaterialAdaptConfig(Logging? logConfig = null)
         {
-            LogConfig = logConfig ?? Logging.Default;
+            LogConfig = logConfig ?? Logging.MaterialAdaptationDefault;
         }
 
         /// <summary>

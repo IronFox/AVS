@@ -14,11 +14,11 @@ namespace AVS
     public static class ExtensionMethods
     {
         /// <summary>
-        /// Queries the mod vehicle associated with the player.
+        /// Queries the vehicle associated with the player.
         /// </summary>
         /// <param name="player">The player instance.</param>
         /// <returns>The <see cref="AvsVehicle"/> associated with the player, or null if not found.</returns>
-        public static AvsVehicle? GetModVehicle(this Player player)
+        public static AvsVehicle? GetAvsVehicle(this Player player)
         {
             return (player.GetVehicle() as AvsVehicle)
                 .Or(() => player.currentSub.SafeGetComponent<AvsVehicle>());
@@ -66,7 +66,7 @@ namespace AVS
         /// <param name="vehicle">The vehicle to undock.</param>
         public static void Undock(this Vehicle vehicle)
         {
-            void UndockModVehicle(Vehicle thisVehicle)
+            void UndockAvsVehicle(Vehicle thisVehicle)
             {
                 if (vehicle is AvsVehicle mv)
                 {
@@ -80,7 +80,7 @@ namespace AVS
                     .Where(x => x.dockedVehicle == vehicle);
             if (theseBays == null || theseBays.Count() == 0)
             {
-                UndockModVehicle(vehicle);
+                UndockAvsVehicle(vehicle);
                 return;
             }
             VehicleDockingBay thisBay = theseBays.First();
@@ -92,7 +92,7 @@ namespace AVS
             UWE.CoroutineHost.StartCoroutine(vehicle.Undock(toUndock, thisBay.transform.position.y));
             SkyEnvironmentChanged.Broadcast(vehicle.gameObject, (GameObject?)null);
             thisBay.dockedVehicle = null;
-            UndockModVehicle(vehicle);
+            UndockAvsVehicle(vehicle);
         }
 
         /// <summary>

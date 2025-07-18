@@ -112,7 +112,7 @@ namespace AVS.BaseVehicle
             }
             catch (Exception e)
             {
-                Logger.LogException($"Failed to save simple data for ModVehicle {name}", e);
+                Logger.LogException($"Failed to save simple data for {nameof(AvsVehicle)} {name}", e);
             }
             OnGameSaved();
         }

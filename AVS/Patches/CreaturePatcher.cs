@@ -1,10 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using AVS.BaseVehicle;
+using HarmonyLib;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using HarmonyLib;
-using AVS.BaseVehicle;
 
-// PURPOSE: ModVehicles have an awareness of nearby leviathans
+// PURPOSE: AvsVehicles have an awareness of nearby leviathans
 // VALUE: Moderate. Allows for some very cool/scary moments.
 
 namespace AVS.Patches

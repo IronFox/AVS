@@ -25,7 +25,7 @@ namespace AVS.Engines
         protected float AngularDrag { get; set; } = 5f;
 
         /// <summary>
-        /// Gets the ModVehicle component associated with this engine.
+        /// Gets the vehicle component associated with this engine.
         /// </summary>
         public AvsVehicle MV
         {

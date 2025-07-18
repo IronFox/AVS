@@ -206,7 +206,7 @@ namespace AVS
                 thisName = mv.name + ": ";
                 if (!mv.VehicleRoot)
                 {
-                    Logger.Error(thisName + "A null ModVehicle.VehicleRoot was passed for registration.");
+                    Logger.Error(thisName + $"A null {nameof(AvsVehicle)}.{nameof(AvsVehicle.VehicleRoot)} was passed for registration.");
                     return false;
                 }
                 if (mv.Config.BaseCrushDepth < 0)
@@ -226,35 +226,35 @@ namespace AVS
                 }
                 if (mv.Com.InnateStorages.Count == 0)
                 {
-                    VerboseLog(LogType.Warn, verbose, thisName + "No ModVehicle.InnateStorages were provided. These are lockers the vehicle always has.");
+                    VerboseLog(LogType.Warn, verbose, thisName + $"No {nameof(AvsVehicle)}.InnateStorages were provided. These are lockers the vehicle always has.");
                 }
                 if (mv.Com.ModularStorages.Count == 0)
                 {
-                    VerboseLog(LogType.Log, verbose, thisName + "No ModVehicle.ModularStorages were provided. These are lockers that can be unlocked with upgrades.");
+                    VerboseLog(LogType.Log, verbose, thisName + $"No {nameof(AvsVehicle)}.ModularStorages were provided. These are lockers that can be unlocked with upgrades.");
                 }
                 if (mv.Com.Upgrades.Count == 0)
                 {
-                    Logger.Warn(thisName + "No ModVehicle.Upgrades were provided. These specify interfaces the player can click to insert and remove upgrades.");
+                    Logger.Warn(thisName + $"No {nameof(AvsVehicle)}.Upgrades were provided. These specify interfaces the player can click to insert and remove upgrades.");
                 }
                 if (mv.Com.Batteries.Count == 0)
                 {
-                    Logger.Warn(thisName + "No ModVehicle.Batteries were provided. These are necessary to power the engines. This vehicle will be always powered.");
+                    Logger.Warn(thisName + $"No {nameof(AvsVehicle)}.Batteries were provided. These are necessary to power the engines. This vehicle will be always powered.");
                 }
                 if (mv.Com.BackupBatteries.Count == 0)
                 {
-                    VerboseLog(LogType.Log, verbose, thisName + "No ModVehicle.BackupBatteries were provided. This collection of batteries belong to the AI and will be used exclusively for life support, auto-leveling, and other AI tasks. The AI will use the main batteries instead.");
+                    VerboseLog(LogType.Log, verbose, thisName + $"No {nameof(AvsVehicle)}.BackupBatteries were provided. This collection of batteries belong to the AI and will be used exclusively for life support, auto-leveling, and other AI tasks. The AI will use the main batteries instead.");
                 }
                 if (mv.Com.HeadLights.Count == 0)
                 {
-                    VerboseLog(LogType.Warn, verbose, thisName + "No ModVehicle.HeadLights were provided. These lights would be activated when the player right clicks while piloting.");
+                    VerboseLog(LogType.Warn, verbose, thisName + $"No {nameof(AvsVehicle)}.HeadLights were provided. These lights would be activated when the player right clicks while piloting.");
                 }
                 if (mv.Com.WaterClipProxies.Count == 0)
                 {
-                    VerboseLog(LogType.Warn, verbose, thisName + "No ModVehicle.WaterClipProxies were provided. These are necessary to keep the ocean surface out of the vehicle.");
+                    VerboseLog(LogType.Warn, verbose, thisName + $"No {nameof(AvsVehicle)}.WaterClipProxies were provided. These are necessary to keep the ocean surface out of the vehicle.");
                 }
                 if (mv.Com.CanopyWindows.Count == 0)
                 {
-                    VerboseLog(LogType.Warn, verbose, thisName + "No ModVehicle.CanopyWindows were provided. These must be specified to handle window transparencies.");
+                    VerboseLog(LogType.Warn, verbose, thisName + $"No {nameof(AvsVehicle)}.CanopyWindows were provided. These must be specified to handle window transparencies.");
                 }
                 if (!mv.Com.BoundingBoxCollider)
                 {
@@ -262,7 +262,7 @@ namespace AVS
                 }
                 if (!mv.Com.CollisionModel)
                 {
-                    VerboseLog(LogType.Warn, verbose, thisName + "A null ModVehicle.CollisionModel was provided. This is necessary for leviathans to grab the vehicle.");
+                    VerboseLog(LogType.Warn, verbose, thisName + $"A null {nameof(AvsVehicle)}.CollisionModel was provided. This is necessary for leviathans to grab the vehicle.");
                 }
                 foreach (VehicleParts.VehicleStorage vs in mv.Com.InnateStorages.Concat(mv.Com.ModularStorages))
                 {
@@ -294,12 +294,12 @@ namespace AVS
                 }
                 if (mv.Com.StorageRootObject == null)
                 {
-                    Logger.Error(thisName + "A null ModVehicle.StorageRootObject was provided. There would be no way to store things in this vehicle.");
+                    Logger.Error(thisName + $"A null {nameof(AvsVehicle)}.StorageRootObject was provided. There would be no way to store things in this vehicle.");
                     return false;
                 }
                 if (mv.Com.ModulesRootObject == null)
                 {
-                    Logger.Error(thisName + "A null ModVehicle.ModulesRootObject was provided. There would be no way to upgrade this vehicle.");
+                    Logger.Error(thisName + $"A null {nameof(AvsVehicle)}.ModulesRootObject was provided. There would be no way to upgrade this vehicle.");
                     return false;
                 }
                 if (mv.Com.StorageRootObject == mv.gameObject)
@@ -314,11 +314,11 @@ namespace AVS
                 }
                 if (!mv.Com.LeviathanGrabPoint)
                 {
-                    VerboseLog(LogType.Warn, verbose, thisName + "A null ModVehicle.LeviathanGrabPoint was provided. This is where leviathans attach to the vehicle. The root object will be used instead.");
+                    VerboseLog(LogType.Warn, verbose, thisName + $"A null {nameof(AvsVehicle)}.LeviathanGrabPoint was provided. This is where leviathans attach to the vehicle. The root object will be used instead.");
                 }
                 if (!mv.Com.Engine)
                 {
-                    VerboseLog(LogType.Warn, verbose, thisName + "A null ModVehicle.ModVehicleEngine was passed for registration. A default engine will be chosen.");
+                    VerboseLog(LogType.Warn, verbose, thisName + $"A null {nameof(AvsVehicle)}.Com.Engine was passed for registration. A default engine will be chosen.");
                 }
                 if (!mv.Config.Recipe.CheckValidity(mv.name))
                     return false;
@@ -326,11 +326,11 @@ namespace AVS
             }
             catch (Exception e)
             {
-                Logger.Error(thisName + "Exception Caught. Likely this ModVehicle is not implementing something it must. Check the abstract features of ModVehicle.\n\n" + e.ToString() + "\n\n");
+                Logger.Error(thisName + $"Exception Caught. Likely this {nameof(AvsVehicle)} is not implementing something it must. Check the abstract features of {nameof(AvsVehicle)}.\n\n" + e.ToString() + "\n\n");
                 return false;
             }
 
-            VerboseLog(LogType.Log, verbose, "The Registration of the " + mv.name + "as a ModVehicle has been Validated.");
+            VerboseLog(LogType.Log, verbose, $"The Registration of the '{mv.name}' as a {nameof(AvsVehicle)} has been Validated.");
             return true;
         }
 
@@ -352,18 +352,18 @@ namespace AVS
                 thisName = mv.name + ": ";
                 if (mv.Com.Helms.Count == 0)
                 {
-                    Logger.Error(thisName + "No ModVehicle.PilotSeats were provided. These specify what the player will click on to begin piloting the vehicle.");
+                    Logger.Error(thisName + $"No {nameof(Submarine)}.Com.Helms were provided. These specify what the player will click on to begin piloting the vehicle.");
                     return false;
                 }
                 if (mv.Com.Hatches.Count == 0)
                 {
-                    Logger.Error(thisName + "No ModVehicle.Hatches were provided. These specify how the player will enter and exit the vehicle.");
+                    Logger.Error(thisName + $"No {nameof(AvsVehicle)}.Com.Hatches were provided. These specify how the player will enter and exit the vehicle.");
                     return false;
                 }
 
                 if (mv.Com.FloodLights.Count == 0)
                 {
-                    VerboseLog(LogType.Warn, verbose, thisName + "No ModVehicle.FloodLights were provided. These lights would be activated on the control panel.");
+                    VerboseLog(LogType.Warn, verbose, thisName + $"No {nameof(AvsVehicle)}.Com.FloodLights were provided. These lights would be activated on the control panel.");
                 }
                 if (mv.Com.NavigationPortLights.Count == 0)
                 {
@@ -387,20 +387,20 @@ namespace AVS
                 }
                 if (mv.Com.TetherSources.Count == 0)
                 {
-                    Logger.Error(thisName + "No ModVehicle.TetherSources were provided. These are necessary to keep the player 'grounded' within the vehicle.");
+                    Logger.Error(thisName + $"No {nameof(Submarine)}.Com.TetherSources were provided. These are necessary to keep the player 'grounded' within the vehicle.");
                     return false;
                 }
                 if (mv.Com.ColorPicker == null)
                 {
-                    VerboseLog(LogType.Log, verbose, thisName + "A null ModVehicle.ColorPicker was provided. You only need this if you implement the necessary painting functions.");
+                    VerboseLog(LogType.Log, verbose, thisName + $"A null {nameof(Submarine)}.Com.ColorPicker was provided. You only need this if you implement the necessary painting functions.");
                 }
                 if (mv.Com.Fabricator == null)
                 {
-                    VerboseLog(LogType.Warn, verbose, thisName + "A null ModVehicle.Fabricator was provided. The Submarine will not come with a fabricator at construction-time.");
+                    VerboseLog(LogType.Warn, verbose, thisName + $"A null {nameof(Submarine)}.Com.Fabricator was provided. The Submarine will not come with a fabricator at construction-time.");
                 }
                 if (mv.Com.ControlPanel == null)
                 {
-                    VerboseLog(LogType.Warn, verbose, thisName + "A null ModVehicle.ControlPanel was provided. This is necessary to toggle floodlights.");
+                    VerboseLog(LogType.Warn, verbose, thisName + $"A null {nameof(Submarine)}.Com.ControlPanel was provided. This is necessary to toggle floodlights.");
                 }
                 foreach (VehicleParts.Helm ps in mv.Com.Helms)
                 {
@@ -453,7 +453,7 @@ namespace AVS
                 thisName = mv.name + ": ";
                 if (mv.Com.Hatches.Count == 0)
                 {
-                    Logger.Error(thisName + "No ModVehicle.Hatches were provided. These specify how the player will enter and exit the vehicle.");
+                    Logger.Error(thisName + $"No {nameof(AvsVehicle)}.Com.Hatches were provided. These specify how the player will enter and exit the vehicle.");
                     return false;
                 }
                 if (!mv.Com.PilotSeat.CheckValidity(thisName, verbose))

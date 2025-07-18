@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Globalization;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -24,6 +25,11 @@ namespace AVS.Util
         public string? Prefix { get; }
 
         /// <summary>
+        /// Logging tag, used to identify the source of the log message.
+        /// </summary>
+        public string? Tag { get; }
+
+        /// <summary>
         /// If true, log messages will include a timestamp.
         /// </summary>
         public bool IncludeTimestamp { get; }
@@ -39,11 +45,18 @@ namespace AVS.Util
         /// <param name="prefix">Logging prefix, used to identify the source of the log message.</param>
         /// <param name="includeTimestamp">If true, log messages will include a timestamp.</param>
         /// <param name="logExtraSteps">If true, extra steps of the material adaptation process will be logged.</param>
-        public Logging(bool logMaterialVariables, bool logMaterialChanges, string? prefix, bool includeTimestamp, bool logExtraSteps)
+        public Logging(
+            bool logMaterialVariables,
+            bool logMaterialChanges,
+            string? prefix,
+            string? tag,
+            bool includeTimestamp,
+            bool logExtraSteps)
         {
             LogMaterialVariables = logMaterialVariables;
             LogMaterialChanges = logMaterialChanges;
             Prefix = prefix;
+            Tag = tag;
             IncludeTimestamp = includeTimestamp;
             LogExtraSteps = logExtraSteps;
         }
@@ -51,37 +64,53 @@ namespace AVS.Util
         /// <summary>
         /// Default logging prefix used when fixing materials.
         /// </summary>
-        public const string DefaultPrefix = "Material Fix";
+        public const string MaterialAdaptationTag = "Material Fix";
 
         /// <summary>
-        /// Default logging configuration.
+        /// Default logging configuration for purposes other than material adaptation.
+        /// It contains no prefix and will not log material variables or changes.
         /// </summary>
         public static Logging Default { get; } = new Logging(
             logMaterialVariables: false,
             logMaterialChanges: false,
-            prefix: DefaultPrefix,
-            includeTimestamp: true,
-            logExtraSteps: true
-            );
-
-        /// <summary>
-        /// Muted logging configuration.
-        /// </summary>
-        public static Logging Silent { get; } = new Logging(
-            logMaterialVariables: false,
-            logMaterialChanges: false,
-            prefix: DefaultPrefix,
+            prefix: null,
+            tag: "AVS",
             includeTimestamp: true,
             logExtraSteps: false
             );
 
         /// <summary>
-        /// Verbose logging configuration.
+        /// Default logging configuration for material adaptation.
         /// </summary>
-        public static Logging Verbose { get; } = new Logging(
+        public static Logging MaterialAdaptationDefault { get; } = new Logging(
+            logMaterialVariables: false,
+            logMaterialChanges: false,
+            prefix: null,
+            tag: MaterialAdaptationTag,
+            includeTimestamp: true,
+            logExtraSteps: true
+            );
+
+        /// <summary>
+        /// Muted logging configuration for material adaptation.
+        /// </summary>
+        public static Logging MaterialAdaptationSilent { get; } = new Logging(
+            logMaterialVariables: false,
+            logMaterialChanges: false,
+            prefix: null,
+            tag: MaterialAdaptationTag,
+            includeTimestamp: true,
+            logExtraSteps: false
+            );
+
+        /// <summary>
+        /// Verbose logging configuration for material adaptation.
+        /// </summary>
+        public static Logging MaterialAdaptationVerbose { get; } = new Logging(
             logMaterialVariables: true,
             logMaterialChanges: true,
-            prefix: DefaultPrefix,
+            prefix: null,
+            tag: MaterialAdaptationTag,
             includeTimestamp: true,
             logExtraSteps: true
             );
@@ -97,20 +126,18 @@ namespace AVS.Util
             Logger.Log(MakeMessage(msg));
         }
 
-        private string MakeMessage(string msg, string tag = "Mod")
+        private string MakeMessage(string msg, string? extraTag = null)
         {
-            if (!string.IsNullOrEmpty(Prefix))
-            {
-                if (IncludeTimestamp)
-                    return $"{DateTime.Now:HH:mm:ss.fff} [{tag}] {Prefix}: {msg}";
-                return $"{Prefix}: {msg}";
-            }
-            else
-            {
-                if (IncludeTimestamp)
-                    return $"{DateTime.Now:HH:mm:ss.fff} [{tag}] {msg}";
-                return msg;
-            }
+            var tags =
+                (new string?[] { Tag, extraTag })
+                .Where(x => !string.IsNullOrEmpty(x))
+                .ToList();
+            var tag = tags.Count > 0 ? $"[{string.Join("] [", tags)}] " : string.Empty;
+            var prefix = string.IsNullOrEmpty(Prefix) ? "" : $"{Prefix}: ";
+
+            var dt = IncludeTimestamp ? DateTime.Now.ToString("HH:mm:ss.fff ") : "";
+
+            return $"{dt}{tag}{prefix}{msg}";
         }
 
         /// <summary>

@@ -3,12 +3,12 @@ using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
 
-// PURPOSE: Prevent ModVehicles from entering "moon gates"
+// PURPOSE: Prevent AvsVehicles from entering "moon gates"
 // VALUE: high, for the sake of world consistency
 
 namespace AVS.Patches
 {
-    internal class BlockModVehicle : MonoBehaviour
+    internal class BlockAvsVehicle : MonoBehaviour
     {
         private readonly Dictionary<AvsVehicle, int> MVs = new Dictionary<AvsVehicle, int>();
         internal void FixedUpdate()
@@ -48,7 +48,7 @@ namespace AVS.Patches
 
 
     /* 
-     * Prevent ModVehicles from entering "moon gates"
+     * Prevent AvsVehicles from entering "moon gates"
      * which are vertical force fields that prevent seamoth entry.
      * There's one at "prison" and one at "lavacastlebase"
      */
@@ -59,9 +59,9 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(BlockSeamoth.FixedUpdate))]
         public static void BlockSeamothFixedUpdatePostfix(BlockSeamoth __instance)
         {
-            if (__instance.GetComponent<BlockModVehicle>() == null)
+            if (__instance.GetComponent<BlockAvsVehicle>() == null)
             {
-                __instance.gameObject.AddComponent<BlockModVehicle>();
+                __instance.gameObject.AddComponent<BlockAvsVehicle>();
             }
         }
     }

@@ -17,7 +17,7 @@ namespace AVS.Util
         /// <param name="destination">Target location</param>
         public static void TeleportTo(Vector3 destination)
         {
-            var mv = Player.main.GetModVehicle();
+            var mv = Player.main.GetAvsVehicle();
             UWE.Utils.EnterPhysicsSyncSection();
             Player.main.SetCurrentSub(null, true);
             Player.main.playerController.SetEnabled(false);

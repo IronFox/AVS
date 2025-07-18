@@ -2,7 +2,7 @@
 using HarmonyLib;
 using System.Collections.Generic;
 
-// PURPOSE: allow ModVehicle upgrade slots to mesh with the game systems
+// PURPOSE: allow AvsVehicle upgrade slots to mesh with the game systems
 // VALUE: High
 
 namespace AVS

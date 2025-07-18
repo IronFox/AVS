@@ -51,7 +51,7 @@ namespace AVS.Configuration
         /// <summary>
         /// The sprite to show in the crafting menu of the mobile vehicle bay.
         /// </summary>
-        public Atlas.Sprite? CraftingSprite { get; } = StaticAssets.ModVehicleIcon;
+        public Atlas.Sprite? CraftingSprite { get; } = StaticAssets.AvsVehicleIcon;
         /// <summary>
         /// The image to show in the background of the vehicle's module menu.
         /// </summary>
@@ -307,7 +307,7 @@ namespace AVS.Configuration
             Description = description;
             EncyclopediaEntry = encyclopediaEntry;
             EncyclopediaImage = encyclopediaImage;
-            CraftingSprite = craftingSprite ?? StaticAssets.ModVehicleIcon;
+            CraftingSprite = craftingSprite ?? StaticAssets.AvsVehicleIcon;
             ModuleBackgroundImage = moduleBackgroundImage ?? SpriteHelper.GetSpriteRaw("Sprites/VFModuleBackground.png");
             UnlockedWith = unlockedWith;
             MaxHealth = maxHealth;

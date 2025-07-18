@@ -78,7 +78,7 @@ namespace AVS
                 DeactivateAll();
                 return;
             }
-            var mv = Player.main.GetModVehicle();
+            var mv = Player.main.GetAvsVehicle();
             PDA pda = Player.main.GetPDA();
             if (ShouldIDie(mv, pda))
             {
@@ -104,7 +104,7 @@ namespace AVS
 
         public void UpdateHealth()
         {
-            var mv = Player.main.GetModVehicle();
+            var mv = Player.main.GetAvsVehicle();
             if (mv != null)
             {
                 mv.GetHUDValues(out float num, out float num2);
@@ -118,7 +118,7 @@ namespace AVS
         }
         public void UpdateTemperature()
         {
-            var mv = Player.main.GetModVehicle();
+            var mv = Player.main.GetAvsVehicle();
             if (mv != null)
             {
                 float temperature = mv.GetTemperature();
@@ -150,7 +150,7 @@ namespace AVS
         }
         public void UpdatePower()
         {
-            var mv = Player.main.GetModVehicle();
+            var mv = Player.main.GetAvsVehicle();
             if (mv != null)
             {
                 mv.GetHUDValues(out float num, out float num2);
@@ -169,7 +169,7 @@ namespace AVS
             {
                 return;
             }
-            var mv = Player.main.GetModVehicle();
+            var mv = Player.main.GetAvsVehicle();
             if (mv != null)
             {
                 mv.GetStorageValues(out int stored, out int capacity);

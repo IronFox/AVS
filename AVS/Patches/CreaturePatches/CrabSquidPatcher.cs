@@ -2,7 +2,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-// PURPOSE: ensures the CrabSquid's EMP disables ModVehicles gracefully
+// PURPOSE: ensures the CrabSquid's EMP disables AvsVehicles gracefully
 // VALUE: high
 
 namespace AVS.Patches.CreaturePatches
@@ -36,7 +36,7 @@ namespace AVS.Patches.CreaturePatches
     class CrabSquidPatcher
     {
         /*
-         * This patch ensures the CrabSquid's EMP disables ModVehicles
+         * This patch ensures the CrabSquid's EMP disables AvsVehicles
          */
         [HarmonyPostfix]
         [HarmonyPatch(nameof(EMPBlast.OnTouch))]

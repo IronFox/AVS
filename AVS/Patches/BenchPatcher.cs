@@ -18,7 +18,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(Bench.EnterSittingMode))]
         public static void BenchEnterSittingModePostfix()
         {
-            var mv = Player.main.GetModVehicle();
+            var mv = Player.main.GetAvsVehicle();
             if (mv != null)
             {
                 mv.controlSheme = Vehicle.ControlSheme.Mech;
@@ -28,7 +28,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(Bench.ExitSittingMode))]
         public static void BenchExitSittingModePostfix(Bench __instance, Player player, bool skipCinematics)
         {
-            var mv = Player.main.GetModVehicle();
+            var mv = Player.main.GetAvsVehicle();
             if (mv != null)
             {
                 mv.controlSheme = (Vehicle.ControlSheme)12;

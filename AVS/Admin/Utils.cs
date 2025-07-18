@@ -13,13 +13,6 @@ namespace AVS.Admin
     /// </summary>
     public static class Utils
     {
-
-
-        //public static void LoadShader(ModVehicle mv, Shader shade)
-        //{
-        //    VehicleBuilder.ApplyShaders(mv, shade);
-        //}
-
         /// <summary>
         /// Determines whether the specified transform or any of its ancestors is the currently mounted vehicle.
         /// </summary>
@@ -49,7 +42,7 @@ namespace AVS.Admin
         {
             UpgradeCompat compat = new UpgradeCompat
             {
-                skipModVehicle = false,
+                skipAvsVehicle = false,
                 skipCyclops = true,
                 skipSeamoth = true,
                 skipExosuit = true

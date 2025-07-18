@@ -3,7 +3,7 @@ using System;
 
 namespace AVS.VehicleComponents
 {
-    public abstract class ModVehicleDockingBay : DockingBay
+    public abstract class AvsVehicleDockingBay : DockingBay
     {
         private AvsVehicle mv => GetComponent<AvsVehicle>();
         protected float rechargePerFrame = 1f;

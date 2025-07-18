@@ -74,7 +74,7 @@ namespace AVS.BaseVehicle
             {
                 return sub2.IsUnderCommand;
             }
-            else // this is just a ModVehicle
+            else
             {
                 return false;
             }

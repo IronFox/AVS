@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-// PURPOSE: Ensure VF is compatible with Slot Extender (both can be used to full effect)
+// PURPOSE: Ensure AVS is compatible with Slot Extender (both can be used to full effect)
 // VALUE: Very high. Excellent mod!
 
 namespace AVS.Patches.CompatibilityPatches
@@ -9,7 +9,7 @@ namespace AVS.Patches.CompatibilityPatches
     {
         /*
          * This patch is specifically for the Slot Extender mod.
-         * It ensures that our ModVehicle upgrades UI is displayed correctly.
+         * It ensures that our AvsVehicle upgrades UI is displayed correctly.
          */
         [HarmonyPrefix]
         public static bool PrePrefix(object __instance)
@@ -18,7 +18,7 @@ namespace AVS.Patches.CompatibilityPatches
             {
                 return true;
             }
-            else if(ModuleBuilder.slotExtenderHasGreenLight)
+            else if (ModuleBuilder.slotExtenderHasGreenLight)
             {
                 ModuleBuilder.slotExtenderIsPatched = true;
                 return true;

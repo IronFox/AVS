@@ -70,16 +70,16 @@ namespace AVS.VehicleComponents
         private const string saveFileName = "MaterialReactor";
         private const string newSaveFileName = "Reactor";
 
-        public void Initialize(AvsVehicle modVehicle, int height, int width, string label, float totalCapacity, List<MaterialReactorData> iMaterialData)
+        public void Initialize(AvsVehicle avsVehicle, int height, int width, string label, float totalCapacity, List<MaterialReactorData> iMaterialData)
         {
-            if (modVehicle.GetComponentsInChildren<MaterialReactor>().Where(x => x.mv == modVehicle).Any())
+            if (avsVehicle.GetComponentsInChildren<MaterialReactor>().Where(x => x.mv == avsVehicle).Any())
             {
-                ErrorMessage.AddWarning($"A ModVehicle may (for now) only have one material reactor!");
+                ErrorMessage.AddWarning($"A {nameof(AvsVehicle)} may (for now) only have one material reactor!");
                 return;
             }
-            if (modVehicle == null)
+            if (avsVehicle == null)
             {
-                ErrorMessage.AddWarning($"Material Reactor {label} must be given a non-null ModVehicle.");
+                ErrorMessage.AddWarning($"Material Reactor {label} must be given a non-null {nameof(AvsVehicle)}.");
                 return;
             }
             if (height < 0 || width < 0 || height * width == 0)
@@ -110,7 +110,7 @@ namespace AVS.VehicleComponents
                     return;
                 }
             }
-            mv = modVehicle;
+            mv = avsVehicle;
             capacity = totalCapacity;
             container = new ItemsContainer(width, height, transform, label, null);
             container.onAddItem += OnAddItem;
@@ -183,7 +183,7 @@ namespace AVS.VehicleComponents
         {
             if (mv == null || reactorBattery == null || container == null)
             {
-                Logger.Error("MaterialReactor: ModVehicle, ReactorBattery or Container is null, cannot add material.");
+                Logger.Error($"MaterialReactor: {nameof(AvsVehicle)}, ReactorBattery or Container is null, cannot add material.");
                 yield break;
             }
             TaskResult<GameObject> result = new TaskResult<GameObject>();
@@ -333,7 +333,7 @@ namespace AVS.VehicleComponents
         {
             if (mv == null)
             {
-                Logger.Error("MaterialReactor: ModVehicle is null, cannot save data.");
+                Logger.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot save data.");
                 return;
             }
             SaveLoad.JsonInterface.Write<List<Tuple<TechType, float>>>(mv, newSaveFileName, GetSaveDict());
@@ -342,7 +342,7 @@ namespace AVS.VehicleComponents
         {
             if (mv == null)
             {
-                Logger.Error("MaterialReactor: ModVehicle is null, cannot load saved data.");
+                Logger.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot load saved data.");
                 return;
             }
             var saveDict = SaveLoad.JsonInterface.Read<List<Tuple<TechType, float>>>(mv, newSaveFileName);

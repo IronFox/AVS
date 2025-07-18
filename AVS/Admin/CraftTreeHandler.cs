@@ -18,7 +18,7 @@ namespace AVS.Admin
         {
             switch (type)
             {
-                case VehicleType.ModVehicle:
+                case VehicleType.AvsVehicle:
                     return "AvsUniversal";
                 default:
                     return $"Avs{type}";
@@ -26,15 +26,15 @@ namespace AVS.Admin
         }
         internal static void AddFabricatorMenus()
         {
-            var vfIcon = SpriteHelper.GetSpriteInternal("AvsUpgradesIcon.png") ?? StaticAssets.ModVehicleIcon;
+            var vfIcon = SpriteHelper.GetSpriteInternal("AvsUpgradesIcon.png") ?? StaticAssets.AvsVehicleIcon;
             var mvIcon = StaticAssets.UpgradeIcon;
-            var seamothIcon = SpriteManager.Get(TechType.Seamoth) ?? StaticAssets.ModVehicleIcon;
-            var prawnIcon = SpriteManager.Get(TechType.Exosuit) ?? StaticAssets.ModVehicleIcon;
-            var cyclopsIcon = SpriteManager.Get(TechType.Cyclops) ?? StaticAssets.ModVehicleIcon;
+            var seamothIcon = SpriteManager.Get(TechType.Seamoth) ?? StaticAssets.AvsVehicleIcon;
+            var prawnIcon = SpriteManager.Get(TechType.Exosuit) ?? StaticAssets.AvsVehicleIcon;
+            var cyclopsIcon = SpriteManager.Get(TechType.Cyclops) ?? StaticAssets.AvsVehicleIcon;
 
             // add MV-universal tab
-            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.ModVehicle), Language.main.Get("AvsMvModules"), vfIcon);
-            AddCraftingTab(ModuleRootNode(VehicleType.ModVehicle).ToRoList(), $"{GeneralTabName}{VehicleType.ModVehicle}", Language.main.Get("AvsGeneralTab"), mvIcon);
+            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.AvsVehicle), Language.main.Get("AvsMvModules"), vfIcon);
+            AddCraftingTab(ModuleRootNode(VehicleType.AvsVehicle).ToRoList(), $"{GeneralTabName}{VehicleType.AvsVehicle}", Language.main.Get("AvsGeneralTab"), mvIcon);
             // add MV-specific tab
             AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Custom), Language.main.Get("AvsSpecificModules"), vfIcon);
             AddCraftingTab(ModuleRootNode(VehicleType.Custom).ToRoList(), $"{GeneralTabName}{VehicleType.Custom}", Language.main.Get("AvsGeneralTab"), mvIcon);
@@ -48,7 +48,7 @@ namespace AVS.Admin
             AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Cyclops), Language.main.Get("AvsCyclopsTab"), cyclopsIcon);
             AddCraftingTab(ModuleRootNode(VehicleType.Cyclops).ToRoList(), $"{GeneralTabName}{VehicleType.Cyclops}", Language.main.Get("AvsGeneralTab"), mvIcon);
         }
-        internal static void EnsureCraftingTabsAvailable(ModVehicleUpgrade upgrade, UpgradeCompat compat)
+        internal static void EnsureCraftingTabsAvailable(AvsVehicleUpgrade upgrade, UpgradeCompat compat)
         {
             if (upgrade.IsVehicleSpecific)
             {
@@ -63,16 +63,16 @@ namespace AVS.Admin
             {
                 EnsureCraftingTabAvailable(upgrade, VehicleType.Prawn);
             }
-            if (!compat.skipModVehicle)
+            if (!compat.skipAvsVehicle)
             {
-                EnsureCraftingTabAvailable(upgrade, VehicleType.ModVehicle);
+                EnsureCraftingTabAvailable(upgrade, VehicleType.AvsVehicle);
             }
             if (!compat.skipSeamoth)
             {
                 EnsureCraftingTabAvailable(upgrade, VehicleType.Seamoth);
             }
         }
-        private static void EnsureCraftingTabAvailable(ModVehicleUpgrade upgrade, VehicleType vType)
+        private static void EnsureCraftingTabAvailable(AvsVehicleUpgrade upgrade, VehicleType vType)
         {
             if (upgrade.CraftingPath == null)
             {

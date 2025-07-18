@@ -10,7 +10,7 @@ namespace AVS.Assets
         /// <summary>
         /// Gets the default sprite used as the icon for mod vehicle that do not customize it.
         /// </summary>
-        public static Atlas.Sprite? ModVehicleIcon { get; private set; }
+        public static Atlas.Sprite? AvsVehicleIcon { get; private set; }
 
         /// <summary>
         /// Gets the default sprite used as the icon for upgrades if the mod vehicle does not customize it.
@@ -39,7 +39,7 @@ namespace AVS.Assets
         /// </summary>
         internal static void GetSprites()
         {
-            ModVehicleIcon = Assets.SpriteHelper.GetSpriteInternal("ModVehicleIcon.png");
+            AvsVehicleIcon = Assets.SpriteHelper.GetSpriteInternal("ModVehicleIcon.png");
             UpgradeIcon = Assets.SpriteHelper.GetSpriteInternal("UpgradeIcon.png");
             //DepthIcon = Assets.SpriteHelper.GetSpriteInternal("DepthIcon.png");
 

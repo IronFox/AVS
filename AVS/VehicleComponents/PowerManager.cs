@@ -4,8 +4,8 @@ using UnityEngine;
 namespace AVS
 {
     /*
-     * The PowerManager handles all power drains for the ModVehicle.
-     * It also monitors the two-bit power status of the ModVehicle.
+     * The PowerManager handles all power drains for the AvsVehicle.
+     * It also monitors the two-bit power status of the AvsVehicle.
      * It also handles the broadcasting of all power-related notifications.
      * We would like very much do consolidate all our power drains here
      * This is trivial for lights,

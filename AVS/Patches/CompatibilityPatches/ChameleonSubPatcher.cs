@@ -10,7 +10,7 @@ namespace AVS.Patches.CompatibilityPatches
     {
         /*
          * This patch is specifically for the Chameleon mod.
-         * It ensures ModVehicles are built normally;
+         * It ensures AvsVehicles are built normally;
          * without it, Submarines don't finish being constructed correctly,
          * and mostly obviously, they don't get fabricators.
          * 

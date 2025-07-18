@@ -13,7 +13,7 @@ namespace AVS.Patches.CompatibilityPatches
         [HarmonyPatch(nameof(Player.CanBeAttacked))]
         public static void PlayerCanBeAttackedHarmonyPostfix(ref bool __result)
         {
-            var mv = Player.main.GetModVehicle();
+            var mv = Player.main.GetAvsVehicle();
             if (mv != null)
             {
                 if (GetComponentByName(mv.gameObject))

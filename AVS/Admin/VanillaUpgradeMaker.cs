@@ -8,7 +8,7 @@ namespace AVS.Admin
     internal static class VanillaUpgradeMaker
     {
         public static List<TechType> CyclopsUpgradeTechTypes = new List<TechType>();
-        internal static Nautilus.Assets.CustomPrefab CreateModuleVanilla(ModVehicleUpgrade upgrade, bool isPdaSetup, Nautilus.Assets.PrefabInfo info)
+        internal static Nautilus.Assets.CustomPrefab CreateModuleVanilla(AvsVehicleUpgrade upgrade, bool isPdaSetup, Nautilus.Assets.PrefabInfo info)
         {
             Nautilus.Assets.CustomPrefab prefab = new Nautilus.Assets.CustomPrefab(info);
             var clone = new Nautilus.Assets.PrefabTemplates.CloneTemplate(info, TechType.SeamothElectricalDefense);
@@ -28,7 +28,7 @@ namespace AVS.Admin
             return prefab;
         }
 
-        private static Nautilus.Assets.CustomPrefab AddRecipe(this Nautilus.Assets.CustomPrefab customPrefab, ModVehicleUpgrade upgrade, VehicleType vType)
+        private static Nautilus.Assets.CustomPrefab AddRecipe(this Nautilus.Assets.CustomPrefab customPrefab, AvsVehicleUpgrade upgrade, VehicleType vType)
         {
             Nautilus.Crafting.RecipeData moduleRecipe = upgrade.GetRecipe(vType).ToRecipeData();
 
@@ -42,7 +42,7 @@ namespace AVS.Admin
         }
 
         #region CreationMethods
-        internal static void CreatePassiveModule(ModVehicleUpgrade upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreatePassiveModule(AvsVehicleUpgrade upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             if (upgrade.IsVehicleSpecific)
             {
@@ -134,7 +134,7 @@ namespace AVS.Admin
         #endregion
 
         #region AddActions
-        internal static void AddPassiveActions(UpgradeModuleGadget gadget, ModVehicleUpgrade upgrade, Nautilus.Assets.PrefabInfo info)
+        internal static void AddPassiveActions(UpgradeModuleGadget gadget, AvsVehicleUpgrade upgrade, Nautilus.Assets.PrefabInfo info)
         {
             gadget
                  .WithOnModuleAdded((Vehicle vehicleInstance, int slotId) =>
@@ -212,7 +212,7 @@ namespace AVS.Admin
         #endregion
 
         #region PassiveModules
-        internal static TechType CreatePassiveModuleVanilla(ModVehicleUpgrade upgrade, bool isPdaSetup, Nautilus.Assets.PrefabInfo info, EquipmentType equipType, VehicleType vType)
+        internal static TechType CreatePassiveModuleVanilla(AvsVehicleUpgrade upgrade, bool isPdaSetup, Nautilus.Assets.PrefabInfo info, EquipmentType equipType, VehicleType vType)
         {
             Nautilus.Assets.CustomPrefab prefab = CreateModuleVanilla(upgrade, isPdaSetup, info)
                 .AddRecipe(upgrade, vType);
@@ -222,21 +222,21 @@ namespace AVS.Admin
             upgrade.UnlockTechType = info.TechType;
             return info.TechType;
         }
-        internal static void CreatePassiveModuleSeamoth(ModVehicleUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreatePassiveModuleSeamoth(AvsVehicleUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Seamoth", "Seamoth " + upgrade.DisplayName, "An upgrade for the Seamoth. " + upgrade.Description, unlockAtStart: upgrade.UnlockAtStart)
                 .WithIcon(upgrade.Icon);
             utt = utt.ReplaceSeamoth(prefabInfo.TechType);
             CreatePassiveModuleVanilla(upgrade, isPdaSetup, prefabInfo, EquipmentType.SeamothModule, VehicleType.Seamoth);
         }
-        internal static void CreatePassiveModuleExosuit(ModVehicleUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreatePassiveModuleExosuit(AvsVehicleUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Exosuit", "Exosuit " + upgrade.DisplayName, "An upgrade for the Exosuit. " + upgrade.Description, unlockAtStart: upgrade.UnlockAtStart)
                 .WithIcon(upgrade.Icon);
             utt = utt.ReplaceExosuit(prefabInfo.TechType);
             CreatePassiveModuleVanilla(upgrade, isPdaSetup, prefabInfo, EquipmentType.ExosuitModule, VehicleType.Prawn);
         }
-        internal static void CreatePassiveModuleCyclops(ModVehicleUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreatePassiveModuleCyclops(AvsVehicleUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Cyclops", "Cyclops " + upgrade.DisplayName, "An upgrade for the Cyclops. " + upgrade.Description, unlockAtStart: upgrade.UnlockAtStart)
                 .WithIcon(upgrade.Icon);

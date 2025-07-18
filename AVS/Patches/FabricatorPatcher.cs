@@ -57,12 +57,12 @@ namespace AVS.Patches
                 }
                 if (mv == null)
                 {
-                    Logger.Error("ConsumeEnergyPrefix ERROR: PowerRelay was null, but we weren't in a ModVehicle.");
+                    Logger.Error($"ConsumeEnergyPrefix ERROR: PowerRelay was null, but we weren't in an {nameof(AvsVehicle)}.");
                     return true;
                 }
                 else
                 {
-                    // we found the ModVehicle from whose fabricator we're trying to drain power
+                    // we found the AvsVehicle from whose fabricator we're trying to drain power
                     float WantToSpend = 5f;
                     float SpendTolerance = 4.99f;
                     float energySpent = mv.PowerManager.TrySpendEnergy(WantToSpend);

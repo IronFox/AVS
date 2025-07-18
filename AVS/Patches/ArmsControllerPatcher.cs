@@ -12,7 +12,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(ArmsController.Update))]
         public static void ArmsControllerUpdatePostfix()
         {
-            var mv = Player.main.GetModVehicle();
+            var mv = Player.main.GetAvsVehicle();
             if (mv != null)
             {
                 mv.HandlePilotingAnimations();

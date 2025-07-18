@@ -13,7 +13,7 @@ namespace AVS
         {
             string vehicleKey = vehicle.mv.name;
             Nautilus.Assets.PrefabInfo vehicle_info = Nautilus.Assets.PrefabInfo.WithTechType(vehicleKey, vehicleKey, vehicle.mv.Config.Description);
-            vehicle_info.WithIcon(vehicle.mv.Config.CraftingSprite ?? StaticAssets.ModVehicleIcon);
+            vehicle_info.WithIcon(vehicle.mv.Config.CraftingSprite ?? StaticAssets.AvsVehicleIcon);
 
             Nautilus.Assets.CustomPrefab module_CustomPrefab = new Nautilus.Assets.CustomPrefab(vehicle_info);
             Nautilus.Utility.PrefabUtils.AddBasicComponents(vehicle.mv.VehicleRoot, vehicleKey, vehicle_info.TechType, LargeWorldEntity.CellLevel.Global);

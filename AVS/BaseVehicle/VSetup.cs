@@ -66,7 +66,7 @@ namespace AVS.BaseVehicle
         /// </summary>
         public override void SubConstructionComplete()
         {
-            Log.Debug(this, "ModVehicle SubConstructionComplete");
+            Log.Debug(this, $"{nameof(AvsVehicle)}.{nameof(SubConstructionComplete)}");
             HudPingInstance.enabled = true;
             worldForces.handleGravity = true;
             BuildBotManager.ResetGhostMaterial();
@@ -78,15 +78,15 @@ namespace AVS.BaseVehicle
         /// </summary>
         public virtual void SubConstructionBeginning()
         {
-            Log.Debug(this, $"ModVehicle#{Id} SubConstructionBeginning");
+            Log.Debug(this, $"{nameof(AvsVehicle)}[#{Id}].{nameof(SubConstructionBeginning)}");
             if (HudPingInstance)
                 HudPingInstance.enabled = false;
             else
-                Log.Error($"HudPingInstance is null in SubConstructionBeginning #{Id}");
+                Log.Error($"HudPingInstance is null in {nameof(SubConstructionBeginning)} #{Id}");
             if (worldForces)
                 worldForces.handleGravity = false;
             else
-                Log.Error($"worldForces is null in SubConstructionBeginning #{Id}");
+                Log.Error($"worldForces is null in {nameof(SubConstructionBeginning)} #{Id}");
         }
 
         /// <summary>
@@ -155,7 +155,7 @@ namespace AVS.BaseVehicle
         /// <param name="pingType"></param>
         internal void PrefabSetupHudPing(PingType pingType)
         {
-            Log.Write($"Setting up HudPingInstance for ModVehicle #{Id}");
+            Log.Write($"Setting up HudPingInstance for {nameof(AvsVehicle)} #{Id}");
             hudPingInstance = gameObject.EnsureComponent<PingInstance>();
             hudPingInstance.origin = transform;
             hudPingInstance.pingType = pingType;
