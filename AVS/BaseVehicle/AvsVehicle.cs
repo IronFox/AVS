@@ -1,5 +1,6 @@
 ﻿using AVS.Composition;
 using AVS.Configuration;
+using AVS.Log;
 using AVS.MaterialAdapt;
 using AVS.Util;
 using System;
@@ -47,7 +48,7 @@ namespace AVS.BaseVehicle
         /// <summary>
         /// Primary logging facility for this vehicle.
         /// </summary>
-        internal Logging Log { get; }
+        internal LogWriter Log { get; }
 
         /// <summary>
         /// Invariant vehicle configuration. Initialized during construction.
@@ -81,7 +82,7 @@ namespace AVS.BaseVehicle
         /// <exception cref="ArgumentNullException"></exception>
         protected AvsVehicle(VehicleConfiguration config)
         {
-            Log = new Logging(false, false, prefix: $"V{Id}", tag: "AVS", true, false);
+            Log = new LogWriter(prefix: $"V{Id}", tags: LogWriter.DefaultTags);
 
 
             Config = config ?? throw new ArgumentNullException(nameof(config), "VehicleConfiguration cannot be null");

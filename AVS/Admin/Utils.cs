@@ -8,6 +8,8 @@ using UnityEngine;
 
 namespace AVS.Admin
 {
+
+
     /// <summary>
     /// Global utility methods for the AVS mod.
     /// </summary>
@@ -20,33 +22,32 @@ namespace AVS.Admin
         /// ancestor is the player's currently mounted vehicle. If the specified transform is <see langword="null"/>,
         /// the method returns <see langword="false"/>.</remarks>
         /// <param name="current">The transform to check, typically representing a game object in the hierarchy.</param>
+        /// <param name="vehicle">When this method returns, contains the <see cref="Vehicle"/> component if found. Null if the method returns false</param>
+        /// <param name="checkedAncestry">A list of all transforms visited by the recursion.</param>
         /// <returns><see langword="true"/> if the specified transform or one of its ancestors is the vehicle currently mounted
         /// by the player; otherwise, <see langword="false"/>.</returns>
-        public static bool IsAnAncestorTheCurrentMountedVehicle(Transform current)
+        public static bool FindVehicleInParents(Transform current, out Vehicle? vehicle, List<Transform> checkedAncestry)
         {
             if (!current)
             {
+                vehicle = null;
                 return false;
             }
+            checkedAncestry.Add(current);
             var vh = current.GetComponent<Vehicle>();
             if (vh)
             {
+                vehicle = vh;
                 return vh == Player.main.GetVehicle();
             }
-            return IsAnAncestorTheCurrentMountedVehicle(current.parent);
+            return FindVehicleInParents(current.parent, out vehicle, checkedAncestry);
         }
         /// <summary>
         /// Registers the common depth modules for vehicles.
         /// </summary>
         public static void RegisterDepthModules()
         {
-            UpgradeCompat compat = new UpgradeCompat
-            {
-                skipAvsVehicle = false,
-                skipCyclops = true,
-                skipSeamoth = true,
-                skipExosuit = true
-            };
+            UpgradeCompat compat = UpgradeCompat.AvsVehiclesOnly;
             UpgradeTechTypes depth1 = UpgradeRegistrar.RegisterUpgrade(new DepthModules.DepthModule1(), compat);
 
             var depthmodule2 = new DepthModules.DepthModule2();

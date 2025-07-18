@@ -1,4 +1,5 @@
 ﻿
+using AVS.Log;
 using AVS.Util;
 using System;
 using UnityEngine;
@@ -125,12 +126,12 @@ namespace AVS.MaterialAdapt
             Shader = shader;
         }
 
-        
+
         /// <summary>
         /// Resets only variables known to be corrupted during moonpool undock
         /// </summary>
         /// <param name="logConfig">Log Configuration</param>
-        public void PostDockFixOnTarget(Logging logConfig)
+        public void PostDockFixOnTarget(MaterialLog logConfig)
         {
             try
             {
@@ -167,7 +168,7 @@ namespace AVS.MaterialAdapt
         /// <param name="logConfig">Log Configuration</param>
         /// <param name="uniformShininess">The uniform shininess to apply everywhere. If not null,
         /// the unity material's smoothness value is disregarded</param>
-        public void ApplyToTarget(Logging logConfig = default, float? uniformShininess = null)
+        public void ApplyToTarget(MaterialLog logConfig = default, float? uniformShininess = null)
         {
             try
             {

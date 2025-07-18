@@ -49,17 +49,17 @@ namespace AVS.Admin
                 return;
             }
             bool isPdaRegistered = isPdaSetup;
-            if (!compat.skipSeamoth)
+            if (!compat.SkipSeamoth)
             {
                 CreatePassiveModuleSeamoth(upgrade, ref utt, isPdaRegistered);
                 isPdaRegistered = true;
             }
-            if (!compat.skipExosuit)
+            if (!compat.SkipExosuit)
             {
                 CreatePassiveModuleExosuit(upgrade, ref utt, isPdaRegistered);
                 isPdaRegistered = true;
             }
-            if (!compat.skipCyclops)
+            if (!compat.SkipCyclops)
             {
                 CreatePassiveModuleCyclops(upgrade, ref utt, isPdaRegistered);
             }
@@ -71,17 +71,17 @@ namespace AVS.Admin
                 return;
             }
             bool isPdaRegistered = isPdaSetup;
-            if (!compat.skipSeamoth)
+            if (!compat.SkipSeamoth)
             {
                 CreateSelectModuleSeamoth(select, ref utt, isPdaRegistered);
                 isPdaRegistered = true;
             }
-            if (!compat.skipExosuit)
+            if (!compat.SkipExosuit)
             {
                 CreateSelectModuleExosuit(select, ref utt, isPdaRegistered);
                 isPdaRegistered = true;
             }
-            if (!compat.skipCyclops)
+            if (!compat.SkipCyclops)
             {
                 //CreateSelectModuleCyclops(select, ref utt);
             }
@@ -93,17 +93,17 @@ namespace AVS.Admin
                 return;
             }
             bool isPdaRegistered = isPdaSetup;
-            if (!compat.skipSeamoth)
+            if (!compat.SkipSeamoth)
             {
                 CreateChargeModuleSeamoth(selectcharge, ref utt, isPdaRegistered);
                 isPdaRegistered = true;
             }
-            if (!compat.skipExosuit)
+            if (!compat.SkipExosuit)
             {
                 CreateChargeModuleExosuit(selectcharge, ref utt, isPdaRegistered);
                 isPdaRegistered = true;
             }
-            if (!compat.skipCyclops)
+            if (!compat.SkipCyclops)
             {
                 //CreateSelectModuleCyclops(select, ref utt);
             }
@@ -115,17 +115,17 @@ namespace AVS.Admin
                 return;
             }
             bool isPdaRegistered = isPdaSetup;
-            if (!compat.skipSeamoth)
+            if (!compat.SkipSeamoth)
             {
                 CreateToggleModuleSeamoth(toggle, ref utt, isPdaRegistered);
                 isPdaRegistered = true;
             }
-            if (!compat.skipExosuit)
+            if (!compat.SkipExosuit)
             {
                 CreateToggleModuleExosuit(toggle, ref utt, isPdaRegistered);
                 isPdaRegistered = true;
             }
-            if (!compat.skipCyclops)
+            if (!compat.SkipCyclops)
             {
                 //CreateSelectModuleCyclops(select, ref utt);
             }

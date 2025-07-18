@@ -1,4 +1,5 @@
-﻿using BepInEx;
+﻿using AVS.Log;
+using BepInEx;
 using HarmonyLib;
 using System;
 using System.Collections;
@@ -41,7 +42,7 @@ namespace AVS
 
         public virtual void PrePatch()
         {
-            AVS.Logger.Log("PrePatch started.");
+            LogWriter.Default.Write("PrePatch started.");
             IEnumerator CollectPrefabsForBuilderReference()
             {
                 CoroutineTask<GameObject> request = CraftData.GetPrefabForTechTypeAsync(TechType.BaseUpgradeConsole, true);
@@ -49,27 +50,27 @@ namespace AVS
                 VehicleBuilder.UpgradeConsole = request.GetResult();
                 yield break;
             }
-            AVS.Logger.Log("CollectPrefabsForBuilderReference started.");
+            LogWriter.Default.Write("CollectPrefabsForBuilderReference started.");
             UWE.CoroutineHost.StartCoroutine(CollectPrefabsForBuilderReference());
-            AVS.Logger.Log("Assets.StaticAssets.GetSprites()");
+            LogWriter.Default.Write("Assets.StaticAssets.GetSprites()");
             Assets.StaticAssets.GetSprites();
-            AVS.Logger.Log("Assets.AVSFabricator.CreateAndRegister()");
+            LogWriter.Default.Write("Assets.AVSFabricator.CreateAndRegister()");
             Assets.AVSFabricator.CreateAndRegister();
-            AVS.Logger.Log("Admin.Utils.RegisterDepthModules()");
+            LogWriter.Default.Write("Admin.Utils.RegisterDepthModules()");
             Admin.CraftTreeHandler.AddFabricatorMenus();
 
-            AVS.Logger.Log("Admin.Utils.RegisterDepthModules()");
+            LogWriter.Default.Write("Admin.Utils.RegisterDepthModules()");
             Admin.Utils.RegisterDepthModules();
             //AVS.Logger.Log("UWE.CoroutineHost.StartCoroutine(VoiceManager.LoadAllVoices())");
             //GetVoices = UWE.CoroutineHost.StartCoroutine(VoiceManager.LoadAllVoices());
             //AVS.Logger.Log("UWE.CoroutineHost.StartCoroutine(EngineSoundsManager.LoadAllVoices())");
             //GetEngineSounds = UWE.CoroutineHost.StartCoroutine(DynamicClipLoader.LoadAllVoices());
-            AVS.Logger.Log("PrePatch finished.");
+            LogWriter.Default.Write("PrePatch finished.");
         }
         public virtual void Patch()
         {
-            AVS.Logger.Log("Patch started.");
-            AVS.Logger.Log("Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.SaveData>()");
+            LogWriter.Default.Write("Patch started.");
+            LogWriter.Default.Write("Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.SaveData>()");
             //SaveLoad.SaveData saveData = Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.SaveData>();
 
             // Update the player position before saving it
@@ -119,12 +120,12 @@ namespace AVS
             {
 
             }
-            AVS.Logger.Log("Registering SaveUtils events.");
+            LogWriter.Default.Write("Registering SaveUtils events.");
             Nautilus.Utility.SaveUtils.RegisterOnQuitEvent(SetWorldNotLoaded);
             Nautilus.Utility.SaveUtils.RegisterOnFinishLoadingEvent(SetWorldLoaded);
             Nautilus.Utility.SaveUtils.RegisterOneTimeUseOnLoadEvent(OnLoadOnce);
 
-            AVS.Logger.Log("Patching...");
+            LogWriter.Default.Write("Patching...");
             var harmony = new Harmony(PluginId);
             harmony.PatchAll();
 

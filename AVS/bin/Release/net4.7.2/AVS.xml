@@ -261,24 +261,44 @@
             Specifies compatibility flags for registering upgrades with different vehicle types.
             </summary>
         </member>
-        <member name="F:AVS.Admin.UpgradeCompat.skipAvsVehicle">
+        <member name="P:AVS.Admin.UpgradeCompat.SkipAvsVehicle">
             <summary>
             If true, skip registering for <see cref="T:AVS.BaseVehicle.AvsVehicle" />.
             </summary>
         </member>
-        <member name="F:AVS.Admin.UpgradeCompat.skipSeamoth">
+        <member name="P:AVS.Admin.UpgradeCompat.SkipSeamoth">
             <summary>
             If true, skip registering for Seamoth.
             </summary>
         </member>
-        <member name="F:AVS.Admin.UpgradeCompat.skipExosuit">
+        <member name="P:AVS.Admin.UpgradeCompat.SkipExosuit">
             <summary>
             If true, skip registering for Exosuit.
             </summary>
         </member>
-        <member name="F:AVS.Admin.UpgradeCompat.skipCyclops">
+        <member name="P:AVS.Admin.UpgradeCompat.SkipCyclops">
             <summary>
             If true, skip registering for Cyclops.
+            </summary>
+        </member>
+        <member name="M:AVS.Admin.UpgradeCompat.#ctor(System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Admin.UpgradeCompat"/> class with options to skip certain vehicle
+            upgrades.
+            </summary>
+            <param name="skipAvsVehicle">If <see langword="true"/>, the AVS vehicle upgrade will be skipped; otherwise, it will be included. Defaults
+            to <see langword="false"/>.</param>
+            <param name="skipSeamoth">If <see langword="true"/>, the Seamoth upgrade will be skipped; otherwise, it will be included. Defaults to
+            <see langword="false"/>.</param>
+            <param name="skipExosuit">If <see langword="true"/>, the Exosuit upgrade will be skipped; otherwise, it will be included. Defaults to
+            <see langword="false"/>.</param>
+            <param name="skipCyclops">If <see langword="true"/>, the Cyclops upgrade will be skipped; otherwise, it will be included. Defaults to
+            <see langword="false"/>.</param>
+        </member>
+        <member name="P:AVS.Admin.UpgradeCompat.AvsVehiclesOnly">
+            <summary>
+            Default compatibility settings for registering upgrades to be applicable only to
+            AVS vehicles.
             </summary>
         </member>
         <member name="T:AVS.Admin.UpgradeTechTypes">
@@ -476,7 +496,7 @@
             Global utility methods for the AVS mod.
             </summary>
         </member>
-        <member name="M:AVS.Admin.Utils.IsAnAncestorTheCurrentMountedVehicle(UnityEngine.Transform)">
+        <member name="M:AVS.Admin.Utils.FindVehicleInParents(UnityEngine.Transform,Vehicle@,System.Collections.Generic.List{UnityEngine.Transform})">
             <summary>
             Determines whether the specified transform or any of its ancestors is the currently mounted vehicle.
             </summary>
@@ -484,6 +504,8 @@
             ancestor is the player's currently mounted vehicle. If the specified transform is <see langword="null"/>,
             the method returns <see langword="false"/>.</remarks>
             <param name="current">The transform to check, typically representing a game object in the hierarchy.</param>
+            <param name="vehicle">When this method returns, contains the <see cref="T:Vehicle"/> component if found. Null if the method returns false</param>
+            <param name="checkedAncestry">A list of all transforms visited by the recursion.</param>
             <returns><see langword="true"/> if the specified transform or one of its ancestors is the vehicle currently mounted
             by the player; otherwise, <see langword="false"/>.</returns>
         </member>
@@ -3804,6 +3826,193 @@
             Coroutine that displays main menu notifications in a loop until the player is loaded.
             </summary>
         </member>
+        <member name="T:AVS.Log.LogWriter">
+            <summary>
+            Logging configuration, mostly used for material adaptation processes.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.LogWriter.Prefix">
+            <summary>
+            Logging prefix, used to identify the source of the log message.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.LogWriter.Tags">
+            <summary>
+            Logging tags, used to identify the source of the log message.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.LogWriter.IncludeTimestamp">
+            <summary>
+            If true, log messages will include a timestamp.
+            </summary>
+        </member>
+        <member name="M:AVS.Log.LogWriter.#ctor(System.String,System.String[],System.Boolean)">
+            <summary>
+            Creates a new logging definition.
+            </summary>
+            <param name="prefix">Logging prefix, used to identify the source of the log message.</param>
+            <param name="tags">Logging tags, used to identify the source of the log message.</param>
+            <param name="includeTimestamp">If true, log messages will include a timestamp.</param>
+        </member>
+        <member name="F:AVS.Log.LogWriter.DefaultTags">
+            <summary>
+            Default tags used for logging by AVS itself.
+            </summary>
+        </member>
+        <member name="F:AVS.Log.LogWriter.Default">
+            <summary>
+            Default log writer instance for AVS itself.
+            </summary>
+        </member>
+        <member name="M:AVS.Log.LogWriter.Debug(AVS.ILogFilter,System.String)">
+            <summary>
+            Logs a debug message if the filter allows it.
+            </summary>
+            <param name="filter">Filter for verbose log messages</param>
+            <param name="msg">Message to log</param>
+        </member>
+        <member name="M:AVS.Log.LogWriter.Debug(System.String)">
+            <summary>
+            Logs a debug message
+            </summary>
+            <param name="msg">Message to log</param>
+        </member>
+        <member name="M:AVS.Log.LogWriter.Write(System.String)">
+            <summary>
+            Logs a regular message.
+            </summary>
+        </member>
+        <member name="M:AVS.Log.LogWriter.Warn(System.String)">
+            <summary>
+            Logs a warning message.
+            </summary>
+        </member>
+        <member name="M:AVS.Log.LogWriter.Error(System.String)">
+            <summary>
+            Logs an error message.
+            </summary>
+        </member>
+        <member name="M:AVS.Log.LogWriter.Error(System.String,System.Exception)">
+            <summary>
+            Logs an error message.
+            </summary>
+        </member>
+        <member name="T:AVS.Log.MaterialLog">
+            <summary>
+            Material adaptation logging configuration.
+            </summary>
+        </member>
+        <member name="M:AVS.Log.MaterialLog.#ctor(System.Boolean,System.Boolean,System.String,System.String[],System.Boolean,System.Boolean)">
+            <summary>
+            Constructs a new material adaptation logging configuration.
+            </summary>
+            <param name="prefix">Optional logging prefix, used to identify the source of the log message.</param>
+            <param name="tags">Optional logging tags, used to identify the source of the log message.</param>
+            <param name="includeTimestamp">If true, log messages will include a timestamp.</param>
+            <param name="logMaterialVariables">If true, input material variables will be logged.</param>
+            <param name="logMaterialChanges">If true material property changes will be logged.</param>
+            <param name="logExtraSteps">If true, extra steps of the material adaptation process will be logged.</param>
+        </member>
+        <member name="P:AVS.Log.MaterialLog.Writer">
+            <summary>
+            Internal log writer used for material adaptation logging.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.MaterialLog.LogMaterialChanges">
+            <summary>
+            If true material property changes will be logged.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.MaterialLog.LogMaterialVariables">
+            <summary>
+            If true, input material variables will be logged.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.MaterialLog.LogExtraSteps">
+            <summary>
+            If true, extra steps of the material adaptation process will be logged.
+            </summary>
+        </member>
+        <member name="F:AVS.Log.MaterialLog.MaterialAdaptationTag">
+            <summary>
+            Default logging prefix used when fixing materials.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.MaterialLog.Default">
+            <summary>
+            Default logging configuration for material adaptation.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.MaterialLog.Silent">
+            <summary>
+            Muted logging configuration for material adaptation.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.MaterialLog.Verbose">
+            <summary>
+            Verbose logging configuration for material adaptation.
+            </summary>
+        </member>
+        <member name="M:AVS.Log.MaterialLog.LogExtraStep(System.String)">
+            <summary>
+            Logs an extra step in the material adaptation process.
+            If <see cref="P:AVS.Log.MaterialLog.LogExtraSteps"/> is false, this method does nothing.
+            </summary>
+        </member>
+        <member name="M:AVS.Log.MaterialLog.LogMaterialChange(System.String)">
+            <summary>
+            Logs a material change message.
+            If <see cref="P:AVS.Log.MaterialLog.LogMaterialChanges"/> is false, this method does nothing.
+            </summary>
+        </member>
+        <member name="M:AVS.Log.MaterialLog.LogMaterialChange(System.Func{System.String})">
+            <summary>
+            Logs a material change message using a function to generate the message.
+            If <see cref="P:AVS.Log.MaterialLog.LogMaterialChanges"/> is false, this method does nothing.
+            </summary>
+        </member>
+        <member name="M:AVS.Log.MaterialLog.LogMaterialVariableSet``1(UnityEngine.Rendering.ShaderPropertyType,System.String,``0,``0,UnityEngine.Material,System.String)">
+            <summary>
+            Logs a material property set operation.
+            </summary>
+            <typeparam name="T">C# type being updated</typeparam>
+            <param name="type">Unity type being updated</param>
+            <param name="name">Field name being updated</param>
+            <param name="old">Old value</param>
+            <param name="value">New value</param>
+            <param name="m">Material affected</param>
+            <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
+        </member>
+        <member name="M:AVS.Log.MaterialLog.LogMaterialVariableData(System.Nullable{UnityEngine.Rendering.ShaderPropertyType},System.String,System.String,UnityEngine.Material,System.String)">
+            <summary>
+            Logs a material property value.
+            </summary>
+            <param name="type">Unity type being updated</param>
+            <param name="name">Field name being updated</param>
+            <param name="dataAsString">The current value as string</param>
+            <param name="m">Material affected</param>
+            <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
+        </member>
+        <member name="M:AVS.Log.MaterialLog.LogMaterialVariableData``1(System.String,``0,UnityEngine.Material,System.String)">
+            <summary>
+            Logs a material property set operation.
+            </summary>
+            <typeparam name="T">C# type being logged</typeparam>
+            <param name="name">Field name being updated</param>
+            <param name="data">Recognized data</param>
+            <param name="m">Material being logged</param>
+            <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
+        </member>
+        <member name="M:AVS.Log.MaterialLog.Warn(System.String)">
+            <summary>
+            Logs a warning message.
+            </summary>
+        </member>
+        <member name="M:AVS.Log.MaterialLog.Error(System.String)">
+            <summary>
+            Logs an error message.
+            </summary>
+        </member>
         <member name="T:AVS.MaterialAdapt.DefaultMaterialAdaptConfig">
             <summary>
             The default material adaptation configuration.
@@ -3826,12 +4035,12 @@
         <member name="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.LogConfig">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.#ctor(System.Nullable{AVS.Util.Logging})">
+        <member name="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.#ctor(System.Nullable{AVS.Log.MaterialLog})">
             <summary>
             Constructs a new default material adaptation configuration.
             </summary>
             <param name="logConfig">Optional logging configuration to use.
-            If null, <see cref="P:AVS.Util.Logging.MaterialAdaptationDefault" /> is used</param>
+            If null, <see cref="P:AVS.Log.MaterialLog.Default" /> is used</param>
         </member>
         <member name="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IsExcludedFromMaterialFixing(UnityEngine.GameObject,AVS.Composition.VehicleComposition)">
             <summary>
@@ -3986,13 +4195,13 @@
             <param name="unityMaterial">The material data extracted from the Unity material</param>
             <param name="shader">The shader to use (Marmoset UBER)</param>
         </member>
-        <member name="M:AVS.MaterialAdapt.MaterialAdaptation.PostDockFixOnTarget(AVS.Util.Logging)">
+        <member name="M:AVS.MaterialAdapt.MaterialAdaptation.PostDockFixOnTarget(AVS.Log.MaterialLog)">
             <summary>
             Resets only variables known to be corrupted during moonpool undock
             </summary>
             <param name="logConfig">Log Configuration</param>
         </member>
-        <member name="M:AVS.MaterialAdapt.MaterialAdaptation.ApplyToTarget(AVS.Util.Logging,System.Nullable{System.Single})">
+        <member name="M:AVS.MaterialAdapt.MaterialAdaptation.ApplyToTarget(AVS.Log.MaterialLog,System.Nullable{System.Single})">
             <summary>
             Reapplies all material properties to the target
             </summary>
@@ -4033,7 +4242,7 @@
             If non-null, enforces the same uniform shininess level on all materials
             </summary>
         </member>
-        <member name="M:AVS.MaterialAdapt.MaterialFixer.#ctor(AVS.BaseVehicle.AvsVehicle,System.Nullable{AVS.Util.Logging},System.Func{System.Collections.Generic.IEnumerable{AVS.MaterialAdapt.UnityMaterialData}})">
+        <member name="M:AVS.MaterialAdapt.MaterialFixer.#ctor(AVS.BaseVehicle.AvsVehicle,System.Nullable{AVS.Log.MaterialLog},System.Func{System.Collections.Generic.IEnumerable{AVS.MaterialAdapt.UnityMaterialData}})">
             <summary>
             Constructs the instance
             </summary>
@@ -4041,9 +4250,9 @@
             <param name="materialResolver">The solver function to fetch all materials to translate.
             If null, a default implementation is used which 
             mimics VF's default material selection in addition to filtering out non-standard materials</param>
-            <param name="logConfig">Log Configuration. If null, defaults to <see cref="P:AVS.Util.Logging.MaterialAdaptationDefault" /></param>
+            <param name="logConfig">Log Configuration. If null, defaults to <see cref="P:AVS.Log.MaterialLog.Default" /></param>
         </member>
-        <member name="M:AVS.MaterialAdapt.MaterialFixer.DefaultMaterialResolver(AVS.BaseVehicle.AvsVehicle,AVS.Util.Logging,System.Boolean)">
+        <member name="M:AVS.MaterialAdapt.MaterialFixer.DefaultMaterialResolver(AVS.BaseVehicle.AvsVehicle,AVS.Log.MaterialLog,System.Boolean)">
             <summary>
             Default material address resolver function. Can be modified to also return materials with divergent shader names
             </summary>
@@ -4078,7 +4287,7 @@
             <remarks>Should be called from your vehicle Update() method</remarks>
             <param name="subTransform">Root transform of your sub</param>
         </member>
-        <member name="M:AVS.MaterialAdapt.IShaderVariable.SetTo(UnityEngine.Material,AVS.Util.Logging,System.String)">
+        <member name="M:AVS.MaterialAdapt.IShaderVariable.SetTo(UnityEngine.Material,AVS.Log.MaterialLog,System.String)">
             <summary>
             Updates a material according to the preserved values present in the local variable
             </summary>
@@ -4086,7 +4295,7 @@
             <param name="logConfig">Log Configuration</param>
             <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         </member>
-        <member name="M:AVS.MaterialAdapt.ColorVariable.Set(UnityEngine.Material,System.String,UnityEngine.Color,AVS.Util.Logging,System.String)">
+        <member name="M:AVS.MaterialAdapt.ColorVariable.Set(UnityEngine.Material,System.String,UnityEngine.Color,AVS.Log.MaterialLog,System.String)">
             <inheritdoc/>
         </member>
         <member name="T:AVS.MaterialAdapt.SubnauticaMaterialPrototype">
@@ -4106,7 +4315,7 @@
             Global illumination flags retrieved from the source material
             </summary>
         </member>
-        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.ApplyTo(UnityEngine.Material,AVS.Util.Logging,System.Func{System.String,System.Boolean},System.String)">
+        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.ApplyTo(UnityEngine.Material,AVS.Log.MaterialLog,System.Func{System.String,System.Boolean},System.String)">
             <summary>
             Updates all recorded shader variables in the specified material
             </summary>
@@ -4124,7 +4333,7 @@
             <param name="source">Material to read. Can be null, causing <see cref="P:AVS.MaterialAdapt.SubnauticaMaterialPrototype.IsEmpty"/> to be set true</param>
             <param name="loadTextures">If true also load texture property values</param>
         </member>
-        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassFromSeamoth(AVS.Util.Logging)">
+        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassFromSeamoth(AVS.Log.MaterialLog)">
             <summary>
             Creates a material prototype for the glass material of the Seamoth.
             </summary>
@@ -4133,7 +4342,7 @@
             Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
             if the respective material is not found</returns>
         </member>
-        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.FromSeamoth(AVS.Util.Logging)">
+        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.FromSeamoth(AVS.Log.MaterialLog)">
             <summary>
             Creates a material prototype for the main material of the Seamoth body.
             While the Seamoth is not yet available, the method returns null.
@@ -4214,7 +4423,7 @@
             Constructs a new instance of <see cref="T:AVS.MaterialAdapt.UnityMaterialData"/>
             </summary>
         </member>
-        <member name="M:AVS.MaterialAdapt.UnityMaterialData.From(AVS.MaterialAdapt.MaterialAddress,AVS.Util.Logging,System.Boolean)">
+        <member name="M:AVS.MaterialAdapt.UnityMaterialData.From(AVS.MaterialAdapt.MaterialAddress,AVS.Log.MaterialLog,System.Boolean)">
             <summary>
             Reads all local values from the given material address (if available).
             Unless <paramref name="ignoreShaderName"/> is set,
@@ -4230,7 +4439,7 @@
             <returns>Read surface shader data or null if the shader name did not match
             or the target is (no longer) valid</returns>
         </member>
-        <member name="M:AVS.MaterialAdapt.UnityMaterialData.From(UnityEngine.Renderer,System.Int32,AVS.Util.Logging,System.Boolean)">
+        <member name="M:AVS.MaterialAdapt.UnityMaterialData.From(UnityEngine.Renderer,System.Int32,AVS.Log.MaterialLog,System.Boolean)">
             <summary>
             Reads all local values from the given renderer material (if available).
             Unless <paramref name="ignoreShaderName"/> is set,
@@ -4247,7 +4456,7 @@
             <returns>Read surface shader data or null if the shader name did not match
             or the target is (no longer) valid</returns>
         </member>
-        <member name="M:AVS.MaterialAdapt.UnityMaterialData.ApplyTo(UnityEngine.Material,System.Nullable{System.Single},AVS.Util.Logging,System.String)">
+        <member name="M:AVS.MaterialAdapt.UnityMaterialData.ApplyTo(UnityEngine.Material,System.Nullable{System.Single},AVS.Log.MaterialLog,System.String)">
             <summary>
             Applies the loaded configuration to the given material
             </summary>
@@ -4850,153 +5059,6 @@
             <typeparam name="T">The type of the object, which must derive from <see cref="T:UnityEngine.Object"/>.</typeparam>
             <param name="item">The object to check for null before executing the action.</param>
             <param name="action">The action to execute if <paramref name="item"/> is not null.</param>
-        </member>
-        <member name="T:AVS.Util.Logging">
-            <summary>
-            Logging configuration, mostly used for material adaptation processes.
-            </summary>
-        </member>
-        <member name="P:AVS.Util.Logging.LogMaterialChanges">
-            <summary>
-            If true material property changes will be logged.
-            </summary>
-        </member>
-        <member name="P:AVS.Util.Logging.LogMaterialVariables">
-            <summary>
-            If true, input material variables will be logged.
-            </summary>
-        </member>
-        <member name="P:AVS.Util.Logging.Prefix">
-            <summary>
-            Logging prefix, used to identify the source of the log message.
-            </summary>
-        </member>
-        <member name="P:AVS.Util.Logging.Tag">
-            <summary>
-            Logging tag, used to identify the source of the log message.
-            </summary>
-        </member>
-        <member name="P:AVS.Util.Logging.IncludeTimestamp">
-            <summary>
-            If true, log messages will include a timestamp.
-            </summary>
-        </member>
-        <member name="P:AVS.Util.Logging.LogExtraSteps">
-            <summary>
-            If true, extra steps of the material adaptation process will be logged.
-            </summary>
-        </member>
-        <member name="M:AVS.Util.Logging.#ctor(System.Boolean,System.Boolean,System.String,System.String,System.Boolean,System.Boolean)">
-            <summary>
-            Creates a new logging definition.
-            </summary>
-            <param name="logMaterialChanges">If true material property changes will be logged.</param>
-            <param name="prefix">Logging prefix, used to identify the source of the log message.</param>
-            <param name="includeTimestamp">If true, log messages will include a timestamp.</param>
-            <param name="logExtraSteps">If true, extra steps of the material adaptation process will be logged.</param>
-        </member>
-        <member name="F:AVS.Util.Logging.MaterialAdaptationTag">
-            <summary>
-            Default logging prefix used when fixing materials.
-            </summary>
-        </member>
-        <member name="P:AVS.Util.Logging.Default">
-            <summary>
-            Default logging configuration for purposes other than material adaptation.
-            It contains no prefix and will not log material variables or changes.
-            </summary>
-        </member>
-        <member name="P:AVS.Util.Logging.MaterialAdaptationDefault">
-            <summary>
-            Default logging configuration for material adaptation.
-            </summary>
-        </member>
-        <member name="P:AVS.Util.Logging.MaterialAdaptationSilent">
-            <summary>
-            Muted logging configuration for material adaptation.
-            </summary>
-        </member>
-        <member name="P:AVS.Util.Logging.MaterialAdaptationVerbose">
-            <summary>
-            Verbose logging configuration for material adaptation.
-            </summary>
-        </member>
-        <member name="M:AVS.Util.Logging.LogExtraStep(System.String)">
-            <summary>
-            Logs an extra step in the material adaptation process.
-            If <see cref="P:AVS.Util.Logging.LogExtraSteps"/> is false, this method does nothing.
-            </summary>
-        </member>
-        <member name="M:AVS.Util.Logging.Debug(AVS.ILogFilter,System.String)">
-            <summary>
-            Logs a debug message if the filter allows it.
-            </summary>
-            <param name="filter">Filter for verbose log messages</param>
-            <param name="msg">Message to log</param>
-        </member>
-        <member name="M:AVS.Util.Logging.Write(System.String)">
-            <summary>
-            Logs a regular message.
-            </summary>
-        </member>
-        <member name="M:AVS.Util.Logging.Warn(System.String)">
-            <summary>
-            Logs a warning message.
-            </summary>
-        </member>
-        <member name="M:AVS.Util.Logging.Error(System.String)">
-            <summary>
-            Logs an error message.
-            </summary>
-        </member>
-        <member name="M:AVS.Util.Logging.Error(System.String,System.Exception)">
-            <summary>
-            Logs an error message.
-            </summary>
-        </member>
-        <member name="M:AVS.Util.Logging.LogMaterialChange(System.String)">
-            <summary>
-            Logs a material change message.
-            If <see cref="P:AVS.Util.Logging.LogMaterialChanges"/> is false, this method does nothing.
-            </summary>
-        </member>
-        <member name="M:AVS.Util.Logging.LogMaterialChange(System.Func{System.String})">
-            <summary>
-            Logs a material change message using a function to generate the message.
-            If <see cref="P:AVS.Util.Logging.LogMaterialChanges"/> is false, this method does nothing.
-            </summary>
-        </member>
-        <member name="M:AVS.Util.Logging.LogMaterialVariableSet``1(UnityEngine.Rendering.ShaderPropertyType,System.String,``0,``0,UnityEngine.Material,System.String)">
-            <summary>
-            Logs a material property set operation.
-            </summary>
-            <typeparam name="T">C# type being updated</typeparam>
-            <param name="type">Unity type being updated</param>
-            <param name="name">Field name being updated</param>
-            <param name="old">Old value</param>
-            <param name="value">New value</param>
-            <param name="m">Material affected</param>
-            <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
-        </member>
-        <member name="M:AVS.Util.Logging.LogMaterialVariableData(System.Nullable{UnityEngine.Rendering.ShaderPropertyType},System.String,System.String,UnityEngine.Material,System.String)">
-            <summary>
-            Logs a material property value.
-            </summary>
-            <param name="type">Unity type being updated</param>
-            <param name="name">Field name being updated</param>
-            <param name="dataAsString">The current value as string</param>
-            <param name="m">Material affected</param>
-            <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
-        </member>
-        <member name="M:AVS.Util.Logging.LogMaterialVariableData``1(System.String,``0,UnityEngine.Material,System.String)">
-            <summary>
-            Logs a material property set operation.
-            </summary>
-            <typeparam name="T">C# type being logged</typeparam>
-            <param name="name">Field name being updated</param>
-            <param name="data">Recognized data</param>
-            <param name="m">Material being logged</param>
-            <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         </member>
         <member name="T:AVS.Util.Shaders">
             <summary>

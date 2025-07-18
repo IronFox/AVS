@@ -55,19 +55,19 @@ namespace AVS.Admin
                 EnsureCraftingTabAvailable(upgrade, VehicleType.Custom);
                 return;
             }
-            if (!compat.skipCyclops)
+            if (!compat.SkipCyclops)
             {
                 EnsureCraftingTabAvailable(upgrade, VehicleType.Cyclops);
             }
-            if (!compat.skipExosuit)
+            if (!compat.SkipExosuit)
             {
                 EnsureCraftingTabAvailable(upgrade, VehicleType.Prawn);
             }
-            if (!compat.skipAvsVehicle)
+            if (!compat.SkipAvsVehicle)
             {
                 EnsureCraftingTabAvailable(upgrade, VehicleType.AvsVehicle);
             }
-            if (!compat.skipSeamoth)
+            if (!compat.SkipSeamoth)
             {
                 EnsureCraftingTabAvailable(upgrade, VehicleType.Seamoth);
             }

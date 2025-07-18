@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using AVS.Log;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using UnityEngine;
@@ -77,7 +78,7 @@ namespace AVS.Assets
             }
             catch
             {
-                Logger.Warn($"Could not find file {fullPath}. Returning null Sprite.");
+                LogWriter.Default.Warn($"Could not find file {fullPath}. Returning null Sprite.");
                 return null;
             }
         }
@@ -91,7 +92,7 @@ namespace AVS.Assets
         {
             if (sprite == null)
             {
-                Logger.Warn("Sprite is null, cannot create Sprite from Atlas.Sprite.");
+                LogWriter.Default.Warn("Sprite is null, cannot create Sprite from Atlas.Sprite.");
                 return null;
             }
             Texture2D texture = sprite.texture;

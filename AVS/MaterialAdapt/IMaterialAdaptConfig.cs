@@ -1,5 +1,5 @@
 ﻿using AVS.Composition;
-using AVS.Util;
+using AVS.Log;
 using UnityEngine;
 
 namespace AVS.MaterialAdapt
@@ -12,7 +12,7 @@ namespace AVS.MaterialAdapt
         /// <summary>
         /// Logging configuration for material adaptation.
         /// </summary>
-        public Logging LogConfig { get; }
+        public MaterialLog LogConfig { get; }
 
 
         /// <summary>

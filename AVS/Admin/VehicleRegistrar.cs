@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Log;
 using AVS.VehicleTypes;
 using System;
 using System.Collections;
@@ -55,10 +56,10 @@ namespace AVS
                 switch (type)
                 {
                     case LogType.Log:
-                        Logger.Log(message);
+                        LogWriter.Default.Write(message);
                         break;
                     case LogType.Warn:
-                        Logger.Warn(message);
+                        LogWriter.Default.Warn(message);
                         break;
                     default:
                         break;

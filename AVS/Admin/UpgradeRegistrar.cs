@@ -1,5 +1,6 @@
 ﻿using AVS.Assets;
 using AVS.BaseVehicle;
+using AVS.Log;
 using AVS.UpgradeTypes;
 using AVS.Util;
 using Nautilus.Assets.Gadgets;
@@ -14,24 +15,56 @@ namespace AVS.Admin
     /// <summary>
     /// Specifies compatibility flags for registering upgrades with different vehicle types.
     /// </summary>
-    public struct UpgradeCompat
+    public readonly struct UpgradeCompat
     {
         /// <summary>
         /// If true, skip registering for <see cref="AvsVehicle" />.
         /// </summary>
-        public bool skipAvsVehicle;
+        public bool SkipAvsVehicle { get; }
         /// <summary>
         /// If true, skip registering for Seamoth.
         /// </summary>
-        public bool skipSeamoth;
+        public bool SkipSeamoth { get; }
         /// <summary>
         /// If true, skip registering for Exosuit.
         /// </summary>
-        public bool skipExosuit;
+        public bool SkipExosuit { get; }
         /// <summary>
         /// If true, skip registering for Cyclops.
         /// </summary>
-        public bool skipCyclops;
+        public bool SkipCyclops { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UpgradeCompat"/> class with options to skip certain vehicle
+        /// upgrades.
+        /// </summary>
+        /// <param name="skipAvsVehicle">If <see langword="true"/>, the AVS vehicle upgrade will be skipped; otherwise, it will be included. Defaults
+        /// to <see langword="false"/>.</param>
+        /// <param name="skipSeamoth">If <see langword="true"/>, the Seamoth upgrade will be skipped; otherwise, it will be included. Defaults to
+        /// <see langword="false"/>.</param>
+        /// <param name="skipExosuit">If <see langword="true"/>, the Exosuit upgrade will be skipped; otherwise, it will be included. Defaults to
+        /// <see langword="false"/>.</param>
+        /// <param name="skipCyclops">If <see langword="true"/>, the Cyclops upgrade will be skipped; otherwise, it will be included. Defaults to
+        /// <see langword="false"/>.</param>
+        public UpgradeCompat(
+            bool skipAvsVehicle = true,
+            bool skipSeamoth = true,
+            bool skipExosuit = true,
+            bool skipCyclops = true)
+        {
+            SkipAvsVehicle = skipAvsVehicle;
+            SkipSeamoth = skipSeamoth;
+            SkipExosuit = skipExosuit;
+            SkipCyclops = skipCyclops;
+        }
+
+        /// <summary>
+        /// Default compatibility settings for registering upgrades to be applicable only to
+        /// AVS vehicles.
+        /// </summary>
+        public static UpgradeCompat AvsVehiclesOnly { get; } = new UpgradeCompat(
+            skipAvsVehicle: false
+        );
     }
     /// <summary>
     /// Holds TechTypes for an upgrade for each supported vehicle type.
@@ -191,7 +224,7 @@ namespace AVS.Admin
         /// <returns>UpgradeTechTypes containing TechTypes for each vehicle type.</returns>
         public static UpgradeTechTypes RegisterUpgrade(AvsVehicleUpgrade upgrade, UpgradeCompat compat = default(UpgradeCompat), bool verbose = false)
         {
-            Logger.Log($"Registering {nameof(AvsVehicleUpgrade)} " + upgrade.ClassId + " : " + upgrade.DisplayName);
+            LogWriter.Default.Write($"Registering {nameof(AvsVehicleUpgrade)} " + upgrade.ClassId + " : " + upgrade.DisplayName);
             bool result = ValidateAvsVehicleUpgrade(upgrade, compat);
             if (result)
             {
@@ -200,10 +233,10 @@ namespace AVS.Admin
                 if (icon != null)
                     UpgradeIcons.Add(upgrade.ClassId, icon);
                 else
-                    Logger.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId} has a null icon! Please provide a valid icon sprite.");
+                    LogWriter.Default.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId} has a null icon! Please provide a valid icon sprite.");
                 UpgradeTechTypes utt = new UpgradeTechTypes();
                 bool isPdaRegistered = false;
-                if (!compat.skipAvsVehicle || upgrade.IsVehicleSpecific)
+                if (!compat.SkipAvsVehicle || upgrade.IsVehicleSpecific)
                 {
                     utt = new UpgradeTechTypes(
                         forAvsVehicle: RegisterAvsVehicleUpgrade(upgrade)
@@ -216,7 +249,7 @@ namespace AVS.Admin
             }
             else
             {
-                Logger.Error("Failed to register upgrade: " + upgrade.ClassId);
+                LogWriter.Default.Error("Failed to register upgrade: " + upgrade.ClassId);
                 return default;
             }
         }
@@ -229,7 +262,7 @@ namespace AVS.Admin
         /// <returns>True if valid, false otherwise.</returns>
         private static bool ValidateAvsVehicleUpgrade(AvsVehicleUpgrade upgrade, UpgradeCompat compat)
         {
-            if (compat.skipAvsVehicle && compat.skipSeamoth && compat.skipExosuit && compat.skipCyclops)
+            if (compat.SkipAvsVehicle && compat.SkipSeamoth && compat.SkipExosuit && compat.SkipCyclops)
             {
                 Logger.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId}: compat cannot skip all vehicle types!");
                 return false;

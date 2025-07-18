@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.Log;
+using System;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -93,16 +94,16 @@ namespace AVS.Assets
             bundleName = bundlePath;
             try
             {
-                Logger.Log($"Loading asset bundle from {bundlePath}");
+                LogWriter.Default.Write($"Loading asset bundle from {bundlePath}");
                 bundle = AssetBundle.LoadFromFile(bundlePath);
                 if (bundle)
-                    Logger.Log($"Loaded asset bundle from {bundlePath}");
+                    LogWriter.Default.Write($"Loaded asset bundle from {bundlePath}");
                 else
-                    Logger.Log($"Loaded null asset bundle from {bundlePath}");
+                    LogWriter.Default.Write($"Loaded null asset bundle from {bundlePath}");
             }
             catch (Exception e)
             {
-                Logger.LogException($"AssetBundleInterface failed to load AssetBundle with the path: {bundlePath}. Make sure the name is correct.", e);
+                LogWriter.Default.Error($"AssetBundleInterface failed to load AssetBundle with the path: {bundlePath}. Make sure the name is correct.", e);
                 return;
             }
         }
@@ -116,7 +117,7 @@ namespace AVS.Assets
         {
             if (bundle == null)
             {
-                Logger.Error($"AssetBundle {bundleName} is not loaded. Cannot get sprite atlas");
+                LogWriter.Default.Error($"AssetBundle {bundleName} is not loaded. Cannot get sprite atlas");
                 return null;
             }
             SpriteAtlas? rs = null;
@@ -132,12 +133,12 @@ namespace AVS.Assets
                 }
                 catch (Exception e)
                 {
-                    Logger.LogException($"AssetBundle {bundleName} failed to get Sprite Atlas: {spriteAtlasName}.", e);
+                    LogWriter.Default.Error($"AssetBundle {bundleName} failed to get Sprite Atlas: {spriteAtlasName}.", e);
                     return null;
                 }
             }
             if (!rs)
-                Logger.Error($"AssetBundle {bundleName} failed to get Sprite Atlas: {spriteAtlasName}.");
+                LogWriter.Default.Error($"AssetBundle {bundleName} failed to get Sprite Atlas: {spriteAtlasName}.");
             return rs;
         }
 
@@ -159,7 +160,7 @@ namespace AVS.Assets
             }
             catch (Exception e)
             {
-                Logger.LogException($"In AssetBundle {bundleName}, failed to get Sprite {spriteName} from Sprite Atlas {spriteAtlasName}.", e);
+                LogWriter.Default.Error($"In AssetBundle {bundleName}, failed to get Sprite {spriteName} from Sprite Atlas {spriteAtlasName}.", e);
                 return null;
             }
         }
@@ -181,7 +182,7 @@ namespace AVS.Assets
             }
             catch (Exception e)
             {
-                Logger.LogException($"In AssetBundle {bundleName}, failed to get Sprite {spriteName} from Sprite Atlas {spriteAtlasName}.", e);
+                LogWriter.Default.Error($"In AssetBundle {bundleName}, failed to get Sprite {spriteName} from Sprite Atlas {spriteAtlasName}.", e);
                 return null;
             }
         }
@@ -195,7 +196,7 @@ namespace AVS.Assets
         {
             if (bundle == null)
             {
-                Logger.Error($"AssetBundle {bundleName} is not loaded. Cannot get GameObject {gameObjectName}");
+                LogWriter.Default.Error($"AssetBundle {bundleName} is not loaded. Cannot get GameObject {gameObjectName}");
                 return null;
             }
             try
@@ -210,7 +211,7 @@ namespace AVS.Assets
                 }
                 catch (Exception e)
                 {
-                    Logger.LogException($"AssetBundle {bundleName} failed to get Sprite Atlas: {gameObjectName}.", e);
+                    LogWriter.Default.Error($"AssetBundle {bundleName} failed to get Sprite Atlas: {gameObjectName}.", e);
                     return null;
                 }
             }

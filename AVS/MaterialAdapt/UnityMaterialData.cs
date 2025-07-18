@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.Log;
+using AVS.Util;
 using System;
 using UnityEngine;
 
@@ -101,7 +102,7 @@ namespace AVS.MaterialAdapt
             EmissionTexture = emissionTexture;
         }
 
-        private static Color GetColor(Material m, string name, Logging logConfig)
+        private static Color GetColor(Material m, string name, MaterialLog logConfig)
         {
             if (!m.HasProperty(name))
             {
@@ -120,7 +121,7 @@ namespace AVS.MaterialAdapt
             }
         }
 
-        private static Texture? GetTexture(Material m, string name, Logging logConfig)
+        private static Texture? GetTexture(Material m, string name, MaterialLog logConfig)
         {
             if (!m.HasProperty(name))
             {
@@ -139,7 +140,7 @@ namespace AVS.MaterialAdapt
             }
         }
 
-        private static float GetFloat(Material m, string name, Logging logConfig)
+        private static float GetFloat(Material m, string name, MaterialLog logConfig)
         {
             if (!m.HasProperty(name))
             {
@@ -158,7 +159,7 @@ namespace AVS.MaterialAdapt
             }
         }
 
-        private static int GetInt(Material m, string name, Logging logConfig)
+        private static int GetInt(Material m, string name, MaterialLog logConfig)
         {
             if (!m.HasProperty(name))
             {
@@ -179,7 +180,7 @@ namespace AVS.MaterialAdapt
 
 
 
-        private static UnityMaterialData? From(MaterialAddress target, Material m, Logging logConfig, bool ignoreShaderName = false)
+        private static UnityMaterialData? From(MaterialAddress target, Material m, MaterialLog logConfig, bool ignoreShaderName = false)
         {
 
             if (m.shader.name != "Standard" && !ignoreShaderName)
@@ -255,7 +256,7 @@ namespace AVS.MaterialAdapt
         /// return null otherwise</param>
         /// <returns>Read surface shader data or null if the shader name did not match
         /// or the target is (no longer) valid</returns>
-        public static UnityMaterialData? From(MaterialAddress source, Logging logConfig, bool ignoreShaderName = false)
+        public static UnityMaterialData? From(MaterialAddress source, MaterialLog logConfig, bool ignoreShaderName = false)
         {
             var material = source.GetMaterial();
             if (material == null)
@@ -283,7 +284,7 @@ namespace AVS.MaterialAdapt
         /// return null otherwise</param>
         /// <returns>Read surface shader data or null if the shader name did not match
         /// or the target is (no longer) valid</returns>
-        public static UnityMaterialData? From(Renderer renderer, int materialIndex, Logging logConfig = default, bool ignoreShaderName = false)
+        public static UnityMaterialData? From(Renderer renderer, int materialIndex, MaterialLog logConfig = default, bool ignoreShaderName = false)
         {
             return From(new MaterialAddress(renderer, materialIndex), logConfig);
         }
@@ -298,7 +299,7 @@ namespace AVS.MaterialAdapt
         /// <param name="uniformShininess">If non-null, applies this level of shininess to all materials</param>
         /// <param name="logConfig">Log Configuration</param>
         /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
-        public void ApplyTo(Material m, float? uniformShininess, Logging logConfig, string?materialName)
+        public void ApplyTo(Material m, float? uniformShininess, MaterialLog logConfig, string? materialName)
         {
             ColorVariable.Set(m, "_Color2", Color, logConfig, materialName);
             ColorVariable.Set(m, "_Color3", Color, logConfig, materialName);

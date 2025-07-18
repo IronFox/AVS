@@ -1,6 +1,9 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Util;
 using AVS.VehicleTypes;
 using HarmonyLib;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 // PURPOSE: ensure the Player behaves as expected when AvsVehicle are involved
@@ -153,10 +156,13 @@ namespace AVS
             {
                 return true;
             }
-
-            if (__instance.currentMountedVehicle is AvsVehicle && __instance.mode == Player.Mode.LockedPiloting && !Admin.Utils.IsAnAncestorTheCurrentMountedVehicle(Player.main.transform))
+            var checkedAncestry = new List<Transform>();
+            if (__instance.currentMountedVehicle is AvsVehicle
+                && __instance.mode == Player.Mode.LockedPiloting
+                && !Admin.Utils.FindVehicleInParents(Player.main.transform, out var v, checkedAncestry))
             {
-                Logger.Error("Mismatch between the Player's mounted vehicle and the Player's parent!");
+                Log.LogWriter.Default.Error($"Player does not reside in a vehicle or the wrong one ({v.NiceName()}). Checked ancestry: {string.Join("->", checkedAncestry.Select(x => x.NiceName()))}");
+
                 // Don't skip. This is a weird problem and it needs resolved, so let it die strangely.
                 //return false;
             }

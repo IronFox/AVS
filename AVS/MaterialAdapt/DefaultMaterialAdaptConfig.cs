@@ -1,5 +1,5 @@
 ﻿using AVS.Composition;
-using AVS.Util;
+using AVS.Log;
 using System.Linq;
 using UnityEngine;
 
@@ -23,16 +23,16 @@ namespace AVS.MaterialAdapt
         public virtual bool IgnoreShaderNames => false;
 
         /// <inheritdoc/>
-        public Logging LogConfig { get; }
+        public MaterialLog LogConfig { get; }
 
         /// <summary>
         /// Constructs a new default material adaptation configuration.
         /// </summary>
         /// <param name="logConfig">Optional logging configuration to use.
-        /// If null, <see cref="Logging.MaterialAdaptationDefault" /> is used</param>
-        public DefaultMaterialAdaptConfig(Logging? logConfig = null)
+        /// If null, <see cref="MaterialLog.Default" /> is used</param>
+        public DefaultMaterialAdaptConfig(MaterialLog? logConfig = null)
         {
-            LogConfig = logConfig ?? Logging.MaterialAdaptationDefault;
+            LogConfig = logConfig ?? MaterialLog.Default;
         }
 
         /// <summary>

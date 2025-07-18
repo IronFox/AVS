@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Log;
 using AVS.Util;
 using AVS.VehicleTypes;
 //using AVS.Localization;
@@ -22,7 +23,7 @@ namespace AVS
         private bool isLive = true;
         void IHandTarget.OnHandClick(GUIHand hand)
         {
-            Logger.Log($"PilotingTrigger.OnHandClick: {mv?.NiceName()}");
+            LogWriter.Default.Write($"PilotingTrigger.OnHandClick: {mv?.NiceName()}");
             if (mv != null
                 && !mv.GetPilotingMode()
                 && mv.IsPowered()
@@ -30,12 +31,12 @@ namespace AVS
             {
                 if (mv is Submarine submarine)
                     submarine.EnterHelmControl(helmIndex);
-                if (mv is Submersible sub)
+                else if (mv is Submersible sub)
                     sub.EnterHelmControl();
                 else
-                    mv.Log.Error($"Unsupported helm on vehicle {mv.NiceName()}");
+                    mv.Log.Error($"Unsupported helm on vehicle {mv.NiceName()} type {mv.GetType()}");
             }
-            Logger.Log($"PilotingTrigger.OnHandClick end");
+            LogWriter.Default.Write($"PilotingTrigger.OnHandClick end");
         }
         void IHandTarget.OnHandHover(GUIHand hand)
         {
@@ -45,7 +46,7 @@ namespace AVS
                 && isLive)
             {
                 HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
-                HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFStartPiloting"));
+                HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("AVSStartPiloting"));
             }
         }
 

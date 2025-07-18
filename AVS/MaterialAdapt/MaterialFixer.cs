@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Log;
 using AVS.Util;
 using System;
 using System.Collections.Generic;
@@ -36,7 +37,7 @@ namespace AVS.MaterialAdapt
         /// <summary>
         /// Controls how debug logging should be performed
         /// </summary>
-        public Logging Logging { get; set; }
+        public MaterialLog Logging { get; set; }
 
         /// <summary>
         /// The used material resolver function.
@@ -57,17 +58,17 @@ namespace AVS.MaterialAdapt
         /// <param name="materialResolver">The solver function to fetch all materials to translate.
         /// If null, a default implementation is used which 
         /// mimics VF's default material selection in addition to filtering out non-standard materials</param>
-        /// <param name="logConfig">Log Configuration. If null, defaults to <see cref="Logging.MaterialAdaptationDefault" /></param>
+        /// <param name="logConfig">Log Configuration. If null, defaults to <see cref="MaterialLog.Default" /></param>
         public MaterialFixer(
             AvsVehicle owner,
-            Logging? logConfig = null,
+            MaterialLog? logConfig = null,
             Func<IEnumerable<UnityMaterialData>>? materialResolver = null
             )
         {
             if (owner == null)
                 throw new ArgumentNullException(nameof(owner));
             Vehicle = owner;
-            Logging = logConfig ?? Logging.MaterialAdaptationDefault;
+            Logging = logConfig ?? MaterialLog.Default;
             MaterialResolver = materialResolver ?? (() => DefaultMaterialResolver(owner, Logging));
         }
 
@@ -78,7 +79,7 @@ namespace AVS.MaterialAdapt
         /// <param name="ignoreShaderNames">True to return all materials, false to only return Standard materials</param>
         /// <param name="logConfig">Log Configuration</param>
         /// <returns>Enumerable of all suitable material addresses</returns>
-        public static IEnumerable<UnityMaterialData> DefaultMaterialResolver(AvsVehicle vehicle, Logging logConfig, bool ignoreShaderNames = false)
+        public static IEnumerable<UnityMaterialData> DefaultMaterialResolver(AvsVehicle vehicle, MaterialLog logConfig, bool ignoreShaderNames = false)
         {
             var renderers = vehicle.GetComponentsInChildren<Renderer>();
             foreach (var renderer in renderers)

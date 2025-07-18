@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Log;
 using AVS.Util;
 using AVS.VehicleTypes;
 using UnityEngine;
@@ -40,7 +41,7 @@ namespace AVS
 
         public void OnHandClick(GUIHand hand)
         {
-            Logging.Default.Write($"VehicleHatch.OnHandClick: {mv?.NiceName()}");
+            LogWriter.Default.Write($"VehicleHatch.OnHandClick: {mv?.NiceName()}");
             if (!isLive)
             {
                 return;
@@ -51,7 +52,7 @@ namespace AVS
             {
                 if (hatchIndex < 0 || hatchIndex >= sub.Com.Hatches.Count)
                 {
-                    Logging.Default.Error($"Invalid hatch index {hatchIndex} for submarine {sub.VehicleName}");
+                    LogWriter.Default.Error($"Invalid hatch index {hatchIndex} for submarine {sub.VehicleName}");
                     return;
                 }
                 if (sub.IsPlayerInside())
@@ -68,7 +69,7 @@ namespace AVS
             {
                 sub2.ClosestPlayerEntry();
             }
-            Logging.Default.Write($"VehicleHatch.OnHandClick: end");
+            LogWriter.Default.Write($"VehicleHatch.OnHandClick: end");
 
             /*
 			if (mv as Walker != null)
