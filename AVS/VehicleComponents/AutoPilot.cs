@@ -1,5 +1,6 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Interfaces;
+using AVS.Log;
 using AVS.VehicleComponents;
 using System;
 using System.Collections;
@@ -56,7 +57,7 @@ namespace AVS
             }
             catch (System.Exception e)
             {
-                Logger.Exception($"Error finding level ({value} in {thresholds} x{factor}): ", e);
+                LogWriter.Default.Error($"Error finding level ({value} in {thresholds} x{factor}): ", e);
                 throw;
             }
         }
@@ -121,13 +122,13 @@ namespace AVS
                 }
                 catch (System.IndexOutOfRangeException e)
                 {
-                    Logger.Exception($"Error in AutopilotEvent Update ({upLevel},{downLevel}): ", e);
+                    LogWriter.Default.Error($"Error in AutopilotEvent Update ({upLevel},{downLevel}): ", e);
                     throw;
                 }
             }
             catch (System.Exception e)
             {
-                Logger.Exception("Error finding levels: ", e);
+                LogWriter.Default.Error("Error finding levels: ", e);
                 throw;
             }
         }
@@ -179,7 +180,7 @@ namespace AVS
         internal AvsVehicle mv => GetComponent<AvsVehicle>();
         internal LiveMixin liveMixin => mv.liveMixin;
         internal EnergyInterface eInterf => mv.energyInterface;
-
+        internal LogWriter Log => mv.Log.Prefixed("Autopilot");
 
         private PositiveValueThresholdTracker DepthTracker { get; }
             = new PositiveValueThresholdTracker(
@@ -308,7 +309,7 @@ namespace AVS
             }
             catch (System.Exception e)
             {
-                Logger.Exception("Error updating health state: ", e);
+                Log.Error("Error updating health state: ", e);
             }
         }
         private void UpdatePowerState(IAutopilotEventListener[] listeners)
@@ -320,7 +321,7 @@ namespace AVS
             }
             catch (System.Exception e)
             {
-                Logger.Exception("Error updating power state: ", e);
+                Log.Error("Error updating power state: ", e);
             }
         }
         private void UpdateDepthState(IAutopilotEventListener[] listeners)
@@ -335,7 +336,7 @@ namespace AVS
             }
             catch (System.Exception e)
             {
-                Logger.Exception("Error updating depth state: ", e);
+                Log.Error("Error updating depth state: ", e);
             }
         }
 
@@ -370,52 +371,52 @@ namespace AVS
 
         void ILightsStatusListener.OnHeadLightsOn()
         {
-            Logger.DebugLog(mv, "OnHeadLightsOn");
+            Log.Debug("OnHeadLightsOn");
         }
 
         void ILightsStatusListener.OnHeadLightsOff()
         {
-            Logger.DebugLog(mv, "OnHeadLightsOff");
+            Log.Debug("OnHeadLightsOff");
         }
 
         void ILightsStatusListener.OnInteriorLightsOn()
         {
-            Logger.DebugLog(mv, "OnInteriorLightsOn");
+            Log.Debug("OnInteriorLightsOn");
         }
 
         void ILightsStatusListener.OnInteriorLightsOff()
         {
-            Logger.DebugLog(mv, "OnInteriorLightsOff");
+            Log.Debug("OnInteriorLightsOff");
         }
 
         void ILightsStatusListener.OnNavLightsOn()
         {
-            Logger.DebugLog(mv, "OnNavLightsOn");
+            Log.Debug("OnNavLightsOn");
         }
 
         void ILightsStatusListener.OnNavLightsOff()
         {
-            Logger.DebugLog(mv, "OnNavLightsOff");
+            Log.Debug("OnNavLightsOff");
         }
 
         void ILightsStatusListener.OnFloodLightsOn()
         {
-            Logger.DebugLog(mv, "OnFloodLightsOn");
+            Log.Debug("OnFloodLightsOn");
         }
 
         void ILightsStatusListener.OnFloodLightsOff()
         {
-            Logger.DebugLog(mv, "OnFloodLightsOff");
+            Log.Debug("OnFloodLightsOff");
         }
 
         void IVehicleStatusListener.OnTakeDamage()
         {
-            Logger.DebugLog(mv, "OnTakeDamage");
+            Log.Debug("OnTakeDamage");
         }
 
         void IPowerListener.OnPowerUp()
         {
-            Logger.DebugLog(mv, "OnPowerUp");
+            Log.Debug("OnPowerUp");
             isDead = false;
             //apVoice.EnqueueClip(apVoice.voice.EnginePoweringUp);
             var listeners = mv.GetComponentsInChildren<IAutopilotEventListener>();
@@ -434,7 +435,7 @@ namespace AVS
 
         void IPowerListener.OnPowerDown()
         {
-            Logger.DebugLog(mv, "OnPowerDown");
+            Log.Debug("OnPowerDown");
             isDead = true;
             mv.GetComponentsInChildren<IAutopilotEventListener>()
                 .ForEach(l => l.Signal(AutopilotEvent.PowerDown));
@@ -442,51 +443,51 @@ namespace AVS
 
         void IPowerListener.OnBatterySafe()
         {
-            Logger.DebugLog(mv, "OnBatterySafe");
+            Log.Debug("OnBatterySafe");
         }
 
         void IPowerListener.OnBatteryLow()
         {
-            Logger.DebugLog(mv, "OnBatteryLow");
+            Log.Debug("OnBatteryLow");
         }
 
         void IPowerListener.OnBatteryNearlyEmpty()
         {
-            Logger.DebugLog(mv, "OnBatteryNearlyEmpty");
+            Log.Debug("OnBatteryNearlyEmpty");
         }
 
         void IPowerListener.OnBatteryDepleted()
         {
-            Logger.DebugLog(mv, "OnBatteryDepleted");
+            Log.Debug("OnBatteryDepleted");
         }
 
         void IPlayerListener.OnPlayerEntry()
         {
-            Logger.DebugLog(mv, "OnPlayerEntry");
+            Log.Debug("OnPlayerEntry");
             mv.GetComponentsInChildren<IAutopilotEventListener>()
                 .ForEach(l => l.Signal(AutopilotEvent.PlayerEntry));
         }
 
         void IPlayerListener.OnPlayerExit()
         {
-            Logger.DebugLog(mv, "OnPlayerExit");
+            Log.Debug("OnPlayerExit");
             mv.GetComponentsInChildren<IAutopilotEventListener>()
                 .ForEach(l => l.Signal(AutopilotEvent.PlayerExit));
         }
 
         void IPlayerListener.OnPilotBegin()
         {
-            Logger.DebugLog(mv, "OnPilotBegin");
+            Log.Debug("OnPilotBegin");
         }
 
         void IPlayerListener.OnPilotEnd()
         {
-            Logger.DebugLog(mv, "OnPilotEnd");
+            Log.Debug("OnPilotEnd");
         }
 
         void IPowerListener.OnBatteryDead()
         {
-            Logger.DebugLog(mv, "OnBatteryDead");
+            Log.Debug("OnBatteryDead");
             var was = PowerTracker.CurrentStatus;
             PowerTracker.SetLevel(AutopilotStatus.PowerDead); // Reset power tracker to dead state
             mv.GetComponentsInChildren<IAutopilotEventListener>()
@@ -496,7 +497,7 @@ namespace AVS
 
         void IPowerListener.OnBatteryRevive()
         {
-            Logger.DebugLog(mv, "OnBatteryRevive");
+            Log.Debug("OnBatteryRevive");
         }
 
 
@@ -504,7 +505,7 @@ namespace AVS
         float timeWeStartedWaiting = 0f;
         void IVehicleStatusListener.OnNearbyLeviathan()
         {
-            Logger.DebugLog(mv, "OnNearbyLeviathan");
+            Log.Debug("OnNearbyLeviathan");
             IEnumerator ResetDangerStatusEventually()
             {
                 yield return new WaitUntil(() => Mathf.Abs(Time.time - timeWeStartedWaiting) >= MAX_TIME_TO_WAIT);
@@ -529,11 +530,13 @@ namespace AVS
 
         void IScuttleListener.OnScuttle()
         {
+            Log.Debug("OnScuttle");
             enabled = false;
         }
 
         void IScuttleListener.OnUnscuttle()
         {
+            Log.Debug(nameof(IScuttleListener.OnUnscuttle));
             enabled = true;
         }
     }

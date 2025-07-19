@@ -3897,6 +3897,13 @@
             Logs an error message.
             </summary>
         </member>
+        <member name="M:AVS.Log.LogWriter.Prefixed(System.String)">
+            <summary>
+            Creates a new log writer with an additional prefix.
+            </summary>
+            <param name="prefix"></param>
+            <returns></returns>
+        </member>
         <member name="T:AVS.Log.MaterialLog">
             <summary>
             Material adaptation logging configuration.
