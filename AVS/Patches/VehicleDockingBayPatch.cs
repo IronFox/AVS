@@ -84,7 +84,7 @@ namespace AVS.Patches
             {
                 return false;
             }
-            if (mv.IsUnderCommand && !mv.IsPlayerPiloting())
+            if (mv.IsBoarded && !mv.IsPlayerPiloting())
             {
                 return true;
             }
@@ -123,7 +123,7 @@ namespace AVS.Patches
             {
                 Moonpool moonpool = dock.GetComponentInParent<Moonpool>();
                 CyclopsMotorMode cmm = dock.GetComponentInParent<CyclopsMotorMode>();
-                if (mv.IsUnderCommand)
+                if (mv.IsBoarded)
                 {
                     Player.main.SetCurrentSub(dock.GetSubRoot(), true);
                     Player.main.ToNormalMode(false);

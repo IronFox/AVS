@@ -9,6 +9,25 @@ namespace AVS.Util
     public static class Character
     {
         /// <summary>
+        /// Gets the current PDA status
+        /// </summary>
+        public static PDA.State PDA => Player.main.pda.state;
+        /// <summary>
+        /// Checks if the build menu is currently open.
+        /// </summary>
+        public static bool IsBuildMenuOpen => uGUI_BuilderMenu.IsOpen();
+        /// <summary>
+        /// Checks if the main menu is currently open.
+        /// </summary>
+        public static bool IsMainMenuOpen => IngameMenu.main.gameObject.activeSelf;
+
+        /// <summary>
+        /// Checks if any menu is currently open.
+        /// </summary>
+        public static bool IsAnyMenuOpen =>
+            IsBuildMenuOpen || IsMainMenuOpen || PDA != global::PDA.State.Closed;
+
+        /// <summary>
         /// Teleports the player to a specified destination.
         /// </summary>
         /// <remarks>

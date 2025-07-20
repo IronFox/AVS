@@ -489,7 +489,7 @@ namespace AVS.Admin
                     yield return new WaitForSeconds(timeToFirstActivation);
                     while (true)
                     {
-                        bool shouldStopWorking = isAvsVehicle ? !isAvsVehicle.IsUnderCommand : !param.vehicle.GetPilotingMode();
+                        bool shouldStopWorking = isAvsVehicle ? !isAvsVehicle.IsBoarded : !param.vehicle.GetPilotingMode();
                         if (shouldStopWorking)
                         {
                             param.vehicle.ToggleSlot(param.slotID, false);

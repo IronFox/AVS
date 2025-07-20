@@ -49,7 +49,7 @@ namespace AVS.Patches
                 AvsVehicle? mv = null;
                 foreach (AvsVehicle tempMV in VehicleManager.VehiclesInPlay)
                 {
-                    if (tempMV.IsUnderCommand)
+                    if (tempMV.IsBoarded)
                     {
                         mv = tempMV;
                         break;

@@ -195,6 +195,14 @@ namespace AVS.BaseVehicle
             GameInfoIcon.Add(TechType);
             //hasStarted = true;
         }
+
+        /// <summary>
+        /// If set true, the vehicle assumes the player will be manipulated by external processes.
+        /// Remains active until the PDA, main menu, or builder menu are opened, or the player
+        /// exists the vehicle or enters helm control.
+        /// </summary>
+        public bool AnticipatePlayerIssues { get; set; } = false;
+
         ///<inheritdoc />
         public override void Update()
         {
@@ -208,7 +216,33 @@ namespace AVS.BaseVehicle
                 }
                 return;
             }
-            base.Update();
+            if (AnticipatePlayerIssues)
+            {
+                if (!isScuttled
+                    && IsBoarded
+                    && !IsHelmControlling
+                    && !Character.IsAnyMenuOpen
+                    )
+                {
+                    SanitizePlayerForWalking(false);
+                }
+                else
+                    AnticipatePlayerIssues = false;
+            }
+
+            bool hadNoPlayerPosition = playerPosition == null;
+            if (hadNoPlayerPosition)
+                playerPosition = gameObject;
+            try
+            {
+                base.Update();
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Error during base.Update()", e);
+            }
+            if (hadNoPlayerPosition)
+                playerPosition = null;
             HandleExtraQuickSlotInputs();
         }
         /// <inheritdoc />
@@ -223,7 +257,7 @@ namespace AVS.BaseVehicle
         public new virtual void OnKill()
         {
             liveMixin.health = 0;
-            if (IsUnderCommand)
+            if (IsBoarded)
             {
                 Player.main.playerController.SetEnabled(true);
                 Player.main.mode = Player.Mode.Normal;
@@ -251,7 +285,7 @@ namespace AVS.BaseVehicle
         /// <summary>
         /// Deselects quick-slots and exits piloting
         /// </summary>
-        public void ExitControl()
+        public void ExitHelmControl()
         {
             DeselectSlots();
         }
@@ -359,7 +393,7 @@ namespace AVS.BaseVehicle
 
 
         #region internal_fields
-        private bool isUnderCommand = false;
+        private bool isBoarded = false;
 
         #endregion
 
@@ -511,13 +545,24 @@ namespace AVS.BaseVehicle
         }
 
 
+        /// <summary>
+        /// Checks if the vehicle is in locked piloting mode.
+        /// That is, the player is in locked piloting mode and is currently
+        /// located in this vehicle's helm location.
+        /// </summary>
+        public new bool GetPilotingMode()
+        {
+            if (playerPosition == null)
+                return false;
+            return base.GetPilotingMode();
+        }
 
         internal static void MaybeControlRotation(Vehicle veh)
         {
             if (veh is AvsVehicle mv)
             {
                 if (!mv.GetPilotingMode()
-                    || !mv.IsUnderCommand
+                    || !mv.IsBoarded
                     || !mv.Com.Engine.enabled
                     || Player.main.GetPDA().isOpen
                     || AvatarInputHandler.main && !AvatarInputHandler.main.IsEnabled()

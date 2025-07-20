@@ -1592,6 +1592,13 @@
         <member name="M:AVS.BaseVehicle.AvsVehicle.Start">
             <inheritdoc />
         </member>
+        <member name="P:AVS.BaseVehicle.AvsVehicle.AnticipatePlayerIssues">
+            <summary>
+            If set true, the vehicle assumes the player will be manipulated by external processes.
+            Remains active until the PDA, main menu, or builder menu are opened, or the player
+            exists the vehicle or enters helm control.
+            </summary>
+        </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.Update">
             <inheritdoc />
         </member>
@@ -1611,7 +1618,7 @@
             <param name="depth">Vehicle depth</param>
             <param name="crushDepth">Crush depth</param>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.ExitControl">
+        <member name="M:AVS.BaseVehicle.AvsVehicle.ExitHelmControl">
             <summary>
             Deselects quick-slots and exits piloting
             </summary>
@@ -1706,6 +1713,13 @@
         <member name="P:AVS.BaseVehicle.AvsVehicle.SubRoot">
             <summary>
             Retrieves and/or caches the SubRoot instance attached to this vehicle
+            </summary>
+        </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.GetPilotingMode">
+            <summary>
+            Checks if the vehicle is in locked piloting mode.
+            That is, the player is in locked piloting mode and is currently
+            located in this vehicle's helm location.
             </summary>
         </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.GetEnergyMixinFromVehicle(Vehicle)">
@@ -1810,14 +1824,19 @@
             Loosely computes the bounding dimensions of the vehicle.
             </summary>
         </member>
+        <member name="P:AVS.BaseVehicle.AvsVehicle.IsHelmControlling">
+            <summary>
+            True if the player is currently piloting the vehicle.
+            </summary>
+        </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.DoExitRoutines">
             <summary>
             Executed by <see cref="M:AVS.BaseVehicle.AvsVehicle.DeselectSlots" />, as part of the player exiting helm control
             </summary>
         </member>
-        <member name="P:AVS.BaseVehicle.AvsVehicle.IsUnderCommand">
+        <member name="P:AVS.BaseVehicle.AvsVehicle.IsBoarded">
             <summary>
-            Checks if the vehicle is currently under the command of the player.
+            True if the vehicle is currently boarded by the player.
             </summary>
         </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.IsPlayerControlling">
@@ -1911,7 +1930,10 @@
             </summary>
             <remarks>This method disengages the player from controlling a vehicle and resets any
             associated UI elements.  It also triggers a notification to update the player's status to reflect the end of
-            piloting.</remarks>
+            piloting.
+            This is not the primary entry point to exit helm control, but rather a utility method.
+            Call <see cref="M:AVS.BaseVehicle.AvsVehicle.ExitHelmControl"/> /<see cref="M:AVS.BaseVehicle.AvsVehicle.DeselectSlots" /> to exit helm control and reset the quickbar.
+            </remarks>
         </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.GetClosestExitHatch">
             <summary>
@@ -1934,7 +1956,7 @@
             Internal registration for when the player enters the vehicle
             or was detected as entering the vehicle.
             </summary>
-            <param name="dockedCallback">Code to execute if not docked </param>
+            <param name="ifNotDockedAction">Code to execute if not docked </param>
             <remarks>Designed to handle edge-cases like the player entering
             the tether space of the vehicle via teleport</remarks>
         </member>
@@ -3854,6 +3876,13 @@
             <param name="tags">Logging tags, used to identify the source of the log message.</param>
             <param name="includeTimestamp">If true, log messages will include a timestamp.</param>
         </member>
+        <member name="M:AVS.Log.LogWriter.#ctor(System.String,System.String[])">
+            <summary>
+            Creates a new logging definition.
+            </summary>
+            <param name="prefix">Logging prefix, used to identify the source of the log message.</param>
+            <param name="tags">Logging tags, used to identify the source of the log message.</param>
+        </member>
         <member name="F:AVS.Log.LogWriter.DefaultTags">
             <summary>
             Default tags used for logging by AVS itself.
@@ -4799,6 +4828,26 @@
             Helper for the player character.
             </summary>
         </member>
+        <member name="P:AVS.Util.Character.PDA">
+            <summary>
+            Gets the current PDA status
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Character.IsBuildMenuOpen">
+            <summary>
+            Checks if the build menu is currently open.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Character.IsMainMenuOpen">
+            <summary>
+            Checks if the main menu is currently open.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Character.IsAnyMenuOpen">
+            <summary>
+            Checks if any menu is currently open.
+            </summary>
+        </member>
         <member name="M:AVS.Util.Character.TeleportTo(UnityEngine.Vector3)">
             <summary>
             Teleports the player to a specified destination.
@@ -5430,6 +5479,31 @@
         <member name="M:AVS.VehicleTypes.Skimmer.DoExitRoutines">
             <inheritdoc/>
         </member>
+        <member name="P:AVS.VehicleTypes.Submarine.ThetherChecksSuspended">
+            <summary>
+            Tether checks are suspended until the next time the player enters or exits helm/the vehicle.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.#ctor(AVS.Configuration.VehicleConfiguration)">
+            <summary>
+            Constructor for Submarine.
+            </summary>
+            <param name="config">Configuration to use</param>
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.GetSubmarineComposition">
+            <summary>
+            Retrieves the composition for this submarine.
+            Executed once during Awake.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.GetVehicleComposition">
+            <inheritdoc />
+        </member>
+        <member name="P:AVS.VehicleTypes.Submarine.Com">
+            <summary>
+            The composition of this submarine.
+            </summary>
+        </member>
         <member name="P:AVS.VehicleTypes.Submarine.Floodlights">
             <summary>
             Flood light controller created during Awake.
@@ -5474,6 +5548,17 @@
         </member>
         <member name="M:AVS.VehicleTypes.Submarine.DoExitRoutines">
             <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.RegisterTetherEntry(AVS.TetherSource)">
+            <summary>
+            Registers that the player was close enough to a tether source to be considered inside the sub.
+            </summary>
+            <param name="tetherSource">Tether source that triggered the event</param>
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.SuspendTetherChecks">
+            <summary>
+            Suspends tether checks until the character next enters or exits helm/the vehicle
+            </summary>
         </member>
         <member name="M:AVS.VehicleTypes.Submersible.DoExitRoutines">
             <inheritdoc/>

@@ -245,7 +245,7 @@ namespace AVS
                 return;
             foreach (var speaker in speakers)
             {
-                if (mv.IsUnderCommand)
+                if (mv.IsBoarded)
                 {
                     speaker.GetComponent<AudioLowPassFilter>().enabled = false;
                 }

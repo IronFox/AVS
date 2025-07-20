@@ -28,7 +28,7 @@ namespace AVS.BaseVehicle
                 MaterialFixer.OnVehicleDocked();
             // The Moonpool invokes this once upon vehicle entry into the dock
             IsVehicleDocked = true;
-            if (IsUnderCommand)
+            if (IsBoarded)
                 OnPlayerDocked(exitLocation);
             useRigidbody.detectCollisions = false;
             foreach (var component in GetComponentsInChildren<IDockListener>())

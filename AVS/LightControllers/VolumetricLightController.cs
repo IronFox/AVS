@@ -41,7 +41,7 @@ namespace AVS
 
         void ILightsStatusListener.OnHeadLightsOn()
         {
-            if (MV.IsUnderCommand)
+            if (MV.IsBoarded)
             {
                 SetVolumetricLights(false);
             }
@@ -69,7 +69,7 @@ namespace AVS
 
         void ILightsStatusListener.OnFloodLightsOn()
         {
-            if (MV.IsUnderCommand)
+            if (MV.IsBoarded)
             {
                 SetVolumetricLights(false);
             }

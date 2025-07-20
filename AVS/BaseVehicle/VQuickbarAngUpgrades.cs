@@ -119,6 +119,8 @@ namespace AVS.BaseVehicle
             }
             activeSlot = -1;
             NotifySelectSlot(activeSlot);
+            IsHelmControlling = false;
+
             DoExitRoutines();
         }
 

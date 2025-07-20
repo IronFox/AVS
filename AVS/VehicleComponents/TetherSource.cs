@@ -1,4 +1,5 @@
-﻿using AVS.VehicleTypes;
+﻿using AVS.Util;
+using AVS.VehicleTypes;
 using System.Collections;
 using System.Linq;
 using UnityEngine;
@@ -114,7 +115,7 @@ namespace AVS
         private void MVExit(string reason)
         {
             mv!.Log.Write("TetherSource: Player exiting vehicle because " + reason);
-            mv.EndHelmControl(0);
+            mv.ExitHelmControl();
             mv.ClosestPlayerExit(false);
 
             //// the following block is just for the gargantuan leviathan
@@ -158,18 +159,22 @@ namespace AVS
                 {
                     if (Vector3.Distance(Player.main.transform.position, transform.position) < 1f)
                     {
-                        mv.RegisterPlayerEntry();
+                        mv.Log.Write("TetherSource: Player is close enough to simple tether source. Registering player entry.");
+                        mv.RegisterTetherEntry(this);
                     }
                     else if (Vector3.Distance(Player.main.transform.position, mv.Com.Helms.First().Root.transform.position) < 1f)
                     {
-                        mv.RegisterPlayerEntry();
+                        mv.Log.Write("TetherSource: Player is close enough to helms root. Registering player entry.");
+                        mv.RegisterTetherEntry(this);
                     }
                 }
                 else
                 {
-                    if (mv.Com.TetherSources.Any(PlayerWithinLeash))
+                    var closest = mv.Com.TetherSources.FirstOrDefault(PlayerWithinLeash);
+                    if (closest != null)
                     {
-                        mv.RegisterPlayerEntry();
+                        mv.Log.Write($"TetherSource: Player is close enough to tether source {closest.NiceName()}. Registering player entry.");
+                        mv.RegisterTetherEntry(this);
                     }
                 }
             }

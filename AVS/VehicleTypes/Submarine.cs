@@ -22,9 +22,23 @@ namespace AVS.VehicleTypes
     public abstract class Submarine : AvsVehicle
     {
 
+        /// <summary>
+        /// Tether checks are suspended until the next time the player enters or exits helm/the vehicle.
+        /// </summary>
+        public bool ThetherChecksSuspended { get; internal set; }
+
+        /// <summary>
+        /// Constructor for Submarine.
+        /// </summary>
+        /// <param name="config">Configuration to use</param>
         public Submarine(VehicleConfiguration config) : base(config)
         { }
+        /// <summary>
+        /// Retrieves the composition for this submarine.
+        /// Executed once during Awake.
+        /// </summary>
         public abstract SubmarineComposition GetSubmarineComposition();
+        /// <inheritdoc />
         public sealed override VehicleComposition GetVehicleComposition()
         {
             _subComposition = GetSubmarineComposition();
@@ -33,6 +47,10 @@ namespace AVS.VehicleTypes
 
         private int currentHelmIndex = 0;
         private SubmarineComposition? _subComposition;
+
+        /// <summary>
+        /// The composition of this submarine.
+        /// </summary>
         public new SubmarineComposition Com =>
             _subComposition
             ?? throw new InvalidOperationException("This vehicle's composition has not yet been initialized. Please wait until Submarine.Awake() has been called");
@@ -42,7 +60,6 @@ namespace AVS.VehicleTypes
 
         private bool isAtHelm = false;
         private bool isPlayerInside = false; // You can be inside a scuttled submarine yet not dry.
-
 
         /// <summary>
         /// Flood light controller created during Awake.
@@ -183,6 +200,7 @@ namespace AVS.VehicleTypes
         protected override void OnBeginHelmControl(Helm helm)
         {
             base.OnBeginHelmControl(helm);
+            ThetherChecksSuspended = false;
             isAtHelm = true;
             currentHelmIndex = Com.Helms.FindIndexOf(x => x.Root == helm.Root);
             if (currentHelmIndex < 0)
@@ -198,6 +216,7 @@ namespace AVS.VehicleTypes
         protected override void OnEndHelmControl()
         {
             base.OnEndHelmControl();
+            ThetherChecksSuspended = false;
             isAtHelm = false;
             Player.main.SetScubaMaskActive(false);
             Player.main.armsController.ikToggleTime = 0.5f;
@@ -241,6 +260,7 @@ namespace AVS.VehicleTypes
         {
             Log.Debug(this, nameof(Submarine) + '.' + nameof(OnPlayerEntry));
             isPlayerInside = true;
+            ThetherChecksSuspended = false;
             //if (!isScuttled)
             //{
             //    if (!IsVehicleDocked)
@@ -298,8 +318,10 @@ namespace AVS.VehicleTypes
         {
             Log.Debug(this, nameof(Submarine) + '.' + nameof(OnPlayerExit));
             isPlayerInside = false;
+            ThetherChecksSuspended = false;
             Log.Debug(this, nameof(Submarine) + '.' + nameof(OnPlayerExit) + " done");
         }
+
 
         /// <inheritdoc/>
         public override void SubConstructionBeginning()
@@ -673,5 +695,25 @@ namespace AVS.VehicleTypes
             Log.Debug(this, $"Exiting submarine at {exit} (local {transform.InverseTransformPoint(exit)})");
             Player.main.transform.position = exit;
         }
+
+        /// <summary>
+        /// Registers that the player was close enough to a tether source to be considered inside the sub.
+        /// </summary>
+        /// <param name="tetherSource">Tether source that triggered the event</param>
+        internal void RegisterTetherEntry(TetherSource tetherSource)
+        {
+            if (ThetherChecksSuspended)
+                return;
+            RegisterPlayerEntry();
+        }
+
+        /// <summary>
+        /// Suspends tether checks until the character next enters or exits helm/the vehicle
+        /// </summary>
+        public void SuspendTetherChecks()
+        {
+            ThetherChecksSuspended = true;
+        }
+
     }
 }

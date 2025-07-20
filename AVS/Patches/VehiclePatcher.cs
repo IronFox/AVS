@@ -41,7 +41,7 @@ namespace AVS
                     string percent = Mathf.CeilToInt(now * 100f / max).ToString();
                     HandReticle.main.SetText(HandReticle.TextType.Hand, $"{Language.main.Get("VFDeconstructionHint")}: {percent}", true, GameInput.Button.None);
                 }
-                else if (mv.IsUnderCommand)
+                else if (mv.IsBoarded)
                 {
                     HandReticle.main.SetText(HandReticle.TextType.Hand, "", true, GameInput.Button.None);
                 }

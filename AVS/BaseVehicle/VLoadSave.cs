@@ -24,7 +24,7 @@ namespace AVS.BaseVehicle
         public virtual void WriteSaveData(VehicleSaveData saveData)
         {
             saveData.IsControlling = IsPlayerControlling();
-            saveData.EnteredThroughHatch = IsUnderCommand ? enteredThroughHatch : -1;
+            saveData.EnteredThroughHatch = IsBoarded ? enteredThroughHatch : -1;
             saveData.VehicleName = subName.hullName.text;
             saveData.BaseColor = SavedColor.From(baseColor);
             saveData.InteriorColor = SavedColor.From(interiorColor);

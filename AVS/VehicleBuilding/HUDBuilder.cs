@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using AVS.BaseVehicle;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace AVS
@@ -34,7 +35,7 @@ namespace AVS
             {
                 if (go.name == "VRVehicleCanvas")
                 {
-                    if (go.transform.Find("ModVehicle") == null)
+                    if (go.transform.Find(nameof(AvsVehicle)) == null)
                     {
                         VRVehicleCanvas = go;
                     }
@@ -50,7 +51,7 @@ namespace AVS
                     new GameObject(),
                     VRVehicleCanvas.transform
                     );
-                seenTag.name = "ModVehicle";
+                seenTag.name = nameof(AvsVehicle);
             }
             return VRVehicleCanvas;
         }
@@ -81,7 +82,7 @@ namespace AVS
             // copy the seamoth hud for now
             GameObject seamothHUDElementsRoot = uGUI.main.transform.Find("ScreenCanvas/HUD/Content/Seamoth").gameObject;
             GameObject mvHUDElementsRoot = GameObject.Instantiate(seamothHUDElementsRoot, uGUI.main.transform.Find("ScreenCanvas/HUD/Content"));
-            mvHUDElementsRoot.name = "ModVehicle";
+            mvHUDElementsRoot.name = nameof(AvsVehicle);
             Vector3 offset = mvHUDElementsRoot.transform.localPosition;
             mvHUDElementsRoot.transform.localPosition = Vector3.zero;
 
@@ -144,7 +145,7 @@ namespace AVS
             // but we're going to grab the copy of the seamoth HUD from the "vr vehicle hud"
             GameObject seamothHUDElementsRoot = VRVehicleCanvas.transform.Find("Seamoth").gameObject;
             GameObject mvHUDElementsRoot = GameObject.Instantiate(seamothHUDElementsRoot, uGUI.main.transform.Find("ScreenCanvas/HUD/Content"));
-            mvHUDElementsRoot.name = "ModVehicle";
+            mvHUDElementsRoot.name = nameof(AvsVehicle);
             mvHUDElementsRoot.transform.localPosition = new Vector3(245.2f, -163.5f, 0);
             mvHUDElementsRoot.transform.localScale = 0.8f * Vector3.one;
 

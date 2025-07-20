@@ -136,7 +136,7 @@ namespace AVS
                 switch (mv)
                 {
                     case Submarine _:
-                        __result = mv.IsPowered() && mv.IsUnderCommand;
+                        __result = mv.IsPowered() && mv.IsBoarded;
                         return;
                     default:
                         return;
@@ -195,7 +195,7 @@ namespace AVS
                 return;
             }
             mv.Log.Write("PlayerOnKillPostfix: Player has died, exiting vehicle.");
-            mv.EndHelmControl(0);
+            mv.ExitHelmControl();
             mv.ClosestPlayerExit(false);
         }
     }

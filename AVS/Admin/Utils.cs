@@ -26,14 +26,14 @@ namespace AVS.Admin
         /// <param name="checkedAncestry">A list of all transforms visited by the recursion.</param>
         /// <returns><see langword="true"/> if the specified transform or one of its ancestors is the vehicle currently mounted
         /// by the player; otherwise, <see langword="false"/>.</returns>
-        public static bool FindVehicleInParents(Transform current, out Vehicle? vehicle, List<Transform> checkedAncestry)
+        public static bool FindVehicleInParents(Transform current, out Vehicle? vehicle, List<Transform>? checkedAncestry = null)
         {
             if (!current)
             {
                 vehicle = null;
                 return false;
             }
-            checkedAncestry.Add(current);
+            checkedAncestry?.Add(current);
             var vh = current.GetComponent<Vehicle>();
             if (vh)
             {

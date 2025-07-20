@@ -9,6 +9,10 @@ namespace AVS.BaseVehicle
     public abstract partial class AvsVehicle
     {
         private int enteredThroughHatch = 0;
+        /// <summary>
+        /// True if the player is currently piloting the vehicle.
+        /// </summary>
+        public bool IsHelmControlling { get; private set; } = false;
 
         private void MyExitLockedMode()
         {
@@ -46,17 +50,17 @@ namespace AVS.BaseVehicle
 
 
         /// <summary>
-        /// Checks if the vehicle is currently under the command of the player.
+        /// True if the vehicle is currently boarded by the player.
         /// </summary>
-        public bool IsUnderCommand
-        {// true when inside a vehicle (or piloting a drone)
+        public bool IsBoarded
+        {
             get
             {
-                return isUnderCommand;
+                return isBoarded;
             }
             protected set
             {
-                isUnderCommand = value;
+                isBoarded = value;
                 //IsPlayerDry = value;
             }
         }
@@ -72,7 +76,7 @@ namespace AVS.BaseVehicle
             }
             else if (this is AvsVehicle sub2)
             {
-                return sub2.IsUnderCommand;
+                return sub2.IsHelmControlling;
             }
             else
             {
@@ -195,6 +199,18 @@ namespace AVS.BaseVehicle
             }
             try
             {
+                try
+                {
+                    foreach (GameObject window in Com.CanopyWindows)
+                    {
+                        window.SafeSetActive(false);
+                    }
+                }
+                catch (Exception)
+                {
+                    //It's okay if the vehicle doesn't have a canopy
+                }
+                IsHelmControlling = true;
                 playerSits = helm.IsSeated;
                 Log.Debug(this, $"Player.playerController := {Player.main.playerController.NiceName()}");
                 Log.Debug(this, $"Player.mode := {Player.main.mode}");
@@ -233,18 +249,12 @@ namespace AVS.BaseVehicle
         /// </summary>
         /// <remarks>This method disengages the player from controlling a vehicle and resets any
         /// associated UI elements.  It also triggers a notification to update the player's status to reflect the end of
-        /// piloting.</remarks>
-        public void EndHelmControl(float ikArmToggleTime)
+        /// piloting.
+        /// This is not the primary entry point to exit helm control, but rather a utility method.
+        /// Call <see cref="ExitHelmControl"/> /<see cref="DeselectSlots" /> to exit helm control and reset the quickbar.
+        /// </remarks>
+        protected void EndHelmControl(float ikArmToggleTime)
         {
-            if (Player.main.currentSub != null && Player.main.currentSub.name.ToLower().Contains("cyclops"))
-            {
-                //Unfortunately, this method shares a name with some Cyclops components.
-                // PilotingChair.ReleaseBy broadcasts a message for "StopPiloting"
-                // So because a docked vehicle is part of the Cyclops heirarchy,
-                // it tries to respond, which causes a game crash.
-                // So we'll return if the player is within a Cyclops.
-                return;
-            }
             try
             {
                 OnPreEndHelmControl();
@@ -260,6 +270,22 @@ namespace AVS.BaseVehicle
                     Character.StandUp();
                     playerSits = false;
                 }
+
+                if (IsBoarded)
+                {
+                    try
+                    {
+                        foreach (GameObject window in Com.CanopyWindows)
+                        {
+                            window.SafeSetActive(true);
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        //It's okay if the vehicle doesn't have a canopy
+                    }
+                }
+
                 Character.SetArmsIKTargets(leftHandTarget: null, rightHandTarget: null, ikArmToggleTime);
                 uGUI.main.quickSlots.SetTarget(null);
                 NotifyStatus(PlayerStatus.OnPilotEnd);
@@ -327,18 +353,85 @@ namespace AVS.BaseVehicle
             PlayerEntry(GetClosestEntryHatch());
         }
 
+        private bool SanitizePlayerForWalking(bool isBoarding)
+        {
+            bool anyIssues = false;
+            if (Player.main.currentMountedVehicle != this)
+            {
+                Log.Write($"{nameof(SanitizePlayerForWalking)}: Updating currentMountedVehicle to this.");
+                Player.main.currentMountedVehicle = this;
+                anyIssues = true;
+            }
+            if (Player.main.sitting || Player.main.mode == Player.Mode.Sitting)
+            {
+                Log.Write($"{nameof(SanitizePlayerForWalking)}: Player is sitting, exiting sitting mode.");
+                Player.main.ExitSittingMode();
+                Player.main.sitting = false;
+                anyIssues = true;
+            }
+            if (Player.main.mode != Player.Mode.Normal)
+            {
+                Log.Write($"{nameof(SanitizePlayerForWalking)}: Setting player mode to Normal.");
+                Player.main.mode = Player.Mode.Normal;
+                Player.main.playerModeChanged?.Trigger(Player.Mode.Normal);
+                anyIssues = true;
+            }
+            if (Player.main.transform.parent != transform)
+            {
+                Log.Write($"{nameof(SanitizePlayerForWalking)}: Player parent is not this vehicle, setting parent to this vehicle.");
+                Player.main.transform.SetParent(transform);
+                anyIssues = true;
+            }
+            if (Player.main.isUnderwater.value)
+            {
+                Log.Write($"{nameof(SanitizePlayerForWalking)}: Player is underwater, setting to not.");
+                Player.main.playerController.activeController.SetUnderWater(false);
+                Player.main.playerController.SetEnabled(enabled: true);
+                Player.main.SetScubaMaskActive(false);
+                Player.main.isUnderwater.Update(false);
+                anyIssues = true;
+            }
+            if (Player.main.isUnderwaterForSwimming.value)
+            {
+                Log.Write($"{nameof(SanitizePlayerForWalking)}: Player is underwater for swimming, setting to not.");
+                Player.main.isUnderwaterForSwimming.Update(false);
+                anyIssues = true;
+            }
+            if (Player.main.motorMode != Player.MotorMode.Walk)
+            {
+                Log.Write($"{nameof(SanitizePlayerForWalking)}: Player motor mode is not Walk, setting to Walk.");
+                Player.main.playerController.SetMotorMode(Player.MotorMode.Walk);
+                Player.main.motorMode = Player.MotorMode.Walk;
+                Player.main.playerMotorModeChanged.Trigger(Player.MotorMode.Walk);
+                anyIssues = true;
+            }
+            if (!AvatarInputHandler.main.gameObject.activeSelf)
+            {
+                Log.Write($"{nameof(SanitizePlayerForWalking)}: AvatarInputHandler is not active, activating it.");
+                AvatarInputHandler.main.gameObject.SetActive(true);
+                anyIssues = true;
+            }
+
+            if (anyIssues)
+            {
+                Player.main.playerController.SetEnabled(true);
+                Player.main.playerController.ForceControllerSize();
+            }
+            return anyIssues;
+        }
+
 
         /// <summary>
         /// Internal registration for when the player enters the vehicle
         /// or was detected as entering the vehicle.
         /// </summary>
-        /// <param name="dockedCallback">Code to execute if not docked </param>
+        /// <param name="ifNotDockedAction">Code to execute if not docked </param>
         /// <remarks>Designed to handle edge-cases like the player entering
         /// the tether space of the vehicle via teleport</remarks>
-        internal void RegisterPlayerEntry(Action? dockedCallback = null)
+        internal void RegisterPlayerEntry(Action? ifNotDockedAction = null)
         {
             Log.Debug(this, nameof(AvsVehicle) + '.' + nameof(RegisterPlayerEntry));
-            if (!isScuttled && !IsUnderCommand)
+            if (!isScuttled /*&& !IsUnderCommand*/)
             {
                 try
                 {
@@ -352,35 +445,24 @@ namespace AVS.BaseVehicle
 
                 try
                 {
+                    if (IsBoarded)
+                    {
+                        Log.Warn($"{nameof(AvsVehicle)}.{nameof(RegisterPlayerEntry)}: Vehicle is already under command, re-executing registration.");
+                    }
+                    IsBoarded = true;
 
-                    IsUnderCommand = true;
-                    Player.main.SetScubaMaskActive(false);
-                    try
-                    {
-                        foreach (GameObject window in Com.CanopyWindows)
-                        {
-                            window.SafeSetActive(false);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        //It's okay if the vehicle doesn't have a canopy
-                    }
                     Player.main.lastValidSub = SubRoot;
                     Player.main.SetCurrentSub(SubRoot, true);
                     Player.main.SetScubaMaskActive(false);
                     if (!IsVehicleDocked)
                     {
-                        Player.main.currentMountedVehicle = this;
-                        Player.main.transform.SetParent(transform);
-                        dockedCallback?.Invoke();
-                        Player.main.playerController.activeController.SetUnderWater(false);
-                        Player.main.isUnderwater.Update(false);
-                        Player.main.isUnderwaterForSwimming.Update(false);
-                        Player.main.playerController.SetMotorMode(Player.MotorMode.Walk);
-                        Player.main.motorMode = Player.MotorMode.Walk;
-                        Player.main.playerMotorModeChanged.Trigger(Player.MotorMode.Walk);
+                        ifNotDockedAction?.Invoke();
+                        SanitizePlayerForWalking(true);
+                        Log.Write($"Player sanitized for walking");
+
                     }
+                    else
+                        Log.Write($"The vehicle registers as being docked. Some player updates cannot be performed");
 
                     NotifyStatus(PlayerStatus.OnPlayerEntry);
                     HudPingInstance.enabled = false;
@@ -401,6 +483,8 @@ namespace AVS.BaseVehicle
                     Log.Error(nameof(AvsVehicle) + '.' + nameof(RegisterPlayerEntry), ex);
                 }
             }
+            else
+                Log.Error($"{nameof(AvsVehicle)}.{nameof(RegisterPlayerEntry)}: Cannot register player entry, vehicle is scuttled ({isScuttled}) or already under command ({IsBoarded}).");
         }
 
         /// <summary>
@@ -443,21 +527,7 @@ namespace AVS.BaseVehicle
             }
             try
             {
-                if (IsUnderCommand)
-                {
-                    try
-                    {
-                        foreach (GameObject window in Com.CanopyWindows)
-                        {
-                            window.SafeSetActive(true);
-                        }
-                    }
-                    catch (Exception)
-                    {
-                        //It's okay if the vehicle doesn't have a canopy
-                    }
-                }
-                IsUnderCommand = false;
+                IsBoarded = false;
                 if (Player.main.GetCurrentSub() == SubRoot)
                 {
                     Player.main.SetCurrentSub(null);

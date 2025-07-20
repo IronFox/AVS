@@ -355,7 +355,7 @@ namespace AVS
         {
             float totalPower = mv.energyInterface.TotalCanProvide(out _);
             float totalAIPower = eInterf.TotalCanProvide(out _);
-            if (totalPower < 0.1 && totalAIPower >= 0.1 && mv.IsUnderCommand)
+            if (totalPower < 0.1 && totalAIPower >= 0.1 && mv.IsBoarded)
             {
                 // The main batteries are out, so the AI will take over life support.
                 OxygenManager oxygenMgr = Player.main.oxygenMgr;
@@ -421,7 +421,7 @@ namespace AVS
             //apVoice.EnqueueClip(apVoice.voice.EnginePoweringUp);
             var listeners = mv.GetComponentsInChildren<IAutopilotEventListener>();
             listeners.ForEach(l => l.Signal(AutopilotEvent.PowerUp));
-            if (mv.IsUnderCommand)
+            if (mv.IsBoarded)
             {
                 IEnumerator ShakeCamera()
                 {
