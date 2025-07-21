@@ -4065,6 +4065,11 @@
             Default tag used to mark materials that are consider glass and should not be adapted in the default process.
             </summary>
         </member>
+        <member name="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.ColoredSpecularTag">
+            <summary>
+            Tag identifying materials that should copy their main color to the specular color.
+            </summary>
+        </member>
         <member name="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IgnoreShaderNames">
             <inheritdoc/>
         </member>

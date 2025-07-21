@@ -303,6 +303,8 @@ namespace AVS.MaterialAdapt
         {
             ColorVariable.Set(m, "_Color2", Color, logConfig, materialName);
             ColorVariable.Set(m, "_Color3", Color, logConfig, materialName);
+            if (m.name.ToLower().Contains(DefaultMaterialAdaptConfig.ColoredSpecularTag))
+                ColorVariable.Set(m, "_SpecColor", Color * 2, logConfig, materialName);
 
 
             //if (!MainTex && !m.mainTexture)

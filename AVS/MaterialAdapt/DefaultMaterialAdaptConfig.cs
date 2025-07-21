@@ -19,6 +19,10 @@ namespace AVS.MaterialAdapt
         /// Default tag used to mark materials that are consider glass and should not be adapted in the default process.
         /// </summary>
         public static string GlassTag { get; } = "[glass]";
+        /// <summary>
+        /// Tag identifying materials that should copy their main color to the specular color.
+        /// </summary>
+        public static string ColoredSpecularTag { get; } = "[coloredspec]";
         /// <inheritdoc/>
         public virtual bool IgnoreShaderNames => false;
 
