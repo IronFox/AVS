@@ -4065,11 +4065,6 @@
             Default tag used to mark materials that are consider glass and should not be adapted in the default process.
             </summary>
         </member>
-        <member name="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.ColoredSpecularTag">
-            <summary>
-            Tag identifying materials that should copy their main color to the specular color.
-            </summary>
-        </member>
         <member name="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IgnoreShaderNames">
             <inheritdoc/>
         </member>
@@ -4084,29 +4079,11 @@
             If null, <see cref="P:AVS.Log.MaterialLog.Default" /> is used</param>
         </member>
         <member name="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IsExcludedFromMaterialFixing(UnityEngine.GameObject,AVS.Composition.VehicleComposition)">
-            <summary>
-            If this method returns true,
-            all materials of the given game object will be excluded
-            from material fixing.
-            </summary>
-            <remarks>Child objects will still be processed</remarks>
-            <param name="go">Game object to test</param>
-            <param name="comp">Vehicle composition of the target vehicle</param>
-            <returns>True if this object should not be fixed</returns>
+            <inheritdoc/>
         </member>
         <member name="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IsExcludedFromMaterialFixing(UnityEngine.Renderer,System.Int32,UnityEngine.Material)">
-            <summary>
-            If this method returns true,
-            the specific material of the given renderer will be excluded
-            from material fixing.
-            Override if your exclusion logic is based on material states beyond just their names.
-            Otherwise, override <see cref="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IsExcludedFromMaterialFixingByName(System.String)"/> instead.
-            </summary>
+            <inheritdoc/>
             <remarks>Calls <see cref="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IsExcludedFromMaterialFixingByName(System.String)"/></remarks>
-            <param name="renderer">Owning renderer</param>
-            <param name="materialIndex">Index of the material being processed with 0 being the first material</param>
-            <param name="material">Material being processed</param>
-            <returns>True if this material should not be fixed</returns>
         </member>
         <member name="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IsExcludedFromMaterialFixingByName(System.String)">
             <summary>
@@ -4114,8 +4091,13 @@
             from material fixing.
             If you exclusion logic is based on material names only, you only need to override this method.
             </summary>
-            <param name="lowerCaseMaterialName">Lower-case name of <paramref name="material"/></param>
+            <remarks>This default implementation excluded all materials 
+            that have <see cref="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.KeepTag"/> or <see cref="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.GlassTag" /> in their name</remarks>
+            <param name="lowerCaseMaterialName">Lower-case name of the material</param>
             <returns>True if this material should not be fixed</returns>
+        </member>
+        <member name="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.ConvertUnityMaterial(AVS.MaterialAdapt.UnityMaterialData)">
+            <inheritdoc/>
         </member>
         <member name="T:AVS.MaterialAdapt.IMaterialAdaptConfig">
             <summary>
@@ -4153,6 +4135,13 @@
             <param name="materialIndex">Index of the material being processed with 0 being the first material</param>
             <param name="material">Material being processed</param>
             <returns>True if this material should not be fixed</returns>
+        </member>
+        <member name="M:AVS.MaterialAdapt.IMaterialAdaptConfig.ConvertUnityMaterial(AVS.MaterialAdapt.UnityMaterialData)">
+            <summary>
+            Passes the loaded material data to the config for custom conversion.
+            </summary>
+            <param name="materialData">Loaded material data</param>
+            <returns>Converted material</returns>
         </member>
         <member name="T:AVS.MaterialAdapt.MaterialAddress">
             <summary>
@@ -4403,9 +4392,20 @@
             </summary>
             <author>https://github.com/IronFox</author>
         </member>
+        <member name="P:AVS.MaterialAdapt.UnityMaterialData.MaterialName">
+            <summary>
+            The name of the source material
+            </summary>
+        </member>
         <member name="P:AVS.MaterialAdapt.UnityMaterialData.Color">
             <summary>
             Main color of the material. Black if none
+            </summary>
+        </member>
+        <member name="P:AVS.MaterialAdapt.UnityMaterialData.SpecularColor">
+            <summary>
+            The specular color of the material. Tints specular reflection.
+            Default is white.
             </summary>
         </member>
         <member name="P:AVS.MaterialAdapt.UnityMaterialData.EmissionColor">
@@ -4459,7 +4459,7 @@
             The source material
             </summary>
         </member>
-        <member name="M:AVS.MaterialAdapt.UnityMaterialData.#ctor(UnityEngine.Color,UnityEngine.Color,UnityEngine.Texture,System.Single,System.Int32,UnityEngine.Texture,UnityEngine.Texture,UnityEngine.Texture,AVS.MaterialAdapt.MaterialAddress)">
+        <member name="M:AVS.MaterialAdapt.UnityMaterialData.#ctor(System.String,UnityEngine.Color,UnityEngine.Color,UnityEngine.Color,UnityEngine.Texture,System.Single,System.Int32,UnityEngine.Texture,UnityEngine.Texture,UnityEngine.Texture,AVS.MaterialAdapt.MaterialAddress)">
             <summary>
             Constructs a new instance of <see cref="T:AVS.MaterialAdapt.UnityMaterialData"/>
             </summary>

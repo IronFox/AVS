@@ -14,9 +14,20 @@ namespace AVS.MaterialAdapt
     public class UnityMaterialData
     {
         /// <summary>
+        /// The name of the source material
+        /// </summary>
+        public string MaterialName { get; }
+        /// <summary>
         /// Main color of the material. Black if none
         /// </summary>
         public Color Color { get; }
+
+        /// <summary>
+        /// The specular color of the material. Tints specular reflection.
+        /// Default is white.
+        /// </summary>
+        public Color SpecularColor { get; }
+
         /// <summary>
         /// Emission texture of this material. Black if not emissive
         /// </summary>
@@ -81,7 +92,9 @@ namespace AVS.MaterialAdapt
         /// Constructs a new instance of <see cref="UnityMaterialData"/>
         /// </summary>
         public UnityMaterialData(
+            string materialName,
             Color color,
+            Color specularColor,
             Color emissionColor,
             Texture? mainTex,
             float smoothness,
@@ -91,8 +104,10 @@ namespace AVS.MaterialAdapt
             Texture? emissionTexture,
             MaterialAddress source)
         {
+            MaterialName = materialName;
             Source = source;
             Color = color;
+            SpecularColor = specularColor;
             EmissionColor = emissionColor;
             MainTex = mainTex;
             Smoothness = smoothness;
@@ -191,7 +206,9 @@ namespace AVS.MaterialAdapt
             var mName = target.ToString();
             logConfig.LogExtraStep($"Reading {mName} which uses {m.shader.NiceName()}");
             var data = new UnityMaterialData(
+                materialName: m.name,
                 color: GetColor(m, "_Color", logConfig),
+                specularColor: Color.white,
                 emissionColor: GetColor(m, "_EmissionColor", logConfig),
                 mainTex: GetTexture(m, "_MainTex", logConfig),
                 smoothness: GetFloat(m, "_Glossiness", logConfig),
@@ -286,7 +303,11 @@ namespace AVS.MaterialAdapt
         /// or the target is (no longer) valid</returns>
         public static UnityMaterialData? From(Renderer renderer, int materialIndex, MaterialLog logConfig = default, bool ignoreShaderName = false)
         {
-            return From(new MaterialAddress(renderer, materialIndex), logConfig);
+            var a = new MaterialAddress(renderer, materialIndex);
+            var m = a.GetMaterial();
+            if (m == null)
+                return null;
+            return From(a, m, logConfig, ignoreShaderName: ignoreShaderName);
         }
 
 
@@ -303,8 +324,7 @@ namespace AVS.MaterialAdapt
         {
             ColorVariable.Set(m, "_Color2", Color, logConfig, materialName);
             ColorVariable.Set(m, "_Color3", Color, logConfig, materialName);
-            if (m.name.ToLower().Contains(DefaultMaterialAdaptConfig.ColoredSpecularTag))
-                ColorVariable.Set(m, "_SpecColor", Color * 2, logConfig, materialName);
+            ColorVariable.Set(m, "_SpecColor", SpecularColor, logConfig, materialName);
 
 
             //if (!MainTex && !m.mainTexture)
@@ -388,7 +408,9 @@ namespace AVS.MaterialAdapt
         /// <returns>Clone with updated source</returns>
         public UnityMaterialData RedefineSource(MaterialAddress source)
             => new UnityMaterialData(
+                materialName: MaterialName,
                 color: Color,
+                specularColor: SpecularColor,
                 mainTex: MainTex,
                 emissionColor: EmissionColor,
                 smoothness: Smoothness,

@@ -19,10 +19,7 @@ namespace AVS.MaterialAdapt
         /// Default tag used to mark materials that are consider glass and should not be adapted in the default process.
         /// </summary>
         public static string GlassTag { get; } = "[glass]";
-        /// <summary>
-        /// Tag identifying materials that should copy their main color to the specular color.
-        /// </summary>
-        public static string ColoredSpecularTag { get; } = "[coloredspec]";
+
         /// <inheritdoc/>
         public virtual bool IgnoreShaderNames => false;
 
@@ -39,32 +36,14 @@ namespace AVS.MaterialAdapt
             LogConfig = logConfig ?? MaterialLog.Default;
         }
 
-        /// <summary>
-        /// If this method returns true,
-        /// all materials of the given game object will be excluded
-        /// from material fixing.
-        /// </summary>
-        /// <remarks>Child objects will still be processed</remarks>
-        /// <param name="go">Game object to test</param>
-        /// <param name="comp">Vehicle composition of the target vehicle</param>
-        /// <returns>True if this object should not be fixed</returns>
+        /// <inheritdoc/>
         public virtual bool IsExcludedFromMaterialFixing(GameObject go, VehicleComposition comp)
             => go.GetComponent<Skybox>()
             //|| go.name.ToLower().Contains("light")
             || comp.CanopyWindows.Contains(go);
 
-        /// <summary>
-        /// If this method returns true,
-        /// the specific material of the given renderer will be excluded
-        /// from material fixing.
-        /// Override if your exclusion logic is based on material states beyond just their names.
-        /// Otherwise, override <see cref="IsExcludedFromMaterialFixingByName(string)"/> instead.
-        /// </summary>
+        /// <inheritdoc/>
         /// <remarks>Calls <see cref="IsExcludedFromMaterialFixingByName(string)"/></remarks>
-        /// <param name="renderer">Owning renderer</param>
-        /// <param name="materialIndex">Index of the material being processed with 0 being the first material</param>
-        /// <param name="material">Material being processed</param>
-        /// <returns>True if this material should not be fixed</returns>
         public virtual bool IsExcludedFromMaterialFixing(Renderer renderer, int materialIndex, Material material)
             => IsExcludedFromMaterialFixingByName(material.name.ToLower());
 
@@ -73,9 +52,15 @@ namespace AVS.MaterialAdapt
         /// from material fixing.
         /// If you exclusion logic is based on material names only, you only need to override this method.
         /// </summary>
-        /// <param name="lowerCaseMaterialName">Lower-case name of <paramref name="material"/></param>
+        /// <remarks>This default implementation excluded all materials 
+        /// that have <see cref="KeepTag"/> or <see cref="GlassTag" /> in their name</remarks>
+        /// <param name="lowerCaseMaterialName">Lower-case name of the material</param>
         /// <returns>True if this material should not be fixed</returns>
         public virtual bool IsExcludedFromMaterialFixingByName(string lowerCaseMaterialName)
             => lowerCaseMaterialName.Contains(KeepTag) || lowerCaseMaterialName.Contains(GlassTag);
+
+        /// <inheritdoc/>
+        public virtual UnityMaterialData ConvertUnityMaterial(UnityMaterialData materialData)
+            => materialData;
     }
 }

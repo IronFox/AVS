@@ -28,15 +28,23 @@ namespace AVS.BaseVehicle
 
                 for (int i = 0; i < renderer.materials.Length; i++)
                 {
-                    if (config.IsExcludedFromMaterialFixing(renderer, i, renderer.materials[i]))
+                    var m = renderer.materials[i];
+                    if (config.IsExcludedFromMaterialFixing(renderer, i, m))
                     {
-                        config.LogConfig.LogExtraStep($"Skipping material {i} of {renderer.NiceName()} ({renderer.materials[i].NiceName()}) because it is excluded from material fixing");
+                        config.LogConfig.LogExtraStep($"Skipping material {i} of {renderer.NiceName()} ({m.NiceName()}) because it is excluded from material fixing");
                         continue;
                     }
 
-                    var material = UnityMaterialData.From(renderer, i, config.LogConfig, config.IgnoreShaderNames);
+                    var material = UnityMaterialData.From(
+                        renderer,
+                        i,
+                        config.LogConfig,
+                        config.IgnoreShaderNames);
                     if (material != null)
+                    {
+                        material = config.ConvertUnityMaterial(material);
                         yield return material;
+                    }
                 }
             }
         }

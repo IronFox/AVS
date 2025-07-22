@@ -41,5 +41,12 @@ namespace AVS.MaterialAdapt
         /// <param name="material">Material being processed</param>
         /// <returns>True if this material should not be fixed</returns>
         public bool IsExcludedFromMaterialFixing(Renderer renderer, int materialIndex, Material material);
+
+        /// <summary>
+        /// Passes the loaded material data to the config for custom conversion.
+        /// </summary>
+        /// <param name="materialData">Loaded material data</param>
+        /// <returns>Converted material</returns>
+        public UnityMaterialData ConvertUnityMaterial(UnityMaterialData materialData);
     }
 }
