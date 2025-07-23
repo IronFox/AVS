@@ -93,6 +93,22 @@ namespace AVS.BaseVehicle
             interiorColor = config.InitialInteriorColor;
         }
 
+
+        public MiniWorld SpawnMiniWorld(Transform worldObject, Material material, int mapWorldRadius = 200, bool withShadows = true)
+        {
+            var world = worldObject.gameObject.EnsureComponent<MiniWorld>();
+            world.hologramHolder = worldObject;
+            world.hologramMaterial = material;
+            world.hologramRadius = mapWorldRadius * 3.5f;
+            world.mapWorldRadius = mapWorldRadius;
+            world.fadeRadius = mapWorldRadius / 5;
+            if (withShadows)
+            {
+                worldObject.gameObject.EnsureComponent<MiniWorldShadowCastMonitor>();
+            }
+            return world;
+        }
+
         internal void OnAwakeOrPrefabricate()
         {
             RequireComposition();
