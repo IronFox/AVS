@@ -3,6 +3,7 @@ using AVS.Configuration;
 using AVS.Log;
 using AVS.MaterialAdapt;
 using AVS.Util;
+using AVS.VehicleComponents;
 using System;
 using System.Linq;
 using UnityEngine;
@@ -93,7 +94,15 @@ namespace AVS.BaseVehicle
             interiorColor = config.InitialInteriorColor;
         }
 
-
+        /// <summary>
+        /// Constructs a map mini-world hologram on the given object.
+        /// </summary>
+        /// <param name="worldObject">The object that will hold the map. May be scaled and rotated by the minimap</param>
+        /// <param name="material">Material to use for the hologram</param>
+        /// <param name="mapWorldRadius">Effective map radius in meters</param>
+        /// <param name="withShadows">True if the map material should cast and receive shadows,
+        /// false to use the default behavior (off)</param>
+        /// <returns>Created mini-world</returns>
         public MiniWorld SpawnMiniWorld(Transform worldObject, Material material, int mapWorldRadius = 200, bool withShadows = true)
         {
             var world = worldObject.gameObject.EnsureComponent<MiniWorld>();

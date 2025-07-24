@@ -1563,6 +1563,17 @@
             <param name="config">Vehicle configuration. Must not be null</param>
             <exception cref="T:System.ArgumentNullException"></exception>
         </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.SpawnMiniWorld(UnityEngine.Transform,UnityEngine.Material,System.Int32,System.Boolean)">
+            <summary>
+            Constructs a map mini-world hologram on the given object.
+            </summary>
+            <param name="worldObject">The object that will hold the map. May be scaled and rotated by the minimap</param>
+            <param name="material">Material to use for the hologram</param>
+            <param name="mapWorldRadius">Effective map radius in meters</param>
+            <param name="withShadows">True if the map material should cast and receive shadows,
+            false to use the default behavior (off)</param>
+            <returns>Created mini-world</returns>
+        </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.RequireComposition">
             <summary>
             Initialized <see cref="P:AVS.BaseVehicle.AvsVehicle.Com"/>.
