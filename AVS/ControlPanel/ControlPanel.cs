@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.Localization;
+using AVS.Util;
 using AVS.VehicleTypes;
 using UnityEngine;
 //using AVS.Localization;
@@ -111,7 +112,7 @@ namespace AVS
         /// </summary>
         public void EmptyHover()
         {
-            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFEmptyHover"));
+            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_Empty));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
 
@@ -131,7 +132,7 @@ namespace AVS
         /// </summary>
         public void HeadLightsHover()
         {
-            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFHeadLightsHover"));
+            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_HeadLights));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
 
@@ -151,7 +152,7 @@ namespace AVS
         /// </summary>
         public void FloodLightsHover()
         {
-            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFFloodLightsHover"));
+            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_FloodLights));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
 
@@ -171,7 +172,7 @@ namespace AVS
         /// </summary>
         public void NavLightsHover()
         {
-            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFNavLightsHover"));
+            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_NavLights));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
 
@@ -191,7 +192,7 @@ namespace AVS
         /// </summary>
         public void InteriorLightsHover()
         {
-            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFInteriorLightsHover"));
+            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_InteriorLights));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
 
@@ -209,7 +210,7 @@ namespace AVS
         /// </summary>
         public void DefaultColorHover()
         {
-            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFDefaultColorHover"));
+            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_DefaultColor));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
 
@@ -233,7 +234,7 @@ namespace AVS
         /// </summary>
         public void PowerHover()
         {
-            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFPowerHover"));
+            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_Power));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
 
@@ -250,7 +251,7 @@ namespace AVS
         /// </summary>
         public void AutoPilotHover()
         {
-            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("VFAutoPilotHover"));
+            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_Autopilot));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
 

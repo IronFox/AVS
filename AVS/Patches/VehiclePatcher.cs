@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Localization;
 using AVS.Util;
 using HarmonyLib;
 using System.Collections;
@@ -38,8 +39,8 @@ namespace AVS
                 {
                     float now = mv.GetComponent<Sealed>().openedAmount;
                     float max = mv.GetComponent<Sealed>().maxOpenedAmount;
-                    string percent = Mathf.CeilToInt(now * 100f / max).ToString();
-                    HandReticle.main.SetText(HandReticle.TextType.Hand, $"{Language.main.Get("VFDeconstructionHint")}: {percent}", true, GameInput.Button.None);
+                    var percent = Mathf.CeilToInt(now * 100f / max);
+                    HandReticle.main.SetText(HandReticle.TextType.Hand, Translator.GetFormatted(TranslationKey.HandHover_Vehicle_DesconstructionPercent, percent), true, GameInput.Button.None);
                 }
                 else if (mv.IsBoarded)
                 {

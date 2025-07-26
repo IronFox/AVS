@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Localization;
 using AVS.Util;
 using System;
 using System.Collections;
@@ -34,7 +35,7 @@ namespace AVS.VehicleComponents
         string IBattery.GetChargeValueText()
         {
             float arg = currentCharge / totalCapacity;
-            return Language.main.GetFormat<float, int, float>("BatteryCharge", arg, Mathf.RoundToInt(currentCharge), totalCapacity);
+            return Translator.GetFormatted(TranslationKey.Reactor_BatteryCharge, arg, Mathf.RoundToInt(currentCharge), totalCapacity);
         }
         internal void SetCapacity(float capacity)
         {
@@ -249,12 +250,12 @@ namespace AVS.VehicleComponents
             if (container != null)
             {
                 HandReticle main = HandReticle.main;
-                string chargeValue = capacity == 0 ? string.Empty : $"({Language.main.Get("VFMaterialReactorHint4")}: {(int)reactorBattery.GetCharge()}/{capacity})";
+                string chargeValue = capacity == 0 ? string.Empty : $"({Translator.GetFormatted(TranslationKey.HandHover_Reactor_Charge, (int)reactorBattery.GetCharge(), capacity)})";
                 string finalText = $"{interactText} {chargeValue}";
                 main.SetText(HandReticle.TextType.Hand, finalText, true, GameInput.Button.LeftHand);
                 if (canViewWhitelist)
                 {
-                    main.SetText(HandReticle.TextType.HandSubscript, Language.main.Get("VFMaterialReactorHint3"), false, GameInput.Button.RightHand);
+                    main.SetText(HandReticle.TextType.HandSubscript, Translator.Get(TranslationKey.HandHoverSub_Reactor_ShowWhitelist), false, GameInput.Button.RightHand);
                     if (GameInput.GetButtonDown(GameInput.Button.RightHand) && outputReactorDataCoroutine == null)
                     {
                         outputReactorDataCoroutine = UWE.CoroutineHost.StartCoroutine(OutputReactorData());
@@ -271,11 +272,11 @@ namespace AVS.VehicleComponents
         {
             if (listPotentials)
             {
-                Logger.PDANote(Language.main.Get("VFMaterialReactorHint2"), 4f);
+                Logger.PDANote(Translator.Get(TranslationKey.Reactor_WhitelistWithPowerValue), 4f);
             }
             else
             {
-                Logger.PDANote(Language.main.Get("VFMaterialReactorHint1"), 4f);
+                Logger.PDANote(Translator.Get(TranslationKey.Reactor_WhitelistPlain), 4f);
             }
             foreach (var pair in maxEnergies)
             {

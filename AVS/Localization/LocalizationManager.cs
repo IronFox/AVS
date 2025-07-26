@@ -1,10 +1,11 @@
-﻿using System;
+﻿#if false
+
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
 using System.Reflection;
-
 namespace AVS.Localization
 {
     internal enum SupportedLanguage
@@ -118,3 +119,4 @@ namespace AVS.Localization
         }
     }
 }
+#endif

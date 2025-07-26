@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using AVS.Localization;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -97,14 +98,14 @@ namespace AVS.Admin
             {
                 if (dock.dockedVehicle != null)
                 {
-                    Logger.PDANote($"{Language.main.Get("VFUndockHint1")} {dock.dockedVehicle.GetName()}");
+                    Logger.PDANote($"{Translator.Get(TranslationKey.Command_UndockingVehicle)} {dock.dockedVehicle.GetName()}");
                     isUndockConsoleCommand = true;
                     dock.dockedVehicle.Undock();
                     isUndockConsoleCommand = false;
                 }
                 else
                 {
-                    Logger.PDANote(Language.main.Get("VFUndockHint2"));
+                    Logger.PDANote(Translator.Get(TranslationKey.Command_NothingToUndock));
                 }
             }
 
@@ -125,7 +126,7 @@ namespace AVS.Admin
             }
             else
             {
-                Logger.PDANote(Language.main.Get("VFUndockHint3"));
+                Logger.PDANote(Translator.Get(TranslationKey.Command_NothingToUndock));
             }
         }
         public void OnConsoleCommand_vfdestroy(NotificationCenter.Notification notif)

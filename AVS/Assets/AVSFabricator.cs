@@ -1,4 +1,5 @@
-﻿using Nautilus.Assets.Gadgets;
+﻿using AVS.Localization;
+using Nautilus.Assets.Gadgets;
 using UnityEngine;
 using static CraftData;
 
@@ -7,8 +8,8 @@ namespace AVS.Assets
     internal static class AVSFabricator
     {
         private const string ClassID = "AVSFabricatorClassID";
-        private static string DisplayName = Language.main.Get("AVSFabricatorDisplayName");
-        private static string Description = Language.main.Get("AVSFabricatorDesc");
+        private static string DisplayName = Translator.Get(TranslationKey.Fabricator_DisplayName);
+        private static string Description = Translator.Get(TranslationKey.Fabricator_Description);
         internal static CraftTree.Type TreeType = default;
         internal static void CreateAndRegister()
         {

@@ -1,5 +1,6 @@
 ﻿using AVS.Composition;
 using AVS.Configuration;
+using AVS.Localization;
 using AVS.Log;
 using AVS.MaterialAdapt;
 using AVS.Util;
@@ -324,12 +325,7 @@ namespace AVS.BaseVehicle
         {
             get
             {
-                Language main = Language.main;
-                if (main == null)
-                {
-                    return Language.main.Get("AvsVehicle");
-                }
-                return main.Get("AvsVehicle");
+                return Translator.Get(TranslationKey.VehicleDefaultName);
             }
         }
 

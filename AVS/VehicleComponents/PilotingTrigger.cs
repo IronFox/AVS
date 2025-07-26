@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Localization;
 using AVS.Log;
 using AVS.Util;
 using AVS.VehicleTypes;
@@ -46,7 +47,7 @@ namespace AVS
                 && isLive)
             {
                 HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
-                HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get("AVSStartPiloting"));
+                HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_Vehicle_StartHelmControl));
             }
         }
 

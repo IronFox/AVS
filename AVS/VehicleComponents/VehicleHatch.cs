@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Localization;
 using AVS.Log;
 using AVS.Util;
 using AVS.VehicleTypes;
@@ -12,8 +13,8 @@ namespace AVS
         private bool isLive = true;
         public AvsVehicle? mv;
         public int hatchIndex = 0; // Index of the hatch in the vehicle's list of hatches
-        public string EnterHint => mv != null ? mv.VehicleName : Language.main.Get("AvsEnterVehicle");
-        public string ExitHint = Language.main.Get("AvsExitVehicle");
+        public string EnterHint => Translator.Get(TranslationKey.HandHover_Vehicle_Enter);
+        public string ExitHint = Translator.Get(TranslationKey.HandHover_Vehicle_Exit);
 
         public void OnHandHover(GUIHand hand)
         {

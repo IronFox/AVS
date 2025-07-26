@@ -1,6 +1,7 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Composition;
 using AVS.Configuration;
+using AVS.Localization;
 using AVS.Saving;
 using AVS.Util;
 using AVS.VehicleComponents;
@@ -551,22 +552,22 @@ namespace AVS.VehicleTypes
 
             var but = ActualEditScreen.transform.Find("Active/BaseTab");
             but.name = "MainExterior";
-            but.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = Language.main.Get("VFMainExterior");
+            but.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = Translator.Get(TranslationKey.ColorPicker_Tab_Exterior);
             but.gameObject.EnsureComponent<Button>().onClick.AddListener(CreateAction("MainExterior"));
 
             but = ActualEditScreen.transform.Find("Active/NameTab");
             but.name = "PrimaryAccent";
-            but.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = Language.main.Get("VFPrimaryAccent");
+            but.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = Translator.Get(TranslationKey.ColorPicker_Tab_PrimaryAccent);
             but.gameObject.EnsureComponent<Button>().onClick.AddListener(CreateAction("PrimaryAccent"));
 
             but = ActualEditScreen.transform.Find("Active/InteriorTab");
             but.name = "SecondaryAccent";
-            but.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = Language.main.Get("VFSecondaryAccent");
+            but.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = Translator.Get(TranslationKey.ColorPicker_Tab_SecondaryAccent);
             but.gameObject.EnsureComponent<Button>().onClick.AddListener(CreateAction("SecondaryAccent"));
 
             but = ActualEditScreen.transform.Find("Active/Stripe1Tab");
             but.name = "NameLabel";
-            but.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = Language.main.Get("VFNameLabel");
+            but.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = Translator.Get(TranslationKey.ColorPicker_Tab_Name);
             but.gameObject.EnsureComponent<Button>().onClick.AddListener(CreateAction("NameLabel"));
 
             GameObject colorPicker = ActualEditScreen.transform.Find("Active/ColorPicker").gameObject;
@@ -659,7 +660,7 @@ namespace AVS.VehicleTypes
             float pitchDelta = pitch >= 180 ? 360 - pitch : pitch;
             if (!PlayerCanExitHelmControl(rollDelta, pitchDelta, useRigidbody.velocity.magnitude))
             {
-                Logger.PDANote($"{Language.main.Get("AvsExitNotAllowed")} ({GameInput.Button.Exit})");
+                Logger.PDANote($"{Translator.Get(TranslationKey.Error_CannotExitVehicle)} ({GameInput.Button.Exit})");
                 return;
             }
 

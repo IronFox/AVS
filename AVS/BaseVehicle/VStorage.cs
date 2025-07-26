@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.Localization;
+using AVS.Util;
 using AVS.VehicleParts;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,7 +93,7 @@ namespace AVS.BaseVehicle
             {
                 if (Player.main.GetVehicle() == this)
                 {
-                    ErrorMessage.AddMessage(Language.main.Get("ContainerCantFit"));
+                    ErrorMessage.AddMessage(Translator.Get(TranslationKey.Error_CannotAdd_StorageFull));
                 }
                 return false;
             }
@@ -101,7 +102,7 @@ namespace AVS.BaseVehicle
                 if (container != null && container.HasRoomFor(pickup))
                 {
                     string arg = Language.main.Get(pickup.GetTechName());
-                    ErrorMessage.AddMessage(Language.main.GetFormat("VehicleAddedToStorage", arg));
+                    ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Report_AddedToStorage, arg));
                     uGUI_IconNotifier.main.Play(pickup.GetTechType(), uGUI_IconNotifier.AnimationType.From, null);
                     pickup.Initialize();
                     InventoryItem item = new InventoryItem(pickup);
@@ -115,7 +116,7 @@ namespace AVS.BaseVehicle
                 if (container.HasRoomFor(pickup))
                 {
                     string arg = Language.main.Get(pickup.GetTechName());
-                    ErrorMessage.AddMessage(Language.main.GetFormat("VehicleAddedToStorage", arg));
+                    ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Report_AddedToStorage, arg));
                     uGUI_IconNotifier.main.Play(pickup.GetTechType(), uGUI_IconNotifier.AnimationType.From, null);
                     pickup.Initialize();
                     InventoryItem item = new InventoryItem(pickup);

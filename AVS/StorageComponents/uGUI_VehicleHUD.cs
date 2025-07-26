@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Localization;
 using TMPro;
 using UnityEngine;
 
@@ -143,7 +144,7 @@ namespace AVS
                     //}
                     //else
                     {
-                        textTemperatureSuffix.text = Language.main.GetFormat("ThermometerFormat");
+                        textTemperatureSuffix.text = Translator.Get(TranslationKey.HUD_ThermometerFormat);
                     }
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Localization;
 using UnityEngine;
 //using AVS.Localization;
 
@@ -86,7 +87,7 @@ namespace AVS
             string nameDisplayed;
             if (DisplayName.Equals(string.Empty))
             {
-                nameDisplayed = Language.main.Get("VFOpenStorage");
+                nameDisplayed = Translator.Get(TranslationKey.HandHover_OpenStorage);
             }
             else
             {

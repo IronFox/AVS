@@ -3750,6 +3750,167 @@
             Executed when the unscuttle action is triggered.
             </summary>
         </member>
+        <member name="T:AVS.Localization.DefaultTranslator">
+            <summary>
+            Default implementation of the ITranslator interface for AVS.
+            </summary>
+        </member>
+        <member name="M:AVS.Localization.DefaultTranslator.GetTranslationKey(AVS.Localization.TranslationKey)">
+            <summary>
+            Retrieves the translation key for a given TranslationKey enum value.
+            </summary>
+        </member>
+        <member name="M:AVS.Localization.DefaultTranslator.Translate(AVS.Localization.TranslationKey)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Localization.DefaultTranslator.Translate``1(AVS.Localization.TranslationKey,``0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Localization.DefaultTranslator.Translate``2(AVS.Localization.TranslationKey,``0,``1)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Localization.DefaultTranslator.Translate``3(AVS.Localization.TranslationKey,``0,``1,``2)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Localization.DefaultTranslator.Translate``4(AVS.Localization.TranslationKey,``0,``1,``2,``3)">
+            <inheritdoc/>
+        </member>
+        <member name="T:AVS.Localization.ITranslator">
+            <summary>
+            Translator interface for AVS.
+            </summary>
+        </member>
+        <member name="M:AVS.Localization.ITranslator.Translate(AVS.Localization.TranslationKey)">
+            <summary>
+            Translates a simple translation key.
+            </summary>
+        </member>
+        <member name="M:AVS.Localization.ITranslator.Translate``1(AVS.Localization.TranslationKey,``0)">
+            <summary>
+            Translates a translation key with arguments.
+            </summary>
+        </member>
+        <member name="M:AVS.Localization.ITranslator.Translate``2(AVS.Localization.TranslationKey,``0,``1)">
+            <summary>
+            Translates a translation key with arguments.
+            </summary>
+        </member>
+        <member name="M:AVS.Localization.ITranslator.Translate``3(AVS.Localization.TranslationKey,``0,``1,``2)">
+            <summary>
+            Translates a translation key with arguments.
+            </summary>
+        </member>
+        <member name="M:AVS.Localization.ITranslator.Translate``4(AVS.Localization.TranslationKey,``0,``1,``2,``3)">
+            <summary>
+            Translates a translation key with arguments.
+            </summary>
+        </member>
+        <member name="T:AVS.Localization.TranslationKey">
+            <summary>
+            All AVS translation keys.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.VehicleDefaultName">
+            <summary>
+            The localized default name of the vehicle created by AVS.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.Reactor_BatteryCharge">
+            <summary>
+            Produces the current charge status.
+            The first argument is the current charge fraction.
+            The second is the absolute charge value.
+            The third is the maximum charge value.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.Reactor_WhitelistWithPowerValue">
+            <summary>
+            Headline when listing the reactor's whitelist
+            with power potentials.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.Reactor_WhitelistPlain">
+            <summary>
+            Headline when listing the reactor's whitelist
+            without power potentials.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.Command_NothingToUndock">
+            <summary>
+            No vehicle was found to undock.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.Command_UndockingVehicle">
+            <summary>
+            The undock console command did undock something.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.HandHover_Vehicle_StartHelmControl">
+            <summary>
+            Displayed over a vehicle's helm control
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.HandHover_Reactor_Charge">
+            <summary>
+            The string to display over a material reactor.
+            Expected to produce a string like "*: 500/1000".
+            The first argument is the absolute current charge,
+            the second is the maximum charge.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.HandHoverSub_Reactor_ShowWhitelist">
+            <summary>
+            The translation key that hints that the user can show the reactor's item-whitelist by right-clicking.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.HandHover_Vehicle_DesconstructionPercent">
+            <summary>
+            The vehicle status when the vehicle is scuttled, showing the percentage of its deconstruction.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.HandHover_Docked_StatusCharged">
+            <summary>
+            The vehicle status when hovering while docked and the vehicle is fully charged.
+            The first argument is the vehicle health fraction.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.HandHover_Docked_StatusCharging">
+            <summary>
+            Represents the status of a hand hover event when the device is docked and charging.
+            The first argument is the vehicle health fraction.
+            The second argument is the current charge level fraction.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.Report_AddedToStorage">
+            <summary>
+            An item was added to the storage.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.Error_UpgradeNotRemovable_StorageNotEmpty">
+            <summary>
+            When trying to remove an upgrade that is not removable because its storage is not empty.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.Error_CannotAdd_StorageFull">
+            <summary>
+            Then trying to add an item to a storage that is full.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.Error_CannotExitVehicle">
+            <summary>
+            Exiting the vehicle is not allowed at the moment.
+            </summary>
+        </member>
+        <member name="T:AVS.Localization.Translator">
+            <summary>
+            Global localization utility for AVS.
+            </summary>
+        </member>
+        <member name="P:AVS.Localization.Translator.Implementation">
+            <summary>
+            The replaceable implementation for translating keys.
+            </summary>
+        </member>
         <member name="T:AVS.ILogFilter">
             <summary>
             Defines a filter for controlling whether debug-level log messages are processed.

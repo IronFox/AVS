@@ -1,4 +1,5 @@
 ﻿using AVS.Configuration;
+using AVS.Localization;
 using AVS.UpgradeTypes;
 //using AVS.Localization;
 
@@ -15,9 +16,9 @@ namespace AVS.DepthModules
         /// <inheritdoc/>
         public override string ClassId => "AvsDepthModule2";
         /// <inheritdoc/>
-        public override string DisplayName => Language.main.Get("AvsDepth2FriendlyString");
+        public override string DisplayName => Translator.Get(TranslationKey.Module_Depth2_DisplayName);
         /// <inheritdoc/>
-        public override string Description => Language.main.Get("AvsDepth2Description");
+        public override string Description => Translator.Get(TranslationKey.Module_Depth2_Description);
         /// <inheritdoc/>
         public override Recipe Recipe { get; } = NewRecipe
                 .StartWith(TechType.TitaniumIngot, 3)
@@ -33,7 +34,7 @@ namespace AVS.DepthModules
         /// <inheritdoc/>
         public override string TabName => "MVDM";
         /// <inheritdoc/>
-        public override string TabDisplayName => Language.main.Get("VFMVDepthModules");
+        public override string TabDisplayName => Translator.Get(TranslationKey.Fabricator_Node_DepthModules);
         /// <inheritdoc/>
         public override void OnAdded(AddActionParams param)
         {

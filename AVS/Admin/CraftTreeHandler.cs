@@ -1,4 +1,5 @@
 ﻿using AVS.Assets;
+using AVS.Localization;
 using AVS.UpgradeTypes;
 using AVS.Util;
 using System;
@@ -26,27 +27,27 @@ namespace AVS.Admin
         }
         internal static void AddFabricatorMenus()
         {
-            var vfIcon = SpriteHelper.GetSpriteInternal("AvsUpgradesIcon.png") ?? StaticAssets.AvsVehicleIcon;
-            var mvIcon = StaticAssets.UpgradeIcon;
+            var avsIcon = SpriteHelper.GetSpriteInternal("AvsUpgradesIcon.png") ?? StaticAssets.AvsVehicleIcon;
+            var generalIcon = StaticAssets.UpgradeIcon;
             var seamothIcon = SpriteManager.Get(TechType.Seamoth) ?? StaticAssets.AvsVehicleIcon;
             var prawnIcon = SpriteManager.Get(TechType.Exosuit) ?? StaticAssets.AvsVehicleIcon;
             var cyclopsIcon = SpriteManager.Get(TechType.Cyclops) ?? StaticAssets.AvsVehicleIcon;
 
-            // add MV-universal tab
-            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.AvsVehicle), Language.main.Get("AvsMvModules"), vfIcon);
-            AddCraftingTab(ModuleRootNode(VehicleType.AvsVehicle).ToRoList(), $"{GeneralTabName}{VehicleType.AvsVehicle}", Language.main.Get("AvsGeneralTab"), mvIcon);
+            //// add MV-universal tab
+            //AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.AvsVehicle), Localization.Get(TranslationKey.CraftingTab_UniversalModules), vfIcon);
+            //AddCraftingTab(ModuleRootNode(VehicleType.AvsVehicle).ToRoList(), $"{GeneralTabName}{VehicleType.AvsVehicle}", Language.main.Get("AvsGeneralTab"), mvIcon);
             // add MV-specific tab
-            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Custom), Language.main.Get("AvsSpecificModules"), vfIcon);
-            AddCraftingTab(ModuleRootNode(VehicleType.Custom).ToRoList(), $"{GeneralTabName}{VehicleType.Custom}", Language.main.Get("AvsGeneralTab"), mvIcon);
-            // add seamoth tab
-            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Seamoth), Language.main.Get("AvsSeamothTab"), seamothIcon);
-            AddCraftingTab(ModuleRootNode(VehicleType.Seamoth).ToRoList(), $"{GeneralTabName}{VehicleType.Seamoth}", Language.main.Get("AvsGeneralTab"), mvIcon);
-            // add prawn tab
-            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Prawn), Language.main.Get("AvsPrawnTab"), prawnIcon);
-            AddCraftingTab(ModuleRootNode(VehicleType.Prawn).ToRoList(), $"{GeneralTabName}{VehicleType.Prawn}", Language.main.Get("AvsGeneralTab"), mvIcon);
-            // add cyclops tab
-            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Cyclops), Language.main.Get("AvsCyclopsTab"), cyclopsIcon);
-            AddCraftingTab(ModuleRootNode(VehicleType.Cyclops).ToRoList(), $"{GeneralTabName}{VehicleType.Cyclops}", Language.main.Get("AvsGeneralTab"), mvIcon);
+            AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Custom), Translator.Get(TranslationKey.Fabricator_Node_Root), avsIcon);
+            AddCraftingTab(ModuleRootNode(VehicleType.Custom).ToRoList(), $"{GeneralTabName}{VehicleType.Custom}", Translator.Get(TranslationKey.Fabricator_Node_General), generalIcon);
+            //// add seamoth tab
+            //AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Seamoth), Language.main.Get("AvsSeamothTab"), seamothIcon);
+            //AddCraftingTab(ModuleRootNode(VehicleType.Seamoth).ToRoList(), $"{GeneralTabName}{VehicleType.Seamoth}", Language.main.Get("AvsGeneralTab"), mvIcon);
+            //// add prawn tab
+            //AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Prawn), Language.main.Get("AvsPrawnTab"), prawnIcon);
+            //AddCraftingTab(ModuleRootNode(VehicleType.Prawn).ToRoList(), $"{GeneralTabName}{VehicleType.Prawn}", Language.main.Get("AvsGeneralTab"), mvIcon);
+            //// add cyclops tab
+            //AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Cyclops), Language.main.Get("AvsCyclopsTab"), cyclopsIcon);
+            //AddCraftingTab(ModuleRootNode(VehicleType.Cyclops).ToRoList(), $"{GeneralTabName}{VehicleType.Cyclops}", Language.main.Get("AvsGeneralTab"), mvIcon);
         }
         internal static void EnsureCraftingTabsAvailable(AvsVehicleUpgrade upgrade, UpgradeCompat compat)
         {

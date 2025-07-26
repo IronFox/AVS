@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.Localization;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -221,7 +222,7 @@ namespace AVS.BaseVehicle
                     bool flag = component.container.count == 0;
                     if (verbose && !flag)
                     {
-                        ErrorMessage.AddDebug(Language.main.Get("SeamothStorageNotEmpty"));
+                        ErrorMessage.AddDebug(Translator.Get(TranslationKey.Error_UpgradeNotRemovable_StorageNotEmpty));
                     }
                     return flag;
                 }
