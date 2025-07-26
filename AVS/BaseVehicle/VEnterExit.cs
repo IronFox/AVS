@@ -8,7 +8,6 @@ namespace AVS.BaseVehicle
 {
     public abstract partial class AvsVehicle
     {
-        private int enteredThroughHatch = 0;
         /// <summary>
         /// True if the player is currently piloting the vehicle.
         /// </summary>

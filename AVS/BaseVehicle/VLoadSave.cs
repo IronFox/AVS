@@ -1,4 +1,5 @@
-﻿using AVS.Saving;
+﻿using AVS.SaveLoad;
+using AVS.Util;
 using AVS.VehicleParts;
 using System;
 using System.Collections;
@@ -10,27 +11,122 @@ namespace AVS.BaseVehicle
 {
     public abstract partial class AvsVehicle
     {
+        private Data? data = null;
 
         /// <summary>
-        /// Allocates a new save data container for saving or loading
+        /// Creates the save data container for this vehicle.
         /// </summary>
-        /// <returns>Container</returns>
-        public virtual VehicleSaveData AllocateSaveData()
-            => new VehicleSaveData();
-        /// <summary>
-        /// Writes all simple key value data to the save data container.
-        /// </summary>
-        /// <param name="saveData">Container previously allocated via <see cref="AllocateSaveData"/> </param>
-        public virtual void WriteSaveData(VehicleSaveData saveData)
+        /// <remarks>
+        /// For consistency, the base method should be called LAST
+        /// by any inherited class
+        /// </remarks>
+        /// <param name="addBlock">Action to register new blocks with</param>
+        protected virtual void CreateDataBlocks(Action<DataBlock> addBlock)
         {
-            saveData.IsControlling = IsPlayerControlling();
-            saveData.EnteredThroughHatch = IsBoarded ? enteredThroughHatch : -1;
-            saveData.VehicleName = subName.hullName.text;
-            saveData.BaseColor = SavedColor.From(baseColor);
-            saveData.InteriorColor = SavedColor.From(interiorColor);
-            saveData.StripeColor = SavedColor.From(stripeColor);
-            saveData.NameColor = SavedColor.From(nameColor);
+            addBlock(new DataBlock($"AvsVehicle", MakeLocalProperties()));
         }
+
+        private Data GetOrCreateData()
+        {
+            if (data != null)
+            {
+                return data;
+            }
+            List<DataBlock> blocks = new List<DataBlock>();
+            CreateDataBlocks(blocks.Add);
+            data = new Data(
+                "AvsVehicle",
+                blocks.ToArray()
+                );
+            return data;
+        }
+
+
+        /// <summary>
+        /// The construction date of this vehicle.
+        /// </summary>
+        public DateTimeOffset Constructed { get; private set; } = DateTimeOffset.Now;
+
+
+        IEnumerable<IPersistable> MakeLocalProperties()
+        {
+            yield return Persistable.Property(
+                "VehicleName",
+                () => VehicleName,
+                (value) => SetName(value)
+                );
+            yield return Persistable.Property(
+                "BoardedAt",
+                () => IsBoarded ? (Vector3?)Player.mainObject.transform.position : null,
+                (value) =>
+                {
+                    if (value != null)
+                    {
+                        RegisterPlayerEntry(() =>
+                        {
+                            Player.mainObject.transform.position = value.Value;
+
+                        });
+
+                    }
+                }
+                );
+            yield return Persistable.Property(
+                "IsControlling",
+                () => IsPlayerControlling(),
+                (value) =>
+                {
+                    if (value)
+                        BeginHelmControl(GetLoadedHelm());
+                }
+                );
+            yield return Persistable.Property(
+                "BaseColor",
+                () => SavedColor.From(baseColor),
+                (value) =>
+                {
+                    value.WriteTo(ref baseColor);
+                    subName.SetColor(0, baseColor.HSB, baseColor.RGB);
+                }
+                );
+            yield return Persistable.Property(
+                "InteriorColor",
+                () => SavedColor.From(interiorColor),
+                (value) =>
+                {
+                    value.WriteTo(ref interiorColor);
+                    subName.SetColor(2, interiorColor.HSB, interiorColor.RGB);
+                }
+                );
+            yield return Persistable.Property(
+                "StripeColor",
+                () => SavedColor.From(stripeColor),
+                (value) =>
+                {
+                    value.WriteTo(ref stripeColor);
+                    subName.SetColor(3, stripeColor.HSB, stripeColor.RGB);
+                }
+                );
+            yield return Persistable.Property(
+                "NameColor",
+                () => SavedColor.From(nameColor),
+                (value) =>
+                {
+                    value.WriteTo(ref nameColor);
+                    subName.SetColor(1, nameColor.HSB, nameColor.RGB);
+                }
+                );
+            yield return Persistable.Property(
+                "Constructed",
+                () => Constructed,
+                (value) =>
+                {
+                    Constructed = value;
+                }
+                );
+
+        }
+
 
         /// <summary>
         /// Gets the helm restored from the save data.
@@ -41,53 +137,21 @@ namespace AVS.BaseVehicle
         protected abstract Helm GetLoadedHelm();
 
         /// <summary>
-        /// Loads data previously saved via <see cref="WriteSaveData(VehicleSaveData)"/>.
+        /// Executed when the data for this vehicle has been loaded.
         /// </summary>
-        /// <param name="saveData">Data to load</param>
-        public virtual void LoadData(VehicleSaveData? saveData)
-        {
-            if (saveData == null)
-                return;
-            if (saveData.EnteredThroughHatch >= 0)
-            {
-                PlayerEntry(
-                    Com.Hatches[
-                        Math.Min(saveData.EnteredThroughHatch, Com.Hatches.Count - 1)
-                        ]);
-            }
-            if (saveData.IsControlling)
-            {
-                BeginHelmControl(GetLoadedHelm());
-            }
-            SetName(saveData.VehicleName);
-            saveData.BaseColor?.WriteTo(ref baseColor);
-            saveData.NameColor?.WriteTo(ref nameColor);
-            saveData.StripeColor?.WriteTo(ref stripeColor);
-            saveData.InteriorColor?.WriteTo(ref interiorColor);
-            subName.SetColor(0, baseColor.HSB, baseColor.RGB);
-            subName.SetColor(1, nameColor.HSB, nameColor.RGB);
-            subName.SetColor(2, interiorColor.HSB, interiorColor.RGB);
-            subName.SetColor(3, stripeColor.HSB, stripeColor.RGB);
+        protected virtual void OnDataLoaded()
+        { }
 
-        }
+        private const string BasicSaveFileNamePrefix = "Basic";
 
-        private const string SimpleDataSaveFileName = "SimpleData";
+        /// <summary>
+        /// Fetches the prefab identifier of this vehicle.
+        /// </summary>
+        public PrefabIdentifier? PrefabID => GetComponent<PrefabIdentifier>();
+
         private void SaveSimpleData()
         {
-            var c = AllocateSaveData();
-            WriteSaveData(c);
-            //Dictionary<string, string> simpleData = new Dictionary<string, string>
-            //{
-            //    { isControlling, IsPlayerControlling() ? bool.TrueString : bool.FalseString },
-            //    { isInside, IsUnderCommand ? bool.TrueString : bool.FalseString },
-            //    { mySubName, subName.hullName.text },
-            //    { baseColorName, $"#{ColorUtility.ToHtmlStringRGB(baseColor.RGB)}" },
-            //    { interiorColorName, $"#{ColorUtility.ToHtmlStringRGB(interiorColor.RGB)}" },
-            //    { stripeColorName, $"#{ColorUtility.ToHtmlStringRGB(stripeColor.RGB)}" },
-            //    { nameColorName, $"#{ColorUtility.ToHtmlStringRGB(nameColor.RGB)}" },
-            //    { defaultColorName, (this is Submarine sub) && sub.IsDefaultTexture ? bool.TrueString : bool.FalseString }
-            //};
-            SaveLoad.JsonInterface.Write(this, SimpleDataSaveFileName, c);
+            PrefabID.WriteData(BasicSaveFileNamePrefix, GetOrCreateData(), this.Log);
         }
         private IEnumerator LoadSimpleData()
         {
@@ -97,18 +161,16 @@ namespace AVS.BaseVehicle
             // So I'll still support them.
             yield return new WaitUntil(() => Admin.GameStateWatcher.IsWorldLoaded);
             yield return new WaitUntil(() => isInitialized);
-            var c = AllocateSaveData();
 
-            var simpleData = SaveLoad.JsonInterface.Read(c.GetType(), this, SimpleDataSaveFileName) as VehicleSaveData;
-            LoadData(simpleData);
-
+            if (PrefabID.ReadData(BasicSaveFileNamePrefix, GetOrCreateData(), Log))
+                OnDataLoaded();
         }
         void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
         {
             try
             {
                 SaveSimpleData();
-                SaveLoad.VFModularStorageSaveLoad.SerializeAllModularStorage(this);
+                SaveLoad.AvsModularStorageSaveLoad.SerializeAllModularStorage(this);
             }
             catch (Exception e)
             {
@@ -119,7 +181,7 @@ namespace AVS.BaseVehicle
         void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
         {
             UWE.CoroutineHost.StartCoroutine(LoadSimpleData());
-            UWE.CoroutineHost.StartCoroutine(SaveLoad.VFModularStorageSaveLoad.DeserializeAllModularStorage(this));
+            UWE.CoroutineHost.StartCoroutine(SaveLoad.AvsModularStorageSaveLoad.DeserializeAllModularStorage(this));
             OnGameLoaded();
         }
         /// <summary>
@@ -140,7 +202,7 @@ namespace AVS.BaseVehicle
             if (innateStorageSaveData.Count() == Com.InnateStorages.Count())
             {
                 // write it out
-                SaveLoad.JsonInterface.Write(this, StorageSaveName, innateStorageSaveData);
+                PrefabID.WriteReflected(StorageSaveName, innateStorageSaveData, Log);
                 innateStorageSaveData.Clear();
             }
         }
@@ -148,7 +210,10 @@ namespace AVS.BaseVehicle
         {
             if (loadedStorageData == null)
             {
-                loadedStorageData = SaveLoad.JsonInterface.Read<Dictionary<string, List<Tuple<TechType, float, TechType>>>>(this, StorageSaveName);
+                PrefabID.ReadReflected(
+                    StorageSaveName,
+                    out loadedStorageData,
+                    Log);
             }
             if (loadedStorageData == null)
             {
@@ -177,7 +242,7 @@ namespace AVS.BaseVehicle
             if (batterySaveData.Count() == batteryCount)
             {
                 // write it out
-                SaveLoad.JsonInterface.Write(this, BatterySaveName, batterySaveData);
+                PrefabID.WriteReflected(BatterySaveName, batterySaveData, Log);
                 batterySaveData.Clear();
             }
         }
@@ -185,7 +250,7 @@ namespace AVS.BaseVehicle
         {
             if (loadedBatteryData == null)
             {
-                loadedBatteryData = SaveLoad.JsonInterface.Read<Dictionary<string, Tuple<TechType, float>>>(this, BatterySaveName);
+                PrefabID.ReadReflected(BatterySaveName, out loadedBatteryData, Log);
             }
             if (loadedBatteryData == null)
             {

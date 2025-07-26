@@ -2,7 +2,7 @@
 using AVS.Composition;
 using AVS.Configuration;
 using AVS.Localization;
-using AVS.Saving;
+using AVS.SaveLoad;
 using AVS.Util;
 using AVS.VehicleComponents;
 using AVS.VehicleParts;
@@ -77,33 +77,28 @@ namespace AVS.VehicleTypes
 
         public GameObject? fabricator = null; //fabricator. Must remain public field
 
-
-        public override VehicleSaveData AllocateSaveData()
-            => new SubmarineSaveData();
-        public override void WriteSaveData(VehicleSaveData saveData)
+        /// <inheritdoc />
+        protected override void CreateDataBlocks(Action<DataBlock> addBlock)
         {
-            var sub = (SubmarineSaveData)saveData;
-            sub.DefaultColorName = IsDefaultTexture;
-            sub.CurrentHelmIndex = isAtHelm ? currentHelmIndex : -1;
-            base.WriteSaveData(saveData);
+            addBlock(new DataBlock("Submarine")
+            {
+                Persistable.Property("DefaultColorName", () => IsDefaultTexture, v => IsDefaultTexture = v),
+                Persistable.Property("CurrentHelmIndex", () => isAtHelm ? currentHelmIndex : -1, v => currentHelmIndex = Math.Max(0, v))
+            });
+            base.CreateDataBlocks(addBlock);
         }
 
-        public override void LoadData(VehicleSaveData? saveData)
+
+
+        /// <inheritdoc />
+        protected override void OnDataLoaded()
         {
-            var sub = saveData as SubmarineSaveData;
-            base.LoadData(saveData);
+            base.OnDataLoaded();
 
-            if (sub != null)
-            {
-                IsDefaultTexture = sub.DefaultColorName;
-                currentHelmIndex = Math.Max(0, sub.CurrentHelmIndex);
-
-
-                PaintVehicleDefaultStyle(sub.VehicleName);
-                if (IsDefaultTexture)
-                    return;
-                PaintVehicleName(sub.VehicleName, NameColor.RGB, BaseColor.RGB);
-            }
+            PaintVehicleDefaultStyle(VehicleName);
+            if (IsDefaultTexture)
+                return;
+            PaintVehicleName(VehicleName, NameColor.RGB, BaseColor.RGB);
         }
         /// <inheritdoc />
         protected override Helm GetLoadedHelm()

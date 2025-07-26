@@ -1,4 +1,7 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Log;
+using AVS.SaveLoad;
+using Nautilus.Json;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -104,6 +107,15 @@ namespace AVS
             //    mv.OnKill();
             //}
             mv.OnFinishedLoading();
+        }
+
+        internal static void CreateSpritesFile(object sender, JsonFileEventArgs e)
+        {
+            SaveFiles.Current.WriteReflected(
+                Patches.SaveLoadManagerPatcher.SaveFileSpritesFileName,
+                VehicleManager.VehicleTypes.Select(x => x.techType).Where(x => GameInfoIcon.Has(x)).Select(x => x.AsString()).ToList(),
+                LogWriter.Default
+            );
         }
     }
 }

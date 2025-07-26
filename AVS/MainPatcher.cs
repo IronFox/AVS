@@ -71,29 +71,30 @@ namespace AVS
         {
             LogWriter.Default.Write("Patch started.");
             LogWriter.Default.Write("Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.SaveData>()");
-            //SaveLoad.SaveData saveData = Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.SaveData>();
+            var saveData = Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.ZeroSaveData>();
 
             // Update the player position before saving it
-            //saveData.OnStartedSaving += (object sender, Nautilus.Json.JsonFileEventArgs e) =>
-            //{
-            //    //try
-            //    //{
+            saveData.OnStartedSaving += (object sender, Nautilus.Json.JsonFileEventArgs e) =>
+            {
+                //try
+                //{
 
-            //    //    VehicleComponents.MagnetBoots.DetachAll();
-            //    //}
-            //    //catch (Exception ex)
-            //    //{
-            //    //    Eve.Logger.LogException("Failed to detach all magnet boots!", ex);
-            //    //}
-            //    //try
-            //    //{
-            //    //    VehicleManager.CreateSaveFileData(sender, e);
-            //    //}
-            //    //catch (Exception ex)
-            //    //{
-            //    //    Eve.Logger.LogException("Failed to Create Save File Data!", ex);
-            //    //}
-            //};
+                //    VehicleComponents.MagnetBoots.DetachAll();
+                //}
+                //catch (Exception ex)
+                //{
+                //    Eve.Logger.LogException("Failed to detach all magnet boots!", ex);
+                //}
+                try
+                {
+                    VehicleManager.CreateSpritesFile(sender, e);
+                    LogWriter.Default.Write("Sprites file created successfully.");
+                }
+                catch (Exception ex)
+                {
+                    LogWriter.Default.Error("Failed to create sprites file", ex);
+                }
+            };
 
             //saveData.OnFinishedSaving += (object sender, Nautilus.Json.JsonFileEventArgs e) =>
             //{

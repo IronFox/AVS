@@ -1,4 +1,4 @@
-﻿namespace AVS.Saving
+﻿namespace AVS.SaveLoad
 {
     /// <summary>
     /// Save data for submarines.

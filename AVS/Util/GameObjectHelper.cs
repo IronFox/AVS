@@ -1,6 +1,8 @@
-﻿using System;
+﻿using AVS.Log;
+using AVS.SaveLoad;
+using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -475,5 +477,45 @@ namespace AVS.Util
                 return;
             action(item);
         }
+
+        /// <summary>
+        /// Retrieves the <see cref="PrefabIdentifier"/> component attached to the specified component.
+        /// </summary>
+        /// <param name="c">The component from which to retrieve the <see cref="PrefabIdentifier"/>. Can be <see langword="null"/>.</param>
+        /// <returns>The <see cref="PrefabIdentifier"/> component if found; otherwise, <see langword="null"/>.</returns>
+        public static PrefabIdentifier? PrefabId(this Component? c)
+        {
+            if (c == null)
+                return default;
+            return c.GetComponent<PrefabIdentifier>();
+        }
+
+
+
+        /// <summary>
+        /// Extension method to write reflected data associated with a prefab identifier to a JSON file of the current save game slot.
+        /// </summary>
+        public static bool WriteReflected<T>(this PrefabIdentifier? prefabID, string prefix, T data, LogWriter writer)
+            => SaveFiles.Current.WritePrefabReflected(prefabID, prefix, data, writer);
+
+        /// <summary>
+        /// Extension method to write data associated with a prefab identifier to a JSON file of the current save game slot.
+        /// </summary>
+        public static bool WriteData(this PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer)
+            => SaveFiles.Current.WritePrefabData(prefabID, prefix, data, writer);
+
+        /// <summary>
+        /// Extension method to read data via reflection from a JSON file in the current save game slot.
+        /// </summary>
+        public static bool ReadReflected<T>(this PrefabIdentifier? prefabID, string prefix, [NotNullWhen(true)] out T? data, LogWriter writer)
+                        where T : class
+            => SaveFiles.Current.ReadPrefabReflected(prefabID, prefix, out data, writer);
+
+        /// <summary>
+        /// Extension method to read data associated with a prefab identifier from a JSON file in the current save game slot.
+        /// </summary>
+        public static bool ReadData(this PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer)
+            => SaveFiles.Current.ReadPrefabData(prefabID, prefix, data, writer);
+
     }
 }

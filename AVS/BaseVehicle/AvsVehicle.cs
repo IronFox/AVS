@@ -93,6 +93,8 @@ namespace AVS.BaseVehicle
             stripeColor = config.InitialStripeColor;
             nameColor = config.InitialNameColor;
             interiorColor = config.InitialInteriorColor;
+
+            GetOrCreateData();
         }
 
         /// <summary>
@@ -387,7 +389,7 @@ namespace AVS.BaseVehicle
         /// <remarks>
         /// Copied during prefab setup.
         /// </remarks>
-        internal FMOD_StudioEventEmitter? ambienceSound;
+        public FMOD_StudioEventEmitter? ambienceSound;
 
 
         private PowerManager? powerManager;

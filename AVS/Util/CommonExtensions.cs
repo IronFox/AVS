@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 
 namespace AVS.Util
 {
@@ -28,6 +23,11 @@ namespace AVS.Util
         public static bool ToFloat(this string s, out float f)
         {
             return float.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out f);
+        }
+
+        public static float ToFloat(this string s)
+        {
+            return float.Parse(s, NumberStyles.Any, CultureInfo.InvariantCulture);
         }
     }
 }

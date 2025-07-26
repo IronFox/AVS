@@ -195,7 +195,7 @@ namespace AVS.BaseVehicle
                 model.mixin = em;
 
                 SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vb.BatterySlot.transform);
-                vb.BatterySlot.EnsureComponent<SaveLoad.VFBatteryIdentifier>();
+                vb.BatterySlot.EnsureComponent<SaveLoad.AvsBatteryIdentifier>();
             }
             // Configure energy interface
             aiEnergyInterface = Com.BackupBatteries.First().BatterySlot.EnsureComponent<EnergyInterface>();

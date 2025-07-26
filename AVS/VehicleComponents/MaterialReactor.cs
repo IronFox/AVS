@@ -1,5 +1,6 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Localization;
+using AVS.SaveLoad;
 using AVS.Util;
 using System;
 using System.Collections;
@@ -68,7 +69,6 @@ namespace AVS.VehicleComponents
         private ItemsContainer? container;
         private Coroutine? outputReactorDataCoroutine = null;
         private bool isInitialized = false;
-        private const string saveFileName = "MaterialReactor";
         private const string newSaveFileName = "Reactor";
 
         public void Initialize(AvsVehicle avsVehicle, int height, int width, string label, float totalCapacity, List<MaterialReactorData> iMaterialData)
@@ -337,7 +337,7 @@ namespace AVS.VehicleComponents
                 Logger.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot save data.");
                 return;
             }
-            SaveLoad.JsonInterface.Write<List<Tuple<TechType, float>>>(mv, newSaveFileName, GetSaveDict());
+            mv.PrefabID.WriteReflected(newSaveFileName, GetSaveDict(), mv.Log);
         }
         void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
         {
@@ -346,11 +346,7 @@ namespace AVS.VehicleComponents
                 Logger.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot load saved data.");
                 return;
             }
-            var saveDict = SaveLoad.JsonInterface.Read<List<Tuple<TechType, float>>>(mv, newSaveFileName);
-            if (saveDict == default)
-            {
-                saveDict = SaveLoad.JsonInterface.Read<List<Tuple<TechType, float>>>(mv, saveFileName);
-            }
+            mv.PrefabID.ReadReflected(newSaveFileName, out List<Tuple<TechType, float>>? saveDict, mv.Log);
             if (saveDict == default || saveDict.Count == 0)
             {
                 Logger.Warn("MaterialReactor: No saved data found, skipping load.");

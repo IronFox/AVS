@@ -156,7 +156,7 @@ namespace AVS
                         up.proxies = vu.ModuleProxies;
 
                     SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vu.Interface.transform);
-                    vu.Interface.EnsureComponent<SaveLoad.VFUpgradesIdentifier>();
+                    vu.Interface.EnsureComponent<SaveLoad.AvsUpgradesIdentifier>();
                 }
                 if (mv.Com.Upgrades.Count == 0)
                 {
@@ -306,7 +306,7 @@ namespace AVS
                 model.mixin = energyMixin;
 
                 SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vb.BatterySlot.transform);
-                vb.BatterySlot.EnsureComponent<SaveLoad.VFBatteryIdentifier>();
+                vb.BatterySlot.EnsureComponent<SaveLoad.AvsBatteryIdentifier>();
             }
             // Configure energy interface
             var eInterf = mv.gameObject.EnsureComponent<EnergyInterface>();
@@ -323,21 +323,28 @@ namespace AVS
         }
         public static void SetupLightSounds(AvsVehicle mv)
         {
+            mv.Log.Debug("Setting up light sounds for " + mv.name);
             FMOD_StudioEventEmitter[] fmods = SeamothHelper.Seamoth!.GetComponents<FMOD_StudioEventEmitter>();
             foreach (FMOD_StudioEventEmitter fmod in fmods)
             {
                 if (fmod.asset.name == "seamoth_light_on")
                 {
+                    mv.Log.Debug("Found light on sound for " + mv.name);
                     var ce = mv.gameObject.AddComponent<FMOD_CustomEmitter>();
                     ce.asset = fmod.asset;
                     mv.lightsOnSound = ce;
                 }
                 else if (fmod.asset.name == "seamoth_light_off")
                 {
+                    mv.Log.Debug("Found light off sound for " + mv.name);
                     var ce = mv.gameObject.AddComponent<FMOD_CustomEmitter>();
                     ce.asset = fmod.asset;
                     mv.lightsOffSound = ce;
                 }
+            }
+            if (mv.lightsOnSound == null || mv.lightsOffSound == null)
+            {
+                mv.Log.Error("Failed to find light sounds for " + mv.name);
             }
         }
         public static void SetupHeadLights(AvsVehicle mv)

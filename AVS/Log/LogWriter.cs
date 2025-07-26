@@ -139,7 +139,9 @@ namespace AVS.Log
         }
 
         /// <summary>
-        /// Creates a new log writer with an additional prefix.
+        /// Creates a new log writer with an additional prefix appended to end of the current prefix.
+        /// If the current prefix is null, the new prefix will be used as the only prefix.
+        /// Otherwise, the new prefix will be appended to the current prefix with a dot separator.
         /// </summary>
         /// <param name="prefix"></param>
         /// <returns></returns>
@@ -147,6 +149,20 @@ namespace AVS.Log
             => new LogWriter(Prefix is null ? prefix : $"{Prefix}.{prefix}",
                              Tags,
                              IncludeTimestamp);
+
+        /// <summary>
+        /// Returns a new <see cref="LogWriter"/> instance with the specified tag added to the existing tags.
+        /// </summary>
+        /// <param name="tag">The tag to add to the <see cref="LogWriter"/>. Cannot be null.</param>
+        /// <returns>A <see cref="LogWriter"/> instance with the specified tag included.  If the tag already exists, returns the
+        /// current instance.</returns>
+        public LogWriter Tag(string tag)
+            => Tags != null && Array.IndexOf(Tags, tag) >= 0
+                ? this
+                : new LogWriter(Prefix,
+                    (Tags ?? Array.Empty<string>())
+                    .Append(tag)
+                    .ToArray(), IncludeTimestamp);
     }
 
 }

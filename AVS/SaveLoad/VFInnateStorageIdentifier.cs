@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -41,13 +42,10 @@ namespace AVS.SaveLoad
             yield return new WaitUntil(() => mv != null);
 
             var thisStorage = mv.ReadInnateStorage(SaveFileName);
-            if (thisStorage == default)
+            if (thisStorage == null)
             {
-                thisStorage = SaveLoad.JsonInterface.Read<List<Tuple<TechType, float, TechType>>>(mv, SaveFileName);
-                if (thisStorage == default)
-                {
+                if (!mv.PrefabID.ReadReflected(SaveFileName, out thisStorage, mv.Log))
                     yield break;
-                }
             }
 
             TaskResult<GameObject> result = new TaskResult<GameObject>();

@@ -1,4 +1,4 @@
-﻿namespace AVS.Saving
+﻿namespace AVS.SaveLoad
 {
     /// <summary>
     /// Basic save data written for all vehicles

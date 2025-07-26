@@ -1,7 +1,7 @@
-﻿using HarmonyLib;
-using Newtonsoft.Json;
+﻿using AVS.Log;
+using AVS.SaveLoad;
+using HarmonyLib;
 using System.Collections.Generic;
-using System.IO;
 
 // PURPOSE: allow custom save file sprites to be displayed
 // VALUE: High.
@@ -20,35 +20,9 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(SaveLoadManager.RegisterSaveGame))]
         public static void SaveLoadManagerRegisterSaveGamePostfix(string slotName)
         {
-            string subnauticaPath;
             try
             {
-                subnauticaPath = Directory.GetParent(BepInEx.Paths.BepInExRootPath).FullName;
-            }
-            catch (System.Exception e)
-            {
-                Logger.LogException("Failed to get parent directory.", e);
-                return;
-            }
-            string savePath;
-            try
-            {
-                savePath = Path.Combine(subnauticaPath, "SNAppData", "SavedGames", slotName, SaveLoad.JsonInterface.SaveFolderName, $"{SaveFileSpritesFileName}.json");
-            }
-            catch (System.Exception e)
-            {
-                Logger.LogException("Failed to get parent directory.", e);
-                return;
-            }
-            if (!File.Exists(savePath))
-            {
-                Logger.Warn($"SaveLoadManager.RegisterSaveGamePostfix failed to find the save game json file: {savePath}");
-                return;
-            }
-            try
-            {
-                string jsonContent = File.ReadAllText(savePath);
-                List<string> hasTechTypes = JsonConvert.DeserializeObject<List<string>>(jsonContent);
+                SaveFiles.OfSlot(slotName).ReadReflected<List<string>>(SaveFileSpritesFileName, out var hasTechTypes, LogWriter.Default);
                 if (hasTechTypes != null)
                 {
                     if (hasTechTypeGameInfo.ContainsKey(slotName))
@@ -59,6 +33,8 @@ namespace AVS.Patches
                     {
                         hasTechTypeGameInfo.Add(slotName, hasTechTypes);
                     }
+                    LogWriter.Default.Debug(
+                        $"SaveLoadManager.RegisterSaveGamePostfix: Registered {hasTechTypes.Count} TechTypes for save slot '{slotName}'");
                 }
             }
             catch (System.Exception e)

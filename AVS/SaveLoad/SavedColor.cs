@@ -1,15 +1,8 @@
-﻿using AVS.SaveLoad;
-using AVS.Util;
+﻿using AVS.Util;
 using AVS.VehicleComponents;
-using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
-namespace AVS.Saving
+namespace AVS.SaveLoad
 {
     /// <summary>
     /// Color representation used for saving and loading vehicle colors.
@@ -31,7 +24,8 @@ namespace AVS.Saving
         /// <param name="color"></param>
         public static SavedColor From(VehicleColor color)
         {
-            return new SavedColor {
+            return new SavedColor
+            {
                 RGB = '#' + ColorUtility.ToHtmlStringRGB(color.RGB),
                 HSB = $"{color.HSB.x.ToStr()},{color.HSB.y.ToStr()},{color.HSB.z.ToStr()}"
             };
@@ -64,11 +58,11 @@ namespace AVS.Saving
             var parts = HSB?.Split(',');
             if (parts == null
                 || parts.Length != 3
-                || parts[0].ToFloat(out var h)
-                || parts[1].ToFloat(out var s)
-                || parts[2].ToFloat(out var b))
+                || !parts[0].ToFloat(out var h)
+                || !parts[1].ToFloat(out var s)
+                || !parts[2].ToFloat(out var b))
             {
-                Logger.Error($"Invalid HSB format: {HSB}. HSB will not be set");
+                Logger.Error($"Invalid HSB format: '{HSB}' |{parts?.Length}| {{ {string.Join(";", parts)} }}. HSB will not be set");
                 return new VehicleColor(rgb);
             }
             return new VehicleColor(rgb, new Vector3(h, s, b));

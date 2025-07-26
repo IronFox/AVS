@@ -1,4 +1,6 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Log;
+using AVS.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,12 +9,10 @@ using UnityEngine;
 
 namespace AVS.SaveLoad
 {
-    internal class VFUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
+    internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
     {
         internal bool isFinished = false;
         internal AvsVehicle mv => GetComponentInParent<AvsVehicle>();
-        const string saveFileNameSuffix = "upgrades";
-        private string SaveFileName => SaveLoadUtils.GetSaveFileName(mv.transform, transform, saveFileNameSuffix);
         private const string NewSaveFileName = "Upgrades";
         void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
         {
@@ -23,7 +23,10 @@ namespace AVS.SaveLoad
             }
             Dictionary<string, TechType> result = new Dictionary<string, TechType>();
             upgradeList.ForEach(x => result.Add(x.Key, x.Value?.techType ?? TechType.None));
-            SaveLoad.JsonInterface.Write<Dictionary<string, TechType>>(mv, NewSaveFileName, result);
+            mv.PrefabID?.WriteReflected(
+                NewSaveFileName,
+                result,
+                LogWriter.Default);
         }
         void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
         {
@@ -34,15 +37,13 @@ namespace AVS.SaveLoad
             yield return new WaitUntil(() => mv != null);
             yield return new WaitUntil(() => mv.upgradesInput.equipment != null);
             mv.UnlockDefaultModuleSlots();
-            var theseUpgrades = SaveLoad.JsonInterface.Read<Dictionary<string, TechType>>(mv, NewSaveFileName);
-            if (theseUpgrades == default)
+            if (!mv.PrefabID.ReadReflected<Dictionary<string, TechType>>(
+                NewSaveFileName,
+                out var theseUpgrades,
+                LogWriter.Default))
             {
-                theseUpgrades = SaveLoad.JsonInterface.Read<Dictionary<string, TechType>>(mv, SaveFileName);
-                if (theseUpgrades == default)
-                {
-                    isFinished = true;
-                    yield break;
-                }
+                isFinished = true;
+                yield break;
             }
             foreach (var upgrade in theseUpgrades.Where(x => x.Value != TechType.None))
             {

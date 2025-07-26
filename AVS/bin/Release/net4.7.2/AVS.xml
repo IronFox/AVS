@@ -2027,17 +2027,20 @@
             Set during Awake().
             </summary>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.AllocateSaveData">
+        <member name="M:AVS.BaseVehicle.AvsVehicle.CreateDataBlocks(System.Action{AVS.SaveLoad.DataBlock})">
             <summary>
-            Allocates a new save data container for saving or loading
+            Creates the save data container for this vehicle.
             </summary>
-            <returns>Container</returns>
+            <remarks>
+            For consistency, the base method should be called LAST
+            by any inherited class
+            </remarks>
+            <param name="addBlock">Action to register new blocks with</param>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.WriteSaveData(AVS.Saving.VehicleSaveData)">
+        <member name="P:AVS.BaseVehicle.AvsVehicle.Constructed">
             <summary>
-            Writes all simple key value data to the save data container.
+            The construction date of this vehicle.
             </summary>
-            <param name="saveData">Container previously allocated via <see cref="M:AVS.BaseVehicle.AvsVehicle.AllocateSaveData"/> </param>
         </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.GetLoadedHelm">
             <summary>
@@ -2047,11 +2050,15 @@
             </summary>
             <returns></returns>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.LoadData(AVS.Saving.VehicleSaveData)">
+        <member name="M:AVS.BaseVehicle.AvsVehicle.OnDataLoaded">
             <summary>
-            Loads data previously saved via <see cref="M:AVS.BaseVehicle.AvsVehicle.WriteSaveData(AVS.Saving.VehicleSaveData)"/>.
+            Executed when the data for this vehicle has been loaded.
             </summary>
-            <param name="saveData">Data to load</param>
+        </member>
+        <member name="P:AVS.BaseVehicle.AvsVehicle.PrefabID">
+            <summary>
+            Fetches the prefab identifier of this vehicle.
+            </summary>
         </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.OnGameSaved">
             <summary>
@@ -4100,10 +4107,20 @@
         </member>
         <member name="M:AVS.Log.LogWriter.Prefixed(System.String)">
             <summary>
-            Creates a new log writer with an additional prefix.
+            Creates a new log writer with an additional prefix appended to end of the current prefix.
+            If the current prefix is null, the new prefix will be used as the only prefix.
+            Otherwise, the new prefix will be appended to the current prefix with a dot separator.
             </summary>
             <param name="prefix"></param>
             <returns></returns>
+        </member>
+        <member name="M:AVS.Log.LogWriter.Tag(System.String)">
+            <summary>
+            Returns a new <see cref="T:AVS.Log.LogWriter"/> instance with the specified tag added to the existing tags.
+            </summary>
+            <param name="tag">The tag to add to the <see cref="T:AVS.Log.LogWriter"/>. Cannot be null.</param>
+            <returns>A <see cref="T:AVS.Log.LogWriter"/> instance with the specified tag included.  If the tag already exists, returns the
+            current instance.</returns>
         </member>
         <member name="T:AVS.Log.MaterialLog">
             <summary>
@@ -4713,85 +4730,328 @@
             behaviors.</remarks>
             <param name="__instance">The instance of <see cref="T:VFXConstructing"/> being patched, representing the vehicle under construction.</param>
         </member>
-        <member name="T:AVS.Saving.SavedColor">
+        <member name="T:AVS.SaveLoad.Data">
+            <summary>
+            Captures and restores data produced by an entity.
+            </summary>
+        </member>
+        <member name="M:AVS.SaveLoad.Data.#ctor(System.String,AVS.SaveLoad.DataBlock[])">
+            <summary>
+            Creates a new file with the given name and blocks.
+            </summary>
+            <param name="name">File name for debugging and logging purposes.
+            Not persisted to JSON.</param>
+            <param name="blocks">File blocks, each containing a collection of properties.</param>
+        </member>
+        <member name="P:AVS.SaveLoad.Data.Name">
+            <summary>
+            File name for debugging and logging purposes.
+            Not persisted to JSON.
+            </summary>
+        </member>
+        <member name="P:AVS.SaveLoad.Data.Blocks">
+            <summary>
+            File blocks, each containing a collection of properties.
+            </summary>
+        </member>
+        <member name="T:AVS.SaveLoad.DataBlock">
+            <summary>
+            Data associated with a specific save context (e.g. a vehicle type specific data).
+            Each instance should be handled by one class only.
+            </summary>
+        </member>
+        <member name="M:AVS.SaveLoad.DataBlock.GetEnumerator">
+            <summary>
+            Gets an enumerator that iterates through the collection of properties.
+            </summary>
+            <returns>An enumerator for the collection of properties.</returns>
+        </member>
+        <member name="M:AVS.SaveLoad.DataBlock.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+            Gets an enumerator that iterates through a collection.
+            </summary>
+            <returns>An enumerator for the collection.</returns>
+        </member>
+        <member name="M:AVS.SaveLoad.DataBlock.#ctor(System.String,AVS.SaveLoad.IPersistable[])">
+            <summary>
+            Creates a new file block with the given name and properties.
+            </summary>
+            <param name="name">File block name</param>
+            <param name="properties">Contained properties</param>
+        </member>
+        <member name="M:AVS.SaveLoad.DataBlock.#ctor(System.String,System.Collections.Generic.IEnumerable{AVS.SaveLoad.IPersistable})">
+            <summary>
+            Creates a new file block with the given name and properties.
+            </summary>
+            <param name="name">File block name</param>
+            <param name="properties">Contained properties</param>
+        </member>
+        <member name="M:AVS.SaveLoad.DataBlock.Add(AVS.SaveLoad.IPersistable)">
+            <summary>
+            Appends a new property to the block.
+            </summary>
+            <param name="property">New property</param>
+        </member>
+        <member name="P:AVS.SaveLoad.DataBlock.Name">
+            <summary>
+            File block name, used to identify the block in the JSON file.
+            </summary>
+        </member>
+        <member name="P:AVS.SaveLoad.DataBlock.Properties">
+            <summary>
+            Gets the collection of properties associated with the current object.
+            </summary>
+        </member>
+        <member name="T:AVS.SaveLoad.IPersistable">
+            <summary>
+            Data entry that can be persisted to a JSON file.
+            </summary>
+        </member>
+        <member name="P:AVS.SaveLoad.IPersistable.Name">
+            <summary>
+            Name of the property as written to JSON.
+            </summary>
+        </member>
+        <member name="M:AVS.SaveLoad.IPersistable.ExportValue">
+            <summary>
+            Exports the value of the property as a value that can be written to JSON.
+            </summary>
+            <returns>Value to be saved.</returns>
+        </member>
+        <member name="M:AVS.SaveLoad.IPersistable.RestoreValue(Newtonsoft.Json.Linq.JToken,AVS.Log.LogWriter)">
+            <summary>
+            Restores the value of the property.
+            </summary>
+            <param name="value">Value to restore.</param>
+            <param name="writer">Log writer to use for logging.</param>
+        </member>
+        <member name="T:AVS.SaveLoad.Persistable">
+            <summary>
+            Helper class to create persistent properties.
+            </summary>
+        </member>
+        <member name="M:AVS.SaveLoad.Persistable.Property``1(System.String,System.Func{``0},System.Action{``0})">
+            <summary>
+            Creates a persistent property with the given name, getter and setter.
+            </summary>
+            <typeparam name="T">Type preserved in JSON. Should be a simple type (bool, int, string, ...)</typeparam>
+            <param name="name">Name of the property.</param>
+            <param name="get">Function to get the value.</param>
+            <param name="set">Action to set the value.</param>
+            <returns>New persistent property.</returns>
+        </member>
+        <member name="T:AVS.SaveLoad.PersistentProperty`1">
+            <summary>
+            Property written to and restored from a JSON file.
+            </summary>
+            <typeparam name="T">Type preserved in JSON. Should be a simple type (bool, int, string, ...)
+            </typeparam>
+        </member>
+        <member name="P:AVS.SaveLoad.PersistentProperty`1.Name">
+            <summary>
+            The name of the property as written to JSON.
+            </summary>
+        </member>
+        <member name="P:AVS.SaveLoad.PersistentProperty`1.ExportValue">
+            <summary>
+            The function to export the value of the property.
+            </summary>
+        </member>
+        <member name="P:AVS.SaveLoad.PersistentProperty`1.ApplyImportedValue">
+            <summary>
+            Gets the action that reapply the value to its owner.
+            </summary>
+        </member>
+        <member name="P:AVS.SaveLoad.FilePath.FullName">
+            <summary>
+            Full file path, including directory and file name.
+            </summary>
+        </member>
+        <member name="M:AVS.SaveLoad.FilePath.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.SaveLoad.FilePath"/> class with the specified file path.
+            </summary>
+        </member>
+        <member name="M:AVS.SaveLoad.FilePath.#ctor(System.String[])">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.SaveLoad.FilePath"/> class by combining multiple parts into a single file path.
+            </summary>
+            <param name="parts"></param>
+        </member>
+        <member name="P:AVS.SaveLoad.FilePath.IsValid">
+            <summary>
+            Checks whether <see cref="P:AVS.SaveLoad.FilePath.FullName"/> is valid.
+            </summary>
+        </member>
+        <member name="P:AVS.SaveLoad.FilePath.IsFile">
+            <summary>
+            Checks whether <see cref="P:AVS.SaveLoad.FilePath.FullName" /> points to a valid file.
+            </summary>
+        </member>
+        <member name="P:AVS.SaveLoad.FilePath.IsDirectory">
+            <summary>
+            Checks whether <see cref="P:AVS.SaveLoad.FilePath.FullName" /> points to a valid directory.
+            </summary>
+        </member>
+        <member name="P:AVS.SaveLoad.FilePath.FileSize">
+            <summary>
+            Gets the size of the file in bytes.
+            </summary>
+        </member>
+        <member name="M:AVS.SaveLoad.FilePath.ReadAllText">
+            <summary>
+            Reads all text from the file specified by the current path.
+            </summary>
+            <remarks>This method reads the entire content of the file into memory. Ensure that the file
+            size is manageable to avoid memory issues.</remarks>
+            <returns>The entire content of the file as a string.</returns>
+        </member>
+        <member name="M:AVS.SaveLoad.FilePath.WriteAllText(System.String)">
+            <summary>
+            Writes the specified text to the file, overwriting any existing content.
+            </summary>
+            <remarks>This method writes the entire content to the file specified by the <see
+            cref="P:AVS.SaveLoad.FilePath.FullName"/> property. If the file does not exist, it will be created. If the file already contains
+            data, it will be replaced with the new content.</remarks>
+            <param name="fileContent">The text to write to the file. Cannot be null.</param>
+        </member>
+        <member name="T:AVS.SaveLoad.SavedColor">
             <summary>
             Color representation used for saving and loading vehicle colors.
             </summary>
         </member>
-        <member name="P:AVS.Saving.SavedColor.HSB">
+        <member name="P:AVS.SaveLoad.SavedColor.HSB">
             <summary>
             Hue, Saturation, Brightness (HSB) representation of the color.
             </summary>
         </member>
-        <member name="P:AVS.Saving.SavedColor.RGB">
+        <member name="P:AVS.SaveLoad.SavedColor.RGB">
             <summary>
             RGB representation of the color in hex format (e.g., #FF5733).
             </summary>
         </member>
-        <member name="M:AVS.Saving.SavedColor.From(AVS.VehicleComponents.VehicleColor)">
+        <member name="M:AVS.SaveLoad.SavedColor.From(AVS.VehicleComponents.VehicleColor)">
             <summary>
             Resets the local color representation from the given color.
             </summary>
             <param name="color"></param>
         </member>
-        <member name="M:AVS.Saving.SavedColor.ToColor">
+        <member name="M:AVS.SaveLoad.SavedColor.ToColor">
             <summary>
             Converts the local color representation to a <see cref="T:AVS.VehicleComponents.VehicleColor"/>.
             </summary>
             <returns></returns>
         </member>
-        <member name="T:AVS.Saving.SubmarineSaveData">
+        <member name="T:AVS.SaveLoad.SaveFiles">
+            <summary>
+            Files of one save slot.
+            </summary>
+        </member>
+        <member name="P:AVS.SaveLoad.SaveFiles.Current">
+            <summary>
+            Accesses the current save slot files.
+            </summary>
+        </member>
+        <member name="M:AVS.SaveLoad.SaveFiles.OfSlot(System.String)">
+            <summary>
+            Accesses the save files of a specific slot.
+            </summary>
+            <param name="slot">Slot to access</param>
+        </member>
+        <member name="M:AVS.SaveLoad.SaveFiles.WritePrefabReflected``1(PrefabIdentifier,System.String,``0,AVS.Log.LogWriter)">
+            <summary>
+            Writes data associated with a prefab identifier to a JSON file.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="prefabID"></param>
+            <param name="prefix">File prefix</param>
+            <param name="data"></param>
+            <param name="writer">Log writer for logging errors and debug information</param>
+        </member>
+        <member name="M:AVS.SaveLoad.SaveFiles.WritePrefabData(PrefabIdentifier,System.String,AVS.SaveLoad.Data,AVS.Log.LogWriter)">
+            <summary>
+            Writes data associated with a prefab identifier to a JSON file.
+            </summary>
+            <param name="prefabID"></param>
+            <param name="prefix">File prefix</param>
+            <param name="data"></param>
+            <param name="writer">Log writer for logging errors and debug information</param>
+        </member>
+        <member name="M:AVS.SaveLoad.SaveFiles.ReadPrefabReflected``1(PrefabIdentifier,System.String,``0@,AVS.Log.LogWriter)">
+            <summary>
+            Deserializes JSON data for a specified prefab identifier.
+            </summary>
+            <typeparam name="T">Type to deserialize from JSON</typeparam>
+            <param name="prefabID">The identifier of the prefab to read. Cannot be <see langword="null"/>.</param>
+            <param name="prefix">A string prefix used to construct the JSON file name.</param>
+            <param name="outData">Deserialized data</param>
+            <param name="writer">Log writer</param>
+            <returns>True on success</returns>
+        </member>
+        <member name="M:AVS.SaveLoad.SaveFiles.ReadPrefabData(PrefabIdentifier,System.String,AVS.SaveLoad.Data,AVS.Log.LogWriter)">
+            <summary>
+            Reads and processes JSON data for a specified prefab identifier.
+            </summary>
+            <remarks>This method attempts to read JSON data associated with the given <paramref
+            name="prefabID"/> and populate the provided <paramref name="data"/> object. If <paramref name="prefabID"/>
+            is <see langword="null"/>, or if the JSON data cannot be read, an error is logged.</remarks>
+            <param name="prefabID">The identifier of the prefab to read. Cannot be <see langword="null"/>.</param>
+            <param name="prefix">A string prefix used to construct the JSON file name.</param>
+            <param name="data">The data object to populate with the JSON content.</param>
+            <param name="writer">The log writer used to record operation details and errors.</param>
+        </member>
+        <member name="T:AVS.SaveLoad.SubmarineSaveData">
             <summary>
             Save data for submarines.
             </summary>
         </member>
-        <member name="P:AVS.Saving.SubmarineSaveData.DefaultColorName">
+        <member name="P:AVS.SaveLoad.SubmarineSaveData.DefaultColorName">
             <summary>
             True if the default coloring should be used for the name display
             </summary>
         </member>
-        <member name="P:AVS.Saving.SubmarineSaveData.CurrentHelmIndex">
+        <member name="P:AVS.SaveLoad.SubmarineSaveData.CurrentHelmIndex">
             <summary>
             The seat currently used by the player to pilot this submarine.
             </summary>
         </member>
-        <member name="T:AVS.Saving.VehicleSaveData">
+        <member name="T:AVS.SaveLoad.VehicleSaveData">
             <summary>
             Basic save data written for all vehicles
             </summary>
         </member>
-        <member name="P:AVS.Saving.VehicleSaveData.IsControlling">
+        <member name="P:AVS.SaveLoad.VehicleSaveData.IsControlling">
             <summary>
             The player is currently at the helm of this vehicle.
             </summary>
         </member>
-        <member name="P:AVS.Saving.VehicleSaveData.EnteredThroughHatch">
+        <member name="P:AVS.SaveLoad.VehicleSaveData.EnteredThroughHatch">
             <summary>
             The hatch through which the player entered this vehicle.
             -1 if the player is not inside this vehicle.
             </summary>
         </member>
-        <member name="P:AVS.Saving.VehicleSaveData.VehicleName">
+        <member name="P:AVS.SaveLoad.VehicleSaveData.VehicleName">
             <summary>
             The given name of this vehicle.
             </summary>
         </member>
-        <member name="P:AVS.Saving.VehicleSaveData.BaseColor">
+        <member name="P:AVS.SaveLoad.VehicleSaveData.BaseColor">
             <summary>
             The set base color of this vehicle
             </summary>
         </member>
-        <member name="P:AVS.Saving.VehicleSaveData.InteriorColor">
+        <member name="P:AVS.SaveLoad.VehicleSaveData.InteriorColor">
             <summary>
             The set interior color of this vehicle
             </summary>
         </member>
-        <member name="P:AVS.Saving.VehicleSaveData.StripeColor">
+        <member name="P:AVS.SaveLoad.VehicleSaveData.StripeColor">
             <summary>
             The set stripe color of this vehicle
             </summary>
         </member>
-        <member name="P:AVS.Saving.VehicleSaveData.NameColor">
+        <member name="P:AVS.SaveLoad.VehicleSaveData.NameColor">
             <summary>
             The set name color of this vehicle
             </summary>
@@ -5293,6 +5553,33 @@
             <param name="item">The object to check for null before executing the action.</param>
             <param name="action">The action to execute if <paramref name="item"/> is not null.</param>
         </member>
+        <member name="M:AVS.Util.GameObjectHelper.PrefabId(UnityEngine.Component)">
+            <summary>
+            Retrieves the <see cref="T:PrefabIdentifier"/> component attached to the specified component.
+            </summary>
+            <param name="c">The component from which to retrieve the <see cref="T:PrefabIdentifier"/>. Can be <see langword="null"/>.</param>
+            <returns>The <see cref="T:PrefabIdentifier"/> component if found; otherwise, <see langword="null"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.GameObjectHelper.WriteReflected``1(PrefabIdentifier,System.String,``0,AVS.Log.LogWriter)">
+            <summary>
+            Extension method to write reflected data associated with a prefab identifier to a JSON file of the current save game slot.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.GameObjectHelper.WriteData(PrefabIdentifier,System.String,AVS.SaveLoad.Data,AVS.Log.LogWriter)">
+            <summary>
+            Extension method to write data associated with a prefab identifier to a JSON file of the current save game slot.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.GameObjectHelper.ReadReflected``1(PrefabIdentifier,System.String,``0@,AVS.Log.LogWriter)">
+            <summary>
+            Extension method to read data via reflection from a JSON file in the current save game slot.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.GameObjectHelper.ReadData(PrefabIdentifier,System.String,AVS.SaveLoad.Data,AVS.Log.LogWriter)">
+            <summary>
+            Extension method to read data associated with a prefab identifier from a JSON file in the current save game slot.
+            </summary>
+        </member>
         <member name="T:AVS.Util.Shaders">
             <summary>
             Constants and helper methods related to shaders.
@@ -5696,6 +5983,12 @@
             Nav light controller created during Awake.
             </summary>
         </member>
+        <member name="M:AVS.VehicleTypes.Submarine.CreateDataBlocks(System.Action{AVS.SaveLoad.DataBlock})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.OnDataLoaded">
+            <inheritdoc />
+        </member>
         <member name="M:AVS.VehicleTypes.Submarine.GetLoadedHelm">
             <inheritdoc />
         </member>
@@ -5753,6 +6046,35 @@
         </member>
         <member name="M:AVS.VehicleTypes.Submersible.OnPlayerEntry">
             <inheritdoc/>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.NotNullAttribute">
+            <summary>Specifies that an output will not be null even if the corresponding type allows it. Specifies that an input argument was not null when the call returns.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute">
+            <summary>Specifies that when a method returns <see cref="P:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute.ReturnValue"/>, the parameter will not be null even if the corresponding type allows it.</summary>
+        </member>
+        <member name="M:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute.#ctor(System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute"/> class.
+            </summary>
+            <param name="returnValue">The return value condition. If the method returns this value, the associated parameter will not be null.</param>
+        </member>
+        <member name="P:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute.ReturnValue">
+            <summary>
+            Gets a value indicating whether the annotated parameter will be null depending on the return value.
+            </summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute">
+            <summary>Specifies that when a method returns <see cref="P:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute.ReturnValue"/>, the parameter may be null even if the corresponding type disallows it.</summary>
+        </member>
+        <member name="M:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute.#ctor(System.Boolean)">
+            <summary>Initializes the attribute with the specified return value condition.</summary>
+            <param name="returnValue">
+            The return value condition. If the method returns this value, the associated parameter may be null.
+            </param>
+        </member>
+        <member name="P:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute.ReturnValue">
+            <summary>Gets the return value condition.</summary>
         </member>
     </members>
 </doc>

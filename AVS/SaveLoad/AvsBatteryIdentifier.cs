@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace AVS.SaveLoad
 {
-    internal class VFBatteryIdentifier : MonoBehaviour, IProtoTreeEventListener
+    internal class AvsBatteryIdentifier : MonoBehaviour, IProtoTreeEventListener
     {
         internal AvsVehicle mv => GetComponentInParent<AvsVehicle>();
         const string saveFileNameSuffix = "battery";
@@ -37,7 +37,7 @@ namespace AVS.SaveLoad
             var thisBattery = mv.ReadBatteryData(SaveFileName);
             if (thisBattery == default)
             {
-                thisBattery = SaveLoad.JsonInterface.Read<Tuple<TechType, float>>(mv, SaveFileName);
+                SaveFiles.Current.ReadPrefabReflected(mv.PrefabID, SaveFileName, out thisBattery, mv.Log);
             }
             if (thisBattery == default || thisBattery.Item1 == TechType.None)
             {
