@@ -1,4 +1,6 @@
-﻿using HarmonyLib;
+﻿using AVS.Crafting;
+using AVS.UpgradeModules;
+using HarmonyLib;
 
 // PURPOSE: allow VF upgrades for the Prawn to be used as expected
 // VALUE: High.
@@ -25,14 +27,14 @@ namespace AVS.Patches
             if (exo != null)
             {
                 TechType techType = exo.modules.GetTechTypeInSlot(exo.slotIDs[slotID]);
-                UpgradeTypes.ToggleActionParams param = new UpgradeTypes.ToggleActionParams
+                var param = new ToggleActionParams
                 {
                     active = active,
                     vehicle = exo,
                     slotID = slotID,
                     techType = techType
                 };
-                Admin.UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
+                UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
             }
         }
 
@@ -43,15 +45,15 @@ namespace AVS.Patches
             var exo = __instance as Exosuit;
             if (exo != null)
             {
-                UpgradeTypes.SelectableActionParams param = new UpgradeTypes.SelectableActionParams
+                var param = new SelectableActionParams
                 (
                     vehicle: __instance,
                     slotID: slotID,
                     techType: techType
                 );
-                Admin.UpgradeRegistrar.OnSelectActions.ForEach(x => x(param));
+                UpgradeRegistrar.OnSelectActions.ForEach(x => x(param));
 
-                UpgradeTypes.SelectableChargeableActionParams param2 = new UpgradeTypes.SelectableChargeableActionParams
+                var param2 = new SelectableChargeableActionParams
                 (
                     vehicle: __instance,
                     slotID: slotID,
@@ -59,7 +61,7 @@ namespace AVS.Patches
                     charge: param.Vehicle.quickSlotCharge[param.SlotID],
                     slotCharge: param.Vehicle.GetSlotCharge(param.SlotID)
                 );
-                Admin.UpgradeRegistrar.OnSelectChargeActions.ForEach(x => x(param2));
+                UpgradeRegistrar.OnSelectChargeActions.ForEach(x => x(param2));
             }
         }
     }

@@ -58,7 +58,7 @@ namespace AVS.Configuration
 
 
         /// <summary>
-        /// Creates a new instance of the <see cref="NewRecipe"/> class with no modifications.
+        /// Creates a new instance of the <see cref="NewRecipe"/> class with no ingredients.
         /// </summary>
         /// <returns>A new <see cref="NewRecipe"/> instance.</returns>
         public static NewRecipe WithNothing()

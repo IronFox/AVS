@@ -1,6 +1,6 @@
 ﻿using AVS.Configuration;
 using AVS.Localization;
-using AVS.UpgradeTypes;
+using AVS.UpgradeModules;
 //using AVS.Localization;
 
 namespace AVS.DepthModules

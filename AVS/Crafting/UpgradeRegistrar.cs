@@ -1,8 +1,7 @@
 ﻿using AVS.Assets;
 using AVS.BaseVehicle;
 using AVS.Log;
-using AVS.UpgradeTypes;
-using AVS.Util;
+using AVS.UpgradeModules;
 using Nautilus.Assets.Gadgets;
 using System;
 using System.Collections;
@@ -10,7 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace AVS.Admin
+namespace AVS.Crafting
 {
     /// <summary>
     /// Specifies compatibility flags for registering upgrades with different vehicle types.
@@ -222,7 +221,7 @@ namespace AVS.Admin
         /// <param name="compat">Compatibility flags for vehicle types.</param>
         /// <param name="verbose">If true, enables verbose logging.</param>
         /// <returns>UpgradeTechTypes containing TechTypes for each vehicle type.</returns>
-        public static UpgradeTechTypes RegisterUpgrade(AvsVehicleUpgrade upgrade, UpgradeCompat compat = default(UpgradeCompat), bool verbose = false)
+        public static UpgradeTechTypes RegisterUpgrade(AvsVehicleUpgrade upgrade, UpgradeCompat compat = default, bool verbose = false)
         {
             LogWriter.Default.Write($"Registering {nameof(AvsVehicleUpgrade)} " + upgrade.ClassId + " : " + upgrade.DisplayName);
             bool result = ValidateAvsVehicleUpgrade(upgrade, compat);
@@ -305,25 +304,21 @@ namespace AVS.Admin
             };
             module_CustomPrefab.SetGameObject(moduleTemplate);
 
-            IReadOnlyList<string> steps;
+            Path<string> tabPath;
             if (upgrade.IsVehicleSpecific)
             {
-                steps = upgrade.ResolvePath(VehicleType.Custom);
+                tabPath = upgrade.ResolveTabPath(VehicleType.Custom);
             }
             else
             {
-                steps = upgrade.ResolvePath(VehicleType.AvsVehicle);
+                tabPath = upgrade.ResolveTabPath(VehicleType.AvsVehicle);
             }
-            if (!CraftTreeHandler.IsValidCraftPath(steps))
-            {
-                throw new Exception($"UpgradeRegistrar: Invalid Crafting Path: there were tab nodes in that tab: {steps.Last()}. Cannot mix tab nodes and crafting nodes.");
-            }
-            CraftTreeHandler.CraftNodeTabNodes.Add(steps.Last());
+            CraftTreeHandler.RequireTabPathIsValidForModules(tabPath, true);
             module_CustomPrefab
                 .SetRecipe(moduleRecipe)
                 .WithCraftingTime(upgrade.CraftingTime)
-                .WithFabricatorType(Assets.AVSFabricator.TreeType)
-                .WithStepsToFabricatorTab(steps.ToArray());
+                .WithFabricatorType(AvsFabricator.TreeType)
+                .WithStepsToFabricatorTab(tabPath.Segments);
             module_CustomPrefab.SetPdaGroupCategory(TechGroup.VehicleUpgrades, TechCategory.VehicleUpgrades);
             module_CustomPrefab
                 .SetEquipment(VehicleBuilder.ModuleType)

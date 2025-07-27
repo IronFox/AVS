@@ -1,5 +1,4 @@
 ﻿using AVS.BaseVehicle;
-using AVS.Localization;
 using TMPro;
 using UnityEngine;
 
@@ -125,11 +124,11 @@ namespace AVS
                 float temperature = mv.GetTemperature();
                 temperatureSmoothValue = ((temperatureSmoothValue < -10000f) ? temperature : Mathf.SmoothDamp(temperatureSmoothValue, temperature, ref temperatureVelocity, 1f));
                 int tempNum;
-                //if (MainPatcher.NautilusConfig.IsFahrenheit)
-                //{
-                //    tempNum = Mathf.CeilToInt(temperatureSmoothValue * 1.8f + 32);
-                //}
-                //else
+                if (mv.Config.HudTemperatureIsFahrenheit)
+                {
+                    tempNum = Mathf.CeilToInt(temperatureSmoothValue * 1.8f + 32);
+                }
+                else
                 {
                     tempNum = Mathf.CeilToInt(temperatureSmoothValue);
                 }
@@ -138,13 +137,13 @@ namespace AVS
                     lastTemperature = tempNum;
                     textTemperature!.text = IntStringCache.GetStringForInt(lastTemperature);
                     textTemperatureSuffix!.color = new Color32(byte.MaxValue, 220, 0, byte.MaxValue);
-                    //if (MainPatcher.NautilusConfig.IsFahrenheit)
-                    //{
-                    //    textTemperatureSuffix.text = "°F";
-                    //}
-                    //else
+                    if (mv.Config.HudTemperatureIsFahrenheit)
                     {
-                        textTemperatureSuffix.text = Translator.Get(TranslationKey.HUD_ThermometerFormat);
+                        textTemperatureSuffix.text = "°F";
+                    }
+                    else
+                    {
+                        textTemperatureSuffix.text = "°C";
                     }
                 }
             }

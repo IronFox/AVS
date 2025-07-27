@@ -5,12 +5,12 @@ using static CraftData;
 
 namespace AVS.Assets
 {
-    internal static class AVSFabricator
+    internal static class AvsFabricator
     {
-        private const string ClassID = "AVSFabricatorClassID";
-        private static string DisplayName = Translator.Get(TranslationKey.Fabricator_DisplayName);
-        private static string Description = Translator.Get(TranslationKey.Fabricator_Description);
-        internal static CraftTree.Type TreeType = default;
+        private const string ClassID = "AvsFabricatorClassID";
+        private static string DisplayName { get; } = Translator.Get(TranslationKey.Fabricator_DisplayName);
+        private static string Description { get; } = Translator.Get(TranslationKey.Fabricator_Description);
+        internal static CraftTree.Type TreeType { get; set; } = default;
         internal static void CreateAndRegister()
         {
             var Info = Nautilus.Assets.PrefabInfo.WithTechType(ClassID, DisplayName, Description)
@@ -59,7 +59,7 @@ namespace AVS.Assets
             Component.DestroyImmediate(obj.GetComponent<Collider>());
             Transform fabRoot = obj.transform.Find("submarine_fabricator_03");
             Transform geo = fabRoot.Find("submarine_fabricator_03_geo");
-            Color fabColor = new Color32(0x80, 0x59, 0xA0, 0xFF);
+            Color fabColor = new Color32(0xFF, 0xb9, 0x10, 0xFF);
             fabRoot.localPosition += new Vector3(0, 0, 0.1f);
             fabRoot.GetComponent<BoxCollider>().center = new Vector3(-0.01f, 0.9f, 0.18f);
             var renderer = geo.GetComponent<Renderer>();

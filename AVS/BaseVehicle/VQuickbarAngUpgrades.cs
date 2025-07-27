@@ -1,4 +1,6 @@
-﻿using AVS.Localization;
+﻿using AVS.Crafting;
+using AVS.Localization;
+using AVS.UpgradeModules;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,14 +22,14 @@ namespace AVS.BaseVehicle
         public override void OnUpgradeModuleToggle(int slotID, bool active)
         {
             TechType techType = modules.GetTechTypeInSlot(slotIDs[slotID]);
-            UpgradeTypes.ToggleActionParams param = new UpgradeTypes.ToggleActionParams
+            var param = new ToggleActionParams
             {
                 active = active,
                 vehicle = this,
                 slotID = slotID,
                 techType = techType
             };
-            Admin.UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
+            UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
             base.OnUpgradeModuleToggle(slotID, active);
         }
         /// <summary>
@@ -37,15 +39,15 @@ namespace AVS.BaseVehicle
         /// <param name="slotID">Upgrade module slot</param>
         public override void OnUpgradeModuleUse(TechType techType, int slotID)
         {
-            UpgradeTypes.SelectableActionParams param = new UpgradeTypes.SelectableActionParams
+            var param = new SelectableActionParams
             (
                 vehicle: this,
                 slotID: slotID,
                 techType: techType
             );
-            Admin.UpgradeRegistrar.OnSelectActions.ForEach(x => x(param));
+            UpgradeRegistrar.OnSelectActions.ForEach(x => x(param));
 
-            UpgradeTypes.SelectableChargeableActionParams param2 = new UpgradeTypes.SelectableChargeableActionParams
+            var param2 = new SelectableChargeableActionParams
             (
                 vehicle: this,
                 slotID: slotID,
@@ -53,7 +55,7 @@ namespace AVS.BaseVehicle
                 charge: param.Vehicle.quickSlotCharge[param.SlotID],
                 slotCharge: param.Vehicle.GetSlotCharge(param.SlotID)
             );
-            Admin.UpgradeRegistrar.OnSelectChargeActions.ForEach(x => x(param2));
+            UpgradeRegistrar.OnSelectChargeActions.ForEach(x => x(param2));
 
             Patches.CompatibilityPatches.BetterVehicleStoragePatcher.TryUseBetterVehicleStorage(this, slotID, techType);
             base.OnUpgradeModuleUse(techType, slotID);
@@ -67,14 +69,14 @@ namespace AVS.BaseVehicle
         public override void OnUpgradeModuleChange(int slotID, TechType techType, bool added)
         {
             UpgradeOnAddedActions.ForEach(x => x(slotID, techType, added));
-            UpgradeTypes.AddActionParams addedParams = new UpgradeTypes.AddActionParams
+            var addedParams = new AddActionParams
             {
                 vehicle = this,
                 slotID = slotID,
                 techType = techType,
                 isAdded = added
             };
-            Admin.UpgradeRegistrar.OnAddActions.ForEach(x => x(addedParams));
+            UpgradeRegistrar.OnAddActions.ForEach(x => x(addedParams));
         }
         /// <summary>
         /// Gets the quick slot type of the given slot ID.

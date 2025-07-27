@@ -1,11 +1,11 @@
-﻿using AVS.Admin;
-using AVS.Assets;
+﻿using AVS.Assets;
 using AVS.Configuration;
+using AVS.Crafting;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace AVS.UpgradeTypes
+namespace AVS.UpgradeModules
 {
     /// <summary>
     /// Base class for all mod vehicle upgrades. Provides core properties, recipe handling, and extension points for custom upgrades.
@@ -119,9 +119,9 @@ namespace AVS.UpgradeTypes
         public virtual string TabDisplayName => string.Empty;
 
         /// <summary>
-        /// The crafting path for this upgrade, if any.
+        /// The crafting path for this upgrade, if any, not including the node itself.
         /// </summary>
-        public virtual IReadOnlyList<CraftingNode>? CraftingPath { get; set; } = null;
+        public virtual Path<CraftingNode>? TabPath { get; set; } = null;
 
         /// <summary>
         /// The icon for the tab in the crafting UI.
@@ -248,31 +248,19 @@ namespace AVS.UpgradeTypes
         /// </summary>
         /// <param name="vType">The vehicle type to determine the path root node for.</param>
         /// <returns>The crafting path as an array of strings.</returns>
-        internal IReadOnlyList<string> ResolvePath(VehicleType vType)
+        internal Path<string> ResolveTabPath(VehicleType vType)
         {
             // If TabName is string.Empty, use $"{CraftTreeHandler.GeneralTabName}{vType}"
-            if (CraftingPath == null)
+            if (TabPath == null)
             {
-                if (TabName.Equals(string.Empty))
-                {
-                    return new string[]
-                    {
-                        CraftTreeHandler.ModuleRootNode(vType),
-                        $"{CraftTreeHandler.GeneralTabName}{vType}"
-                    };
-                }
+                if (string.IsNullOrWhiteSpace(TabName))
+                    return new Path<string>(vType.ToString());
                 else
-                {
-                    return new string[]
-                    {
-                        CraftTreeHandler.ModuleRootNode(vType),
-                        TabName
-                    };
-                }
+                    return new Path<string>(TabName);
             }
             else
             {
-                return CraftTreeHandler.TraceCraftingPath(vType, CraftingPath, null);
+                return CraftTreeHandler.TraceCraftingPath(TabPath.Value, null);
             }
         }
     }

@@ -1,4 +1,5 @@
-﻿using AVS.Log;
+﻿using AVS.Crafting;
+using AVS.Log;
 using BepInEx;
 using HarmonyLib;
 using System;
@@ -55,9 +56,9 @@ namespace AVS
             LogWriter.Default.Write("Assets.StaticAssets.GetSprites()");
             Assets.StaticAssets.GetSprites();
             LogWriter.Default.Write("Assets.AVSFabricator.CreateAndRegister()");
-            Assets.AVSFabricator.CreateAndRegister();
-            LogWriter.Default.Write("Admin.Utils.RegisterDepthModules()");
-            Admin.CraftTreeHandler.AddFabricatorMenus();
+            Assets.AvsFabricator.CreateAndRegister();
+            LogWriter.Default.Write("Admin.CraftTreeHandler.AddFabricatorMenus()");
+            CraftTreeHandler.AddFabricatorMenus();
 
             LogWriter.Default.Write("Admin.Utils.RegisterDepthModules()");
             Admin.Utils.RegisterDepthModules();

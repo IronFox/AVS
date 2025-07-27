@@ -1,5 +1,6 @@
 ﻿using AVS.BaseVehicle;
-using AVS.UpgradeTypes;
+using AVS.Crafting;
+using AVS.UpgradeModules;
 using System;
 using System.Collections;
 using System.Collections.Generic;

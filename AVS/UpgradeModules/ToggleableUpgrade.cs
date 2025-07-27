@@ -1,4 +1,6 @@
-﻿namespace AVS.UpgradeTypes
+﻿using AVS.UpgradeModules;
+
+namespace AVS.Crafting
 {
     public abstract class ToggleableUpgrade : AvsVehicleUpgrade
     {

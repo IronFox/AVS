@@ -1,9 +1,8 @@
-﻿using AVS.UpgradeTypes;
-using AVS.Util;
+﻿using AVS.UpgradeModules;
 using Nautilus.Assets.Gadgets;
 using System.Collections.Generic;
 
-namespace AVS.Admin
+namespace AVS.Crafting
 {
     internal static class VanillaUpgradeMaker
     {
@@ -32,11 +31,11 @@ namespace AVS.Admin
         {
             Nautilus.Crafting.RecipeData moduleRecipe = upgrade.GetRecipe(vType).ToRecipeData();
 
-            var steps = upgrade.ResolvePath(vType);
+            var steps = upgrade.ResolveTabPath(vType);
             customPrefab
                 .SetRecipe(moduleRecipe)
-                .WithFabricatorType(Assets.AVSFabricator.TreeType)
-                .WithStepsToFabricatorTab(steps.ToArray())
+                .WithFabricatorType(Assets.AvsFabricator.TreeType)
+                .WithStepsToFabricatorTab(steps.Segments)
                 .WithCraftingTime(upgrade.CraftingTime);
             return customPrefab;
         }
@@ -137,9 +136,9 @@ namespace AVS.Admin
         internal static void AddPassiveActions(UpgradeModuleGadget gadget, AvsVehicleUpgrade upgrade, Nautilus.Assets.PrefabInfo info)
         {
             gadget
-                 .WithOnModuleAdded((Vehicle vehicleInstance, int slotId) =>
+                 .WithOnModuleAdded((vehicleInstance, slotId) =>
                  {
-                     UpgradeTypes.AddActionParams addedParams = new UpgradeTypes.AddActionParams
+                     var addedParams = new AddActionParams
                      {
                          vehicle = vehicleInstance,
                          slotID = slotId,
@@ -148,9 +147,9 @@ namespace AVS.Admin
                      };
                      upgrade.OnAdded(addedParams);
                  })
-                 .WithOnModuleRemoved((Vehicle vehicleInstance, int slotId) =>
+                 .WithOnModuleRemoved((vehicleInstance, slotId) =>
                  {
-                     UpgradeTypes.AddActionParams addedParams = new UpgradeTypes.AddActionParams
+                     var addedParams = new AddActionParams
                      {
                          vehicle = vehicleInstance,
                          slotID = slotId,
@@ -165,9 +164,9 @@ namespace AVS.Admin
             gadget
                 .WithCooldown(upgrade.Cooldown)
                 .WithEnergyCost(upgrade.EnergyCost)
-                .WithOnModuleUsed((Vehicle vehicleInstance, int slotId, float charge, float chargeFraction) =>
+                .WithOnModuleUsed((vehicleInstance, slotId, charge, chargeFraction) =>
                 {
-                    UpgradeTypes.SelectableActionParams selectParams = new UpgradeTypes.SelectableActionParams
+                    var selectParams = new SelectableActionParams
                     (
                         vehicle: vehicleInstance,
                         slotID: slotId,
@@ -179,16 +178,16 @@ namespace AVS.Admin
         internal static void AddToggleActions(UpgradeModuleGadget gadget, ToggleableUpgrade upgrade, Nautilus.Assets.PrefabInfo info)
         {
             gadget
-                .WithOnModuleToggled((Vehicle vehicleInstance, int slotId, float energyCost, bool isActive) =>
+                .WithOnModuleToggled((vehicleInstance, slotId, energyCost, isActive) =>
                 {
-                    UpgradeTypes.ToggleActionParams param = new UpgradeTypes.ToggleActionParams
+                    var param = new ToggleActionParams
                     {
                         active = isActive,
                         vehicle = vehicleInstance,
                         slotID = slotId,
                         techType = info.TechType
                     };
-                    Admin.UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
+                    UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
                 });
         }
         internal static void AddChargeActions(UpgradeModuleGadget gadget, SelectableChargeableUpgrade upgrade, Nautilus.Assets.PrefabInfo info)
@@ -196,9 +195,9 @@ namespace AVS.Admin
             gadget
                 .WithMaxCharge(upgrade.MaxCharge) // this creates a harmless Nautilus warning
                 .WithEnergyCost(upgrade.EnergyCost) // this creates a harmless Nautilus warning
-                .WithOnModuleUsed((Vehicle vehicleInstance, int slotId, float charge, float chargeFraction) =>
+                .WithOnModuleUsed((vehicleInstance, slotId, charge, chargeFraction) =>
                 {
-                    UpgradeTypes.SelectableChargeableActionParams chargeParams = new UpgradeTypes.SelectableChargeableActionParams
+                    var chargeParams = new SelectableChargeableActionParams
                     (
                         vehicle: vehicleInstance,
                         slotID: slotId,

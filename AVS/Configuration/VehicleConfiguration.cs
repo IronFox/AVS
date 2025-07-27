@@ -193,6 +193,11 @@ namespace AVS.Configuration
         public Func<bool> GetVoiceSubtitlesEnabled { get; }
 
         /// <summary>
+        /// True if the HUD temperature display is in Fahrenheit.
+        /// </summary>
+        public bool HudTemperatureIsFahrenheit { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="VehicleConfiguration"/> class with the specified parameters.
         /// </summary>
         /// <param name="pingSprite">Sprite to show when the camera is sufficiently far away. Also used on the map, if used.</param>
@@ -242,6 +247,7 @@ namespace AVS.Configuration
         /// <param name="getVoiceSoundVolume">Query function to get the sound volume for voice messages sent by the vehicle's <see cref="VoiceQueue"/> component. If null, defaults to always 1</param>
         /// <param name="getVoiceSubtitlesEnabled">Query function to get whether to show subtitles for voice messages sent by the vehicle's <see cref="VoiceQueue"/> component. If null, defaults to always false</param>
         /// <param name="materialAdaptConfig">Optional configuration for material adaptation</param>
+        /// <param name="hudTemperatureIsFahrenheit">True if the HUD temperature display is in Fahrenheit.</param>
         public VehicleConfiguration(
 
             VehicleColor? initialBaseColor = null,
@@ -282,7 +288,8 @@ namespace AVS.Configuration
             Quaternion? cyclopsDockRotation = null,
             bool autoFixMaterials = true,
             Func<float>? getVoiceSoundVolume = null,
-            Func<bool>? getVoiceSubtitlesEnabled = null
+            Func<bool>? getVoiceSubtitlesEnabled = null,
+            bool hudTemperatureIsFahrenheit = false
         )
         {
             if (maxHealth <= 0)
@@ -292,6 +299,7 @@ namespace AVS.Configuration
             if (baseCrushDepth <= 0)
                 throw new System.ArgumentOutOfRangeException(nameof(baseCrushDepth), "BaseCrushDepth must be greater than 0.");
 
+            HudTemperatureIsFahrenheit = hudTemperatureIsFahrenheit;
             GetVoiceSoundVolume = getVoiceSoundVolume ?? (() => 1);
             GetVoiceSubtitlesEnabled = getVoiceSubtitlesEnabled ?? (() => false);
             InitialBaseColor = initialBaseColor ?? VehicleColor.Default;

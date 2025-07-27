@@ -151,15 +151,6 @@
             <param name="configFile">An optional configuration file where the option will be stored. If not provided, a default configuration
             file is used.</param>
         </member>
-        <member name="M:AVS.Admin.CraftTreeHandler.TraceCraftingPath(AVS.Admin.VehicleType,System.Collections.Generic.IReadOnlyList{AVS.UpgradeTypes.CraftingNode},System.Action{System.Collections.Generic.IReadOnlyList{System.String},AVS.UpgradeTypes.CraftingNode})">
-            <summary>
-            Iterates through the crafting path and constructs the full path.
-            </summary>
-            <param name="vType">Type determining the root node</param>
-            <param name="path">Crafting nodes to append to the root node</param>
-            <param name="perNonLeafAction">Optional action to execute for every node except the final one</param>
-            <returns>Complete path</returns>
-        </member>
         <member name="T:AVS.Admin.GameObjectManager`1">
             <summary>
             Manages a collection of game objects of a specified type, providing functionality for registration,
@@ -256,241 +247,6 @@
             </summary>
             <param name="scene">Scene that has been unloaded</param>
         </member>
-        <member name="T:AVS.Admin.UpgradeCompat">
-            <summary>
-            Specifies compatibility flags for registering upgrades with different vehicle types.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeCompat.SkipAvsVehicle">
-            <summary>
-            If true, skip registering for <see cref="T:AVS.BaseVehicle.AvsVehicle" />.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeCompat.SkipSeamoth">
-            <summary>
-            If true, skip registering for Seamoth.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeCompat.SkipExosuit">
-            <summary>
-            If true, skip registering for Exosuit.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeCompat.SkipCyclops">
-            <summary>
-            If true, skip registering for Cyclops.
-            </summary>
-        </member>
-        <member name="M:AVS.Admin.UpgradeCompat.#ctor(System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
-            <summary>
-            Initializes a new instance of the <see cref="T:AVS.Admin.UpgradeCompat"/> class with options to skip certain vehicle
-            upgrades.
-            </summary>
-            <param name="skipAvsVehicle">If <see langword="true"/>, the AVS vehicle upgrade will be skipped; otherwise, it will be included. Defaults
-            to <see langword="false"/>.</param>
-            <param name="skipSeamoth">If <see langword="true"/>, the Seamoth upgrade will be skipped; otherwise, it will be included. Defaults to
-            <see langword="false"/>.</param>
-            <param name="skipExosuit">If <see langword="true"/>, the Exosuit upgrade will be skipped; otherwise, it will be included. Defaults to
-            <see langword="false"/>.</param>
-            <param name="skipCyclops">If <see langword="true"/>, the Cyclops upgrade will be skipped; otherwise, it will be included. Defaults to
-            <see langword="false"/>.</param>
-        </member>
-        <member name="P:AVS.Admin.UpgradeCompat.AvsVehiclesOnly">
-            <summary>
-            Default compatibility settings for registering upgrades to be applicable only to
-            AVS vehicles.
-            </summary>
-        </member>
-        <member name="T:AVS.Admin.UpgradeTechTypes">
-            <summary>
-            Holds TechTypes for an upgrade for each supported vehicle type.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeTechTypes.ForAvsVehicle">
-            <summary>
-            Tech type applicable for any AVS vehicle.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeTechTypes.ForSeamoth">
-            <summary>
-            Tech type applicable for Seamoth vehicles.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeTechTypes.ForExosuit">
-            <summary>
-            Tech type applicable for PRAWN exosuits.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeTechTypes.ForCyclops">
-            <summary>
-            Tech type applicable for Cyclops vehicles.
-            </summary>
-        </member>
-        <member name="M:AVS.Admin.UpgradeTechTypes.#ctor(TechType,TechType,TechType,TechType)">
-            <summary>
-            Constructor for UpgradeTechTypes.
-            </summary>
-        </member>
-        <member name="M:AVS.Admin.UpgradeTechTypes.HasTechType(TechType)">
-            <summary>
-            Determines whether the specified <see cref="T:TechType"/> is not <see cref="F:TechType.None" />
-            and equal to any of the contained types.
-            </summary>
-        </member>
-        <member name="T:AVS.Admin.VehicleType">
-            <summary>
-            Enum representing supported vehicle types.
-            </summary>
-        </member>
-        <member name="F:AVS.Admin.VehicleType.AvsVehicle">
-            <summary>
-            Any mod vehicle type
-            </summary>
-        </member>
-        <member name="F:AVS.Admin.VehicleType.Seamoth">
-            <summary>
-            The Seamoth vehicle type.
-            </summary>
-        </member>
-        <member name="F:AVS.Admin.VehicleType.Prawn">
-            <summary>
-            The Prawn exosuit vehicle type.
-            </summary>
-        </member>
-        <member name="F:AVS.Admin.VehicleType.Cyclops">
-            <summary>
-            The Cyclops vehicle type.
-            </summary>
-        </member>
-        <member name="F:AVS.Admin.VehicleType.Custom">
-            <summary>
-            Vehicle specific type, used for upgrades that are specific to one vehicle type.
-            </summary>
-        </member>
-        <member name="T:AVS.Admin.UpgradeRegistrar">
-            <summary>
-            Handles registration and management of vehicle upgrades, including their icons, actions, and compatibility.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeRegistrar.UpgradeIcons">
-            <summary>
-            Dictionary of upgrade icons, indexed by upgrade ClassId.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeRegistrar.OnAddActions">
-            <summary>
-            List of actions to invoke when an upgrade is added or removed.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeRegistrar.OnToggleActions">
-            <summary>
-            List of actions to invoke when a toggleable upgrade is toggled.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeRegistrar.OnSelectChargeActions">
-            <summary>
-            List of actions to invoke when a selectable chargeable upgrade is selected.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeRegistrar.OnSelectActions">
-            <summary>
-            List of actions to invoke when a selectable upgrade is selected.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeRegistrar.OnArmDownActions">
-            <summary>
-            List of actions to invoke when an arm action is performed (down).
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeRegistrar.OnArmHeldActions">
-            <summary>
-            List of actions to invoke when an arm action is held.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeRegistrar.OnArmUpActions">
-            <summary>
-            List of actions to invoke when an arm action is released (up).
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeRegistrar.OnArmAltActions">
-            <summary>
-            List of actions to invoke when an alternate arm action is performed.
-            </summary>
-        </member>
-        <member name="P:AVS.Admin.UpgradeRegistrar.ToggledActions">
-            <summary>
-            Tracks currently toggled actions for vehicles, by vehicle, slot, and coroutine.
-            </summary>
-        </member>
-        <member name="M:AVS.Admin.UpgradeRegistrar.RegisterUpgrade(AVS.UpgradeTypes.AvsVehicleUpgrade,AVS.Admin.UpgradeCompat,System.Boolean)">
-            <summary>
-            Registers a AvsVehicleUpgrade and sets up its icons, recipes, and actions for compatible vehicle types.
-            </summary>
-            <param name="upgrade">The upgrade to register.</param>
-            <param name="compat">Compatibility flags for vehicle types.</param>
-            <param name="verbose">If true, enables verbose logging.</param>
-            <returns>UpgradeTechTypes containing TechTypes for each vehicle type.</returns>
-        </member>
-        <member name="M:AVS.Admin.UpgradeRegistrar.ValidateAvsVehicleUpgrade(AVS.UpgradeTypes.AvsVehicleUpgrade,AVS.Admin.UpgradeCompat)">
-            <summary>
-            Validates the provided <see cref="T:AVS.UpgradeTypes.AvsVehicleUpgrade"/> and its compatibility settings.
-            </summary>
-            <param name="upgrade">The upgrade to validate.</param>
-            <param name="compat">Compatibility flags.</param>
-            <returns>True if valid, false otherwise.</returns>
-        </member>
-        <member name="M:AVS.Admin.UpgradeRegistrar.RegisterAvsVehicleUpgrade(AVS.UpgradeTypes.AvsVehicleUpgrade)">
-            <summary>
-            Registers the <see cref="T:AVS.UpgradeTypes.AvsVehicleUpgrade"/> for <see cref="T:AVS.BaseVehicle.AvsVehicle"/>, sets up its prefab, recipe, and unlock conditions.
-            </summary>
-            <param name="upgrade">The upgrade to register.</param>
-            <returns>The TechType assigned to the upgrade.</returns>
-        </member>
-        <member name="M:AVS.Admin.UpgradeRegistrar.RegisterUpgradeMethods(AVS.UpgradeTypes.AvsVehicleUpgrade,AVS.Admin.UpgradeCompat,AVS.Admin.UpgradeTechTypes@,System.Boolean)">
-            <summary>
-            Registers the appropriate upgrade methods (passive, selectable, chargeable, toggleable) for the upgrade.
-            </summary>
-            <param name="upgrade">The upgrade to register methods for.</param>
-            <param name="compat">Compatibility flags.</param>
-            <param name="utt">Reference to UpgradeTechTypes to update.</param>
-            <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
-        </member>
-        <member name="M:AVS.Admin.UpgradeRegistrar.RegisterPassiveUpgradeActions(AVS.UpgradeTypes.AvsVehicleUpgrade,AVS.Admin.UpgradeCompat,AVS.Admin.UpgradeTechTypes@,System.Boolean@)">
-            <summary>
-            Registers passive upgrade actions for the upgrade.
-            </summary>
-            <param name="upgrade">The upgrade to register.</param>
-            <param name="compat">Compatibility flags.</param>
-            <param name="utt">Reference to UpgradeTechTypes to update.</param>
-            <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
-        </member>
-        <member name="M:AVS.Admin.UpgradeRegistrar.RegisterSelectableUpgradeActions(AVS.UpgradeTypes.AvsVehicleUpgrade,AVS.Admin.UpgradeCompat,AVS.Admin.UpgradeTechTypes@,System.Boolean@)">
-            <summary>
-            Registers selectable upgrade actions for the upgrade.
-            </summary>
-            <param name="upgrade">The upgrade to register.</param>
-            <param name="compat">Compatibility flags.</param>
-            <param name="utt">Reference to UpgradeTechTypes to update.</param>
-            <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
-        </member>
-        <member name="M:AVS.Admin.UpgradeRegistrar.RegisterSelectableChargeableUpgradeActions(AVS.UpgradeTypes.AvsVehicleUpgrade,AVS.Admin.UpgradeCompat,AVS.Admin.UpgradeTechTypes@,System.Boolean@)">
-            <summary>
-            Registers selectable chargeable upgrade actions for the upgrade.
-            </summary>
-            <param name="upgrade">The upgrade to register.</param>
-            <param name="compat">Compatibility flags.</param>
-            <param name="utt">Reference to UpgradeTechTypes to update.</param>
-            <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
-        </member>
-        <member name="M:AVS.Admin.UpgradeRegistrar.RegisterToggleableUpgradeActions(AVS.UpgradeTypes.AvsVehicleUpgrade,AVS.Admin.UpgradeCompat,AVS.Admin.UpgradeTechTypes@,System.Boolean@)">
-            <summary>
-            Registers toggleable upgrade actions for the upgrade.
-            </summary>
-            <param name="upgrade">The upgrade to register.</param>
-            <param name="compat">Compatibility flags.</param>
-            <param name="utt">Reference to UpgradeTechTypes to update.</param>
-            <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
-        </member>
         <member name="T:AVS.Admin.Utils">
             <summary>
             Global utility methods for the AVS mod.
@@ -514,7 +270,7 @@
             Registers the common depth modules for vehicles.
             </summary>
         </member>
-        <member name="M:AVS.Admin.Utils.EvaluateDepthModules(AVS.UpgradeTypes.AddActionParams)">
+        <member name="M:AVS.Admin.Utils.EvaluateDepthModules(AVS.UpgradeModules.AddActionParams)">
             <summary>
             Evaluates the depth upgrade modules installed on the specified vehicle and adjusts its crush depth
             accordingly.
@@ -2637,7 +2393,7 @@
         </member>
         <member name="M:AVS.Configuration.NewRecipe.WithNothing">
             <summary>
-            Creates a new instance of the <see cref="T:AVS.Configuration.NewRecipe"/> class with no modifications.
+            Creates a new instance of the <see cref="T:AVS.Configuration.NewRecipe"/> class with no ingredients.
             </summary>
             <returns>A new <see cref="T:AVS.Configuration.NewRecipe"/> instance.</returns>
         </member>
@@ -3032,7 +2788,12 @@
             Gets the current setting whether to show subtitles for voice messages sent by the vehicle's <see cref="T:AVS.VoiceQueue"/> component.
             </summary>
         </member>
-        <member name="M:AVS.Configuration.VehicleConfiguration.#ctor(System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},AVS.MaterialAdapt.IMaterialAdaptConfig,Atlas.Sprite,UnityEngine.Sprite,AVS.Configuration.Recipe,System.Boolean,UnityEngine.Sprite,System.String,System.String,UnityEngine.Sprite,Atlas.Sprite,UnityEngine.Sprite,TechType,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Int32,System.Int32,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Single,AVS.BaseVehicle.AvsVehicle.PilotingStyle,System.Single,System.Nullable{UnityEngine.Color},System.Nullable{UnityEngine.Color},System.Boolean,System.Boolean,System.Nullable{UnityEngine.Quaternion},System.Boolean,System.Func{System.Single},System.Func{System.Boolean})">
+        <member name="P:AVS.Configuration.VehicleConfiguration.HudTemperatureIsFahrenheit">
+            <summary>
+            True if the HUD temperature display is in Fahrenheit.
+            </summary>
+        </member>
+        <member name="M:AVS.Configuration.VehicleConfiguration.#ctor(System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},AVS.MaterialAdapt.IMaterialAdaptConfig,Atlas.Sprite,UnityEngine.Sprite,AVS.Configuration.Recipe,System.Boolean,UnityEngine.Sprite,System.String,System.String,UnityEngine.Sprite,Atlas.Sprite,UnityEngine.Sprite,TechType,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Int32,System.Int32,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Single,AVS.BaseVehicle.AvsVehicle.PilotingStyle,System.Single,System.Nullable{UnityEngine.Color},System.Nullable{UnityEngine.Color},System.Boolean,System.Boolean,System.Nullable{UnityEngine.Quaternion},System.Boolean,System.Func{System.Single},System.Func{System.Boolean},System.Boolean)">
             <summary>
             Initializes a new instance of the <see cref="T:AVS.Configuration.VehicleConfiguration"/> class with the specified parameters.
             </summary>
@@ -3083,6 +2844,7 @@
             <param name="getVoiceSoundVolume">Query function to get the sound volume for voice messages sent by the vehicle's <see cref="T:AVS.VoiceQueue"/> component. If null, defaults to always 1</param>
             <param name="getVoiceSubtitlesEnabled">Query function to get whether to show subtitles for voice messages sent by the vehicle's <see cref="T:AVS.VoiceQueue"/> component. If null, defaults to always false</param>
             <param name="materialAdaptConfig">Optional configuration for material adaptation</param>
+            <param name="hudTemperatureIsFahrenheit">True if the HUD temperature display is in Fahrenheit.</param>
         </member>
         <member name="T:AVS.ControlPanel">
             <summary>
@@ -3251,6 +3013,366 @@
         <member name="M:AVS.ControlPanel.AVS#IVehicleStatusListener#OnNearbyLeviathan">
             <inheritdoc />
         </member>
+        <member name="T:AVS.Crafting.CraftingNode">
+            <summary>
+            A node declaration in the crafting interface, representing a tab or module.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.CraftingNode.Name">
+            <summary>
+            The name of the crafting node, used for identification.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.CraftingNode.DisplayName">
+            <summary>
+            Gets the display name of the entity.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.CraftingNode.Icon">
+            <summary>
+            Gets the icon associated with this item.
+            </summary>
+        </member>
+        <member name="M:AVS.Crafting.CraftingNode.#ctor(System.String,System.String,Atlas.Sprite)">
+            <summary>
+            Constructs a new instance of the <see cref="T:AVS.Crafting.CraftingNode"/> struct.
+            </summary>
+        </member>
+        <member name="T:AVS.Crafting.CraftTreeHandler.NodeInformation">
+            For consistency, tabs and modules must not exist in the same tab. Either a tab contains only tabs, or it contains only modules.
+            To assert consistency, we maintain these sets.
+        </member>
+        <member name="T:AVS.Crafting.Path`1">
+            <summary>
+            Path to a tab or module in the crafting interface.
+            </summary>
+            <typeparam name="T">The type of element in the path. Typically <see cref="T:System.String"/> or <see cref="T:AVS.Crafting.CraftingNode"/></typeparam>
+        </member>
+        <member name="P:AVS.Crafting.Path`1.Segments">
+            <summary>
+            The segments of the crafting path.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.Path`1.IsEmpty">
+            <summary>
+            Gets a value indicating whether the collection of segments is empty.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.Path`1.Length">
+            <summary>
+            Gets the number of segments in the collection.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.Path`1.Empty">
+            <summary>
+            An empty crafting path, representing the root or no specific path.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.Path`1.Last">
+            <summary>
+            Gets the last segment of the path. An empty path returns an empty string.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.Path`1.Previous">
+            <summary>
+            Gets the segment preceding the last segment in the collection.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.Path`1.Parent">
+            <summary>
+            Gets the parent path, which is the path without the last segment.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.Path`1.Ancestors">
+            <summary>
+            Gets an enumerable collection of <see cref="T:AVS.Crafting.Path`1"/> objects representing the ancestors of the
+            current path.
+            </summary>
+        </member>
+        <member name="M:AVS.Crafting.Path`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Constructs a new <see cref="T:AVS.Crafting.Path`1"/> with the specified segments.
+            </summary>
+        </member>
+        <member name="M:AVS.Crafting.Path`1.#ctor(`0[])">
+            <summary>
+            Constructs a new <see cref="T:AVS.Crafting.Path`1"/> with the specified segments.
+            </summary>
+        </member>
+        <member name="M:AVS.Crafting.Path`1.Append(`0)">
+            <summary>
+            Appends a new segment to the crafting path.
+            </summary>
+            <param name="segment">Segment to append. Must not be empty (after trim) and must not contain / characters</param>
+            <returns>New crafting path with the given segment appended</returns>
+        </member>
+        <member name="M:AVS.Crafting.Path`1.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Crafting.Path`1.Equals(AVS.Crafting.Path{`0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Crafting.Path`1.op_Equality(AVS.Crafting.Path{`0},AVS.Crafting.Path{`0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Crafting.Path`1.op_Inequality(AVS.Crafting.Path{`0},AVS.Crafting.Path{`0})">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Crafting.Path`1.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Crafting.Path`1.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Crafting.Path`1.GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Crafting.Path`1.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Crafting.Path`1.op_Addition(AVS.Crafting.Path{`0},`0)">
+            <summary>
+            Concatenates a specified segment to the end of the given <see cref="T:AVS.Crafting.Path`1"/>.
+            </summary>
+            <param name="path">The <see cref="T:AVS.Crafting.Path`1"/> to which the segment will be appended.</param>
+            <param name="segment">The segment to append to the <see cref="T:AVS.Crafting.Path`1"/>. Cannot be null or empty.</param>
+            <returns>A new <see cref="T:AVS.Crafting.Path`1"/> instance with the segment appended.</returns>
+        </member>
+        <member name="T:AVS.Crafting.UpgradeCompat">
+            <summary>
+            Specifies compatibility flags for registering upgrades with different vehicle types.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeCompat.SkipAvsVehicle">
+            <summary>
+            If true, skip registering for <see cref="T:AVS.BaseVehicle.AvsVehicle" />.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeCompat.SkipSeamoth">
+            <summary>
+            If true, skip registering for Seamoth.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeCompat.SkipExosuit">
+            <summary>
+            If true, skip registering for Exosuit.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeCompat.SkipCyclops">
+            <summary>
+            If true, skip registering for Cyclops.
+            </summary>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeCompat.#ctor(System.Boolean,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Crafting.UpgradeCompat"/> class with options to skip certain vehicle
+            upgrades.
+            </summary>
+            <param name="skipAvsVehicle">If <see langword="true"/>, the AVS vehicle upgrade will be skipped; otherwise, it will be included. Defaults
+            to <see langword="false"/>.</param>
+            <param name="skipSeamoth">If <see langword="true"/>, the Seamoth upgrade will be skipped; otherwise, it will be included. Defaults to
+            <see langword="false"/>.</param>
+            <param name="skipExosuit">If <see langword="true"/>, the Exosuit upgrade will be skipped; otherwise, it will be included. Defaults to
+            <see langword="false"/>.</param>
+            <param name="skipCyclops">If <see langword="true"/>, the Cyclops upgrade will be skipped; otherwise, it will be included. Defaults to
+            <see langword="false"/>.</param>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeCompat.AvsVehiclesOnly">
+            <summary>
+            Default compatibility settings for registering upgrades to be applicable only to
+            AVS vehicles.
+            </summary>
+        </member>
+        <member name="T:AVS.Crafting.UpgradeTechTypes">
+            <summary>
+            Holds TechTypes for an upgrade for each supported vehicle type.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeTechTypes.ForAvsVehicle">
+            <summary>
+            Tech type applicable for any AVS vehicle.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeTechTypes.ForSeamoth">
+            <summary>
+            Tech type applicable for Seamoth vehicles.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeTechTypes.ForExosuit">
+            <summary>
+            Tech type applicable for PRAWN exosuits.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeTechTypes.ForCyclops">
+            <summary>
+            Tech type applicable for Cyclops vehicles.
+            </summary>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeTechTypes.#ctor(TechType,TechType,TechType,TechType)">
+            <summary>
+            Constructor for UpgradeTechTypes.
+            </summary>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeTechTypes.HasTechType(TechType)">
+            <summary>
+            Determines whether the specified <see cref="T:TechType"/> is not <see cref="F:TechType.None" />
+            and equal to any of the contained types.
+            </summary>
+        </member>
+        <member name="T:AVS.Crafting.VehicleType">
+            <summary>
+            Enum representing supported vehicle types.
+            </summary>
+        </member>
+        <member name="F:AVS.Crafting.VehicleType.AvsVehicle">
+            <summary>
+            Any mod vehicle type
+            </summary>
+        </member>
+        <member name="F:AVS.Crafting.VehicleType.Seamoth">
+            <summary>
+            The Seamoth vehicle type.
+            </summary>
+        </member>
+        <member name="F:AVS.Crafting.VehicleType.Prawn">
+            <summary>
+            The Prawn exosuit vehicle type.
+            </summary>
+        </member>
+        <member name="F:AVS.Crafting.VehicleType.Cyclops">
+            <summary>
+            The Cyclops vehicle type.
+            </summary>
+        </member>
+        <member name="F:AVS.Crafting.VehicleType.Custom">
+            <summary>
+            Vehicle specific type, used for upgrades that are specific to one vehicle type.
+            </summary>
+        </member>
+        <member name="T:AVS.Crafting.UpgradeRegistrar">
+            <summary>
+            Handles registration and management of vehicle upgrades, including their icons, actions, and compatibility.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.UpgradeIcons">
+            <summary>
+            Dictionary of upgrade icons, indexed by upgrade ClassId.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.OnAddActions">
+            <summary>
+            List of actions to invoke when an upgrade is added or removed.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.OnToggleActions">
+            <summary>
+            List of actions to invoke when a toggleable upgrade is toggled.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.OnSelectChargeActions">
+            <summary>
+            List of actions to invoke when a selectable chargeable upgrade is selected.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.OnSelectActions">
+            <summary>
+            List of actions to invoke when a selectable upgrade is selected.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.OnArmDownActions">
+            <summary>
+            List of actions to invoke when an arm action is performed (down).
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.OnArmHeldActions">
+            <summary>
+            List of actions to invoke when an arm action is held.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.OnArmUpActions">
+            <summary>
+            List of actions to invoke when an arm action is released (up).
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.OnArmAltActions">
+            <summary>
+            List of actions to invoke when an alternate arm action is performed.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.ToggledActions">
+            <summary>
+            Tracks currently toggled actions for vehicles, by vehicle, slot, and coroutine.
+            </summary>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterUpgrade(AVS.UpgradeModules.AvsVehicleUpgrade,AVS.Crafting.UpgradeCompat,System.Boolean)">
+            <summary>
+            Registers a AvsVehicleUpgrade and sets up its icons, recipes, and actions for compatible vehicle types.
+            </summary>
+            <param name="upgrade">The upgrade to register.</param>
+            <param name="compat">Compatibility flags for vehicle types.</param>
+            <param name="verbose">If true, enables verbose logging.</param>
+            <returns>UpgradeTechTypes containing TechTypes for each vehicle type.</returns>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeRegistrar.ValidateAvsVehicleUpgrade(AVS.UpgradeModules.AvsVehicleUpgrade,AVS.Crafting.UpgradeCompat)">
+            <summary>
+            Validates the provided <see cref="T:AVS.UpgradeModules.AvsVehicleUpgrade"/> and its compatibility settings.
+            </summary>
+            <param name="upgrade">The upgrade to validate.</param>
+            <param name="compat">Compatibility flags.</param>
+            <returns>True if valid, false otherwise.</returns>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterAvsVehicleUpgrade(AVS.UpgradeModules.AvsVehicleUpgrade)">
+            <summary>
+            Registers the <see cref="T:AVS.UpgradeModules.AvsVehicleUpgrade"/> for <see cref="T:AVS.BaseVehicle.AvsVehicle"/>, sets up its prefab, recipe, and unlock conditions.
+            </summary>
+            <param name="upgrade">The upgrade to register.</param>
+            <returns>The TechType assigned to the upgrade.</returns>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterUpgradeMethods(AVS.UpgradeModules.AvsVehicleUpgrade,AVS.Crafting.UpgradeCompat,AVS.Crafting.UpgradeTechTypes@,System.Boolean)">
+            <summary>
+            Registers the appropriate upgrade methods (passive, selectable, chargeable, toggleable) for the upgrade.
+            </summary>
+            <param name="upgrade">The upgrade to register methods for.</param>
+            <param name="compat">Compatibility flags.</param>
+            <param name="utt">Reference to UpgradeTechTypes to update.</param>
+            <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterPassiveUpgradeActions(AVS.UpgradeModules.AvsVehicleUpgrade,AVS.Crafting.UpgradeCompat,AVS.Crafting.UpgradeTechTypes@,System.Boolean@)">
+            <summary>
+            Registers passive upgrade actions for the upgrade.
+            </summary>
+            <param name="upgrade">The upgrade to register.</param>
+            <param name="compat">Compatibility flags.</param>
+            <param name="utt">Reference to UpgradeTechTypes to update.</param>
+            <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterSelectableUpgradeActions(AVS.UpgradeModules.AvsVehicleUpgrade,AVS.Crafting.UpgradeCompat,AVS.Crafting.UpgradeTechTypes@,System.Boolean@)">
+            <summary>
+            Registers selectable upgrade actions for the upgrade.
+            </summary>
+            <param name="upgrade">The upgrade to register.</param>
+            <param name="compat">Compatibility flags.</param>
+            <param name="utt">Reference to UpgradeTechTypes to update.</param>
+            <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterSelectableChargeableUpgradeActions(AVS.UpgradeModules.AvsVehicleUpgrade,AVS.Crafting.UpgradeCompat,AVS.Crafting.UpgradeTechTypes@,System.Boolean@)">
+            <summary>
+            Registers selectable chargeable upgrade actions for the upgrade.
+            </summary>
+            <param name="upgrade">The upgrade to register.</param>
+            <param name="compat">Compatibility flags.</param>
+            <param name="utt">Reference to UpgradeTechTypes to update.</param>
+            <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterToggleableUpgradeActions(AVS.UpgradeModules.AvsVehicleUpgrade,AVS.Crafting.UpgradeCompat,AVS.Crafting.UpgradeTechTypes@,System.Boolean@)">
+            <summary>
+            Registers toggleable upgrade actions for the upgrade.
+            </summary>
+            <param name="upgrade">The upgrade to register.</param>
+            <param name="compat">Compatibility flags.</param>
+            <param name="utt">Reference to UpgradeTechTypes to update.</param>
+            <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
+        </member>
         <member name="T:AVS.DepthModules.DepthModule1">
             <summary>
             Represents the first depth module upgrade for vehicles, enhancing their maximum depth capability.
@@ -3283,10 +3405,10 @@
         <member name="P:AVS.DepthModules.DepthModule1.TabDisplayName">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.DepthModules.DepthModule1.OnAdded(AVS.UpgradeTypes.AddActionParams)">
+        <member name="M:AVS.DepthModules.DepthModule1.OnAdded(AVS.UpgradeModules.AddActionParams)">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.DepthModules.DepthModule1.OnRemoved(AVS.UpgradeTypes.AddActionParams)">
+        <member name="M:AVS.DepthModules.DepthModule1.OnRemoved(AVS.UpgradeModules.AddActionParams)">
             <inheritdoc/>
         </member>
         <member name="T:AVS.DepthModules.DepthModule2">
@@ -3321,10 +3443,10 @@
         <member name="P:AVS.DepthModules.DepthModule2.TabDisplayName">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.DepthModules.DepthModule2.OnAdded(AVS.UpgradeTypes.AddActionParams)">
+        <member name="M:AVS.DepthModules.DepthModule2.OnAdded(AVS.UpgradeModules.AddActionParams)">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.DepthModules.DepthModule2.OnRemoved(AVS.UpgradeTypes.AddActionParams)">
+        <member name="M:AVS.DepthModules.DepthModule2.OnRemoved(AVS.UpgradeModules.AddActionParams)">
             <inheritdoc/>
         </member>
         <member name="T:AVS.DepthModules.DepthModule3">
@@ -3356,10 +3478,10 @@
         <member name="P:AVS.DepthModules.DepthModule3.TabDisplayName">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.DepthModules.DepthModule3.OnAdded(AVS.UpgradeTypes.AddActionParams)">
+        <member name="M:AVS.DepthModules.DepthModule3.OnAdded(AVS.UpgradeModules.AddActionParams)">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.DepthModules.DepthModule3.OnRemoved(AVS.UpgradeTypes.AddActionParams)">
+        <member name="M:AVS.DepthModules.DepthModule3.OnRemoved(AVS.UpgradeModules.AddActionParams)">
             <inheritdoc/>
         </member>
         <member name="T:AVS.Engines.AbstractEngine">
@@ -5056,209 +5178,273 @@
             The set name color of this vehicle
             </summary>
         </member>
-        <member name="T:AVS.UpgradeTypes.AvsVehicleUpgrade">
+        <member name="T:AVS.UpgradeModules.AvsVehicleUpgrade">
             <summary>
             Base class for all mod vehicle upgrades. Provides core properties, recipe handling, and extension points for custom upgrades.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.LogDebug">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.LogDebug">
             <summary>
             If true, enables debug logging for this upgrade.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.TechTypes">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.TechTypes">
             <summary>
             Holds TechTypes for this upgrade for each supported vehicle type.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.UnlockTechType">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.UnlockTechType">
             <summary>
             The TechType used to unlock this upgrade. Can only be set once if the default is <see cref="F:TechType.Fragment"/>.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.ClassId">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.ClassId">
             <summary>
             The unique class ID for this upgrade.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.DisplayName">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.DisplayName">
             <summary>
             The display name for this upgrade.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.Description">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.Description">
             <summary>
             The description for this upgrade.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.IsVehicleSpecific">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.IsVehicleSpecific">
             <summary>
             If true, this upgrade is specific to a vehicle type.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.QuickSlotType">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.QuickSlotType">
             <summary>
             The quick slot type for this upgrade.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.UnlockAtStart">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.UnlockAtStart">
             <summary>
             If true, this upgrade is unlocked at the start of a new game.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.Color">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.Color">
             <summary>
             The color associated with this upgrade.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.CraftingTime">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.CraftingTime">
             <summary>
             The time required to craft this upgrade.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.Icon">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.Icon">
             <summary>
             The icon for this upgrade.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.UnlockWith">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.UnlockWith">
             <summary>
             The TechType that this module unlocks together with.
             If this tech type is unlocked, this upgrade is also unlocked.
             </summary>
         </member>
-        <member name="F:AVS.UpgradeTypes.AvsVehicleUpgrade.DefaultUnlockMessage">
+        <member name="F:AVS.UpgradeModules.AvsVehicleUpgrade.DefaultUnlockMessage">
             <summary>
             The default unlock message for this upgrade.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.UnlockedMessage">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.UnlockedMessage">
             <summary>
             The message shown when this upgrade is unlocked.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.UnlockedSprite">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.UnlockedSprite">
             <summary>
             The sprite shown when this upgrade is unlocked.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.TabName">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.TabName">
             <summary>
             The internal tab name for this upgrade in the crafting UI.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.TabDisplayName">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.TabDisplayName">
             <summary>
             The display name for the tab in the crafting UI.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.CraftingPath">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.TabPath">
             <summary>
-            The crafting path for this upgrade, if any.
+            The crafting path for this upgrade, if any, not including the node itself.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.TabIcon">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.TabIcon">
             <summary>
             The icon for the tab in the crafting UI.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.Recipe">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.Recipe">
             <summary>
             The base recipe for this upgrade.
             </summary>
         </member>
-        <member name="M:AVS.UpgradeTypes.AvsVehicleUpgrade.OnAdded(AVS.UpgradeTypes.AddActionParams)">
+        <member name="M:AVS.UpgradeModules.AvsVehicleUpgrade.OnAdded(AVS.UpgradeModules.AddActionParams)">
             <summary>
             Called when this upgrade is added to a vehicle.
             </summary>
             <param name="param">Parameters for the add action.</param>
         </member>
-        <member name="M:AVS.UpgradeTypes.AvsVehicleUpgrade.OnRemoved(AVS.UpgradeTypes.AddActionParams)">
+        <member name="M:AVS.UpgradeModules.AvsVehicleUpgrade.OnRemoved(AVS.UpgradeModules.AddActionParams)">
             <summary>
             Called when this upgrade is removed from a vehicle.
             </summary>
             <param name="param">Parameters for the remove action.</param>
         </member>
-        <member name="M:AVS.UpgradeTypes.AvsVehicleUpgrade.OnCyclops(AVS.UpgradeTypes.AddActionParams)">
+        <member name="M:AVS.UpgradeModules.AvsVehicleUpgrade.OnCyclops(AVS.UpgradeModules.AddActionParams)">
             <summary>
             Called when this upgrade is cycled in a Cyclops vehicle.
             </summary>
             <param name="param">Parameters for the Cyclops action.</param>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.RecipeExtensions">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.RecipeExtensions">
             <summary>
             Holds additional TechTypes to extend the recipe for different vehicle types.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.AvsVehicleUpgrade.SimpleRecipeExtensions">
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.SimpleRecipeExtensions">
             <summary>
             Holds additional simple ingredients to extend the recipe.
             </summary>
         </member>
-        <member name="M:AVS.UpgradeTypes.AvsVehicleUpgrade.GetRecipe(AVS.Admin.VehicleType)">
+        <member name="M:AVS.UpgradeModules.AvsVehicleUpgrade.GetRecipe(AVS.Crafting.VehicleType)">
             <summary>
             Gets the full recipe for this upgrade for a specific vehicle type.
             </summary>
             <param name="type">The vehicle type.</param>
             <returns>A list of ingredients for crafting.</returns>
         </member>
-        <member name="M:AVS.UpgradeTypes.AvsVehicleUpgrade.ExtendRecipe(AVS.Admin.UpgradeTechTypes)">
+        <member name="M:AVS.UpgradeModules.AvsVehicleUpgrade.ExtendRecipe(AVS.Crafting.UpgradeTechTypes)">
             <summary>
-            Adds an <see cref="T:AVS.Admin.UpgradeTechTypes"/> to the recipe extensions.
+            Adds an <see cref="T:AVS.Crafting.UpgradeTechTypes"/> to the recipe extensions.
             </summary>
             <param name="techTypes">The tech types to add.</param>
         </member>
-        <member name="M:AVS.UpgradeTypes.AvsVehicleUpgrade.ExtendRecipeSimple(AVS.Configuration.RecipeIngredient)">
+        <member name="M:AVS.UpgradeModules.AvsVehicleUpgrade.ExtendRecipeSimple(AVS.Configuration.RecipeIngredient)">
             <summary>
             Adds a simple ingredient to the recipe extensions.
             </summary>
             <param name="ingredient">The ingredient to add.</param>
         </member>
-        <member name="M:AVS.UpgradeTypes.AvsVehicleUpgrade.HasTechType(TechType)">
+        <member name="M:AVS.UpgradeModules.AvsVehicleUpgrade.HasTechType(TechType)">
             <summary>
             Checks if this upgrade has the specified <see cref="T:TechType"/>.
             </summary>
             <param name="tt">The tech type to check.</param>
             <returns>True if the tech type is present; otherwise, false.</returns>
         </member>
-        <member name="M:AVS.UpgradeTypes.AvsVehicleUpgrade.GetNumberInstalled(Vehicle)">
+        <member name="M:AVS.UpgradeModules.AvsVehicleUpgrade.GetNumberInstalled(Vehicle)">
             <summary>
             Gets the number of this upgrade currently installed in the specified vehicle.
             </summary>
             <param name="vehicle">The vehicle to check.</param>
             <returns>The number of upgrades installed.</returns>
         </member>
-        <member name="M:AVS.UpgradeTypes.AvsVehicleUpgrade.ResolvePath(AVS.Admin.VehicleType)">
+        <member name="M:AVS.UpgradeModules.AvsVehicleUpgrade.ResolveTabPath(AVS.Crafting.VehicleType)">
             <summary>
             Resolves the crafting path for this upgrade for a given vehicle type.
             </summary>
             <param name="vType">The vehicle type to determine the path root node for.</param>
             <returns>The crafting path as an array of strings.</returns>
         </member>
-        <member name="P:AVS.UpgradeTypes.SelectableChargeableActionParams.TechType">
+        <member name="P:AVS.UpgradeModules.SelectableChargeableActionParams.TechType">
             <summary>
             The tech type of the upgrade being acted upon.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.SelectableActionParams.Vehicle">
+        <member name="T:AVS.UpgradeModules.SelectableChargeableUpgrade">
             <summary>
-            The vehicle to which the upgrade belongs. May be null if <see cref="P:AVS.UpgradeTypes.SelectableActionParams.Cyclops"/> is not null.
+            Represents an upgrade module that can be selected and charged within a vehicle's quick slot.
+            </summary>
+            <remarks>This abstract class provides a base for creating upgrade modules that require selection and
+            charging in a vehicle's quick slot. It defines properties for description, quick slot type, maximum charge, and
+            energy cost, as well as a method to handle selection actions.</remarks>
+        </member>
+        <member name="P:AVS.UpgradeModules.SelectableChargeableUpgrade.Description">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.SelectableChargeableUpgrade.QuickSlotType">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.SelectableChargeableUpgrade.MaxCharge">
+            <summary>
+            Gets the maximum charge level.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.SelectableActionParams.Cyclops">
+        <member name="P:AVS.UpgradeModules.SelectableChargeableUpgrade.EnergyCost">
+            <summary>
+            Gets the energy cost associated with the operation.
+            </summary>
+        </member>
+        <member name="M:AVS.UpgradeModules.SelectableChargeableUpgrade.OnSelected(AVS.UpgradeModules.SelectableChargeableActionParams)">
+            <summary>
+            Handles the event when a chargeable action is selected.
+            </summary>
+            <remarks>This method logs the selection of a chargeable action for a specific vehicle and
+            slot. Override this method to implement custom behavior when an action is selected.</remarks>
+            <param name="param">The parameters associated with the selected chargeable action, including the vehicle and slot information.</param>
+        </member>
+        <member name="P:AVS.UpgradeModules.SelectableActionParams.Vehicle">
+            <summary>
+            The vehicle to which the upgrade belongs. May be null if <see cref="P:AVS.UpgradeModules.SelectableActionParams.Cyclops"/> is not null.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.SelectableActionParams.Cyclops">
             <summary>
             Reference to the owning Cyclops vehicle, if any. May be null.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.SelectableActionParams.SlotID">
+        <member name="P:AVS.UpgradeModules.SelectableActionParams.SlotID">
             <summary>
             The index of the slot in which the upgrade is located.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeTypes.SelectableActionParams.TechType">
+        <member name="P:AVS.UpgradeModules.SelectableActionParams.TechType">
             <summary>
             The tech type of the upgrade being acted upon.
             </summary>
+        </member>
+        <member name="T:AVS.UpgradeProxy">
+            <summary>
+            Manages the initialization and setup of upgrade slots for AVS vehicles.
+            </summary>
+            <remarks>The <see cref="T:AVS.UpgradeProxy"/> class is responsible for creating and managing upgrade slots
+            and assigning them to specified proxy transforms. It initializes
+            the slots during the <see cref="M:AVS.UpgradeProxy.Awake"/> method by starting a coroutine to ensure the Seamoth is ready and then
+            setting up the upgrade slots.</remarks>
+        </member>
+        <member name="F:AVS.UpgradeProxy.proxies">
+            <summary>
+            Proxies for individual upgrade slots.
+            Specifies where the upgrade modules will be instantiated.
+            </summary>
+        </member>
+        <member name="F:AVS.UpgradeProxy.slots">
+            <summary>
+            Slot list passed on to the VehicleUpgradeConsoleInput.
+            </summary>
+        </member>
+        <member name="M:AVS.UpgradeProxy.Awake">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.UpgradeProxy.GetSeamothBitsASAP">
+            <summary>
+            Initializes and configures the upgrade slots as soon as possible.
+            </summary>
+            <remarks>This method ensures that the Seamoth is available and then sets up the upgrade slots
+            by instantiating the necessary models. It clears any existing proxies and assigns new models to each slot
+            based on the current configuration.</remarks>
+            <returns>An enumerator that can be used to iterate through the coroutine execution process.</returns>
         </member>
         <member name="T:AVS.Util.Character">
             <summary>

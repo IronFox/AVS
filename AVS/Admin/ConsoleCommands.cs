@@ -1,4 +1,5 @@
-﻿using AVS.Localization;
+﻿using AVS.Crafting;
+using AVS.Localization;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;

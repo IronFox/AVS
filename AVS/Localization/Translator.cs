@@ -12,8 +12,6 @@
         /// </summary>
         VehicleDefaultName,
 
-        HUD_ThermometerFormat,
-
         /// <summary>
         /// Produces the current charge status.
         /// The first argument is the current charge fraction.

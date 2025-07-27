@@ -1,4 +1,4 @@
-﻿namespace AVS.UpgradeTypes
+﻿namespace AVS.UpgradeModules
 {
     public abstract class SelectableUpgrade : AvsVehicleUpgrade
     {
