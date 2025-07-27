@@ -208,7 +208,7 @@ namespace AVS.Log
                     LogMaterialVariableData(ShaderPropertyType.Float, name, f.ToString(CultureInfo.InvariantCulture), m, materialName);
                     break;
                 case int i:
-                    LogMaterialVariableData(null, name, i.ToString(), m, materialName);
+                    LogMaterialVariableData(ShaderPropertyType.Float, name, i.ToString(), m, materialName);
                     break;
                 case Vector4 v:
                     LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m, materialName);
@@ -224,6 +224,9 @@ namespace AVS.Log
                     break;
                 case Texture t:
                     LogMaterialVariableData(ShaderPropertyType.Texture, name, t.NiceName(), m, materialName);
+                    break;
+                case null:
+                    LogMaterialVariableData(DecodeType(typeof(T)), name, "<null>", m, materialName);
                     break;
                 default:
                     LogMaterialVariableData(DecodeType(typeof(T)), name, "<unknown>", m, materialName);

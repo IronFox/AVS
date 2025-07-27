@@ -15,10 +15,6 @@ namespace AVS.MaterialAdapt
         public MaterialLog LogConfig { get; }
 
 
-        /// <summary>
-        /// If true, the vehicle's shader name will not be checked when filtering materials.
-        /// </summary>
-        public bool IgnoreShaderNames { get; }
 
         /// <summary>
         /// If this method returns true,
@@ -32,15 +28,13 @@ namespace AVS.MaterialAdapt
         public bool IsExcludedFromMaterialFixing(GameObject go, VehicleComposition comp);
 
         /// <summary>
-        /// If this method returns true,
-        /// the specific material of the given renderer will be excluded
-        /// from material fixing.
+        /// Classifies the material of the given renderer.
         /// </summary>
         /// <param name="renderer">Owning renderer</param>
         /// <param name="materialIndex">Index of the material being processed with 0 being the first material</param>
         /// <param name="material">Material being processed</param>
-        /// <returns>True if this material should not be fixed</returns>
-        public bool IsExcludedFromMaterialFixing(Renderer renderer, int materialIndex, Material material);
+        /// <returns>The material type this material represents or null if it should be omitted</returns>
+        public MaterialClassification ClassifyMaterial(Renderer renderer, int materialIndex, Material material);
 
         /// <summary>
         /// Passes the loaded material data to the config for custom conversion.

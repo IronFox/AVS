@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using AVS.Assets;
+using System.Collections;
 using UnityEngine;
 
 namespace AVS.StorageComponents
@@ -20,8 +21,9 @@ namespace AVS.StorageComponents
                 // no...
                 yield break;
             }
-            yield return UWE.CoroutineHost.StartCoroutine(SeamothHelper.EnsureSeamoth());
-            var seamothEnergyMixin = SeamothHelper.Seamoth!.GetComponent<EnergyMixin>();
+            //var seamothLoader = PrefabLoader.Request(TechType.Seamoth);
+            yield return SeamothHelper.Coroutine;
+            var seamothEnergyMixin = SeamothHelper.RequireSeamoth.GetComponent<EnergyMixin>();
             mixin.batteryModels = new EnergyMixin.BatteryModels[seamothEnergyMixin.batteryModels.Length];
             for (int i = 0; i < seamothEnergyMixin.batteryModels.Length; i++)
             {

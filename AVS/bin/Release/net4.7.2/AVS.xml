@@ -888,6 +888,34 @@
         <member name="M:AVS.Assets.FragmentManager.Start">
             <inheritdoc />
         </member>
+        <member name="T:AVS.Assets.PrefabLoader">
+            <summary>
+            Helper class for loading prefabs asynchronously.
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.PrefabLoader.Techtype">
+            <summary>
+            The tech type of the prefab being loaded.
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.PrefabLoader.Coroutine">
+            <summary>
+            The coroutine that is responsible for loading the prefab.
+            </summary>
+        </member>
+        <member name="M:AVS.Assets.PrefabLoader.Request(TechType)">
+            <summary>
+            Requests a <see cref="T:AVS.Assets.PrefabLoader"/> instance for the specified <see cref="T:TechType"/>.
+            </summary>
+            <param name="techtype">The <see cref="T:TechType"/> for which to request a <see cref="T:AVS.Assets.PrefabLoader"/>.</param>
+            <returns>A <see cref="T:AVS.Assets.PrefabLoader"/> instance associated with the specified <paramref name="techtype"/>. If an
+            instance already exists, it returns the existing instance; otherwise, it creates a new one and starts the loading process.</returns>
+        </member>
+        <member name="P:AVS.Assets.PrefabLoader.Instance">
+            <summary>
+            Queries the latest known instance of the requested resource.
+            </summary>
+        </member>
         <member name="T:AVS.Assets.SpriteHelper">
             <summary>
             Provides helper methods for loading and managing sprites from disk and registering ping sprites.
@@ -977,52 +1005,6 @@
         <member name="M:AVS.Assets.StaticAssets.GetSprites">
             <summary>
             Loads and assigns static sprite assets from internal and asset bundle sources.
-            </summary>
-        </member>
-        <member name="T:AVS.SeamothHelper">
-            <summary>
-            Helper class for managing the Seamoth prefab instance.
-            Provides methods to asynchronously ensure the Seamoth prefab is loaded and accessible.
-            </summary>
-        </member>
-        <member name="P:AVS.SeamothHelper.Request">
-            <summary>
-            Stores the result of the asynchronous Seamoth prefab instantiation.
-            </summary>
-        </member>
-        <member name="F:AVS.SeamothHelper.cor">
-            <summary>
-            Reference to the currently running coroutine for loading the Seamoth prefab.
-            </summary>
-        </member>
-        <member name="P:AVS.SeamothHelper.Seamoth">
-            <summary>
-            Gets the loaded Seamoth prefab GameObject, or null if not yet loaded.
-            The prefab is set to inactive and marked to not be destroyed on load.
-            </summary>
-        </member>
-        <member name="M:AVS.SeamothHelper.EnsureSeamoth">
-            <summary>
-            Coroutine that ensures the Seamoth prefab is loaded.
-            If not loaded, starts the asynchronous instantiation and waits until it is available.
-            </summary>
-        </member>
-        <member name="T:AVS.PrawnHelper">
-            <summary>
-            Helper class for managing the Prawn prefab instance.
-            Provides methods to asynchronously ensure the Prawn prefab is loaded and accessible.
-            </summary>
-        </member>
-        <member name="P:AVS.PrawnHelper.Prawn">
-            <summary>
-            Gets the loaded PRAWN prefab GameObject, or null if not yet loaded.
-            The prefab is set to inactive and marked to not be destroyed on load.
-            </summary>
-        </member>
-        <member name="M:AVS.PrawnHelper.EnsurePrawn">
-            <summary>
-            Coroutine that ensures the PRAWN prefab is loaded.
-            If not loaded, starts the asynchronous instantiation and waits until it is available.
             </summary>
         </member>
         <member name="T:AVS.Audio.AsyncPromise`1">
@@ -4357,6 +4339,34 @@
             Logs an error message.
             </summary>
         </member>
+        <member name="M:AVS.MainPatcher.Awake">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.MainPatcher.Start">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.MainPatcher.PrePatch">
+            <summary>
+             PrePatch is called before any patches are applied.
+            </summary>
+        </member>
+        <member name="M:AVS.MainPatcher.Patch">
+            <summary>
+            Applies various patches and event registrations necessary for mod compatibility and game state management.
+            </summary>
+            <remarks>This method registers save data events, patches external mods for compatibility, and
+            manages game state transitions. It uses the Harmony library to apply patches to methods in other mods,
+            ensuring that they work correctly with this mod. Additionally, it sets up event handlers to manage game
+            state changes during loading and unloading of scenes.</remarks>
+        </member>
+        <member name="M:AVS.MainPatcher.PostPatch">
+            <summary>
+            Executes post-patch operations for vehicle data management.
+            </summary>
+            <remarks>This method is intended to be called after patching operations to ensure that vehicle
+            data is correctly updated. It may involve operations such as scattering data boxes for craftable
+            items.</remarks>
+        </member>
         <member name="T:AVS.MaterialAdapt.DefaultMaterialAdaptConfig">
             <summary>
             The default material adaptation configuration.
@@ -4374,7 +4384,14 @@
             </summary>
         </member>
         <member name="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IgnoreShaderNames">
-            <inheritdoc/>
+            <summary>
+            True if shader names should be ignored during material adaptation.
+            </summary>
+        </member>
+        <member name="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IgnoreGlassShaderNames">
+            <summary>
+            True if glass shader names should be ignored during material adaptation.
+            </summary>
         </member>
         <member name="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.LogConfig">
             <inheritdoc/>
@@ -4389,22 +4406,21 @@
         <member name="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IsExcludedFromMaterialFixing(UnityEngine.GameObject,AVS.Composition.VehicleComposition)">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IsExcludedFromMaterialFixing(UnityEngine.Renderer,System.Int32,UnityEngine.Material)">
-            <inheritdoc/>
-            <remarks>Calls <see cref="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IsExcludedFromMaterialFixingByName(System.String)"/></remarks>
-        </member>
         <member name="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.IsExcludedFromMaterialFixingByName(System.String)">
             <summary>
             If this method returns true, the specific material with the given lower-case name will be excluded
             from material fixing.
             If you exclusion logic is based on material names only, you only need to override this method.
             </summary>
-            <remarks>This default implementation excluded all materials 
-            that have <see cref="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.KeepTag"/> or <see cref="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.GlassTag" /> in their name</remarks>
+            <remarks>This default implementation excludes all materials 
+            that have <see cref="P:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.KeepTag"/> in their name</remarks>
             <param name="lowerCaseMaterialName">Lower-case name of the material</param>
             <returns>True if this material should not be fixed</returns>
         </member>
         <member name="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.ConvertUnityMaterial(AVS.MaterialAdapt.UnityMaterialData)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.MaterialAdapt.DefaultMaterialAdaptConfig.ClassifyMaterial(UnityEngine.Renderer,System.Int32,UnityEngine.Material)">
             <inheritdoc/>
         </member>
         <member name="T:AVS.MaterialAdapt.IMaterialAdaptConfig">
@@ -4415,11 +4431,6 @@
         <member name="P:AVS.MaterialAdapt.IMaterialAdaptConfig.LogConfig">
             <summary>
             Logging configuration for material adaptation.
-            </summary>
-        </member>
-        <member name="P:AVS.MaterialAdapt.IMaterialAdaptConfig.IgnoreShaderNames">
-            <summary>
-            If true, the vehicle's shader name will not be checked when filtering materials.
             </summary>
         </member>
         <member name="M:AVS.MaterialAdapt.IMaterialAdaptConfig.IsExcludedFromMaterialFixing(UnityEngine.GameObject,AVS.Composition.VehicleComposition)">
@@ -4433,16 +4444,14 @@
             <param name="comp">Vehicle composition of the target vehicle</param>
             <returns>True if this object should not be fixed</returns>
         </member>
-        <member name="M:AVS.MaterialAdapt.IMaterialAdaptConfig.IsExcludedFromMaterialFixing(UnityEngine.Renderer,System.Int32,UnityEngine.Material)">
+        <member name="M:AVS.MaterialAdapt.IMaterialAdaptConfig.ClassifyMaterial(UnityEngine.Renderer,System.Int32,UnityEngine.Material)">
             <summary>
-            If this method returns true,
-            the specific material of the given renderer will be excluded
-            from material fixing.
+            Classifies the material of the given renderer.
             </summary>
             <param name="renderer">Owning renderer</param>
             <param name="materialIndex">Index of the material being processed with 0 being the first material</param>
             <param name="material">Material being processed</param>
-            <returns>True if this material should not be fixed</returns>
+            <returns>The material type this material represents or null if it should be omitted</returns>
         </member>
         <member name="M:AVS.MaterialAdapt.IMaterialAdaptConfig.ConvertUnityMaterial(AVS.MaterialAdapt.UnityMaterialData)">
             <summary>
@@ -4450,6 +4459,16 @@
             </summary>
             <param name="materialData">Loaded material data</param>
             <returns>Converted material</returns>
+        </member>
+        <member name="T:AVS.MaterialAdapt.IMaterialResolver">
+            <summary>
+            Resolver to find materials for adaptation.
+            </summary>
+        </member>
+        <member name="M:AVS.MaterialAdapt.IMaterialResolver.ResolveMaterials">
+            <summary>
+            Identifies all materials that should be adapted.
+            </summary>
         </member>
         <member name="T:AVS.MaterialAdapt.MaterialAddress">
             <summary>
@@ -4547,6 +4566,38 @@
             <param name="uniformShininess">The uniform shininess to apply everywhere. If not null,
             the unity material's smoothness value is disregarded</param>
         </member>
+        <member name="T:AVS.MaterialAdapt.MaterialClassification">
+            <summary>
+            The classification of a material for adaptation purposes.
+            </summary>
+        </member>
+        <member name="P:AVS.MaterialAdapt.MaterialClassification.Type">
+            <summary>
+            The type of material to apply.
+            </summary>
+        </member>
+        <member name="P:AVS.MaterialAdapt.MaterialClassification.IgnoreShaderNames">
+            <summary>
+            Gets a value indicating whether shader names should be ignored during processing.
+            </summary>
+        </member>
+        <member name="P:AVS.MaterialAdapt.MaterialClassification.Include">
+            <summary>
+            True if the source material should be included in the adaptation process.
+            </summary>
+        </member>
+        <member name="M:AVS.MaterialAdapt.MaterialClassification.#ctor(AVS.MaterialAdapt.MaterialType,System.Boolean)">
+            <summary>
+            Constructs an included material classification with the specified type and shader name handling.
+            </summary>
+            <param name="type">The type of material to apply.</param>
+            <param name="ignoreShaderNames">Whether shader names should be ignored during processing</param>
+        </member>
+        <member name="P:AVS.MaterialAdapt.MaterialClassification.Excluded">
+            <summary>
+            Global excluded material classification.
+            </summary>
+        </member>
         <member name="T:AVS.MaterialAdapt.MaterialFixer">
             <summary>
             Helper class to fix materials automatically. Should be instantiated on the vehicle
@@ -4571,7 +4622,7 @@
         </member>
         <member name="P:AVS.MaterialAdapt.MaterialFixer.MaterialResolver">
             <summary>
-            The used material resolver function.
+            The used material resolver.
             </summary>
         </member>
         <member name="P:AVS.MaterialAdapt.MaterialFixer.UniformShininess">
@@ -4580,24 +4631,13 @@
             If non-null, enforces the same uniform shininess level on all materials
             </summary>
         </member>
-        <member name="M:AVS.MaterialAdapt.MaterialFixer.#ctor(AVS.BaseVehicle.AvsVehicle,System.Nullable{AVS.Log.MaterialLog},System.Func{System.Collections.Generic.IEnumerable{AVS.MaterialAdapt.UnityMaterialData}})">
+        <member name="M:AVS.MaterialAdapt.MaterialFixer.#ctor(AVS.BaseVehicle.AvsVehicle,AVS.MaterialAdapt.IMaterialResolver,System.Nullable{AVS.Log.MaterialLog})">
             <summary>
             Constructs the instance
             </summary>
             <param name="owner">Owning vehicle</param>
-            <param name="materialResolver">The solver function to fetch all materials to translate.
-            If null, a default implementation is used which 
-            mimics VF's default material selection in addition to filtering out non-standard materials</param>
+            <param name="materialResolver">The solver to fetch all materials to translate.</param>
             <param name="logConfig">Log Configuration. If null, defaults to <see cref="P:AVS.Log.MaterialLog.Default" /></param>
-        </member>
-        <member name="M:AVS.MaterialAdapt.MaterialFixer.DefaultMaterialResolver(AVS.BaseVehicle.AvsVehicle,AVS.Log.MaterialLog,System.Boolean)">
-            <summary>
-            Default material address resolver function. Can be modified to also return materials with divergent shader names
-            </summary>
-            <param name="vehicle">Owning vehicle</param>
-            <param name="ignoreShaderNames">True to return all materials, false to only return Standard materials</param>
-            <param name="logConfig">Log Configuration</param>
-            <returns>Enumerable of all suitable material addresses</returns>
         </member>
         <member name="M:AVS.MaterialAdapt.MaterialFixer.OnVehicleUndocked">
             <summary>
@@ -4680,6 +4720,15 @@
             Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
             if the respective material is not found</returns>
         </member>
+        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassFromAquarium(AVS.Log.MaterialLog)">
+            <summary>
+            Creates a material prototype for the glass material of the Seamoth.
+            </summary>
+            <param name="logConfig">Logging configuration</param>
+            <returns>Null if the seamoth is not (yet) available. Keep trying if null.
+            Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
+            if the respective material is not found</returns>
+        </member>
         <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.FromSeamoth(AVS.Log.MaterialLog)">
             <summary>
             Creates a material prototype for the main material of the Seamoth body.
@@ -4691,6 +4740,21 @@
             <returns>Null if the seamoth is not (yet) available. Keep trying if null.
             Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
             if the respective material is not found</returns>
+        </member>
+        <member name="T:AVS.MaterialAdapt.MaterialType">
+            <summary>
+            Material classification.
+            </summary>
+        </member>
+        <member name="F:AVS.MaterialAdapt.MaterialType.Opaque">
+            <summary>
+            Standard opaque material
+            </summary>
+        </member>
+        <member name="F:AVS.MaterialAdapt.MaterialType.Glass">
+            <summary>
+            Glass material
+            </summary>
         </member>
         <member name="T:AVS.MaterialAdapt.UnityMaterialData">
             <summary>
@@ -4767,12 +4831,12 @@
             The source material
             </summary>
         </member>
-        <member name="M:AVS.MaterialAdapt.UnityMaterialData.#ctor(System.String,UnityEngine.Color,UnityEngine.Color,UnityEngine.Color,UnityEngine.Texture,System.Single,System.Int32,UnityEngine.Texture,UnityEngine.Texture,UnityEngine.Texture,AVS.MaterialAdapt.MaterialAddress)">
+        <member name="M:AVS.MaterialAdapt.UnityMaterialData.#ctor(AVS.MaterialAdapt.MaterialType,System.String,UnityEngine.Color,UnityEngine.Color,UnityEngine.Color,UnityEngine.Texture,System.Single,System.Int32,UnityEngine.Texture,UnityEngine.Texture,UnityEngine.Texture,AVS.MaterialAdapt.MaterialAddress)">
             <summary>
             Constructs a new instance of <see cref="T:AVS.MaterialAdapt.UnityMaterialData"/>
             </summary>
         </member>
-        <member name="M:AVS.MaterialAdapt.UnityMaterialData.From(AVS.MaterialAdapt.MaterialAddress,AVS.Log.MaterialLog,System.Boolean)">
+        <member name="M:AVS.MaterialAdapt.UnityMaterialData.From(AVS.MaterialAdapt.MaterialAddress,AVS.Log.MaterialLog,AVS.MaterialAdapt.MaterialType,System.Boolean)">
             <summary>
             Reads all local values from the given material address (if available).
             Unless <paramref name="ignoreShaderName"/> is set,
@@ -4788,7 +4852,7 @@
             <returns>Read surface shader data or null if the shader name did not match
             or the target is (no longer) valid</returns>
         </member>
-        <member name="M:AVS.MaterialAdapt.UnityMaterialData.From(UnityEngine.Renderer,System.Int32,AVS.Log.MaterialLog,System.Boolean)">
+        <member name="M:AVS.MaterialAdapt.UnityMaterialData.From(UnityEngine.Renderer,System.Int32,AVS.MaterialAdapt.MaterialType,AVS.Log.MaterialLog,System.Boolean)">
             <summary>
             Reads all local values from the given renderer material (if available).
             Unless <paramref name="ignoreShaderName"/> is set,

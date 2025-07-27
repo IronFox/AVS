@@ -1,4 +1,6 @@
-﻿using AVS.BaseVehicle;
+﻿using AVS.Assets;
+using AVS.BaseVehicle;
+using AVS.Log;
 using AVS.Util;
 using AVS.VehicleTypes;
 using System;
@@ -44,12 +46,12 @@ namespace AVS
         {
             mv.OnAwakeOrPrefabricate();
             VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, "Prefabricating the " + mv.gameObject.name);
-            yield return UWE.CoroutineHost.StartCoroutine(SeamothHelper.EnsureSeamoth());
-            var seamoth = SeamothHelper.Seamoth!;
+            yield return SeamothHelper.Coroutine;
+            var seamoth = SeamothHelper.RequireSeamoth;
             if (!Instrument(mv, pingType, seamoth))
             {
-                Logger.Error("Failed to instrument the vehicle: " + mv.gameObject.name);
-                Logger.LoopMainMenuError($"Failed prefabrication. Not registered. See log.", mv.gameObject.name);
+                LogWriter.Default.Error("Failed to instrument the vehicle: " + mv.gameObject.name);
+                Logger.LoopMainMenuError($"AVS: Failed prefabrication of {mv.GetType().Name}. Not registered. See log.", mv.gameObject.name);
                 yield break;
             }
             prefabs.Add(mv);
@@ -87,8 +89,8 @@ namespace AVS
                         cont.height = vs.Height;
                         cont.width = vs.Width;
 
-                        FMODAsset storageCloseSound = SeamothHelper.Seamoth!.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().closeSound;
-                        FMODAsset storageOpenSound = SeamothHelper.Seamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().openSound;
+                        FMODAsset storageCloseSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().closeSound;
+                        FMODAsset storageOpenSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().openSound;
                         var inp = vs.Container.EnsureComponent<InnateStorageInput>();
                         inp.mv = mv;
                         inp.slotID = iter;
@@ -109,8 +111,7 @@ namespace AVS
             }
             catch (Exception e)
             {
-                Logger.Error("There was a problem setting up the Innate Storage. Check VehicleStorage.Container and ModVehicle.StorageRootObject");
-                Logger.Error(e.ToString());
+                LogWriter.Default.Error("There was a problem setting up the Innate Storage. Check VehicleStorage.Container and ModVehicle.StorageRootObject", e);
                 return false;
             }
             iter = 0;
@@ -118,10 +119,21 @@ namespace AVS
             {
                 foreach (VehicleParts.VehicleStorage vs in mv.Com.ModularStorages)
                 {
+                    LogWriter.Default.Debug("Setting up Modular Storage " + vs.Container.name + " for " + mv.name);
                     vs.Container.SetActive(false);
 
-                    FMODAsset storageCloseSound = SeamothHelper.Seamoth!.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().closeSound;
-                    FMODAsset storageOpenSound = SeamothHelper.Seamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().openSound;
+                    LogWriter.Default.Debug("Scanning seamoth");
+                    var sm = SeamothHelper.RequireSeamoth;
+                    LogWriter.Default.Debug("Found seamoth: " + sm.NiceName());
+                    var storage = sm.transform.Find("Storage/Storage1");
+                    if (storage == null)
+                    {
+                        LogWriter.Default.Error("Could not find Storage/Storage1 in the Seamoth prefab");
+                        return false;
+                    }
+                    FMODAsset storageCloseSound = storage.GetComponent<SeamothStorageInput>().closeSound;
+                    FMODAsset storageOpenSound = storage.GetComponent<SeamothStorageInput>().openSound;
+                    LogWriter.Default.Debug("Setting up");
                     var inp = vs.Container.EnsureComponent<ModularStorageInput>();
                     inp.mv = mv;
                     inp.slotID = iter;
@@ -137,8 +149,7 @@ namespace AVS
             }
             catch (Exception e)
             {
-                Logger.Error("There was a problem setting up the Modular Storage. Check VehicleStorage.Container and ModVehicle.StorageRootObject");
-                Logger.Error(e.ToString());
+                LogWriter.Default.Error("There was a problem setting up the Modular Storage. Check VehicleStorage.Container and ModVehicle.StorageRootObject", e);
                 return false;
             }
             try
@@ -169,8 +180,7 @@ namespace AVS
             }
             catch (Exception e)
             {
-                Logger.Error("There was a problem setting up the Upgrades Interface. Check VehicleUpgrades.Interface and .Flap");
-                Logger.Error(e.ToString());
+                LogWriter.Default.Error("There was a problem setting up the Upgrades Interface. Check VehicleUpgrades.Interface and .Flap", e);
                 return false;
             }
             if (mv.Com.BoundingBoxCollider != null)
@@ -191,8 +201,7 @@ namespace AVS
             }
             catch (Exception e)
             {
-                Logger.Error("There was a problem setting up the PilotSeats. Check VehiclePilotSeat.Seat");
-                Logger.Error(e.ToString());
+                LogWriter.Default.Error("There was a problem setting up the PilotSeats. Check VehiclePilotSeat.Seat", e);
                 return false;
             }
             try
@@ -206,8 +215,7 @@ namespace AVS
             }
             catch (Exception e)
             {
-                Logger.Error("There was a problem setting up the Hatches. Check VehicleHatchStruct.Hatch");
-                Logger.Error(e.ToString());
+                LogWriter.Default.Error("There was a problem setting up the Hatches. Check VehicleHatchStruct.Hatch", e);
                 return false;
             }
             // Configure the Control Panel
@@ -227,8 +235,7 @@ namespace AVS
             }
             catch (Exception e)
             {
-                Logger.Error("There was a problem setting up the Control Panel. Check ModVehicle.ControlPanel and ensure \"Control-Panel-Location\" exists at the top level of your model. While you're at it, check that \"Fabricator-Location\" is at the top level of your model too.");
-                Logger.Error(e.ToString());
+                LogWriter.Default.Error("There was a problem setting up the Control Panel. Check ModVehicle.ControlPanel and ensure \"Control-Panel-Location\" exists at the top level of your model. While you're at it, check that \"Fabricator-Location\" is at the top level of your model too.", e);
                 return false;
             }
             return true;
@@ -243,8 +250,7 @@ namespace AVS
             }
             catch (Exception e)
             {
-                Logger.Error("There was a problem setting up the PilotSeats. Check VehiclePilotSeat.Seat");
-                Logger.Error(e.ToString());
+                LogWriter.Default.Error("There was a problem setting up the PilotSeats. Check VehiclePilotSeat.Seat", e);
                 return false;
             }
             try
@@ -258,8 +264,7 @@ namespace AVS
             }
             catch (Exception e)
             {
-                Logger.Error("There was a problem setting up the Hatches. Check VehicleHatchStruct.Hatch");
-                Logger.Error(e.ToString());
+                LogWriter.Default.Error("There was a problem setting up the Hatches. Check VehicleHatchStruct.Hatch", e);
                 return false;
             }
             // Configure the Control Panel
@@ -267,7 +272,7 @@ namespace AVS
         }
         public static void SetupEnergyInterface(AvsVehicle mv)
         {
-            var seamothEnergyMixin = SeamothHelper.Seamoth!.GetComponent<EnergyMixin>();
+            var seamothEnergyMixin = SeamothHelper.RequireSeamoth.GetComponent<EnergyMixin>();
             List<EnergyMixin> energyMixins = new List<EnergyMixin>();
             if (mv.Com.Batteries.Count() == 0)
             {
@@ -314,7 +319,7 @@ namespace AVS
             mv.energyInterface = eInterf;
 
             mv.chargingSound = mv.gameObject.AddComponent<FMOD_CustomLoopingEmitter>();
-            mv.chargingSound.asset = SeamothHelper.Seamoth.GetComponent<SeaMoth>().chargingSound.asset;
+            mv.chargingSound.asset = SeamothHelper.RequireSeamoth.GetComponent<SeaMoth>().chargingSound.asset;
         }
         public static void SetupAIEnergyInterface(AvsVehicle mv, GameObject seamoth)
         {
@@ -324,7 +329,7 @@ namespace AVS
         public static void SetupLightSounds(AvsVehicle mv)
         {
             mv.Log.Debug("Setting up light sounds for " + mv.name);
-            FMOD_StudioEventEmitter[] fmods = SeamothHelper.Seamoth!.GetComponents<FMOD_StudioEventEmitter>();
+            FMOD_StudioEventEmitter[] fmods = SeamothHelper.RequireSeamoth.GetComponents<FMOD_StudioEventEmitter>();
             foreach (FMOD_StudioEventEmitter fmod in fmods)
             {
                 if (fmod.asset.name == "seamoth_light_on")
@@ -349,7 +354,7 @@ namespace AVS
         }
         public static void SetupHeadLights(AvsVehicle mv)
         {
-            GameObject seamothHeadLight = SeamothHelper.Seamoth!.transform.Find("lights_parent/light_left").gameObject;
+            GameObject seamothHeadLight = SeamothHelper.RequireSeamoth.transform.Find("lights_parent/light_left").gameObject;
             if (mv.Com.HeadLights != null)
             {
                 foreach (VehicleParts.VehicleFloodLight pc in mv.Com.HeadLights)
@@ -448,7 +453,7 @@ namespace AVS
 
         public static void SetupWorldForces(AvsVehicle mv, GameObject seamoth)
         {
-            Logger.Log("Setting up world forces for " + mv.name);
+            LogWriter.Default.Write("Setting up world forces for " + mv.name);
             mv.worldForces = seamoth
                         .GetComponent<SeaMoth>()
                         .worldForces
@@ -654,23 +659,23 @@ namespace AVS
         #endregion
         public static bool Instrument(AvsVehicle mv, PingType pingType, GameObject seamoth)
         {
-            Logger.Log("Instrumenting " + mv.name + $" {mv.Id}");
+            LogWriter.Default.Write("Instrumenting " + mv.name + $" {mv.Id}");
             mv.Com.StorageRootObject.EnsureComponent<ChildObjectIdentifier>();
             mv.modulesRoot = mv.Com.ModulesRootObject.EnsureComponent<ChildObjectIdentifier>();
 
             if (!SetupObjects(mv as AvsVehicle))
             {
-                Logger.Error("Failed to SetupObjects for ModVehicle.");
+                LogWriter.Default.Error("Failed to SetupObjects for ModVehicle.");
                 return false;
             }
             if ((mv is Submarine sub) && !SetupObjects(sub))
             {
-                Logger.Error("Failed to SetupObjects for Submarine.");
+                LogWriter.Default.Error("Failed to SetupObjects for Submarine.");
                 return false;
             }
             if ((mv is Submersible sub2) && !SetupObjects(sub2))
             {
-                Logger.Error("Failed to SetupObjects for Submersible.");
+                LogWriter.Default.Error("Failed to SetupObjects for Submersible.");
                 return false;
             }
             mv.enabled = false;
@@ -737,7 +742,7 @@ namespace AVS
         {
             if (shader == null)
             {
-                Logger.Error("Tried to apply a null Shader.");
+                LogWriter.Default.Error("Tried to apply a null Shader.");
                 return;
             }
             // Add the [marmoset] shader to all renderers
@@ -817,7 +822,7 @@ namespace AVS
             if (!string.IsNullOrEmpty(result))
             {
                 string msg = "Unable to patch\n" + result;
-                Logger.Log(msg);
+                LogWriter.Default.Log(msg);
                 throw new InvalidOperationException(msg);
             }
 

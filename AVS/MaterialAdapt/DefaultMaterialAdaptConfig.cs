@@ -20,8 +20,14 @@ namespace AVS.MaterialAdapt
         /// </summary>
         public static string GlassTag { get; } = "[glass]";
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// True if shader names should be ignored during material adaptation.
+        /// </summary>
         public virtual bool IgnoreShaderNames => false;
+        /// <summary>
+        /// True if glass shader names should be ignored during material adaptation.
+        /// </summary>
+        public virtual bool IgnoreGlassShaderNames => true;
 
         /// <inheritdoc/>
         public MaterialLog LogConfig { get; }
@@ -42,25 +48,31 @@ namespace AVS.MaterialAdapt
             //|| go.name.ToLower().Contains("light")
             || comp.CanopyWindows.Contains(go);
 
-        /// <inheritdoc/>
-        /// <remarks>Calls <see cref="IsExcludedFromMaterialFixingByName(string)"/></remarks>
-        public virtual bool IsExcludedFromMaterialFixing(Renderer renderer, int materialIndex, Material material)
-            => IsExcludedFromMaterialFixingByName(material.name.ToLower());
 
         /// <summary>
         /// If this method returns true, the specific material with the given lower-case name will be excluded
         /// from material fixing.
         /// If you exclusion logic is based on material names only, you only need to override this method.
         /// </summary>
-        /// <remarks>This default implementation excluded all materials 
-        /// that have <see cref="KeepTag"/> or <see cref="GlassTag" /> in their name</remarks>
+        /// <remarks>This default implementation excludes all materials 
+        /// that have <see cref="KeepTag"/> in their name</remarks>
         /// <param name="lowerCaseMaterialName">Lower-case name of the material</param>
         /// <returns>True if this material should not be fixed</returns>
         public virtual bool IsExcludedFromMaterialFixingByName(string lowerCaseMaterialName)
-            => lowerCaseMaterialName.Contains(KeepTag) || lowerCaseMaterialName.Contains(GlassTag);
+            => lowerCaseMaterialName.Contains(KeepTag);
 
         /// <inheritdoc/>
         public virtual UnityMaterialData ConvertUnityMaterial(UnityMaterialData materialData)
             => materialData;
+        /// <inheritdoc/>
+        public MaterialClassification ClassifyMaterial(Renderer renderer, int materialIndex, Material material)
+        {
+            var name = material.name.ToLower();
+            if (IsExcludedFromMaterialFixingByName(name))
+                return MaterialClassification.Excluded;
+            if (name.Contains(GlassTag))
+                return new MaterialClassification(MaterialType.Glass, IgnoreGlassShaderNames);
+            return new MaterialClassification(MaterialType.Opaque, IgnoreShaderNames);
+        }
     }
 }

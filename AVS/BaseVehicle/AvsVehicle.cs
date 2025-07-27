@@ -88,7 +88,7 @@ namespace AVS.BaseVehicle
 
 
             Config = config ?? throw new ArgumentNullException(nameof(config), "VehicleConfiguration cannot be null");
-            MaterialFixer = new MaterialFixer(this, config.MaterialAdaptConfig.LogConfig, () => ResolveMaterial(config.MaterialAdaptConfig));
+            MaterialFixer = new MaterialFixer(this, new AvsMaterialResolver(config.MaterialAdaptConfig, this), config.MaterialAdaptConfig.LogConfig);
             baseColor = config.InitialBaseColor;
             stripeColor = config.InitialStripeColor;
             nameColor = config.InitialNameColor;

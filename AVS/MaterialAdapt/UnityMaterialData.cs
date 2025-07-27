@@ -6,6 +6,22 @@ using UnityEngine;
 namespace AVS.MaterialAdapt
 {
     /// <summary>
+    /// Material classification.
+    /// </summary>
+    public enum MaterialType
+    {
+        /// <summary>
+        /// Standard opaque material
+        /// </summary>
+        Opaque,
+        /// <summary>
+        /// Glass material
+        /// </summary>
+        Glass
+    }
+
+
+    /// <summary>
     /// Surface shader data extracted from a material imported from Unity.
     /// Only values relevant to the translation process are read.
     /// Read-only
@@ -17,6 +33,9 @@ namespace AVS.MaterialAdapt
         /// The name of the source material
         /// </summary>
         public string MaterialName { get; }
+
+        public MaterialType Type { get; }
+
         /// <summary>
         /// Main color of the material. Black if none
         /// </summary>
@@ -92,6 +111,7 @@ namespace AVS.MaterialAdapt
         /// Constructs a new instance of <see cref="UnityMaterialData"/>
         /// </summary>
         public UnityMaterialData(
+            MaterialType type,
             string materialName,
             Color color,
             Color specularColor,
@@ -104,6 +124,7 @@ namespace AVS.MaterialAdapt
             Texture? emissionTexture,
             MaterialAddress source)
         {
+            Type = type;
             MaterialName = materialName;
             Source = source;
             Color = color;
@@ -195,7 +216,7 @@ namespace AVS.MaterialAdapt
 
 
 
-        private static UnityMaterialData? From(MaterialAddress target, Material m, MaterialLog logConfig, bool ignoreShaderName = false)
+        private static UnityMaterialData? From(MaterialAddress target, Material m, MaterialLog logConfig, MaterialType type, bool ignoreShaderName = false)
         {
 
             if (m.shader.name != "Standard" && !ignoreShaderName)
@@ -206,6 +227,7 @@ namespace AVS.MaterialAdapt
             var mName = target.ToString();
             logConfig.LogExtraStep($"Reading {mName} which uses {m.shader.NiceName()}");
             var data = new UnityMaterialData(
+                type: type,
                 materialName: m.name,
                 color: GetColor(m, "_Color", logConfig),
                 specularColor: Color.white,
@@ -273,7 +295,7 @@ namespace AVS.MaterialAdapt
         /// return null otherwise</param>
         /// <returns>Read surface shader data or null if the shader name did not match
         /// or the target is (no longer) valid</returns>
-        public static UnityMaterialData? From(MaterialAddress source, MaterialLog logConfig, bool ignoreShaderName = false)
+        public static UnityMaterialData? From(MaterialAddress source, MaterialLog logConfig, MaterialType type, bool ignoreShaderName = false)
         {
             var material = source.GetMaterial();
             if (material == null)
@@ -281,7 +303,7 @@ namespace AVS.MaterialAdapt
                 Debug.LogError($"Material {source} could not be resolved to an instance");
                 return null;
             }
-            return From(source, material, logConfig, ignoreShaderName);
+            return From(source, material, logConfig, type, ignoreShaderName);
         }
 
 
@@ -301,13 +323,13 @@ namespace AVS.MaterialAdapt
         /// return null otherwise</param>
         /// <returns>Read surface shader data or null if the shader name did not match
         /// or the target is (no longer) valid</returns>
-        public static UnityMaterialData? From(Renderer renderer, int materialIndex, MaterialLog logConfig = default, bool ignoreShaderName = false)
+        public static UnityMaterialData? From(Renderer renderer, int materialIndex, MaterialType type, MaterialLog logConfig = default, bool ignoreShaderName = false)
         {
             var a = new MaterialAddress(renderer, materialIndex);
             var m = a.GetMaterial();
             if (m == null)
                 return null;
-            return From(a, m, logConfig, ignoreShaderName: ignoreShaderName);
+            return From(a, m, logConfig, type, ignoreShaderName: ignoreShaderName);
         }
 
 
@@ -408,6 +430,7 @@ namespace AVS.MaterialAdapt
         /// <returns>Clone with updated source</returns>
         public UnityMaterialData RedefineSource(MaterialAddress source)
             => new UnityMaterialData(
+                type: Type,
                 materialName: MaterialName,
                 color: Color,
                 specularColor: SpecularColor,
@@ -422,7 +445,7 @@ namespace AVS.MaterialAdapt
 
         /// <inheritdoc />
         public override string ToString()
-            => "" + Source;
+            => Source + $" ({Type})";
 
     }
 }

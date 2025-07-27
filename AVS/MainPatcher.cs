@@ -1,4 +1,5 @@
-﻿using AVS.Crafting;
+﻿using AVS.Assets;
+using AVS.Crafting;
 using AVS.Log;
 using BepInEx;
 using HarmonyLib;
@@ -22,6 +23,7 @@ namespace AVS
         internal Coroutine? GetVoices { get; private set; } = null;
         internal Coroutine? GetEngineSounds { get; private set; } = null;
 
+        /// <inheritdoc/>
         public virtual void Awake()
         {
             Nautilus.Handlers.LanguageHandler.RegisterLocalizationFolder();
@@ -30,8 +32,12 @@ namespace AVS
             //NautilusConfig = Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions<AVSNautilusConfig>();
             AVS.Logger.Init(Logger);
             PrePatch();
-            UWE.CoroutineHost.StartCoroutine(PrawnHelper.EnsurePrawn());
+            PrefabLoader.SignalCanLoad();
+            PrefabLoader.Request(TechType.Exosuit);
+            _ = SeamothHelper.Coroutine;
+            PrefabLoader.Request(TechType.Aquarium);
         }
+        /// <inheritdoc/>
         public virtual void Start()
         {
             Patch();
@@ -41,6 +47,9 @@ namespace AVS
 
         }
 
+        /// <summary>
+        ///  PrePatch is called before any patches are applied.
+        /// </summary>
         public virtual void PrePatch()
         {
             LogWriter.Default.Write("PrePatch started.");
@@ -68,6 +77,13 @@ namespace AVS
             //GetEngineSounds = UWE.CoroutineHost.StartCoroutine(DynamicClipLoader.LoadAllVoices());
             LogWriter.Default.Write("PrePatch finished.");
         }
+        /// <summary>
+        /// Applies various patches and event registrations necessary for mod compatibility and game state management.
+        /// </summary>
+        /// <remarks>This method registers save data events, patches external mods for compatibility, and
+        /// manages game state transitions. It uses the Harmony library to apply patches to methods in other mods,
+        /// ensuring that they work correctly with this mod. Additionally, it sets up event handlers to manage game
+        /// state changes during loading and unloading of scenes.</remarks>
         public virtual void Patch()
         {
             LogWriter.Default.Write("Patch started.");
@@ -181,6 +197,13 @@ namespace AVS
             // do this here because it happens only once
             SceneManager.sceneUnloaded += Admin.GameStateWatcher.SignalSceneUnloaded;
         }
+
+        /// <summary>
+        /// Executes post-patch operations for vehicle data management.
+        /// </summary>
+        /// <remarks>This method is intended to be called after patching operations to ensure that vehicle
+        /// data is correctly updated. It may involve operations such as scattering data boxes for craftable
+        /// items.</remarks>
         public void PostPatch()
         {
             //VehicleBuilder.ScatterDataBoxes(craftables);

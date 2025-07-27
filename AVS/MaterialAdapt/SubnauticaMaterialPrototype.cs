@@ -1,4 +1,5 @@
-﻿using AVS.Log;
+﻿using AVS.Assets;
+using AVS.Log;
 using AVS.Util;
 using System;
 using System.Collections.Generic;
@@ -314,6 +315,46 @@ namespace AVS.MaterialAdapt
             logConfig.LogExtraStep($"Found Seamoth");
             var glassMaterial = sm.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/Submersible_SeaMoth_glass_interior_geo").GetComponent<SkinnedMeshRenderer>().material;
             return new SubnauticaMaterialPrototype(glassMaterial, loadTextures: true);
+        }
+
+        /// <summary>
+        /// Creates a material prototype for the glass material of the Seamoth.
+        /// </summary>
+        /// <param name="logConfig">Logging configuration</param>
+        /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
+        /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
+        /// if the respective material is not found</returns>
+        public static SubnauticaMaterialPrototype? GlassFromAquarium(MaterialLog logConfig = default)
+        {
+            var sm = PrefabLoader.Request(TechType.Aquarium);
+            if (sm.Instance == null)
+                return null;
+
+            logConfig.LogExtraStep($"Found Aquarium");
+
+            Material? glassMaterial = null;
+            var renderers = sm.Instance.GetComponentsInChildren<MeshRenderer>();
+            foreach (var renderer in renderers)
+            {
+                foreach (var material in renderer.materials)
+                    if (material.shader.name == Shaders.MainShader
+                        && material.name.StartsWith("Aquarium_glass"))
+                    {
+                        logConfig.LogExtraStep($"Found material prototype: {material.NiceName()}");
+                        glassMaterial = material;
+                        break;
+                    }
+                    else
+                    {
+                        logConfig.LogExtraStep($"(Expected) shader mismatch on {material.NiceName()} which uses {material.shader}");
+                    }
+                if (glassMaterial != null)
+                    break;
+            }
+            return new SubnauticaMaterialPrototype(glassMaterial);
+            //logConfig.LogExtraStep($"Found Seamoth");
+            //var glassMaterial = sm.Instance.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/Submersible_SeaMoth_glass_interior_geo").GetComponent<SkinnedMeshRenderer>().material;
+            //return new SubnauticaMaterialPrototype(glassMaterial, loadTextures: true);
         }
 
         /// <summary>

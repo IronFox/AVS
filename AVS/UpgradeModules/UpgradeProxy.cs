@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using AVS.Assets;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -38,10 +39,11 @@ namespace AVS
         /// <returns>An enumerator that can be used to iterate through the coroutine execution process.</returns>
         public IEnumerator GetSeamothBitsASAP()
         {
-            yield return UWE.CoroutineHost.StartCoroutine(SeamothHelper.EnsureSeamoth());
+
+            yield return SeamothHelper.Coroutine;
 
             slots = new List<VehicleUpgradeConsoleInput.Slot>();
-            var module = SeamothHelper.Seamoth!.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/engine_console_key_02_geo").gameObject;
+            var module = SeamothHelper.RequireSeamoth.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/engine_console_key_02_geo").gameObject;
             for (int i = 0; i < proxies.Count; i++)
             {
                 foreach (Transform tran in proxies[i])

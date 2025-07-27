@@ -1,4 +1,5 @@
-﻿using AVS.BaseVehicle;
+﻿using AVS.Assets;
+using AVS.BaseVehicle;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -34,8 +35,8 @@ namespace AVS
         }
         public static IEnumerator SetupVFXConstructing(GameObject go)
         {
-            yield return UWE.CoroutineHost.StartCoroutine(SeamothHelper.EnsureSeamoth());
-            GameObject seamoth = SeamothHelper.Seamoth!;
+            yield return SeamothHelper.Coroutine;
+            GameObject seamoth = SeamothHelper.RequireSeamoth;
             VFXConstructing seamothVFXC = seamoth.GetComponent<VFXConstructing>();
             VFXConstructing rocketPlatformVfx = seamoth.GetComponentInChildren<VFXConstructing>();
             VFXConstructing vfxc = go.EnsureComponent<VFXConstructing>();

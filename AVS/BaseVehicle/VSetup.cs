@@ -1,4 +1,5 @@
-﻿using AVS.Configuration;
+﻿using AVS.Assets;
+using AVS.Configuration;
 using AVS.Util;
 using AVS.VehicleParts;
 using System.Collections;

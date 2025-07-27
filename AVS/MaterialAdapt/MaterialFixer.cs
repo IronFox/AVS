@@ -3,7 +3,6 @@ using AVS.Log;
 using AVS.Util;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 namespace AVS.MaterialAdapt
@@ -40,9 +39,9 @@ namespace AVS.MaterialAdapt
         public MaterialLog Logging { get; set; }
 
         /// <summary>
-        /// The used material resolver function.
+        /// The used material resolver.
         /// </summary>
-        public Func<IEnumerable<UnityMaterialData>> MaterialResolver { get; }
+        public IMaterialResolver MaterialResolver { get; }
 
         /// <summary>
         /// Null or in [0,1].<br/>
@@ -55,63 +54,21 @@ namespace AVS.MaterialAdapt
         /// Constructs the instance
         /// </summary>
         /// <param name="owner">Owning vehicle</param>
-        /// <param name="materialResolver">The solver function to fetch all materials to translate.
-        /// If null, a default implementation is used which 
-        /// mimics VF's default material selection in addition to filtering out non-standard materials</param>
+        /// <param name="materialResolver">The solver to fetch all materials to translate.</param>
         /// <param name="logConfig">Log Configuration. If null, defaults to <see cref="MaterialLog.Default" /></param>
         public MaterialFixer(
             AvsVehicle owner,
-            MaterialLog? logConfig = null,
-            Func<IEnumerable<UnityMaterialData>>? materialResolver = null
+            IMaterialResolver materialResolver,
+            MaterialLog? logConfig = null
             )
         {
             if (owner == null)
                 throw new ArgumentNullException(nameof(owner));
             Vehicle = owner;
             Logging = logConfig ?? MaterialLog.Default;
-            MaterialResolver = materialResolver ?? (() => DefaultMaterialResolver(owner, Logging));
+            MaterialResolver = materialResolver;
         }
 
-        /// <summary>
-        /// Default material address resolver function. Can be modified to also return materials with divergent shader names
-        /// </summary>
-        /// <param name="vehicle">Owning vehicle</param>
-        /// <param name="ignoreShaderNames">True to return all materials, false to only return Standard materials</param>
-        /// <param name="logConfig">Log Configuration</param>
-        /// <returns>Enumerable of all suitable material addresses</returns>
-        public static IEnumerable<UnityMaterialData> DefaultMaterialResolver(AvsVehicle vehicle, MaterialLog logConfig, bool ignoreShaderNames = false)
-        {
-            var renderers = vehicle.GetComponentsInChildren<Renderer>();
-            foreach (var renderer in renderers)
-            {
-                // copied from VF default behavior:
-
-                // skip some materials
-                if (renderer.gameObject.GetComponent<Skybox>())
-                {
-                    // I feel okay using Skybox as the designated "don't apply marmoset to me" component.
-                    // I think there's no reason a vehicle should have a skybox anywhere.
-                    // And if there is, I'm sure that developer can work around this.
-                    UnityEngine.Object.DestroyImmediate(renderer.gameObject.GetComponent<Skybox>());
-                    continue;
-                }
-                if (renderer.gameObject.name.ToLower().Contains("light"))
-                {
-                    continue;
-                }
-                if (vehicle.Com.CanopyWindows.Contains(renderer.gameObject))
-                {
-                    continue;
-                }
-
-                for (int i = 0; i < renderer.materials.Length; i++)
-                {
-                    var material = UnityMaterialData.From(renderer, i, logConfig, ignoreShaderNames);
-                    if (material != null)
-                        yield return material;
-                }
-            }
-        }
 
         /// <summary>
         /// Notifies that the vehicle has just undocked from a docking bay (moonpool, etc).
@@ -146,6 +103,7 @@ namespace AVS.MaterialAdapt
         }
 
         private SubnauticaMaterialPrototype? HullPrototype { get; set; }
+        private SubnauticaMaterialPrototype? GlassPrototype { get; set; }
 
         /// <summary>
         /// Fixes materials if necessary/possible.
@@ -160,9 +118,10 @@ namespace AVS.MaterialAdapt
             if (!materialsFixed)
             {
                 HullPrototype = HullPrototype ?? SubnauticaMaterialPrototype.FromSeamoth(Logging);
+                GlassPrototype = GlassPrototype ?? SubnauticaMaterialPrototype.GlassFromAquarium(Logging);
                 //GlassPrototype = GlassPrototype ?? MaterialPrototype.GlassFromExosuit(Logging.Verbose);
 
-                if (HullPrototype != null /*&& GlassPrototype != null*/)
+                if (HullPrototype != null && GlassPrototype != null)
                 {
                     materialsFixed = true;
                     uniformShininess = UniformShininess;
@@ -182,11 +141,25 @@ namespace AVS.MaterialAdapt
                             return false;
                         }
 
-                        foreach (var data in MaterialResolver())
+                        foreach (var data in MaterialResolver.ResolveMaterials())
                         {
                             try
                             {
-                                var materialAdaptation = new MaterialAdaptation(HullPrototype, data, shader);
+                                MaterialAdaptation materialAdaptation;
+
+                                switch (data.Type)
+                                {
+                                    case MaterialType.Opaque:
+                                        materialAdaptation = new MaterialAdaptation(HullPrototype, data, shader);
+                                        break;
+                                    case MaterialType.Glass:
+                                        materialAdaptation = new MaterialAdaptation(GlassPrototype, data, shader);
+                                        break;
+                                    default:
+                                        Logging.Warn($"Unknown material type for material {data}. Skipping adaptation");
+                                        continue;
+                                }
+                                //= new MaterialAdaptation(HullPrototype, data, shader);
                                 materialAdaptation.ApplyToTarget(Logging, uniformShininess);
 
                                 adaptations.Add(materialAdaptation);
