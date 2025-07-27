@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -120,6 +121,36 @@ namespace AVS.SaveLoad
                     throw new InvalidOperationException($"Failed to deserialize JSON to {t.Name}", ex);
                 }
             }
+            if (t.IsArray)
+            {
+                var elementType = t.GetElementType()!;
+                if (value is JArray jArray)
+                {
+                    var array = Array.CreateInstance(elementType, jArray.Count);
+                    for (int i = 0; i < jArray.Count; i++)
+                    {
+                        array.SetValue(FromJson(jArray[i], elementType), i);
+                    }
+                    return array;
+                }
+                throw new InvalidOperationException($"Expected JSON array for type {t.Name}, but got {value.Type}");
+            }
+            if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(List<>))
+            {
+                var elementType = t.GetGenericArguments()[0];
+                if (value is JArray jArray)
+                {
+                    var listType = typeof(List<>).MakeGenericType(elementType);
+                    var list = (IList)Activator.CreateInstance(listType)!;
+                    foreach (var item in jArray)
+                    {
+                        list.Add(FromJson(item, elementType));
+                    }
+                    return list;
+                }
+                throw new InvalidOperationException($"Expected JSON array for type {t.Name}, but got {value.Type}");
+            }
+
             if (!(value is JObject jobj))
             {
                 throw new InvalidOperationException($"Expected JSON object for type {t.Name}, but got {value.Type}");

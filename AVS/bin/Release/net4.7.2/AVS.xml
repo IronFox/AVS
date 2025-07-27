@@ -1821,14 +1821,11 @@
             Executed when the local vehicle has finished saving.
             </summary>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.OnGameLoaded">
-            <summary>
-            Executed when the local vehicle has finished loading.
-            </summary>
-        </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.OnFinishedLoading">
             <summary>
-            Executed when loading has finished in <see cref="T:AVS.VehicleManager"/>.
+            Executed last when everything has been loaded successfully and the
+            scene was completely initialized.
+            Everything loaded by the savegame now exists at its final location and state.
             </summary>
         </member>
         <member name="P:AVS.BaseVehicle.AvsVehicle.MaterialFixer">
@@ -5744,6 +5741,12 @@
             Retrieves the <see cref="T:PrefabIdentifier"/> component attached to the specified component.
             </summary>
             <param name="c">The component from which to retrieve the <see cref="T:PrefabIdentifier"/>. Can be <see langword="null"/>.</param>
+            <returns>The <see cref="T:PrefabIdentifier"/> component if found; otherwise, <see langword="null"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.GameObjectHelper.PrefabId(UnityEngine.GameObject)">
+            <summary>
+            Retrieves the <see cref="T:PrefabIdentifier"/> component attached to the specified game object.
+            </summary>
             <returns>The <see cref="T:PrefabIdentifier"/> component if found; otherwise, <see langword="null"/>.</returns>
         </member>
         <member name="M:AVS.Util.GameObjectHelper.WriteReflected``1(PrefabIdentifier,System.String,``0,AVS.Log.LogWriter)">

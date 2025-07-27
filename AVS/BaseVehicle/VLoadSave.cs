@@ -2,7 +2,6 @@
 using AVS.Util;
 using AVS.VehicleParts;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -153,18 +152,7 @@ namespace AVS.BaseVehicle
         {
             PrefabID.WriteData(BasicSaveFileNamePrefix, GetOrCreateData(), this.Log);
         }
-        private IEnumerator LoadSimpleData()
-        {
-            // Need to handle some things specially here for Submarines
-            // Because Submarines had color changing before I knew how to integrate with the Moonpool
-            // The new color changing methods are much simpler, but Odyssey and Beluga use the old methods,
-            // So I'll still support them.
-            yield return new WaitUntil(() => Admin.GameStateWatcher.IsWorldLoaded);
-            yield return new WaitUntil(() => isInitialized);
 
-            if (PrefabID.ReadData(BasicSaveFileNamePrefix, GetOrCreateData(), Log))
-                OnDataLoaded();
-        }
         void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
         {
             try
@@ -180,18 +168,17 @@ namespace AVS.BaseVehicle
         }
         void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
         {
-            UWE.CoroutineHost.StartCoroutine(LoadSimpleData());
+            Log.Write($"OnProtoDeserializeObjectTree {name} {GetType().Name}");
+            if (PrefabID.ReadData(BasicSaveFileNamePrefix, GetOrCreateData(), Log))
+                OnDataLoaded();
+
             UWE.CoroutineHost.StartCoroutine(SaveLoad.AvsModularStorageSaveLoad.DeserializeAllModularStorage(this));
-            OnGameLoaded();
         }
+
         /// <summary>
         /// Executed when the local vehicle has finished saving.
         /// </summary>
         protected virtual void OnGameSaved() { }
-        /// <summary>
-        /// Executed when the local vehicle has finished loading.
-        /// </summary>
-        protected virtual void OnGameLoaded() { }
 
         private const string StorageSaveName = "Storage";
         private Dictionary<string, List<Tuple<TechType, float, TechType>>>? loadedStorageData = null;
@@ -268,7 +255,9 @@ namespace AVS.BaseVehicle
 
 
         /// <summary>
-        /// Executed when loading has finished in <see cref="VehicleManager"/>.
+        /// Executed last when everything has been loaded successfully and the
+        /// scene was completely initialized.
+        /// Everything loaded by the savegame now exists at its final location and state.
         /// </summary>
         public virtual void OnFinishedLoading()
         { }

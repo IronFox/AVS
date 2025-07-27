@@ -491,6 +491,18 @@ namespace AVS.Util
         }
 
 
+        /// <summary>
+        /// Retrieves the <see cref="PrefabIdentifier"/> component attached to the specified game object.
+        /// </summary>
+        /// <returns>The <see cref="PrefabIdentifier"/> component if found; otherwise, <see langword="null"/>.</returns>
+        public static PrefabIdentifier? PrefabId(this GameObject? o)
+        {
+            if (o == null)
+                return default;
+            return o.GetComponent<PrefabIdentifier>();
+        }
+
+
 
         /// <summary>
         /// Extension method to write reflected data associated with a prefab identifier to a JSON file of the current save game slot.
