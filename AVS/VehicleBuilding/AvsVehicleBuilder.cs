@@ -72,85 +72,12 @@ namespace AVS
             // allow it to be opened as a storage container:
             //PrefabUtils.AddStorageContainer(obj, "StorageRoot", "TallLocker", 3, 8, true);
 
-
-            int iter = 0;
-            try
-            {
-                if (mv.Com.InnateStorages != null)
-                {
-                    foreach (VehicleParts.VehicleStorage vs in mv.Com.InnateStorages)
-                    {
-                        vs.Container.SetActive(false);
-
-                        var cont = vs.Container.EnsureComponent<InnateStorageContainer>();
-                        cont.storageRoot = mv.Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
-                        cont.storageLabel = "Vehicle Storage " + iter.ToString();
-                        cont.height = vs.Height;
-                        cont.width = vs.Width;
-
-                        FMODAsset storageCloseSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().closeSound;
-                        FMODAsset storageOpenSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().openSound;
-                        var inp = vs.Container.EnsureComponent<InnateStorageInput>();
-                        inp.mv = mv;
-                        inp.slotID = iter;
-                        iter++;
-                        inp.model = vs.Container;
-                        if (vs.Container.GetComponentInChildren<Collider>() is null)
-                        {
-                            inp.collider = vs.Container.EnsureComponent<BoxCollider>();
-                        }
-                        inp.openSound = storageOpenSound;
-                        inp.closeSound = storageCloseSound;
-                        vs.Container.SetActive(true);
-
-                        SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vs.Container.transform);
-                        vs.Container.EnsureComponent<SaveLoad.VFInnateStorageIdentifier>();
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                LogWriter.Default.Error("There was a problem setting up the Innate Storage. Check VehicleStorage.Container and ModVehicle.StorageRootObject", e);
+            if (!mv.ReSetupInnateStorages())
                 return false;
-            }
-            iter = 0;
-            try
-            {
-                foreach (VehicleParts.VehicleStorage vs in mv.Com.ModularStorages)
-                {
-                    LogWriter.Default.Debug("Setting up Modular Storage " + vs.Container.name + " for " + mv.name);
-                    vs.Container.SetActive(false);
 
-                    LogWriter.Default.Debug("Scanning seamoth");
-                    var sm = SeamothHelper.RequireSeamoth;
-                    LogWriter.Default.Debug("Found seamoth: " + sm.NiceName());
-                    var storage = sm.transform.Find("Storage/Storage1");
-                    if (storage == null)
-                    {
-                        LogWriter.Default.Error("Could not find Storage/Storage1 in the Seamoth prefab");
-                        return false;
-                    }
-                    FMODAsset storageCloseSound = storage.GetComponent<SeamothStorageInput>().closeSound;
-                    FMODAsset storageOpenSound = storage.GetComponent<SeamothStorageInput>().openSound;
-                    LogWriter.Default.Debug("Setting up");
-                    var inp = vs.Container.EnsureComponent<ModularStorageInput>();
-                    inp.mv = mv;
-                    inp.slotID = iter;
-                    iter++;
-                    inp.model = vs.Container;
-                    if (vs.Container.GetComponentInChildren<Collider>() is null)
-                    {
-                        inp.collider = vs.Container.EnsureComponent<BoxCollider>();
-                    }
-                    inp.openSound = storageOpenSound;
-                    inp.closeSound = storageCloseSound;
-                }
-            }
-            catch (Exception e)
-            {
-                LogWriter.Default.Error("There was a problem setting up the Modular Storage. Check VehicleStorage.Container and ModVehicle.StorageRootObject", e);
+            if (!mv.ReSetupModularStorages())
                 return false;
-            }
+
             try
             {
                 foreach (VehicleParts.VehicleUpgrades vu in mv.Com.Upgrades)

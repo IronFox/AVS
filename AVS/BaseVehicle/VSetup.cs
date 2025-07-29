@@ -1,7 +1,10 @@
 ﻿using AVS.Assets;
 using AVS.Configuration;
+using AVS.Localization;
+using AVS.Log;
 using AVS.Util;
 using AVS.VehicleParts;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -161,6 +164,103 @@ namespace AVS.BaseVehicle
             hudPingInstance.origin = transform;
             hudPingInstance.pingType = pingType;
             hudPingInstance.SetLabel("Vehicle");
+        }
+
+
+        internal bool ReSetupModularStorages()
+        {
+            int iter = 0;
+            try
+            {
+                foreach (VehicleParts.VehicleStorage vs in Com.ModularStorages)
+                {
+                    LogWriter.Default.Debug("Setting up Modular Storage " + vs.Container.NiceName() + " for " + this.NiceName());
+                    vs.Container.SetActive(false);
+
+                    LogWriter.Default.Debug("Scanning seamoth");
+                    var sm = SeamothHelper.RequireSeamoth;
+                    LogWriter.Default.Debug("Found seamoth: " + sm.NiceName());
+                    var storage = sm.transform.Find("Storage/Storage1");
+                    if (storage == null)
+                    {
+                        LogWriter.Default.Error("Could not find Storage/Storage1 in the Seamoth prefab");
+                        return false;
+                    }
+                    FMODAsset storageCloseSound = storage.GetComponent<SeamothStorageInput>().closeSound;
+                    FMODAsset storageOpenSound = storage.GetComponent<SeamothStorageInput>().openSound;
+                    LogWriter.Default.Debug("Setting up");
+                    var inp = vs.Container.EnsureComponent<ModularStorageInput>();
+                    var name = vs.DisplayName ?? Text.Untranslated("Modular Vehicle Storage " + iter);
+                    inp.displayName = name;
+                    inp.mv = this;
+                    inp.slotID = iter;
+                    iter++;
+                    inp.model = vs.Container;
+                    if (vs.Container.GetComponentInChildren<Collider>() is null)
+                    {
+                        inp.collider = vs.Container.EnsureComponent<BoxCollider>();
+                    }
+                    inp.openSound = storageOpenSound;
+                    inp.closeSound = storageCloseSound;
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                LogWriter.Default.Error("There was a problem setting up the Modular Storage. Check VehicleStorage.Container and ModVehicle.StorageRootObject", e);
+                return false;
+            }
+        }
+
+        internal bool ReSetupInnateStorages()
+        {
+
+            int iter = 0;
+            try
+            {
+                if (Com.InnateStorages != null)
+                {
+                    foreach (VehicleParts.VehicleStorage vs in Com.InnateStorages)
+                    {
+                        vs.Container.SetActive(false);
+
+                        var cont = vs.Container.EnsureComponent<InnateStorageContainer>();
+                        var name = vs.DisplayName ?? Text.Untranslated("Innate Vehicle Storage " + iter);
+                        cont.storageRoot = Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
+                        cont.DisplayName = name;
+                        cont.height = vs.Height;
+                        cont.width = vs.Width;
+                        //cont.name = "Innate Vehicle Storage " + iter;
+
+                        LogWriter.Default.Debug("Setting up Innate Storage " + cont.NiceName() + $" '{cont.DisplayName}'");
+
+                        FMODAsset storageCloseSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().closeSound;
+                        FMODAsset storageOpenSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().openSound;
+                        var inp = vs.Container.EnsureComponent<InnateStorageInput>();
+                        inp.displayName = name;
+                        inp.mv = this;
+                        inp.slotID = iter;
+                        iter++;
+                        inp.model = vs.Container;
+                        if (vs.Container.GetComponentInChildren<Collider>() is null)
+                        {
+                            inp.collider = vs.Container.EnsureComponent<BoxCollider>();
+                        }
+                        inp.openSound = storageOpenSound;
+                        inp.closeSound = storageCloseSound;
+                        vs.Container.SetActive(true);
+
+                        SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vs.Container.transform);
+                        vs.Container.EnsureComponent<SaveLoad.VFInnateStorageIdentifier>();
+                    }
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                LogWriter.Default.Error("There was a problem setting up the Innate Storage. Check VehicleStorage.Container and ModVehicle.StorageRootObject", e);
+                return false;
+            }
         }
 
         internal void SetupAIEnergyInterface(GameObject seamoth)

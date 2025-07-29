@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.Localization;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -167,12 +168,45 @@ namespace AVS.VehicleParts
             return true;
         }
     }
+
+    /// <summary>
+    /// Represents a storage unit within a vehicle, defined by its container and grid dimensions.
+    /// </summary>
+    /// <remarks>The <see cref="VehicleStorage"/> struct encapsulates the storage characteristics of a
+    /// vehicle, including its physical container, dimensions, and display properties. It is immutable and ensures that
+    /// the storage dimensions are valid upon initialization.</remarks>
     public readonly struct VehicleStorage
     {
+        /// <summary>
+        /// The game object that represents the storage.
+        /// </summary>
         public GameObject Container { get; }
+        /// <summary>
+        /// The grid height of the total storage capacity.
+        /// </summary>
         public int Height { get; }
+        /// <summary>
+        /// The grid width of the total storage capacity.
+        /// </summary>
         public int Width { get; }
-        public VehicleStorage(GameObject container, int height = 4, int width = 4)
+
+        /// <summary>
+        /// The display text for the vehicle storage, which can be localized.
+        /// </summary>
+        public MaybeTranslate? DisplayName { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VehicleStorage"/> class with the specified container, display
+        /// name, and dimensions.
+        /// </summary>
+        /// <param name="container">The <see cref="GameObject"/> that represents the storage container. This parameter cannot be <see
+        /// langword="null"/>.</param>
+        /// <param name="displayName">The display name for the vehicle storage. This can be <see langword="null"/> if no display name is required.</param>
+        /// <param name="height">The height of the vehicle storage. Must be greater than zero.</param>
+        /// <param name="width">The width of the vehicle storage. Must be greater than zero.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="container"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="height"/> or <paramref name="width"/> is less than or equal to zero.</exception>
+        public VehicleStorage(GameObject container, MaybeTranslate? displayName, int height = 4, int width = 4)
         {
             if (container == null)
                 throw new ArgumentNullException(nameof(container), "Vehicle storage container cannot be null.");
@@ -181,6 +215,7 @@ namespace AVS.VehicleParts
             if (width <= 0)
                 throw new ArgumentOutOfRangeException(nameof(width), "Vehicle storage width must be greater than zero.");
             Container = container;
+            DisplayName = displayName;
             Height = height;
             Width = width;
         }

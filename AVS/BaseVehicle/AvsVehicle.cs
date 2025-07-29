@@ -207,6 +207,9 @@ namespace AVS.BaseVehicle
                 DestroyImmediate(warpChipThing);
             }
             vfxConstructing = GetComponent<VFXConstructing>();
+
+            ReSetupInnateStorages();    //preserve labels. Also adapt to changes in language to some extent
+            ReSetupModularStorages();    //preserve labels. Also adapt to changes in language to some extent
         }
 
         ///<inheritdoc />

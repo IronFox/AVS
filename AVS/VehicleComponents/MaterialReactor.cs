@@ -1,6 +1,5 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Localization;
-using AVS.SaveLoad;
 using AVS.Util;
 using System;
 using System.Collections;
@@ -10,12 +9,48 @@ using UnityEngine;
 
 namespace AVS.VehicleComponents
 {
-    public struct MaterialReactorData
+
+    /// <summary>
+    /// Represents a declaration of input parameters for a material reactor, including the input and output types and
+    /// energy specifications.
+    /// </summary>
+    /// <remarks>This structure is used to define the characteristics of a material reactor's input,
+    /// specifying the type of material used, the total energy it provides, the rate of energy release, and the
+    /// resulting output type.</remarks>
+    public readonly struct MaterialReactorConversionDeclaration
     {
-        public TechType inputTechType;
-        public float totalEnergy;
-        public float energyPerSecond;
-        public TechType outputTechType;
+        /// <summary>
+        /// The tech type of the material being consumed by the reactor.
+        /// Each input tech type must be unique within the reactor's configuration.
+        /// </summary>
+        public TechType InputTechType { get; }
+        /// <summary>
+        /// The total amount of energy that can be generated from the input material.
+        /// </summary>
+        public float TotalEnergy { get; }
+        /// <summary>
+        /// Gets the amount of energy produced per second when consuming the input material.
+        /// All materials in the reactor can be processed simultaneously,
+        /// so the effective energy production rate is at most the sum of all materials'
+        /// energy per second.
+        /// </summary>
+        public float EnergyPerSecond { get; }
+        /// <summary>
+        /// Waste material produced by the reactor after processing the input material.
+        /// <see cref="TechType.None" /> if no waste is produced.
+        /// </summary>
+        public TechType OutputTechType { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MaterialReactorConversionDeclaration"/> struct with the specified parameters.
+        /// </summary>
+        public MaterialReactorConversionDeclaration(TechType inputTechType, float totalEnergy, float energyPerSecond, TechType outputTechType)
+        {
+            InputTechType = inputTechType;
+            TotalEnergy = totalEnergy;
+            EnergyPerSecond = energyPerSecond;
+            OutputTechType = outputTechType;
+        }
     }
     internal class ReactorBattery : MonoBehaviour, IBattery
     {
@@ -51,17 +86,60 @@ namespace AVS.VehicleComponents
             return currentCharge = iCharge;
         }
     }
+
+    /// <summary>
+    /// Represents a reactor that processes materials to generate energy within a vehicle.
+    /// </summary>
+    /// <remarks>The <see cref="MaterialReactor"/> is designed to be attached to a vehicle and is responsible
+    /// for converting materials into energy. It manages an internal container for materials, processes them according
+    /// to specified energy values, and interacts with the vehicle's energy system. The reactor can display a whitelist
+    /// of processable materials and their energy potentials, and it supports localization for interaction
+    /// text.</remarks>
     public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     {
         private AvsVehicle? mv;
         private ReactorBattery? reactorBattery;
         private float capacity = 0;
-        public string interactText = "Material Reactor";
-        public string cannotRemoveMessage = "Can't remove items being consumed by a Material Reactor";
+
+
+        /// <summary>
+        /// Set to true if the reactor is currently processing materials and generating energy.
+        /// If the local batteries are full, this will be false even if the reactor has materials
+        /// to process.
+        /// </summary>
+        public bool isGeneratingEnergy;
+
+        private MaybeTranslate label;
+        /// <summary>
+        /// If true, the <see cref="interactText"/> will be localized.
+        /// </summary>
+        public bool localizeInteractText = false;
+
+        /// <summary>
+        /// True if the PDA should show the whitelist of materials that can be processed by this reactor
+        /// when the user right-clicks on it.
+        /// </summary>
         public bool canViewWhitelist = true;
+
+        /// <summary>
+        /// If true, the reactor will list the potential energy of each material in the whitelist.
+        /// Not effective if <see cref="canViewWhitelist"/> is false.
+        /// </summary>
         public bool listPotentials = true;
+
+        /// <summary>
+        /// Action to execute when the PDA is closed after being opened from this reactor.
+        /// </summary>
         public Action<PDA>? onClosePDAAction = null;
-        public Action<int>? updateVisuals = null;
+
+        /// <summary>
+        /// Action to execute when items were added to the local reactor.
+        /// The first argument is the item that was added,
+        /// the second argument is the total number of items in the reactor after the addition.
+        /// </summary>
+        public Action<InventoryItem, int>? onItemsAdded = null;
+
+
         private readonly Dictionary<TechType, float> maxEnergies = new Dictionary<TechType, float>();
         private readonly Dictionary<TechType, float> rateEnergies = new Dictionary<TechType, float>();
         private readonly Dictionary<InventoryItem, float> currentEnergies = new Dictionary<InventoryItem, float>();
@@ -71,8 +149,24 @@ namespace AVS.VehicleComponents
         private bool isInitialized = false;
         private const string newSaveFileName = "Reactor";
 
-        public void Initialize(AvsVehicle avsVehicle, int height, int width, string label, float totalCapacity, List<MaterialReactorData> iMaterialData)
+
+        /// <summary>
+        /// Initializes the MaterialReactor with the specified vehicle, container size, label, total energy capacity, and material data.
+        /// </summary>
+        /// <param name="avsVehicle">The vehicle to which this reactor is attached. Must not be null.</param>
+        /// <param name="height">The height of the reactor's internal container grid. Must be positive.</param>
+        /// <param name="width">The width of the reactor's internal container grid. Must be positive.</param>
+        /// <param name="label">The label for the reactor's container UI.</param>
+        /// <param name="totalCapacity">The total energy capacity of the reactor. Must be non-negative.</param>
+        /// <param name="iMaterialData">A list of material data specifying which materials can be processed, their energy values, and output types. Must not be empty and all entries must have positive energy values.</param>
+        /// <remarks>
+        /// This method sets up the internal ItemsContainer, configures allowed materials, and initializes the energy mixin and battery.
+        /// It also ensures that only one MaterialReactor is attached to a given vehicle at a time.
+        /// An unintialized MaterialReactor will log an error and destroy itself on the first update cycle.
+        /// </remarks>
+        public void Initialize(AvsVehicle avsVehicle, int height, int width, MaybeTranslate label, float totalCapacity, List<MaterialReactorConversionDeclaration> iMaterialData)
         {
+            this.label = label;
             if (avsVehicle.GetComponentsInChildren<MaterialReactor>().Where(x => x.mv == avsVehicle).Any())
             {
                 ErrorMessage.AddWarning($"A {nameof(AvsVehicle)} may (for now) only have one material reactor!");
@@ -100,28 +194,28 @@ namespace AVS.VehicleComponents
             }
             foreach (var datum in iMaterialData)
             {
-                if (datum.totalEnergy <= 0)
+                if (datum.TotalEnergy <= 0)
                 {
-                    ErrorMessage.AddWarning($"Material Reactor {label} cannot process a material that has non-positive potential: {datum.inputTechType.AsString()}");
+                    ErrorMessage.AddWarning($"Material Reactor {label} cannot process a material that has non-positive potential: {datum.InputTechType.AsString()}");
                     return;
                 }
-                if (datum.energyPerSecond <= 0)
+                if (datum.EnergyPerSecond <= 0)
                 {
-                    ErrorMessage.AddWarning($"Material Reactor {label} cannot process a material that provides non-positive energy: {datum.inputTechType.AsString()}");
+                    ErrorMessage.AddWarning($"Material Reactor {label} cannot process a material that provides non-positive energy: {datum.InputTechType.AsString()}");
                     return;
                 }
             }
             mv = avsVehicle;
             capacity = totalCapacity;
-            container = new ItemsContainer(width, height, transform, label, null);
+            container = new ItemsContainer(width, height, transform, label.Rendered, null);
             container.onAddItem += OnAddItem;
             container.isAllowedToRemove = IsAllowedToRemove;
-            container.SetAllowedTechTypes(iMaterialData.SelectMany(x => new List<TechType> { x.inputTechType, x.outputTechType }).ToArray());
+            container.SetAllowedTechTypes(iMaterialData.SelectMany(x => new List<TechType> { x.InputTechType, x.OutputTechType }).ToArray());
             foreach (var reagent in iMaterialData)
             {
-                maxEnergies.Add(reagent.inputTechType, reagent.totalEnergy);
-                rateEnergies.Add(reagent.inputTechType, reagent.energyPerSecond);
-                spentMaterialIndex.Add(reagent.inputTechType, reagent.outputTechType);
+                maxEnergies.Add(reagent.InputTechType, reagent.TotalEnergy);
+                rateEnergies.Add(reagent.InputTechType, reagent.EnergyPerSecond);
+                spentMaterialIndex.Add(reagent.InputTechType, reagent.OutputTechType);
             }
             gameObject.LoggedSetActive(false);
             EnergyMixin eMix = gameObject.AddComponent<EnergyMixin>();
@@ -147,13 +241,16 @@ namespace AVS.VehicleComponents
                 Component.DestroyImmediate(this);
                 return;
             }
+            bool any = false;
             var reactants = currentEnergies.Keys.ToList();
             foreach (var reactant in reactants)
             {
                 float rate = rateEnergies[reactant.techType] * Time.deltaTime;
                 float consumed = mv!.energyInterface.AddEnergy(rate);
                 currentEnergies[reactant] -= consumed;
+                any |= consumed > 0;
             }
+            isGeneratingEnergy = any;
             List<InventoryItem> spentMaterials = new List<InventoryItem>();
             foreach (var reactantPair in currentEnergies.ToList().Where(x => x.Value <= 0))
             {
@@ -207,7 +304,7 @@ namespace AVS.VehicleComponents
             {
                 currentEnergies.Add(item, maxEnergies[item.techType]);
             }
-            updateVisuals?.Invoke(container!.count);
+            onItemsAdded?.Invoke(item, container!.count);
             // check if it can rot, and disable all that
             Eatable eatable = item.item.gameObject.GetComponent<Eatable>();
             if (eatable != null)
@@ -223,7 +320,7 @@ namespace AVS.VehicleComponents
             }
             if (verbose)
             {
-                ErrorMessage.AddMessage(cannotRemoveMessage);
+                ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_CannotRemoveMaterialsFromReactor, label.Rendered));
             }
             return false;
         }
@@ -251,7 +348,8 @@ namespace AVS.VehicleComponents
             {
                 HandReticle main = HandReticle.main;
                 string chargeValue = capacity == 0 ? string.Empty : $"({Translator.GetFormatted(TranslationKey.HandHover_Reactor_Charge, (int)reactorBattery.GetCharge(), capacity)})";
-                string finalText = $"{interactText} {chargeValue}";
+
+                string finalText = $"{label} {chargeValue}";
                 main.SetText(HandReticle.TextType.Hand, finalText, true, GameInput.Button.LeftHand);
                 if (canViewWhitelist)
                 {
@@ -300,33 +398,48 @@ namespace AVS.VehicleComponents
         {
             onClosePDAAction?.Invoke(pda);
         }
+
+        /// <summary>
+        /// Computes the total energy potential of all materials in the reactor.
+        /// </summary>
         public float GetFuelPotential()
         {
             return currentEnergies.Values.ToList().Sum();
         }
-        public static List<MaterialReactorData> GetBioReactorData()
+
+        /// <summary>
+        /// Gets consumption data for bio reactors.
+        /// </summary>
+        /// <param name="energyPerSecond">The energy produced per second by each added material.</param>
+        public static List<MaterialReactorConversionDeclaration> GetBioReactorData(float energyPerSecond = 1)
         {
             return BaseBioReactor.charge.Select(x =>
-                new MaterialReactorData
-                {
-                    inputTechType = x.Key,
-                    totalEnergy = x.Value,
-                    energyPerSecond = 1f,
-                    outputTechType = TechType.None
-                }
+                new MaterialReactorConversionDeclaration
+                (
+                    inputTechType: x.Key,
+                    totalEnergy: x.Value,
+                    energyPerSecond: energyPerSecond,
+                    outputTechType: TechType.None
+                )
             ).ToList();
         }
-        public static List<MaterialReactorData> GetNuclearReactorData()
+
+        /// <summary>
+        /// Gets consumption data for nuclear reactors.
+        /// The returned list contains a single entry for the reactor rod.
+        /// </summary>
+        /// <param name="energyPerSecond">The energy produced per second by each added reactor rod.</param>
+        public static List<MaterialReactorConversionDeclaration> GetNuclearReactorData(float energyPerSecond = 5)
         {
-            return new List<MaterialReactorData>
+            return new List<MaterialReactorConversionDeclaration>
             {
-                new MaterialReactorData
-                {
-                    inputTechType = TechType.ReactorRod,
-                    totalEnergy = 20000f,
-                    energyPerSecond = 5f,
-                    outputTechType = TechType.DepletedReactorRod
-                }
+                new MaterialReactorConversionDeclaration
+                (
+                    inputTechType: TechType.ReactorRod,
+                    totalEnergy: 20000f,
+                    energyPerSecond: energyPerSecond,
+                    outputTechType: TechType.DepletedReactorRod
+                )
             };
         }
 

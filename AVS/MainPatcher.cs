@@ -119,7 +119,7 @@ namespace AVS
             //LogWriter.Default.Write("Assets.StaticAssets.GetSprites()");
             //Assets.StaticAssets.GetSprites();
             LogWriter.Default.Write("Assets.AVSFabricator.CreateAndRegister()");
-            Assets.AvsFabricator.CreateAndRegister(images.FabricatorIcon.AtlasSprite);
+            Assets.AvsFabricator.CreateAndRegister(Images.FabricatorIcon.AtlasSprite);
             LogWriter.Default.Write("Admin.CraftTreeHandler.AddFabricatorMenus()");
             CraftTreeHandler.AddFabricatorMenus();
 

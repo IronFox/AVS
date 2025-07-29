@@ -19,7 +19,7 @@ namespace AVS
         protected Vehicle.DockType dockType;
         protected bool state;
 
-        public string DisplayName { get; set; } = string.Empty;
+        public MaybeTranslate displayName = Text.Untranslated("Storage");
 
         public abstract void OpenFromExternal();
         protected abstract void OpenPDA();
@@ -85,14 +85,10 @@ namespace AVS
         public void OnHandHover(GUIHand hand)
         {
             string nameDisplayed;
-            if (DisplayName.Equals(string.Empty))
-            {
-                nameDisplayed = Translator.Get(TranslationKey.HandHover_OpenStorage);
-            }
-            else
-            {
-                nameDisplayed = DisplayName;
-            }
+            var displayName = this.displayName.Rendered;
+
+            nameDisplayed = Translator.GetFormatted(TranslationKey.HandHover_OpenStorage, displayName);
+
             HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, nameDisplayed);
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }

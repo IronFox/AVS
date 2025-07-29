@@ -43,7 +43,6 @@
         /// </summary>
         Reactor_WhitelistPlain,
 
-
         /// <summary>
         /// No vehicle was found to undock.
         /// </summary>
@@ -62,6 +61,10 @@
         HandHover_ControlPanel_Power,
         HandHover_ControlPanel_Autopilot,
 
+        /// <summary>
+        /// Text displayed when the player hovers over a storage component.
+        /// The first argument is the given display name of the storage component (which may also be localized).
+        /// </summary>
         HandHover_OpenStorage,
 
         HandHover_Vehicle_Enter,
@@ -126,6 +129,13 @@
         /// Exiting the vehicle is not allowed at the moment.
         /// </summary>
         Error_CannotExitVehicle,
+
+        /// <summary>
+        /// Error message shown when the player tries to remove materials from a reactor.
+        /// The first argument is the reactor's interactText field.
+        /// </summary>
+        Error_CannotRemoveMaterialsFromReactor,
+
 
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }
