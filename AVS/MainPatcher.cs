@@ -19,21 +19,36 @@ namespace AVS
         private PatcherImages? images;
 
         /// <summary>
+        /// Loaded patcher images. Available after <see cref="LoadImages"/> is called in <see cref="Awake"/>.
+        /// </summary>
+        public PatcherImages Images
+        {
+            get
+            {
+                if (images == null)
+                {
+                    throw new InvalidOperationException("PatcherImages is not initialized. Ensure that LoadImages() is called before accessing this property.");
+                }
+                return images;
+            }
+        }
+
+        /// <summary>
         /// The icon for the Depth Module 1 upgrade.
         /// </summary>
-        public Atlas.Sprite DepthModule1Icon => images?.DepthModule1Icon.AtlasSprite ?? throw new InvalidOperationException("DepthModule1Icon is not initialized. Ensure that LoadImages() is called before accessing this property.");
+        public Atlas.Sprite DepthModule1Icon => Images.DepthModule1Icon.AtlasSprite;
         /// <summary>
         /// The icon for the Depth Module 2 upgrade.
         /// </summary>
-        public Atlas.Sprite DepthModule2Icon => images?.DepthModule2Icon.AtlasSprite ?? throw new InvalidOperationException("DepthModule2Icon is not initialized. Ensure that LoadImages() is called before accessing this property.");
+        public Atlas.Sprite DepthModule2Icon => Images.DepthModule2Icon.AtlasSprite;
         /// <summary>
         /// The icon for the Depth Module 3 upgrade.
         /// </summary>
-        public Atlas.Sprite DepthModule3Icon => images?.DepthModule3Icon.AtlasSprite ?? throw new InvalidOperationException("DepthModule3Icon is not initialized. Ensure that LoadImages() is called before accessing this property.");
+        public Atlas.Sprite DepthModule3Icon => Images.DepthModule3Icon.AtlasSprite;
         /// <summary>
         /// The icon to use for the parent node of all depth modules in the crafting tree.
         /// </summary>
-        public Atlas.Sprite DepthModuleNodeIcon => images?.DepthModuleNodeIcon.AtlasSprite ?? throw new InvalidOperationException("DepthModuleNodeIcon is not initialized. Ensure that LoadImages() is called before accessing this property.");
+        public Atlas.Sprite DepthModuleNodeIcon => Images.DepthModuleNodeIcon.AtlasSprite;
 
         /// <summary>
         /// Queries the main singleton instance of <see cref="MainPatcher"/>.
@@ -104,7 +119,7 @@ namespace AVS
             //LogWriter.Default.Write("Assets.StaticAssets.GetSprites()");
             //Assets.StaticAssets.GetSprites();
             LogWriter.Default.Write("Assets.AVSFabricator.CreateAndRegister()");
-            Assets.AvsFabricator.CreateAndRegister();
+            Assets.AvsFabricator.CreateAndRegister(images.FabricatorIcon.AtlasSprite);
             LogWriter.Default.Write("Admin.CraftTreeHandler.AddFabricatorMenus()");
             CraftTreeHandler.AddFabricatorMenus();
 

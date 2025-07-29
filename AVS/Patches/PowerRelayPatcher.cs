@@ -85,14 +85,14 @@ namespace AVS.Patches
     {
         public static bool MaybeConsumeEnergy(PowerRelay mvpr, float amount, out float amountConsumed)
         {
-            AvsVehicle mv = mvpr.gameObject.GetComponent<AvsVehicle>();
-            if (mv == null)
+            var v = mvpr.gameObject.GetComponent<Vehicle>();
+            if (v == null || v.energyInterface == null)
             {
                 mvpr.ConsumeEnergy(amount, out amountConsumed);
             }
             else
             {
-                amountConsumed = mv.energyInterface.ConsumeEnergy(amount);
+                amountConsumed = v.energyInterface.ConsumeEnergy(amount);
             }
             return true;
         }

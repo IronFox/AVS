@@ -771,43 +771,6 @@ namespace AVS
                 }
             }
         }
-        public static string GetPingTypeString(CachedEnumString<PingType> cache, PingType inputType)
-        {
-            foreach (VehicleEntry ve in VehicleManager.VehicleTypes)
-            {
-                if (ve.pt == inputType)
-                {
-                    return ve.name;
-                }
-            }
-            foreach (var pair in Assets.SpriteHelper.PingSprites)
-            {
-                if (pair.Type == inputType)
-                {
-                    return pair.Name;
-                }
-            }
-            LogWriter.Default.Error("Unknown PingType: " + inputType);
-            return PingManager.sCachedPingTypeStrings.Get(inputType);
-        }
-        public static Atlas.Sprite? GetPingTypeSprite(SpriteManager.Group group, string name)
-        {
-            foreach (VehicleEntry ve in VehicleManager.VehicleTypes)
-            {
-                if (ve.name == name)
-                {
-                    return ve.ping_sprite;
-                }
-            }
-            foreach (var pair in Assets.SpriteHelper.PingSprites)
-            {
-                if (pair.Name == name)
-                {
-                    return pair.Sprite;
-                }
-            }
-            return SpriteManager.Get(SpriteManager.Group.Pings, name);
-        }
 
         internal static void SetIcon(uGUI_Ping ping, Atlas.Sprite sprite, PingType inputType)
         {

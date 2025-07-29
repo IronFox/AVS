@@ -1038,15 +1038,16 @@
             The icon to use for the parent node of all depth modules in the crafting tree.
             </summary>
         </member>
-        <member name="M:AVS.Assets.PatcherImages.#ctor(AVS.Assets.Image,AVS.Assets.Image,AVS.Assets.Image,AVS.Assets.Image)">
+        <member name="P:AVS.Assets.PatcherImages.FabricatorIcon">
+            <summary>
+            Icon used by the AVS fabricator.
+            </summary>
+        </member>
+        <member name="M:AVS.Assets.PatcherImages.#ctor(AVS.Assets.Image,AVS.Assets.Image,AVS.Assets.Image,AVS.Assets.Image,AVS.Assets.Image)">
             <summary>
             Initializes a new instance of the <see cref="T:AVS.Assets.PatcherImages"/> class with specified images for depth module
             icons.
             </summary>
-            <param name="depthModule1Icon">The image representing the icon for the first depth module.</param>
-            <param name="depthModule2Icon">The image representing the icon for the second depth module.</param>
-            <param name="depthModule3Icon">The image representing the icon for the third depth module.</param>
-            <param name="depthModuleNodeIcon">The image representing the icon for the depth module node.</param>
         </member>
         <member name="T:AVS.Assets.PrefabLoader">
             <summary>
@@ -4434,6 +4435,11 @@
         <member name="T:AVS.MainPatcher">
             <summary>
             AVS main patcher class. Must be inherited by the main mod class.
+            </summary>
+        </member>
+        <member name="P:AVS.MainPatcher.Images">
+            <summary>
+            Loaded patcher images. Available after <see cref="M:AVS.MainPatcher.LoadImages"/> is called in <see cref="M:AVS.MainPatcher.Awake"/>.
             </summary>
         </member>
         <member name="P:AVS.MainPatcher.DepthModule1Icon">

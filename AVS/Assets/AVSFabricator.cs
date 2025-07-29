@@ -11,10 +11,10 @@ namespace AVS.Assets
         private static string DisplayName { get; } = Translator.Get(TranslationKey.Fabricator_DisplayName);
         private static string Description { get; } = Translator.Get(TranslationKey.Fabricator_Description);
         internal static CraftTree.Type TreeType { get; set; } = default;
-        internal static void CreateAndRegister()
+        internal static void CreateAndRegister(Atlas.Sprite icon)
         {
             var Info = Nautilus.Assets.PrefabInfo.WithTechType(ClassID, DisplayName, Description)
-                .WithIcon(SpriteManager.Get(TechType.Fabricator));
+                .WithIcon(icon ?? SpriteManager.Get(TechType.Fabricator));
 
             var prefab = new Nautilus.Assets.CustomPrefab(Info);
 

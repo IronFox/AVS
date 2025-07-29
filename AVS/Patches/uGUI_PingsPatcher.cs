@@ -61,7 +61,7 @@ namespace AVS
             //        .Insert(Transpilers.EmitDelegate<Func<SpriteManager.Group, string, Atlas.Sprite?>>(AvsVehicleBuilder.GetPingTypeSprite))
             //        );
             foreach (var instruction in newInstructions.InstructionEnumeration())
-                LogWriter.Default.Debug($"[uGUI_PingsPatcher] Emitting:: '{instruction}' op '{instruction.operand}' code '{instruction.opcode}'");
+                LogWriter.Default.Debug($"[uGUI_PingsPatcher] Emitting: '{instruction}' op '{instruction.operand}' code '{instruction.opcode}'");
 
 
             return newInstructions.InstructionEnumeration();
