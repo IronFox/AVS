@@ -59,15 +59,7 @@ namespace AVS.BaseVehicle
                 () => IsBoarded ? (Vector3?)Player.mainObject.transform.position : null,
                 (value) =>
                 {
-                    if (value != null)
-                    {
-                        RegisterPlayerEntry(() =>
-                        {
-                            Player.mainObject.transform.position = value.Value;
-
-                        });
-
-                    }
+                    lateBoardAt = value;
                 }
                 );
             yield return Persistable.Property(
@@ -75,8 +67,7 @@ namespace AVS.BaseVehicle
                 () => IsPlayerControlling(),
                 (value) =>
                 {
-                    if (value)
-                        BeginHelmControl(GetLoadedHelm());
+                    lateControl = value;
                 }
                 );
             yield return Persistable.Property(
@@ -134,6 +125,9 @@ namespace AVS.BaseVehicle
         /// </summary>
         /// <returns></returns>
         protected abstract Helm GetLoadedHelm();
+
+        private bool lateControl = false;
+        private Vector3? lateBoardAt = null;
 
         /// <summary>
         /// Executed when the data for this vehicle has been loaded.
@@ -260,7 +254,23 @@ namespace AVS.BaseVehicle
         /// Everything loaded by the savegame now exists at its final location and state.
         /// </summary>
         public virtual void OnFinishedLoading()
-        { }
+        {
+            if (lateBoardAt != null)
+            {
+                RegisterPlayerEntry(() =>
+                {
+                    Player.mainObject.transform.position = lateBoardAt.Value;
+
+                });
+            }
+
+            if (lateControl)
+                BeginHelmControl(GetLoadedHelm());
+
+
+
+
+        }
 
     }
 }
