@@ -5,12 +5,25 @@ using System;
 
 namespace AVS.VehicleTypes
 {
+    /// <summary>
+    /// Incomplete surface boat class.
+    /// </summary>
     public abstract class Skimmer : AvsVehicle
     {
+        /// <summary>
+        /// Constructs the vehicle with the given configuration.
+        /// </summary>
+        /// <param name="config">Vehicle configuration. Must not be null</param>
+        /// <exception cref="ArgumentNullException"></exception>
         public Skimmer(VehicleConfiguration config) : base(config)
         { }
-        public abstract SkimmerComposition GetSkimmerComposition();
-        public sealed override VehicleComposition GetVehicleComposition()
+        /// <summary>
+        /// Retrieves the composition of the skimmer.
+        /// Executed once either during <see cref="AvsVehicle.Awake()"/> or vehicle registration, whichever comes first.
+        /// </summary>
+        protected abstract SkimmerComposition GetSkimmerComposition();
+        /// <inheritdoc/>
+        protected sealed override VehicleComposition GetVehicleComposition()
         {
             _skimmerConfig = GetSkimmerComposition();
             return _skimmerConfig;

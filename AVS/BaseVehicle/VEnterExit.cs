@@ -11,7 +11,7 @@ namespace AVS.BaseVehicle
         /// <summary>
         /// True if the player is currently piloting the vehicle.
         /// </summary>
-        public bool IsHelmControlling { get; private set; } = false;
+        public Helm? PlayerAtHelm { get; private set; } = null;
 
         private void MyExitLockedMode()
         {
@@ -44,7 +44,16 @@ namespace AVS.BaseVehicle
         internal protected virtual void DoExitRoutines()
         {
             Log.Debug(this, nameof(DoExitRoutines));
+            EndHelmControl(0.5f);
             MyExitLockedMode();
+        }
+
+        /// <summary>
+        /// Checks if this vehicle can be piloted.
+        /// </summary>
+        public override bool CanPilot()
+        {
+            return !FPSInputModule.current.lockMovement && IsPowered();
         }
 
 
@@ -67,21 +76,8 @@ namespace AVS.BaseVehicle
         /// <summary>
         /// Checks if the player is currently piloting this vehicle.
         /// </summary>
-        public virtual bool IsPlayerControlling()
-        {
-            if (this is VehicleTypes.Submarine sub)
-            {
-                return sub.IsPlayerPiloting();
-            }
-            else if (this is AvsVehicle sub2)
-            {
-                return sub2.IsHelmControlling;
-            }
-            else
-            {
-                return false;
-            }
-        }
+        public bool IsPlayerControlling() => PlayerAtHelm != null;
+
         /// <summary>
         /// Executed has started being piloted by a player and <see cref="VehicleConfiguration.PilotingStyle" /> is set to <see cref="PilotingStyle.Other" />.
         /// </summary>
@@ -209,7 +205,7 @@ namespace AVS.BaseVehicle
                 {
                     //It's okay if the vehicle doesn't have a canopy
                 }
-                IsHelmControlling = true;
+                PlayerAtHelm = helm;
                 playerSits = helm.IsSeated;
                 Log.Debug(this, $"Player.playerController := {Player.main.playerController.NiceName()}");
                 Log.Debug(this, $"Player.mode := {Player.main.mode}");
@@ -289,6 +285,7 @@ namespace AVS.BaseVehicle
                 uGUI.main.quickSlots.SetTarget(null);
                 NotifyStatus(PlayerStatus.OnPilotEnd);
                 playerPosition = null;
+                PlayerAtHelm = null;
                 try
                 {
                     OnEndHelmControl();

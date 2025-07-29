@@ -249,7 +249,7 @@ namespace AVS
         }
         public static IEnumerator SetupBuildBotPathsForAllMVs()
         {
-            foreach (AvsVehicle mv in VehicleBuilder.prefabs)
+            foreach (AvsVehicle mv in AvsVehicleBuilder.prefabs)
             {
                 if (mv.GetComponentInChildren<BuildBotPath>(true) == null)
                 {

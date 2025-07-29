@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿#if false
 using HarmonyLib;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
 
 // PURPOSE: Allow ModVehicles to use (and have displayed) custom ping sprites.
@@ -31,8 +32,8 @@ namespace AVS
                 {
                     if (codes[i].operand.ToString() == "System.String Get(PingType)")
                     {
-                        newCodes[i] = CodeInstruction.Call(typeof(VehicleBuilder), nameof(VehicleBuilder.GetPingTypeString));
-                        newCodes[i + 1] = CodeInstruction.Call(typeof(VehicleBuilder), nameof(VehicleBuilder.GetPingTypeSprite));
+                        newCodes[i] = CodeInstruction.Call(typeof(AvsVehicleBuilder), nameof(AvsVehicleBuilder.GetPingTypeString));
+                        newCodes[i + 1] = CodeInstruction.Call(typeof(AvsVehicleBuilder), nameof(AvsVehicleBuilder.GetPingTypeSprite));
                         i++;
                         continue;
                     }
@@ -47,7 +48,7 @@ namespace AVS
         [HarmonyPatch(nameof(uGUI_PingEntry.UpdateLabel))]
         public static bool uGUI_PingEntryUpdateLabelPrefix(uGUI_PingEntry __instance, PingType type, string name)
         {
-            if(VehicleManager.MvPings.Select(x=>x.pingType).Contains(type))
+            if (VehicleManager.MvPings.Select(x => x.pingType).Contains(type))
             {
                 foreach (var mvType in VehicleManager.VehicleTypes)
                 {
@@ -63,3 +64,4 @@ namespace AVS
         }
     }
 }
+#endif

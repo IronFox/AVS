@@ -1,6 +1,6 @@
-﻿using AVS.Assets;
-using AVS.Configuration;
+﻿using AVS.Configuration;
 using AVS.Crafting;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -22,7 +22,20 @@ namespace AVS.UpgradeModules
         /// </summary>
         public UpgradeTechTypes TechTypes { get; internal set; }
 
+        internal Node? node;
+
+        /// <summary>
+        /// The node this upgrade is registered to.
+        /// Set during registration.
+        /// </summary>
+        public Node Node => node ?? throw new InvalidOperationException($"Cannot access {nameof(AvsVehicleUpgrade)}.{nameof(Node)} before it has been registered");
+
         private TechType _unlockTechType = TechType.Fragment;
+
+        /// <summary>
+        /// Gets a value indicating whether the item is specific to a vehicle.
+        /// </summary>
+        public virtual bool IsVehicleSpecific => false;
 
         /// <summary>
         /// The TechType used to unlock this upgrade. Can only be set once if the default is <see cref="TechType.Fragment"/>.
@@ -58,11 +71,6 @@ namespace AVS.UpgradeModules
         public abstract string Description { get; }
 
         /// <summary>
-        /// If true, this upgrade is specific to a vehicle type.
-        /// </summary>
-        public virtual bool IsVehicleSpecific => false;
-
-        /// <summary>
         /// The quick slot type for this upgrade.
         /// </summary>
         public virtual QuickSlotType QuickSlotType => QuickSlotType.Passive;
@@ -85,7 +93,7 @@ namespace AVS.UpgradeModules
         /// <summary>
         /// The icon for this upgrade.
         /// </summary>
-        public virtual Atlas.Sprite? Icon => StaticAssets.UpgradeIcon;
+        public abstract Atlas.Sprite Icon { get; }
 
         /// <summary>
         /// The TechType that this module unlocks together with.
@@ -107,26 +115,6 @@ namespace AVS.UpgradeModules
         /// The sprite shown when this upgrade is unlocked.
         /// </summary>
         public virtual Sprite? UnlockedSprite => null;
-
-        /// <summary>
-        /// The internal tab name for this upgrade in the crafting UI.
-        /// </summary>
-        public virtual string TabName { get; set; } = string.Empty;
-
-        /// <summary>
-        /// The display name for the tab in the crafting UI.
-        /// </summary>
-        public virtual string TabDisplayName => string.Empty;
-
-        /// <summary>
-        /// The crafting path for this upgrade, if any, not including the node itself.
-        /// </summary>
-        public virtual Path<CraftingNode>? TabPath { get; set; } = null;
-
-        /// <summary>
-        /// The icon for the tab in the crafting UI.
-        /// </summary>
-        public virtual Atlas.Sprite? TabIcon => StaticAssets.UpgradeIcon;
 
         /// <summary>
         /// The base recipe for this upgrade.
@@ -243,25 +231,12 @@ namespace AVS.UpgradeModules
             return vehicle.GetCurrentUpgrades().Where(x => x.Contains(ClassId)).Count();
         }
 
-        /// <summary>
-        /// Resolves the crafting path for this upgrade for a given vehicle type.
-        /// </summary>
-        /// <param name="vType">The vehicle type to determine the path root node for.</param>
-        /// <returns>The crafting path as an array of strings.</returns>
-        internal Path<string> ResolveTabPath(VehicleType vType)
+        internal void SetNode(Node node)
         {
-            // If TabName is string.Empty, use $"{CraftTreeHandler.GeneralTabName}{vType}"
-            if (TabPath == null)
-            {
-                if (string.IsNullOrWhiteSpace(TabName))
-                    return new Path<string>(vType.ToString());
-                else
-                    return new Path<string>(TabName);
-            }
-            else
-            {
-                return CraftTreeHandler.TraceCraftingPath(TabPath.Value, null);
-            }
+            if (this.node != null && this.node != node)
+                throw new InvalidOperationException($"Trying to reset {nameof(AvsVehicleUpgrade)}.{nameof(Node)} from {this.node} to {node}");
+            this.node = node;
+
         }
     }
 }

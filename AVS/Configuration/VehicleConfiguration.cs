@@ -14,15 +14,15 @@ namespace AVS.Configuration
     public class VehicleConfiguration
     {
         /// <summary>
-        /// Sprite to show when the camera is sufficiently far away.
+        /// Sprite to show when the camera is sufficiently far away while the vehicle is not boarded.
         /// Also used on the map, if used.
         /// </summary>
-        public Atlas.Sprite? PingSprite { get; } = Assets.StaticAssets.DefaultPingSprite;
+        public Atlas.Sprite PingSprite { get; }
         /// <summary>
         /// Sprite to attach to the save file in the preview.
         /// Should be very abstract, ideally just an outline.
         /// </summary>
-        public Sprite? SaveFileSprite { get; } = Assets.StaticAssets.DefaultSaveFileSprite;
+        public Sprite SaveFileSprite { get; }
         /// <summary>
         /// Construction recipe.
         /// </summary>
@@ -51,7 +51,7 @@ namespace AVS.Configuration
         /// <summary>
         /// The sprite to show in the crafting menu of the mobile vehicle bay.
         /// </summary>
-        public Atlas.Sprite? CraftingSprite { get; } = StaticAssets.AvsVehicleIcon;
+        public Atlas.Sprite CraftingSprite { get; }
         /// <summary>
         /// The image to show in the background of the vehicle's module menu.
         /// </summary>
@@ -250,21 +250,21 @@ namespace AVS.Configuration
         /// <param name="hudTemperatureIsFahrenheit">True if the HUD temperature display is in Fahrenheit.</param>
         public VehicleConfiguration(
 
+            Atlas.Sprite pingSprite,
+            Sprite saveFileSprite,
+            Sprite unlockedSprite,
+            Sprite moduleBackgroundImage,
+            Atlas.Sprite craftingSprite,
             VehicleColor? initialBaseColor = null,
             VehicleColor? initialStripeColor = null,
             VehicleColor? initialInteriorColor = null,
             VehicleColor? initialNameColor = null,
             IMaterialAdaptConfig? materialAdaptConfig = null,
-            Atlas.Sprite? pingSprite = null,
-            Sprite? saveFileSprite = null,
             Recipe? recipe = null,
             bool allowRecipeOverride = true,
-            Sprite? unlockedSprite = null,
             string description = "A vehicle",
             string encyclopediaEntry = "",
             Sprite? encyclopediaImage = null,
-            Atlas.Sprite? craftingSprite = null,
-            Sprite? moduleBackgroundImage = null,
             TechType unlockedWith = TechType.Constructor,
             int maxHealth = 100,
             int crushDamage = 7,
@@ -307,15 +307,15 @@ namespace AVS.Configuration
             InitialInteriorColor = initialInteriorColor ?? VehicleColor.Default;
             InitialNameColor = initialNameColor ?? VehicleColor.Default;
             MaterialAdaptConfig = materialAdaptConfig ?? new DefaultMaterialAdaptConfig();
-            PingSprite = pingSprite ?? Assets.StaticAssets.DefaultPingSprite;
-            SaveFileSprite = saveFileSprite ?? Assets.StaticAssets.DefaultSaveFileSprite;
+            PingSprite = pingSprite;
+            SaveFileSprite = saveFileSprite;
             Recipe = recipe ?? Recipe.Example;
             AllowRecipeOverride = allowRecipeOverride;
             UnlockedSprite = unlockedSprite;
             Description = description;
             EncyclopediaEntry = encyclopediaEntry;
             EncyclopediaImage = encyclopediaImage;
-            CraftingSprite = craftingSprite ?? StaticAssets.AvsVehicleIcon;
+            CraftingSprite = craftingSprite;
             ModuleBackgroundImage = moduleBackgroundImage ?? SpriteHelper.GetSpriteRaw("Sprites/VFModuleBackground.png");
             UnlockedWith = unlockedWith;
             MaxHealth = maxHealth;

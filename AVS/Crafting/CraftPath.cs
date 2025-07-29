@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace AVS.Crafting
@@ -9,15 +8,14 @@ namespace AVS.Crafting
     /// <summary>
     /// Path to a tab or module in the crafting interface.
     /// </summary>
-    /// <typeparam name="T">The type of element in the path. Typically <see cref="string"/> or <see cref="CraftingNode"/></typeparam>
-    public readonly struct Path<T> : IEquatable<Path<T>>, IEnumerable<T> where T : notnull
+    public readonly struct CraftPath : IEquatable<CraftPath>, IEnumerable<string>
     {
-        private readonly T[]? segments;
+        private readonly string[]? segments;
 
         /// <summary>
         /// The segments of the crafting path.
         /// </summary>
-        public T[] Segments => segments ?? Array.Empty<T>();
+        public string[] Segments => segments ?? Array.Empty<string>();
 
         /// <summary>
         /// Gets a value indicating whether the collection of segments is empty.
@@ -32,29 +30,27 @@ namespace AVS.Crafting
         /// <summary>
         /// An empty crafting path, representing the root or no specific path.
         /// </summary>
-        public static Path<T> Empty { get; } = default;
+        public static CraftPath Empty { get; } = default;
         /// <summary>
         /// Gets the last segment of the path. An empty path returns an empty string.
         /// </summary>
-        [MaybeNull]
-        public T Last => IsEmpty ? default : segments![segments.Length - 1];
+        public string Last => IsEmpty ? "" : segments![segments.Length - 1];
 
         /// <summary>
         /// Gets the segment preceding the last segment in the collection.
         /// </summary>
-        [MaybeNull]
-        public T Previous => Length < 1 ? default : segments![segments.Length - 2];
+        public string Previous => Length < 1 ? "" : segments![segments.Length - 2];
 
         /// <summary>
         /// Gets the parent path, which is the path without the last segment.
         /// </summary>
-        public Path<T> Parent => IsEmpty ? Empty : new Path<T>(segments.Take(Length - 1));
+        public CraftPath Parent => IsEmpty ? Empty : new CraftPath(segments.Take(Length - 1));
 
         /// <summary>
-        /// Gets an enumerable collection of <see cref="Path{T}"/> objects representing the ancestors of the
+        /// Gets an enumerable collection of <see cref="CraftPath"/> objects representing the ancestors of the
         /// current path.
         /// </summary>
-        public IEnumerable<Path<T>> Ancestors
+        public IEnumerable<CraftPath> Ancestors
         {
             get
             {
@@ -64,32 +60,39 @@ namespace AVS.Crafting
                 }
                 for (int i = 0; i < Length; i++)
                 {
-                    yield return new Path<T>(segments.Take(i + 1));
+                    yield return new CraftPath(segments.Take(i + 1));
                 }
             }
         }
 
         /// <summary>
-        /// Constructs a new <see cref="Path{T}"/> with the specified segments.
+        /// Constructs a new <see cref="CraftPath"/> with the specified segments.
         /// </summary>
-        public Path(IEnumerable<T> segments)
+        public CraftPath(IEnumerable<string> segments)
         {
+            segments = segments.Select(Sanitize).Where(s => !string.IsNullOrEmpty(s));
             if (segments.Any())
                 this.segments = segments.ToArray();
             else
                 this.segments = null;
         }
         /// <summary>
-        /// Constructs a new <see cref="Path{T}"/> with the specified segments.
+        /// Constructs a new <see cref="CraftPath"/> with the specified segments.
         /// </summary>
-        public Path(params T[] segments)
+        public CraftPath(params string[] segments)
+            : this(segments.AsEnumerable())
+        { }
+
+        internal static string Sanitize(string segment)
         {
-            if (segments.Length == 0)
+            if (string.IsNullOrEmpty(segment))
+                return segment;
+            var s = segment.Trim();
+            if (s.Contains("/"))
             {
-                this.segments = null;
-                return;
+                throw new ArgumentException("Segment cannot contain / characters.", nameof(segment));
             }
-            this.segments = segments;
+            return s;
         }
 
         /// <summary>
@@ -97,23 +100,22 @@ namespace AVS.Crafting
         /// </summary>
         /// <param name="segment">Segment to append. Must not be empty (after trim) and must not contain / characters</param>
         /// <returns>New crafting path with the given segment appended</returns>
-        public Path<T> Append(T segment)
+        public CraftPath Append(string segment)
         {
-            if (Equals(segment, default(T)))
-            {
-                throw new ArgumentException("Segment cannot be empty.", nameof(segment));
-            }
+            segment = Sanitize(segment);
+            if (string.IsNullOrEmpty(segment))
+                return this;
 
             if (IsEmpty)
             {
-                return new Path<T>(segment);
+                return new CraftPath(segment);
             }
             else
             {
-                var newSegments = new T[segments!.Length + 1];
+                var newSegments = new string[segments!.Length + 1];
                 Array.Copy(segments, newSegments, segments.Length);
                 newSegments[segments.Length] = segment;
-                return new Path<T>(newSegments);
+                return new CraftPath(newSegments);
             }
         }
 
@@ -122,7 +124,7 @@ namespace AVS.Crafting
         public override string ToString() => string.Join("/", Segments);
 
         /// <inheritdoc/>
-        public bool Equals(Path<T> other)
+        public bool Equals(CraftPath other)
         {
             if (IsEmpty && other.IsEmpty)
             {
@@ -147,12 +149,12 @@ namespace AVS.Crafting
         }
 
         /// <inheritdoc/>
-        public static bool operator ==(Path<T> left, Path<T> right)
+        public static bool operator ==(CraftPath left, CraftPath right)
         {
             return left.Equals(right);
         }
         /// <inheritdoc/>
-        public static bool operator !=(Path<T> left, Path<T> right)
+        public static bool operator !=(CraftPath left, CraftPath right)
         {
             return !(left == right);
         }
@@ -160,7 +162,7 @@ namespace AVS.Crafting
         /// <inheritdoc/>
         public override bool Equals(object? obj)
         {
-            return obj is Path<T> other && Equals(other);
+            return obj is CraftPath other && Equals(other);
         }
 
         /// <inheritdoc/>
@@ -179,7 +181,7 @@ namespace AVS.Crafting
         }
 
         /// <inheritdoc/>
-        public IEnumerator<T> GetEnumerator()
+        public IEnumerator<string> GetEnumerator()
         {
             if (IsEmpty)
             {
@@ -198,12 +200,12 @@ namespace AVS.Crafting
         }
 
         /// <summary>
-        /// Concatenates a specified segment to the end of the given <see cref="Path{T}"/>.
+        /// Concatenates a specified segment to the end of the given <see cref="CraftPath"/>.
         /// </summary>
-        /// <param name="path">The <see cref="Path{T}"/> to which the segment will be appended.</param>
-        /// <param name="segment">The segment to append to the <see cref="Path{T}"/>. Cannot be null or empty.</param>
-        /// <returns>A new <see cref="Path{T}"/> instance with the segment appended.</returns>
-        public static Path<T> operator +(Path<T> path, T segment)
+        /// <param name="path">The <see cref="CraftPath"/> to which the segment will be appended.</param>
+        /// <param name="segment">The segment to append to the <see cref="CraftPath"/>. Cannot be null or empty.</param>
+        /// <returns>A new <see cref="CraftPath"/> instance with the segment appended.</returns>
+        public static CraftPath operator +(CraftPath path, string segment)
         {
             return path.Append(segment);
         }

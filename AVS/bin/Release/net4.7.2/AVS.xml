@@ -4,6 +4,110 @@
         <name>AVS</name>
     </assembly>
     <members>
+        <member name="M:AvsUtils.FindVehicleInParents(UnityEngine.Transform,Vehicle@,System.Collections.Generic.List{UnityEngine.Transform})">
+            <summary>
+            Determines whether the specified transform or any of its ancestors is the currently mounted vehicle.
+            </summary>
+            <remarks>This method recursively traverses the transform hierarchy to determine if any
+            ancestor is the player's currently mounted vehicle. If the specified transform is <see langword="null"/>,
+            the method returns <see langword="false"/>.</remarks>
+            <param name="current">The transform to check, typically representing a game object in the hierarchy.</param>
+            <param name="vehicle">When this method returns, contains the <see cref="T:Vehicle"/> component if found. Null if the method returns false</param>
+            <param name="checkedAncestry">A list of all transforms visited by the recursion.</param>
+            <returns><see langword="true"/> if the specified transform or one of its ancestors is the vehicle currently mounted
+            by the player; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="M:AvsUtils.RegisterDepthModules">
+            <summary>
+            Registers the common depth modules for vehicles.
+            </summary>
+        </member>
+        <member name="M:AvsUtils.EvaluateDepthModules(AVS.UpgradeModules.AddActionParams)">
+            <summary>
+            Evaluates the depth upgrade modules installed on the specified vehicle and adjusts its crush depth
+            accordingly.
+            </summary>
+            <remarks>This method checks the installed depth upgrade modules on the provided vehicle and
+            determines the highest level of depth module present. Based on the detected module level, it calculates the
+            additional crush depth and applies it to the vehicle. If the vehicle is not compatible with depth upgrades,
+            a message is displayed to the user.</remarks>
+            <param name="param">The parameters containing the vehicle to evaluate and its associated data.</param>
+        </member>
+        <member name="M:AvsUtils.GetTechTypeFromVehicleName(System.String)">
+            <summary>
+            Retrieves the <see cref="T:TechType"/> associated with a vehicle based on its name.
+            </summary>
+            <remarks>If no vehicle with the specified name is found, an error is logged, and the method
+            returns <see cref="F:TechType.None"/>.</remarks>
+            <param name="name">The name of the vehicle to search for. This parameter is case-sensitive and must not be null or empty.</param>
+            <returns>The <see cref="T:TechType"/> of the vehicle if a match is found; otherwise, returns <see
+            cref="F:TechType.None"/>.</returns>
+        </member>
+        <member name="M:AvsUtils.AddEncyclopediaEntry(PDAEncyclopedia.EntryData)">
+            <summary>
+            Adds a new entry to the PDA Encyclopedia or updates an existing one if the key already exists.
+            </summary>
+            <remarks>This method ensures that the entry is added or updated only after the PDA
+            Encyclopedia mapping is initialized.  If an entry with the same key already exists, it will be replaced with
+            the provided data.</remarks>
+            <param name="data">The encyclopedia entry data to add or update. The <see cref="F:PDAEncyclopedia.EntryData.key"/> property must
+            be unique and non-null.</param>
+        </member>
+        <member name="T:AVS.AvsVehicleManager">
+            <summary>
+            Provides management functions for AVS vehicles, including registration, enrollment, and loading.
+            </summary>
+        </member>
+        <member name="P:AVS.AvsVehicleManager.VehiclesInPlay">
+            <summary>
+            List of all AVS vehicles currently in play.
+            </summary>
+        </member>
+        <member name="P:AVS.AvsVehicleManager.PingInstances">
+            <summary>
+            List of all registered ping instances for vehicles.
+            </summary>
+        </member>
+        <member name="P:AVS.AvsVehicleManager.VehicleTypes">
+            <summary>
+            List of all registered vehicle types.
+            </summary>
+        </member>
+        <member name="M:AVS.AvsVehicleManager.RegisterPingType(PingType)">
+            <summary>
+            Registers a new <see cref="T:PingType"/> for a vehicle, ensuring it is unique and above the minimum value.
+            </summary>
+            <param name="pt">The initial ping type to register.</param>
+            <returns>The registered, unique ping type.</returns>
+        </member>
+        <member name="M:AVS.AvsVehicleManager.RegisterPingType(PingType,System.Boolean)">
+            <summary>
+            Registers a new <see cref="T:PingType"/> for a vehicle, ensuring it is unique and above the minimum value.
+            Optionally logs the registration process.
+            </summary>
+            <param name="pt">The initial ping type to register.</param>
+            <param name="verbose">If true, logs detailed registration steps.</param>
+            <returns>The registered, unique ping type.</returns>
+        </member>
+        <member name="M:AVS.AvsVehicleManager.EnrollVehicle(AVS.BaseVehicle.AvsVehicle)">
+            <summary>
+            Enrolls a vehicle into the <see cref="P:AVS.AvsVehicleManager.VehiclesInPlay"/> list and starts loading it if constructed.
+            </summary>
+            <param name="mv">The vehicle to enroll.</param>
+        </member>
+        <member name="M:AVS.AvsVehicleManager.DeregisterVehicle(AVS.BaseVehicle.AvsVehicle)">
+            <summary>
+            Removes a vehicle from the <see cref="P:AVS.AvsVehicleManager.VehiclesInPlay"/> list.
+            </summary>
+            <param name="mv">The vehicle to deregister.</param>
+        </member>
+        <member name="M:AVS.AvsVehicleManager.LoadVehicle(AVS.BaseVehicle.AvsVehicle)">
+            <summary>
+            Coroutine that waits for the world to be ready, then calls <see cref="M:AVS.BaseVehicle.AvsVehicle.OnFinishedLoading"/> on the vehicle.
+            </summary>
+            <param name="mv">The vehicle to load.</param>
+            <returns>Coroutine enumerator.</returns>
+        </member>
         <member name="T:AVS.Admin.ExternalVehicleConfig`1">
             <summary>
             Represents a manager for additional external configurations to be applied to vehicles.
@@ -888,6 +992,62 @@
         <member name="M:AVS.Assets.FragmentManager.Start">
             <inheritdoc />
         </member>
+        <member name="T:AVS.Assets.Image">
+            <summary>
+            Helper structure for sprites
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.Image.Sprite">
+            <summary>
+            The image loaded as a sprite
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.Image.AtlasSprite">
+            <summary>
+            The image loaded as an Atlas.Sprite
+            </summary>
+        </member>
+        <member name="M:AVS.Assets.Image.#ctor(UnityEngine.Sprite)">
+            <summary>
+            Constructs a new <see cref="T:AVS.Assets.Image"/> from a <see cref="P:AVS.Assets.Image.Sprite"/>.
+            </summary>
+            <param name="sprite"></param>
+        </member>
+        <member name="T:AVS.Assets.PatcherImages">
+            <summary>
+            Represents a collection of images used by AVS.
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.PatcherImages.DepthModule1Icon">
+            <summary>
+            The icon for the Depth Module 1 upgrade.
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.PatcherImages.DepthModule2Icon">
+            <summary>
+            The icon for the Depth Module 2 upgrade.
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.PatcherImages.DepthModule3Icon">
+            <summary>
+            The icon for the Depth Module 3 upgrade.
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.PatcherImages.DepthModuleNodeIcon">
+            <summary>
+            The icon to use for the parent node of all depth modules in the crafting tree.
+            </summary>
+        </member>
+        <member name="M:AVS.Assets.PatcherImages.#ctor(AVS.Assets.Image,AVS.Assets.Image,AVS.Assets.Image,AVS.Assets.Image)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Assets.PatcherImages"/> class with specified images for depth module
+            icons.
+            </summary>
+            <param name="depthModule1Icon">The image representing the icon for the first depth module.</param>
+            <param name="depthModule2Icon">The image representing the icon for the second depth module.</param>
+            <param name="depthModule3Icon">The image representing the icon for the third depth module.</param>
+            <param name="depthModuleNodeIcon">The image representing the icon for the depth module node.</param>
+        </member>
         <member name="T:AVS.Assets.PrefabLoader">
             <summary>
             Helper class for loading prefabs asynchronously.
@@ -916,6 +1076,35 @@
             Queries the latest known instance of the requested resource.
             </summary>
         </member>
+        <member name="P:AVS.Assets.PrefabLoader.CanLoad">
+            <summary>
+            True if the prefab can be loaded, false if any ongoing loading operation should be delayed.
+            </summary>
+        </member>
+        <member name="T:AVS.Assets.SeamothHelper">
+            <summary>
+            Global helper for loading the Seamoth prefab.
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.SeamothHelper.Coroutine">
+            <summary>
+            Access to the coroutine that loads the Seamoth prefab.
+            Allocated on first access, so it is safe to call this property multiple times.
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.SeamothHelper.Seamoth">
+            <summary>
+            Tries to access the Seamoth prefab.
+            If <see cref="P:AVS.Assets.SeamothHelper.Coroutine" /> was never accessed, it will throw an <see cref="T:System.InvalidOperationException"/>.
+            Ohterwise it may return null if the prefab is not yet loaded.
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.SeamothHelper.RequireSeamoth">
+            <summary>
+            Access to the Seamoth prefab, guaranteed to be non-null.
+            Throws an <see cref="T:System.InvalidOperationException"/> if the prefab is not yet loaded.
+            </summary>
+        </member>
         <member name="T:AVS.Assets.SpriteHelper">
             <summary>
             Provides helper methods for loading and managing sprites from disk and registering ping sprites.
@@ -942,6 +1131,15 @@
             <param name="relativePath">The relative path to the sprite file.</param>
             <returns>The loaded <see cref="T:UnityEngine.Sprite"/>, or null if not found.</returns>
         </member>
+        <member name="M:AVS.Assets.SpriteHelper.RequireImage(System.String)">
+            <summary>
+            Loads a required <see cref="T:AVS.Assets.Image"/> from a relative path based on the calling assembly's location.
+            </summary>
+            <param name="relativePath">Path relative to the executing assembly's path</param>
+            <returns>Loaded image</returns>
+            <exception cref="T:System.IO.FileNotFoundException">The file does not exist</exception>
+            <exception cref="T:System.IO.IOException">Sprite loading has failed</exception>
+        </member>
         <member name="M:AVS.Assets.SpriteHelper.GetSpriteGeneric(System.String)">
             <summary>
             Loads an <see cref="T:Atlas.Sprite"/> from a full file path.
@@ -963,7 +1161,7 @@
             <param name="sprite">The <see cref="T:Atlas.Sprite"/> to convert.</param>
             <returns>The created <see cref="T:UnityEngine.Sprite"/>.</returns>
         </member>
-        <member name="F:AVS.Assets.SpriteHelper.PingSprites">
+        <member name="P:AVS.Assets.SpriteHelper.PingSprites">
             <summary>
             List of registered ping sprites, each with a name, ping type, and sprite.
             </summary>
@@ -1573,7 +1771,7 @@
             Loosely computes the bounding dimensions of the vehicle.
             </summary>
         </member>
-        <member name="P:AVS.BaseVehicle.AvsVehicle.IsHelmControlling">
+        <member name="P:AVS.BaseVehicle.AvsVehicle.PlayerAtHelm">
             <summary>
             True if the player is currently piloting the vehicle.
             </summary>
@@ -1581,6 +1779,11 @@
         <member name="M:AVS.BaseVehicle.AvsVehicle.DoExitRoutines">
             <summary>
             Executed by <see cref="M:AVS.BaseVehicle.AvsVehicle.DeselectSlots" />, as part of the player exiting helm control
+            </summary>
+        </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.CanPilot">
+            <summary>
+            Checks if this vehicle can be piloted.
             </summary>
         </member>
         <member name="P:AVS.BaseVehicle.AvsVehicle.IsBoarded">
@@ -2556,7 +2759,7 @@
         </member>
         <member name="P:AVS.Configuration.VehicleConfiguration.PingSprite">
             <summary>
-            Sprite to show when the camera is sufficiently far away.
+            Sprite to show when the camera is sufficiently far away while the vehicle is not boarded.
             Also used on the map, if used.
             </summary>
         </member>
@@ -2772,7 +2975,7 @@
             True if the HUD temperature display is in Fahrenheit.
             </summary>
         </member>
-        <member name="M:AVS.Configuration.VehicleConfiguration.#ctor(System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},AVS.MaterialAdapt.IMaterialAdaptConfig,Atlas.Sprite,UnityEngine.Sprite,AVS.Configuration.Recipe,System.Boolean,UnityEngine.Sprite,System.String,System.String,UnityEngine.Sprite,Atlas.Sprite,UnityEngine.Sprite,TechType,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Int32,System.Int32,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Single,AVS.BaseVehicle.AvsVehicle.PilotingStyle,System.Single,System.Nullable{UnityEngine.Color},System.Nullable{UnityEngine.Color},System.Boolean,System.Boolean,System.Nullable{UnityEngine.Quaternion},System.Boolean,System.Func{System.Single},System.Func{System.Boolean},System.Boolean)">
+        <member name="M:AVS.Configuration.VehicleConfiguration.#ctor(Atlas.Sprite,UnityEngine.Sprite,UnityEngine.Sprite,UnityEngine.Sprite,Atlas.Sprite,System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},AVS.MaterialAdapt.IMaterialAdaptConfig,AVS.Configuration.Recipe,System.Boolean,System.String,System.String,UnityEngine.Sprite,TechType,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Int32,System.Int32,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Single,AVS.BaseVehicle.AvsVehicle.PilotingStyle,System.Single,System.Nullable{UnityEngine.Color},System.Nullable{UnityEngine.Color},System.Boolean,System.Boolean,System.Nullable{UnityEngine.Quaternion},System.Boolean,System.Func{System.Single},System.Func{System.Boolean},System.Boolean)">
             <summary>
             Initializes a new instance of the <see cref="T:AVS.Configuration.VehicleConfiguration"/> class with the specified parameters.
             </summary>
@@ -3017,105 +3220,104 @@
             Constructs a new instance of the <see cref="T:AVS.Crafting.CraftingNode"/> struct.
             </summary>
         </member>
-        <member name="T:AVS.Crafting.CraftTreeHandler.NodeInformation">
-            For consistency, tabs and modules must not exist in the same tab. Either a tab contains only tabs, or it contains only modules.
-            To assert consistency, we maintain these sets.
-        </member>
-        <member name="T:AVS.Crafting.Path`1">
+        <member name="T:AVS.Crafting.CraftPath">
             <summary>
             Path to a tab or module in the crafting interface.
             </summary>
-            <typeparam name="T">The type of element in the path. Typically <see cref="T:System.String"/> or <see cref="T:AVS.Crafting.CraftingNode"/></typeparam>
         </member>
-        <member name="P:AVS.Crafting.Path`1.Segments">
+        <member name="P:AVS.Crafting.CraftPath.Segments">
             <summary>
             The segments of the crafting path.
             </summary>
         </member>
-        <member name="P:AVS.Crafting.Path`1.IsEmpty">
+        <member name="P:AVS.Crafting.CraftPath.IsEmpty">
             <summary>
             Gets a value indicating whether the collection of segments is empty.
             </summary>
         </member>
-        <member name="P:AVS.Crafting.Path`1.Length">
+        <member name="P:AVS.Crafting.CraftPath.Length">
             <summary>
             Gets the number of segments in the collection.
             </summary>
         </member>
-        <member name="P:AVS.Crafting.Path`1.Empty">
+        <member name="P:AVS.Crafting.CraftPath.Empty">
             <summary>
             An empty crafting path, representing the root or no specific path.
             </summary>
         </member>
-        <member name="P:AVS.Crafting.Path`1.Last">
+        <member name="P:AVS.Crafting.CraftPath.Last">
             <summary>
             Gets the last segment of the path. An empty path returns an empty string.
             </summary>
         </member>
-        <member name="P:AVS.Crafting.Path`1.Previous">
+        <member name="P:AVS.Crafting.CraftPath.Previous">
             <summary>
             Gets the segment preceding the last segment in the collection.
             </summary>
         </member>
-        <member name="P:AVS.Crafting.Path`1.Parent">
+        <member name="P:AVS.Crafting.CraftPath.Parent">
             <summary>
             Gets the parent path, which is the path without the last segment.
             </summary>
         </member>
-        <member name="P:AVS.Crafting.Path`1.Ancestors">
+        <member name="P:AVS.Crafting.CraftPath.Ancestors">
             <summary>
-            Gets an enumerable collection of <see cref="T:AVS.Crafting.Path`1"/> objects representing the ancestors of the
+            Gets an enumerable collection of <see cref="T:AVS.Crafting.CraftPath"/> objects representing the ancestors of the
             current path.
             </summary>
         </member>
-        <member name="M:AVS.Crafting.Path`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
+        <member name="M:AVS.Crafting.CraftPath.#ctor(System.Collections.Generic.IEnumerable{System.String})">
             <summary>
-            Constructs a new <see cref="T:AVS.Crafting.Path`1"/> with the specified segments.
+            Constructs a new <see cref="T:AVS.Crafting.CraftPath"/> with the specified segments.
             </summary>
         </member>
-        <member name="M:AVS.Crafting.Path`1.#ctor(`0[])">
+        <member name="M:AVS.Crafting.CraftPath.#ctor(System.String[])">
             <summary>
-            Constructs a new <see cref="T:AVS.Crafting.Path`1"/> with the specified segments.
+            Constructs a new <see cref="T:AVS.Crafting.CraftPath"/> with the specified segments.
             </summary>
         </member>
-        <member name="M:AVS.Crafting.Path`1.Append(`0)">
+        <member name="M:AVS.Crafting.CraftPath.Append(System.String)">
             <summary>
             Appends a new segment to the crafting path.
             </summary>
             <param name="segment">Segment to append. Must not be empty (after trim) and must not contain / characters</param>
             <returns>New crafting path with the given segment appended</returns>
         </member>
-        <member name="M:AVS.Crafting.Path`1.ToString">
+        <member name="M:AVS.Crafting.CraftPath.ToString">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.Crafting.Path`1.Equals(AVS.Crafting.Path{`0})">
+        <member name="M:AVS.Crafting.CraftPath.Equals(AVS.Crafting.CraftPath)">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.Crafting.Path`1.op_Equality(AVS.Crafting.Path{`0},AVS.Crafting.Path{`0})">
+        <member name="M:AVS.Crafting.CraftPath.op_Equality(AVS.Crafting.CraftPath,AVS.Crafting.CraftPath)">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.Crafting.Path`1.op_Inequality(AVS.Crafting.Path{`0},AVS.Crafting.Path{`0})">
+        <member name="M:AVS.Crafting.CraftPath.op_Inequality(AVS.Crafting.CraftPath,AVS.Crafting.CraftPath)">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.Crafting.Path`1.Equals(System.Object)">
+        <member name="M:AVS.Crafting.CraftPath.Equals(System.Object)">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.Crafting.Path`1.GetHashCode">
+        <member name="M:AVS.Crafting.CraftPath.GetHashCode">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.Crafting.Path`1.GetEnumerator">
+        <member name="M:AVS.Crafting.CraftPath.GetEnumerator">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.Crafting.Path`1.System#Collections#IEnumerable#GetEnumerator">
+        <member name="M:AVS.Crafting.CraftPath.System#Collections#IEnumerable#GetEnumerator">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.Crafting.Path`1.op_Addition(AVS.Crafting.Path{`0},`0)">
+        <member name="M:AVS.Crafting.CraftPath.op_Addition(AVS.Crafting.CraftPath,System.String)">
             <summary>
-            Concatenates a specified segment to the end of the given <see cref="T:AVS.Crafting.Path`1"/>.
+            Concatenates a specified segment to the end of the given <see cref="T:AVS.Crafting.CraftPath"/>.
             </summary>
-            <param name="path">The <see cref="T:AVS.Crafting.Path`1"/> to which the segment will be appended.</param>
-            <param name="segment">The segment to append to the <see cref="T:AVS.Crafting.Path`1"/>. Cannot be null or empty.</param>
-            <returns>A new <see cref="T:AVS.Crafting.Path`1"/> instance with the segment appended.</returns>
+            <param name="path">The <see cref="T:AVS.Crafting.CraftPath"/> to which the segment will be appended.</param>
+            <param name="segment">The segment to append to the <see cref="T:AVS.Crafting.CraftPath"/>. Cannot be null or empty.</param>
+            <returns>A new <see cref="T:AVS.Crafting.CraftPath"/> instance with the segment appended.</returns>
+        </member>
+        <member name="P:AVS.Crafting.CraftTreeHandler.KnownRootNodes">
+            For consistency, tabs and modules must not exist in the same tab. Either a tab contains only tabs, or it contains only modules.
+            To assert consistency, we maintain these sets.
         </member>
         <member name="T:AVS.Crafting.UpgradeCompat">
             <summary>
@@ -3283,13 +3485,13 @@
             Tracks currently toggled actions for vehicles, by vehicle, slot, and coroutine.
             </summary>
         </member>
-        <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterUpgrade(AVS.UpgradeModules.AvsVehicleUpgrade,AVS.Crafting.UpgradeCompat,System.Boolean)">
+        <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterUpgrade(AVS.UpgradeModules.Node,AVS.UpgradeModules.AvsVehicleUpgrade,AVS.Crafting.UpgradeCompat)">
             <summary>
             Registers a AvsVehicleUpgrade and sets up its icons, recipes, and actions for compatible vehicle types.
             </summary>
+            <param name="node">The folder containing the upgrade assets.</param>
             <param name="upgrade">The upgrade to register.</param>
             <param name="compat">Compatibility flags for vehicle types.</param>
-            <param name="verbose">If true, enables verbose logging.</param>
             <returns>UpgradeTechTypes containing TechTypes for each vehicle type.</returns>
         </member>
         <member name="M:AVS.Crafting.UpgradeRegistrar.ValidateAvsVehicleUpgrade(AVS.UpgradeModules.AvsVehicleUpgrade,AVS.Crafting.UpgradeCompat)">
@@ -3300,10 +3502,11 @@
             <param name="compat">Compatibility flags.</param>
             <returns>True if valid, false otherwise.</returns>
         </member>
-        <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterAvsVehicleUpgrade(AVS.UpgradeModules.AvsVehicleUpgrade)">
+        <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterAvsVehicleUpgrade(AVS.UpgradeModules.Node,AVS.UpgradeModules.AvsVehicleUpgrade)">
             <summary>
             Registers the <see cref="T:AVS.UpgradeModules.AvsVehicleUpgrade"/> for <see cref="T:AVS.BaseVehicle.AvsVehicle"/>, sets up its prefab, recipe, and unlock conditions.
             </summary>
+            <param name="folder">The folder containing the upgrade assets.</param>
             <param name="upgrade">The upgrade to register.</param>
             <returns>The TechType assigned to the upgrade.</returns>
         </member>
@@ -3351,117 +3554,6 @@
             <param name="compat">Compatibility flags.</param>
             <param name="utt">Reference to UpgradeTechTypes to update.</param>
             <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
-        </member>
-        <member name="T:AVS.DepthModules.DepthModule1">
-            <summary>
-            Represents the first depth module upgrade for vehicles, enhancing their maximum depth capability.
-            </summary>
-            <remarks>This module can be crafted using specific ingredients and installed on compatible vehicles to
-            increase their maximum operational depth.  It is part of the modular vehicle upgrade system and is categorized
-            under the "Depth Modules" tab in the crafting interface.</remarks>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule1.ClassId">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule1.DisplayName">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule1.Description">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule1.Recipe">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule1.Icon">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule1.TabIcon">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule1.TabName">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule1.TabDisplayName">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.DepthModules.DepthModule1.OnAdded(AVS.UpgradeModules.AddActionParams)">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.DepthModules.DepthModule1.OnRemoved(AVS.UpgradeModules.AddActionParams)">
-            <inheritdoc/>
-        </member>
-        <member name="T:AVS.DepthModules.DepthModule2">
-            <summary>
-            Represents the second-tier depth module upgrade for vehicles, enhancing their maximum depth capacity.
-            </summary>
-            <remarks>This module is part of the vehicle upgrade system and provides an increased depth limit for
-            supported vehicles. It can be crafted using specific materials and installed in the vehicle's upgrade
-            console.</remarks>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule2.ClassId">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule2.DisplayName">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule2.Description">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule2.Recipe">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule2.Icon">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule2.TabIcon">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule2.TabName">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule2.TabDisplayName">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.DepthModules.DepthModule2.OnAdded(AVS.UpgradeModules.AddActionParams)">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.DepthModules.DepthModule2.OnRemoved(AVS.UpgradeModules.AddActionParams)">
-            <inheritdoc/>
-        </member>
-        <member name="T:AVS.DepthModules.DepthModule3">
-            <summary>
-            Level 3 depth module for vehicles, allowing deeper dives.
-            </summary>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule3.ClassId">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule3.DisplayName">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule3.Description">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule3.Recipe">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule3.Icon">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule3.TabIcon">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule3.TabName">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.DepthModules.DepthModule3.TabDisplayName">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.DepthModules.DepthModule3.OnAdded(AVS.UpgradeModules.AddActionParams)">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.DepthModules.DepthModule3.OnRemoved(AVS.UpgradeModules.AddActionParams)">
-            <inheritdoc/>
         </member>
         <member name="T:AVS.Engines.AbstractEngine">
             <summary>
@@ -4339,8 +4431,47 @@
             Logs an error message.
             </summary>
         </member>
+        <member name="T:AVS.MainPatcher">
+            <summary>
+            AVS main patcher class. Must be inherited by the main mod class.
+            </summary>
+        </member>
+        <member name="P:AVS.MainPatcher.DepthModule1Icon">
+            <summary>
+            The icon for the Depth Module 1 upgrade.
+            </summary>
+        </member>
+        <member name="P:AVS.MainPatcher.DepthModule2Icon">
+            <summary>
+            The icon for the Depth Module 2 upgrade.
+            </summary>
+        </member>
+        <member name="P:AVS.MainPatcher.DepthModule3Icon">
+            <summary>
+            The icon for the Depth Module 3 upgrade.
+            </summary>
+        </member>
+        <member name="P:AVS.MainPatcher.DepthModuleNodeIcon">
+            <summary>
+            The icon to use for the parent node of all depth modules in the crafting tree.
+            </summary>
+        </member>
+        <member name="P:AVS.MainPatcher.Instance">
+            <summary>
+            Queries the main singleton instance of <see cref="T:AVS.MainPatcher"/>.
+            </summary>
+        </member>
+        <member name="M:AVS.MainPatcher.LoadImages">
+            <summary>
+            Loads the images used by AVS.
+            </summary>
+            <returns></returns>
+        </member>
         <member name="M:AVS.MainPatcher.Awake">
-            <inheritdoc/>
+            <summary>
+            Begins plugin patching and initialization.
+            Also initializes the logger. Before this method is called, the logger will not work.
+            </summary>
         </member>
         <member name="M:AVS.MainPatcher.Start">
             <inheritdoc/>
@@ -4888,6 +5019,30 @@
         <member name="M:AVS.MaterialAdapt.UnityMaterialData.ToString">
             <inheritdoc />
         </member>
+        <member name="T:AVS.Patches.MainMenuLoadPanelPatcher">
+            <summary>
+            Harmony patch for <see cref="T:MainMenuLoadPanel"/> to support custom save file sprites.
+            See also: <see cref="T:AVS.Patches.SaveLoadManagerPatcher"/>
+            </summary>
+        </member>
+        <member name="F:AVS.Patches.MainMenuLoadPanelPatcher.HasTechTypes">
+            <summary>
+            List of tech types that have associated save file sprites.
+            </summary>
+        </member>
+        <member name="M:AVS.Patches.MainMenuLoadPanelPatcher.AddLoadButtonSprites(MainMenuLoadButton)">
+            <summary>
+            Adds custom save file sprites as child images to the given <see cref="T:MainMenuLoadButton"/>.
+            </summary>
+            <param name="lb">The load button to add sprites to.</param>
+        </member>
+        <member name="M:AVS.Patches.MainMenuLoadPanelPatcher.MainMenuLoadPanelUpdateLoadButtonStatePostfix(MainMenuLoadButton)">
+            <summary>
+            Harmony postfix for <see cref="M:MainMenuLoadPanel.UpdateLoadButtonState(MainMenuLoadButton)"/>.
+            Ensures custom save file sprites are displayed and sized correctly.
+            </summary>
+            <param name="lb">The load button whose state is being updated.</param>
+        </member>
         <member name="M:AVS.Patches.VFXConstructingPatch.ManageColor(VFXConstructing,AVS.BaseVehicle.AvsVehicle)">
             <summary>
             Manages the visual effects (VFX) colors for a construction process, including ghost and wireframe colors.
@@ -5254,6 +5409,17 @@
             Holds TechTypes for this upgrade for each supported vehicle type.
             </summary>
         </member>
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.Node">
+            <summary>
+            The node this upgrade is registered to.
+            Set during registration.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.IsVehicleSpecific">
+            <summary>
+            Gets a value indicating whether the item is specific to a vehicle.
+            </summary>
+        </member>
         <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.UnlockTechType">
             <summary>
             The TechType used to unlock this upgrade. Can only be set once if the default is <see cref="F:TechType.Fragment"/>.
@@ -5272,11 +5438,6 @@
         <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.Description">
             <summary>
             The description for this upgrade.
-            </summary>
-        </member>
-        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.IsVehicleSpecific">
-            <summary>
-            If true, this upgrade is specific to a vehicle type.
             </summary>
         </member>
         <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.QuickSlotType">
@@ -5323,26 +5484,6 @@
         <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.UnlockedSprite">
             <summary>
             The sprite shown when this upgrade is unlocked.
-            </summary>
-        </member>
-        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.TabName">
-            <summary>
-            The internal tab name for this upgrade in the crafting UI.
-            </summary>
-        </member>
-        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.TabDisplayName">
-            <summary>
-            The display name for the tab in the crafting UI.
-            </summary>
-        </member>
-        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.TabPath">
-            <summary>
-            The crafting path for this upgrade, if any, not including the node itself.
-            </summary>
-        </member>
-        <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.TabIcon">
-            <summary>
-            The icon for the tab in the crafting UI.
             </summary>
         </member>
         <member name="P:AVS.UpgradeModules.AvsVehicleUpgrade.Recipe">
@@ -5411,12 +5552,146 @@
             <param name="vehicle">The vehicle to check.</param>
             <returns>The number of upgrades installed.</returns>
         </member>
-        <member name="M:AVS.UpgradeModules.AvsVehicleUpgrade.ResolveTabPath(AVS.Crafting.VehicleType)">
+        <member name="T:AVS.UpgradeModules.DepthModule1">
             <summary>
-            Resolves the crafting path for this upgrade for a given vehicle type.
+            Represents the first depth module upgrade for vehicles, enhancing their maximum depth capability.
             </summary>
-            <param name="vType">The vehicle type to determine the path root node for.</param>
-            <returns>The crafting path as an array of strings.</returns>
+            <remarks>This module can be crafted using specific ingredients and installed on compatible vehicles to
+            increase their maximum operational depth.  It is part of the modular vehicle upgrade system and is categorized
+            under the "Depth Modules" tab in the crafting interface.</remarks>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule1.ClassId">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule1.DisplayName">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule1.Description">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule1.Recipe">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule1.Icon">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.UpgradeModules.DepthModule1.OnAdded(AVS.UpgradeModules.AddActionParams)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.UpgradeModules.DepthModule1.OnRemoved(AVS.UpgradeModules.AddActionParams)">
+            <inheritdoc/>
+        </member>
+        <member name="T:AVS.UpgradeModules.DepthModule2">
+            <summary>
+            Represents the second-tier depth module upgrade for vehicles, enhancing their maximum depth capacity.
+            </summary>
+            <remarks>This module is part of the vehicle upgrade system and provides an increased depth limit for
+            supported vehicles. It can be crafted using specific materials and installed in the vehicle's upgrade
+            console.</remarks>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule2.ClassId">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule2.DisplayName">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule2.Description">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule2.Recipe">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule2.Icon">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.UpgradeModules.DepthModule2.OnAdded(AVS.UpgradeModules.AddActionParams)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.UpgradeModules.DepthModule2.OnRemoved(AVS.UpgradeModules.AddActionParams)">
+            <inheritdoc/>
+        </member>
+        <member name="T:AVS.UpgradeModules.DepthModule3">
+            <summary>
+            Level 3 depth module for vehicles, allowing deeper dives.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule3.ClassId">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule3.DisplayName">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule3.Description">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule3.Recipe">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModule3.Icon">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.UpgradeModules.DepthModule3.OnAdded(AVS.UpgradeModules.AddActionParams)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.UpgradeModules.DepthModule3.OnRemoved(AVS.UpgradeModules.AddActionParams)">
+            <inheritdoc/>
+        </member>
+        <member name="T:AVS.UpgradeModules.Node">
+            <summary>
+            Folder in the crafting tree.
+            Can only contain either folders or upgrade modules, not both.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.Node.Parent">
+            <summary>
+            The parent folder of this folder, if any.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.Node.Identifier">
+            <summary>
+            The name of the folder, used for identification.
+            Must not be empty, must not contain slashes, and must be unique within the parent folder.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.Node.DisplayName">
+            <summary>
+            Gets the display name of the folder.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.Node.Icon">
+            <summary>
+            Gets the icon associated with this folder.
+            Should not be null but loading may have failed, so it is nullable.
+            </summary>
+        </member>
+        <member name="M:AVS.UpgradeModules.Node.Create(System.String,System.String,Atlas.Sprite,AVS.UpgradeModules.Node)">
+            <summary>
+            Creates a new folder with the specified name, display name, and ideally icon, and adds it to the specified
+            parent folder if provided.
+            </summary>
+            <remarks>If a folder with the same path already exists, the existing folder is returned
+            instead of creating a new one.</remarks>
+            <param name="name">The unique name of the folder to be created. This name is used as an identifier within the folder path.</param>
+            <param name="displayName">The display name of the folder, which is shown in the user interface.</param>
+            <param name="icon">An icon representing the folder. If not provided, the folder will have no icon.</param>
+            <param name="parent">The parent folder to which the new folder will be added. If <see langword="null"/>, the folder is created at
+            the root level.</param>
+            <returns>The newly created <see cref="T:AVS.UpgradeModules.Node"/> instance.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown if the specified parent folder already contains modules, preventing the addition of a new folder.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the provided name is null, empty, or contains slashes.</exception>
+        </member>
+        <member name="M:AVS.UpgradeModules.Node.RegisterUpgrade(AVS.UpgradeModules.AvsVehicleUpgrade,AVS.Crafting.UpgradeCompat)">
+            <summary>
+            Registers an upgrade to the local node node with the given compatibility settings.
+            </summary>
+            <param name="upgrade">The upgrade the register.</param>
+            <param name="compat">The compatibility settings for the upgrade. Defaults to the standard compatibility if not specified.</param>
+            <returns>The type of upgrade technology registered for the node.</returns>
+        </member>
+        <member name="M:AVS.UpgradeModules.Node.GetPath">
+            <summary>
+            Retrieves the name path of this folder in the crafting tree, starting from the root.
+            </summary>
         </member>
         <member name="P:AVS.UpgradeModules.SelectableChargeableActionParams.TechType">
             <summary>
@@ -5541,6 +5816,12 @@
             </remarks>
             <param name="destination">Target location</param>
         </member>
+        <member name="M:AVS.Util.Character.GrantInvincibility(System.Single)">
+            <summary>
+            Grants the player invincibility for a specified duration.
+            </summary>
+            <param name="time">Time in seconds to become invincible</param>
+        </member>
         <member name="M:AVS.Util.Character.SitDown">
             <summary>
             Asynchronously animates the character to sit down in a chair.
@@ -5630,6 +5911,15 @@
             <param name="a">First object to return if not null</param>
             <param name="bFactory">Factory for the second object to return if <paramref name="a"/> is null</param>. Must not produce null
             <returns><paramref name="a"/> if not null, <paramref name="bFactory"/>() if <paramref name="a"/> is null</returns>
+        </member>
+        <member name="M:AVS.Util.GameObjectHelper.OrThrow``1(``0,System.Func{System.Exception})">
+            <summary>
+            Returns a non-null object or throws an exception if the object is null.
+            </summary>
+            <typeparam name="T">Unity object type to check</typeparam>
+            <param name="item">Unity object to check</param>
+            <param name="exceptionFactory">Factory that produces the exception to throw. Can throw itself</param>
+            <returns>Non-null <paramref name="item"/></returns>
         </member>
         <member name="M:AVS.Util.GameObjectHelper.LoggedSetActive(UnityEngine.GameObject,System.Boolean)">
             <summary>
@@ -6193,6 +6483,27 @@
             </summary>
             <param name="line">Line to play</param>
         </member>
+        <member name="T:AVS.VehicleTypes.Skimmer">
+            <summary>
+            Incomplete surface boat class.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleTypes.Skimmer.#ctor(AVS.Configuration.VehicleConfiguration)">
+            <summary>
+            Constructs the vehicle with the given configuration.
+            </summary>
+            <param name="config">Vehicle configuration. Must not be null</param>
+            <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
+        <member name="M:AVS.VehicleTypes.Skimmer.GetSkimmerComposition">
+            <summary>
+            Retrieves the composition of the skimmer.
+            Executed once either during <see cref="M:AVS.BaseVehicle.AvsVehicle.Awake"/> or vehicle registration, whichever comes first.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleTypes.Skimmer.GetVehicleComposition">
+            <inheritdoc/>
+        </member>
         <member name="M:AVS.VehicleTypes.Skimmer.DoExitRoutines">
             <inheritdoc/>
         </member>
@@ -6245,6 +6556,22 @@
         <member name="M:AVS.VehicleTypes.Submarine.GetLoadedHelm">
             <inheritdoc />
         </member>
+        <member name="M:AVS.VehicleTypes.Submarine.Awake">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.Start">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.IsPlayerInside">
+            <summary>
+            True if the player is inside the submarine, false otherwise.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.IsPlayerPiloting">
+            <summary>
+            Gets a value indicating whether the player is currently piloting the vehicle.
+            </summary>
+        </member>
         <member name="M:AVS.VehicleTypes.Submarine.GetMainHelm">
             <inheritdoc/>
         </member>
@@ -6283,6 +6610,33 @@
             Suspends tether checks until the character next enters or exits helm/the vehicle
             </summary>
         </member>
+        <member name="T:AVS.VehicleTypes.Submersible">
+            <summary>
+            Non-walkable vehicle type that can be piloted underwater.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleTypes.Submersible.#ctor(AVS.Configuration.VehicleConfiguration)">
+            <summary>
+            Constructs the vehicle with the given configuration.
+            </summary>
+            <param name="config">Vehicle configuration. Must not be null</param>
+            <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
+        <member name="M:AVS.VehicleTypes.Submersible.GetSubmersibleComposition">
+            <summary>
+            Retrieves the composition of the submarine.
+            Executed once either during <see cref="M:AVS.BaseVehicle.AvsVehicle.Awake"/> or vehicle registration, whichever comes first.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleTypes.Submersible.GetVehicleComposition">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.VehicleTypes.Submersible.Com">
+            <summary>
+            Resolved vehicle composition.
+            If accessed before <see cref="M:AVS.BaseVehicle.AvsVehicle.Awake"/> (or vehicle registration), InvalidOperationException will be thrown.
+            </summary>
+        </member>
         <member name="M:AVS.VehicleTypes.Submersible.DoExitRoutines">
             <inheritdoc/>
         </member>
@@ -6302,6 +6656,11 @@
         </member>
         <member name="T:System.Diagnostics.CodeAnalysis.NotNullAttribute">
             <summary>Specifies that an output will not be null even if the corresponding type allows it. Specifies that an input argument was not null when the call returns.</summary>
+        </member>
+        <member name="T:System.Diagnostics.CodeAnalysis.MaybeNullAttribute">
+            <summary>
+            Indicates that a method or property may return a null value (elements without this annotation never return null)
+            </summary>
         </member>
         <member name="T:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute">
             <summary>Specifies that when a method returns <see cref="P:System.Diagnostics.CodeAnalysis.NotNullWhenAttribute.ReturnValue"/>, the parameter will not be null even if the corresponding type allows it.</summary>

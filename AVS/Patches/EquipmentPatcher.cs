@@ -61,7 +61,7 @@ namespace AVS
         [HarmonyPatch(nameof(Equipment.GetCompatibleSlotDefault))]
         public static void GetCompatibleSlotDefaultPrefix(Equipment __instance, EquipmentType itemType, ref Dictionary<EquipmentType, List<string>> ___typeToSlots)
         {
-            if (itemType != VehicleBuilder.ModuleType && itemType != VehicleBuilder.ArmType)
+            if (itemType != AvsVehicleBuilder.ModuleType && itemType != AvsVehicleBuilder.ArmType)
             {
                 return;
             }
@@ -78,7 +78,7 @@ namespace AVS
         [HarmonyPatch(nameof(Equipment.GetFreeSlot))]
         public static void GetFreeSlotPrefix(Equipment __instance, EquipmentType type, ref Dictionary<EquipmentType, List<string>> ___typeToSlots)
         {
-            if (type != VehicleBuilder.ModuleType && type != VehicleBuilder.ArmType)
+            if (type != AvsVehicleBuilder.ModuleType && type != AvsVehicleBuilder.ArmType)
             {
                 return;
             }
@@ -95,7 +95,7 @@ namespace AVS
         [HarmonyPatch(nameof(Equipment.GetSlots))]
         public static void GetSlotsPrefix(Equipment __instance, EquipmentType itemType, ref Dictionary<EquipmentType, List<string>> ___typeToSlots)
         {
-            if (itemType != VehicleBuilder.ModuleType && itemType != VehicleBuilder.ArmType)
+            if (itemType != AvsVehicleBuilder.ModuleType && itemType != AvsVehicleBuilder.ArmType)
             {
                 return;
             }
@@ -131,7 +131,7 @@ namespace AVS
         {
             if (ModuleBuilder.IsModuleName(slot))
             {
-                __result = VehicleBuilder.ModuleType;
+                __result = AvsVehicleBuilder.ModuleType;
                 return false;
             }
             else
@@ -144,7 +144,7 @@ namespace AVS
         [HarmonyPatch(nameof(Equipment.IsCompatible))]
         public static bool IsCompatiblePrefix(EquipmentType itemType, EquipmentType slotType, ref bool __result)
         {
-            __result = itemType == slotType || (itemType == EquipmentType.VehicleModule && (slotType == EquipmentType.SeamothModule || slotType == EquipmentType.ExosuitModule || slotType == VehicleBuilder.ModuleType));
+            __result = itemType == slotType || (itemType == EquipmentType.VehicleModule && (slotType == EquipmentType.SeamothModule || slotType == EquipmentType.ExosuitModule || slotType == AvsVehicleBuilder.ModuleType));
             if (__result)
             {
                 return false;

@@ -6,22 +6,36 @@ using System;
 
 namespace AVS.VehicleTypes
 {
-    /*
-     * Submersible is the class of non-walkable vehicles
-     */
+    /// <summary>
+    /// Non-walkable vehicle type that can be piloted underwater.
+    /// </summary>
     public abstract class Submersible : AvsVehicle
     {
-        public Submersible(VehicleConfiguration config) : base(config)
+        /// <summary>
+        /// Constructs the vehicle with the given configuration.
+        /// </summary>
+        /// <param name="config">Vehicle configuration. Must not be null</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        protected Submersible(VehicleConfiguration config) : base(config)
         { }
 
-        public abstract SubmersibleComposition GetSubmersibleComposition();
-        public sealed override VehicleComposition GetVehicleComposition()
+        /// <summary>
+        /// Retrieves the composition of the submarine.
+        /// Executed once either during <see cref="AvsVehicle.Awake()"/> or vehicle registration, whichever comes first.
+        /// </summary>
+        protected abstract SubmersibleComposition GetSubmersibleComposition();
+        /// <inheritdoc/>
+        protected sealed override VehicleComposition GetVehicleComposition()
         {
             _subComposition = GetSubmersibleComposition();
             return _subComposition;
         }
 
         private SubmersibleComposition? _subComposition;
+        /// <summary>
+        /// Resolved vehicle composition.
+        /// If accessed before <see cref="AvsVehicle.Awake()"/> (or vehicle registration), InvalidOperationException will be thrown.
+        /// </summary>
         public new SubmersibleComposition Com =>
             _subComposition
             ?? throw new InvalidOperationException("This vehicle's composition has not yet been initialized. Please wait until Submersible.Awake() has been called");
@@ -36,10 +50,7 @@ namespace AVS.VehicleTypes
             myPlayer.mode = myMode;
             EndHelmControl(0.5f);
         }
-        public override bool CanPilot()
-        {
-            return !FPSInputModule.current.lockMovement && IsPowered();
-        }
+
 
 
         /// <inheritdoc/>

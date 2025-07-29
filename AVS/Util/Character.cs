@@ -52,7 +52,20 @@ namespace AVS.Util
             UWE.CoroutineHost.StartCoroutine(waitForTeleport());
         }
 
-
+        /// <summary>
+        /// Grants the player invincibility for a specified duration.
+        /// </summary>
+        /// <param name="time">Time in seconds to become invincible</param>
+        public static void GrantInvincibility(float time)
+        {
+            UWE.CoroutineHost.StartCoroutine(IntlGrantPlayerInvincibility(3f));
+        }
+        private static IEnumerator IntlGrantPlayerInvincibility(float time)
+        {
+            Player.main.liveMixin.invincible = true;
+            yield return new WaitForSeconds(time);
+            Player.main.liveMixin.invincible = false;
+        }
 
         /// <summary>
         /// Asynchronously animates the character to sit down in a chair.

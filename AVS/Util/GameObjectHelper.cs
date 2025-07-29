@@ -117,6 +117,13 @@ namespace AVS.Util
             throw new System.ArgumentNullException($"Both objects are null. Cannot return a valid {typeof(T).Name} object.");
         }
 
+        /// <summary>
+        /// Returns a non-null object or throws an exception if the object is null.
+        /// </summary>
+        /// <typeparam name="T">Unity object type to check</typeparam>
+        /// <param name="item">Unity object to check</param>
+        /// <param name="exceptionFactory">Factory that produces the exception to throw. Can throw itself</param>
+        /// <returns>Non-null <paramref name="item"/></returns>
         public static T OrThrow<T>(this T? item, Func<Exception> exceptionFactory) where T : Object
         {
             if (item != null)

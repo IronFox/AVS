@@ -31,7 +31,7 @@ namespace AVS
         public TechType techType;
     }
 
-    public static class VehicleBuilder
+    public static class AvsVehicleBuilder
     {
         public static GameObject? UpgradeConsole { get; internal set; }
 
@@ -55,8 +55,7 @@ namespace AVS
                 yield break;
             }
             prefabs.Add(mv);
-            VehicleEntry ve = new VehicleEntry(mv, numVehicleTypes, pingType, mv.Config.PingSprite
-                ?? Assets.StaticAssets.DefaultPingSprite);
+            VehicleEntry ve = new VehicleEntry(mv, numVehicleTypes, pingType, mv.Config.PingSprite);
             numVehicleTypes++;
             VehicleEntry naiveVE = new VehicleEntry(ve.mv, ve.unique_id, ve.pt, ve.ping_sprite, TechType.None);
             VehicleManager.VehicleTypes.Add(naiveVE); // must add/remove this vehicle entry so that we can call VFConfig.Setup.
@@ -783,11 +782,12 @@ namespace AVS
             }
             foreach (var pair in Assets.SpriteHelper.PingSprites)
             {
-                if (pair.Item2 == inputType)
+                if (pair.Type == inputType)
                 {
-                    return pair.Item1;
+                    return pair.Name;
                 }
             }
+            LogWriter.Default.Error("Unknown PingType: " + inputType);
             return PingManager.sCachedPingTypeStrings.Get(inputType);
         }
         public static Atlas.Sprite? GetPingTypeSprite(SpriteManager.Group group, string name)
@@ -801,9 +801,9 @@ namespace AVS
             }
             foreach (var pair in Assets.SpriteHelper.PingSprites)
             {
-                if (pair.Item1 == name)
+                if (pair.Name == name)
                 {
-                    return pair.Item3;
+                    return pair.Sprite;
                 }
             }
             return SpriteManager.Get(SpriteManager.Group.Pings, name);

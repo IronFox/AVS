@@ -23,6 +23,8 @@ namespace AVS.Assets
             return GetSpriteGeneric(fullPath);
         }
 
+        private static readonly Dictionary<string, Sprite?> _spriteCache = new Dictionary<string, Sprite?>();
+
         /// <summary>
         /// Loads an <see cref="Atlas.Sprite"/> from a relative path based on the calling assembly's location.
         /// </summary>
@@ -48,6 +50,25 @@ namespace AVS.Assets
         }
 
         /// <summary>
+        /// Loads a required <see cref="Image"/> from a relative path based on the calling assembly's location.
+        /// </summary>
+        /// <param name="relativePath">Path relative to the executing assembly's path</param>
+        /// <returns>Loaded image</returns>
+        /// <exception cref="FileNotFoundException">The file does not exist</exception>
+        /// <exception cref="IOException">Sprite loading has failed</exception>
+        public static Image RequireImage(string relativePath)
+        {
+            string modPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
+            string fullPath = Path.Combine(modPath, relativePath);
+            if (!File.Exists(fullPath))
+                throw new FileNotFoundException($"Image file not found at {fullPath}. Ensure the file exists in the Sprites directory.");
+            var sprite = GetSpriteGenericRaw(fullPath);
+            if (sprite == null)
+                throw new IOException($"Sprite {fullPath} could not be loaded.");
+            return new Image(sprite);
+        }
+
+        /// <summary>
         /// Loads an <see cref="Atlas.Sprite"/> from a full file path.
         /// </summary>
         /// <param name="fullPath">The full path to the sprite file.</param>
@@ -57,9 +78,12 @@ namespace AVS.Assets
             var innerSprite = GetSpriteGenericRaw(fullPath);
             if (innerSprite != null)
             {
-                return new Atlas.Sprite(innerSprite);
+                var sprite = new Atlas.Sprite(innerSprite);
+                return sprite;
             }
-            else return null;
+            _spriteCache[fullPath] = null;
+            LogWriter.Default.Warn($"Could not find file {fullPath}. Returning null Atlas.Sprite.");
+            return null;
         }
 
         /// <summary>
@@ -69,16 +93,22 @@ namespace AVS.Assets
         /// <returns>The loaded <see cref="Sprite"/>, or null if not found.</returns>
         private static Sprite? GetSpriteGenericRaw(string fullPath)
         {
+            if (_spriteCache.TryGetValue(fullPath, out var cachedSprite))
+                return cachedSprite;
+
             try
             {
                 byte[] spriteBytes = System.IO.File.ReadAllBytes(fullPath);
                 Texture2D SpriteTexture = new Texture2D(128, 128);
                 SpriteTexture.LoadImage(spriteBytes);
-                return Sprite.Create(SpriteTexture, new Rect(0.0f, 0.0f, SpriteTexture.width, SpriteTexture.height), new Vector2(0.5f, 0.5f), 100.0f);
+                var rs = Sprite.Create(SpriteTexture, new Rect(0.0f, 0.0f, SpriteTexture.width, SpriteTexture.height), new Vector2(0.5f, 0.5f), 100.0f);
+                _spriteCache[fullPath] = rs;
+                return rs;
             }
             catch
             {
                 LogWriter.Default.Warn($"Could not find file {fullPath}. Returning null Sprite.");
+                _spriteCache[fullPath] = null;
                 return null;
             }
         }
@@ -102,7 +132,7 @@ namespace AVS.Assets
         /// <summary>
         /// List of registered ping sprites, each with a name, ping type, and sprite.
         /// </summary>
-        internal static readonly List<(string, PingType, Atlas.Sprite)> PingSprites = new List<(string, PingType, Atlas.Sprite)>();
+        internal static List<(string Name, PingType Type, Atlas.Sprite Sprite)> PingSprites { get; } = new List<(string, PingType, Atlas.Sprite)>();
 
         /// <summary>
         /// Registers a ping sprite with a name and ping type.

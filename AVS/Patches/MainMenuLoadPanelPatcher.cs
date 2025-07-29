@@ -8,17 +8,27 @@ using UnityEngine;
 
 namespace AVS.Patches
 {
-    // See also: SaveLoadManagerPatcher
+    /// <summary>
+    /// Harmony patch for <see cref="MainMenuLoadPanel"/> to support custom save file sprites.
+    /// See also: <see cref="SaveLoadManagerPatcher"/>
+    /// </summary>
     [HarmonyPatch(typeof(MainMenuLoadPanel))]
     public class MainMenuLoadPanelPatcher
     {
+        /// <summary>
+        /// List of tech types that have associated save file sprites.
+        /// </summary>
         public static List<string> HasTechTypes = new List<string>();
 
+        /// <summary>
+        /// Adds custom save file sprites as child images to the given <see cref="MainMenuLoadButton"/>.
+        /// </summary>
+        /// <param name="lb">The load button to add sprites to.</param>
         public static void AddLoadButtonSprites(MainMenuLoadButton lb)
         {
             foreach (var ve in VehicleManager.VehicleTypes)
             {
-                if (ve.mv != null && ve.mv.Config.SaveFileSprite != Assets.StaticAssets.DefaultSaveFileSprite)
+                if (ve.mv != null && ve.mv.Config.SaveFileSprite)
                 {
                     string techType = ve.techType.AsString();
                     GameObject imageObject = new GameObject(techType);
@@ -30,6 +40,11 @@ namespace AVS.Patches
             }
         }
 
+        /// <summary>
+        /// Harmony postfix for <see cref="MainMenuLoadPanel.UpdateLoadButtonState"/>.
+        /// Ensures custom save file sprites are displayed and sized correctly.
+        /// </summary>
+        /// <param name="lb">The load button whose state is being updated.</param>
         [HarmonyPostfix]
         [HarmonyPatch(nameof(MainMenuLoadPanel.UpdateLoadButtonState))]
         public static void MainMenuLoadPanelUpdateLoadButtonStatePostfix(MainMenuLoadButton lb)

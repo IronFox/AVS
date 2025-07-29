@@ -10,11 +10,41 @@ using UnityEngine.SceneManagement;
 
 namespace AVS
 {
+    /// <summary>
+    /// AVS main patcher class. Must be inherited by the main mod class.
+    /// </summary>
     public abstract class MainPatcher : BaseUnityPlugin
     {
         private static MainPatcher? _instance;
+        private PatcherImages? images;
+
+        /// <summary>
+        /// The icon for the Depth Module 1 upgrade.
+        /// </summary>
+        public Atlas.Sprite DepthModule1Icon => images?.DepthModule1Icon.AtlasSprite ?? throw new InvalidOperationException("DepthModule1Icon is not initialized. Ensure that LoadImages() is called before accessing this property.");
+        /// <summary>
+        /// The icon for the Depth Module 2 upgrade.
+        /// </summary>
+        public Atlas.Sprite DepthModule2Icon => images?.DepthModule2Icon.AtlasSprite ?? throw new InvalidOperationException("DepthModule2Icon is not initialized. Ensure that LoadImages() is called before accessing this property.");
+        /// <summary>
+        /// The icon for the Depth Module 3 upgrade.
+        /// </summary>
+        public Atlas.Sprite DepthModule3Icon => images?.DepthModule3Icon.AtlasSprite ?? throw new InvalidOperationException("DepthModule3Icon is not initialized. Ensure that LoadImages() is called before accessing this property.");
+        /// <summary>
+        /// The icon to use for the parent node of all depth modules in the crafting tree.
+        /// </summary>
+        public Atlas.Sprite DepthModuleNodeIcon => images?.DepthModuleNodeIcon.AtlasSprite ?? throw new InvalidOperationException("DepthModuleNodeIcon is not initialized. Ensure that LoadImages() is called before accessing this property.");
+
+        /// <summary>
+        /// Queries the main singleton instance of <see cref="MainPatcher"/>.
+        /// </summary>
         public static MainPatcher Instance => _instance ?? throw new InvalidOperationException("MainPatcher instance is not set. Ensure that the Awake method is called before accessing Instance.");
 
+        /// <summary>
+        /// Loads the images used by AVS.
+        /// </summary>
+        /// <returns></returns>
+        protected abstract PatcherImages LoadImages();
 
         public abstract string PluginId { get; }
         //internal static VFConfig VFConfig { get; private set; }
@@ -23,14 +53,23 @@ namespace AVS
         internal Coroutine? GetVoices { get; private set; } = null;
         internal Coroutine? GetEngineSounds { get; private set; } = null;
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Begins plugin patching and initialization.
+        /// Also initializes the logger. Before this method is called, the logger will not work.
+        /// </summary>
         public virtual void Awake()
         {
+            AVS.Logger.Init(Logger);
+            LogWriter.Default.Write("AVS MainPatcher Awake started.");
+
             Nautilus.Handlers.LanguageHandler.RegisterLocalizationFolder();
             SetupInstance();
+            LogWriter.Default.Write("AVS MainPatcher Awake: SetupInstance completed. Loading images...");
+            images = LoadImages();
+
+
             //VFConfig = new VFConfig();
             //NautilusConfig = Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions<AVSNautilusConfig>();
-            AVS.Logger.Init(Logger);
             PrePatch();
             PrefabLoader.SignalCanLoad();
             PrefabLoader.Request(TechType.Exosuit);
@@ -57,13 +96,13 @@ namespace AVS
             {
                 CoroutineTask<GameObject> request = CraftData.GetPrefabForTechTypeAsync(TechType.BaseUpgradeConsole, true);
                 yield return request;
-                VehicleBuilder.UpgradeConsole = request.GetResult();
+                AvsVehicleBuilder.UpgradeConsole = request.GetResult();
                 yield break;
             }
             LogWriter.Default.Write("CollectPrefabsForBuilderReference started.");
             UWE.CoroutineHost.StartCoroutine(CollectPrefabsForBuilderReference());
-            LogWriter.Default.Write("Assets.StaticAssets.GetSprites()");
-            Assets.StaticAssets.GetSprites();
+            //LogWriter.Default.Write("Assets.StaticAssets.GetSprites()");
+            //Assets.StaticAssets.GetSprites();
             LogWriter.Default.Write("Assets.AVSFabricator.CreateAndRegister()");
             Assets.AvsFabricator.CreateAndRegister();
             LogWriter.Default.Write("Admin.CraftTreeHandler.AddFabricatorMenus()");

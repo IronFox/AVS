@@ -38,9 +38,9 @@ namespace AVS.VehicleTypes
         /// Retrieves the composition for this submarine.
         /// Executed once during Awake.
         /// </summary>
-        public abstract SubmarineComposition GetSubmarineComposition();
+        protected abstract SubmarineComposition GetSubmarineComposition();
         /// <inheritdoc />
-        public sealed override VehicleComposition GetVehicleComposition()
+        protected sealed override VehicleComposition GetVehicleComposition()
         {
             _subComposition = GetSubmarineComposition();
             return _subComposition;
@@ -108,11 +108,7 @@ namespace AVS.VehicleTypes
                 : Com.Helms[0];
         }
 
-        public override bool CanPilot()
-        {
-            return !FPSInputModule.current.lockMovement && IsPowered();
-        }
-
+        /// <inheritdoc/>
         public override void Awake()
         {
             base.Awake();
@@ -122,6 +118,7 @@ namespace AVS.VehicleTypes
             gameObject.EnsureComponent<TetherSource>().mv = this;
             controlPanelLogic.SafeDo(x => x.Init());
         }
+        /// <inheritdoc/>
         public override void Start()
         {
             base.Start();
@@ -157,35 +154,15 @@ namespace AVS.VehicleTypes
             ActualEditScreen.GetComponent<Canvas>().enabled = true;
             ActualEditScreen.transform.Find("Active").gameObject.SetActive(true);
         }
-        public bool IsPlayerInside()
-        {
-            // this one is correct ?
-            return isPlayerInside;
-        }
-        public bool IsPlayerPiloting()
-        {
-            return isAtHelm;
-        }
-        //protected IEnumerator SitDownInChair()
-        //{
-        //    Player.main.playerAnimator.SetBool("chair_sit", true);
-        //    yield return null;
-        //    Player.main.playerAnimator.SetBool("chair_sit", false);
-        //}
-        //protected IEnumerator StandUpFromChair()
-        //{
-        //    Player.main.playerAnimator.SetBool("chair_stand_up", true);
-        //    yield return null;
-        //    Player.main.playerAnimator.SetBool("chair_stand_up", false);
-        //}
-        //protected IEnumerator TryStandUpFromChair()
-        //{
-        //    yield return new WaitUntil(() => !IsPlayerControlling());
-        //    yield return new WaitForSeconds(2);
-        //    Player.main.playerAnimator.SetBool("chair_stand_up", true);
-        //    yield return null;
-        //    Player.main.playerAnimator.SetBool("chair_stand_up", false);
-        //}
+        /// <summary>
+        /// True if the player is inside the submarine, false otherwise.
+        /// </summary>
+        public bool IsPlayerInside() => isPlayerInside;
+        /// <summary>
+        /// Gets a value indicating whether the player is currently piloting the vehicle.
+        /// </summary>
+        public bool IsPlayerPiloting() => isAtHelm;
+
 
         /// <inheritdoc/>
         public override Helm GetMainHelm()
@@ -217,7 +194,7 @@ namespace AVS.VehicleTypes
             Player.main.SetScubaMaskActive(false);
             Player.main.armsController.ikToggleTime = 0.5f;
             Player.main.armsController.SetWorldIKTarget(null, null);
-            if (!IsVehicleDocked && IsPlayerControlling())
+            if (!IsVehicleDocked && currentHelmIndex >= 0)
             {
                 Player.main.transform.SetParent(transform);
                 var exit = currentHelmIndex < Com.Helms.Count
@@ -241,16 +218,11 @@ namespace AVS.VehicleTypes
             }
             if (isScuttled)
             {
-                UWE.CoroutineHost.StartCoroutine(GrantPlayerInvincibility(3f));
+                Character.GrantInvincibility(3f);
             }
             Player.main.SetCurrentSub(GetComponent<SubRoot>());
         }
-        public static IEnumerator GrantPlayerInvincibility(float time)
-        {
-            Player.main.liveMixin.invincible = true;
-            yield return new WaitForSeconds(time);
-            Player.main.liveMixin.invincible = false;
-        }
+
         /// <inheritdoc/>
         protected override void OnPlayerEntry()
         {
@@ -351,7 +323,7 @@ namespace AVS.VehicleTypes
             base.OnKill();
             if (isplayerinthissub)
             {
-                ClosestPlayerEntry();
+                ClosestPlayerExit(false);
             }
         }
 

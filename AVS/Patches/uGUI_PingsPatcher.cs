@@ -24,9 +24,9 @@ namespace AVS
                 .MatchStartForward(GetPingTypeMatch)
                 .Repeat(x =>
                     x.RemoveInstruction()
-                    .InsertAndAdvance(Transpilers.EmitDelegate<Func<CachedEnumString<PingType>, PingType, string>>(VehicleBuilder.GetPingTypeString))
+                    .InsertAndAdvance(Transpilers.EmitDelegate<Func<CachedEnumString<PingType>, PingType, string>>(AvsVehicleBuilder.GetPingTypeString))
                     .RemoveInstruction()
-                    .Insert(Transpilers.EmitDelegate<Func<SpriteManager.Group, string, Atlas.Sprite?>>(VehicleBuilder.GetPingTypeSprite))
+                    .Insert(Transpilers.EmitDelegate<Func<SpriteManager.Group, string, Atlas.Sprite?>>(AvsVehicleBuilder.GetPingTypeSprite))
                 );
             return newInstructions.InstructionEnumeration();
         }

@@ -15,14 +15,14 @@ namespace AVS.Crafting
          * For consistency, tabs and modules must not exist in the same tab. Either a tab contains only tabs, or it contains only modules.
          * To assert consistency, we maintain these sets.
          */
-        private class NodeInformation
-        {
-            public bool ContainsTabs { get; set; }
-            public bool ContainsModules { get; set; }
-        }
+        //private class NodeInformation
+        //{
+        //    public bool ContainsTabs { get; set; }
+        //    public bool ContainsModules { get; set; }
+        //}
 
 
-        private static Dictionary<Path<string>, NodeInformation> KnownPaths { get; } = new Dictionary<Path<string>, NodeInformation>();
+        private static Dictionary<string, Node> KnownRootNodes { get; } = new Dictionary<string, Node>();
 
         //internal static string ModuleRootNode(VehicleType type)
         //{
@@ -58,108 +58,41 @@ namespace AVS.Crafting
             //AddCraftingTab(Array.Empty<string>(), ModuleRootNode(VehicleType.Cyclops), Language.main.Get("AvsCyclopsTab"), cyclopsIcon);
             //AddCraftingTab(ModuleRootNode(VehicleType.Cyclops).ToRoList(), $"{GeneralTabName}{VehicleType.Cyclops}", Language.main.Get("AvsGeneralTab"), mvIcon);
         }
-        internal static void EnsureCraftingTabsAvailable(AvsVehicleUpgrade upgrade, UpgradeCompat compat)
+        internal static Node GetOrCreateNode(
+            string name,
+            Node? parent,
+            Func<Node> folderFactory)
         {
-            if (upgrade.IsVehicleSpecific)
+
+            Node? existing = null;
+            if (parent is null)
             {
-                EnsureCraftingTabAvailable(upgrade, VehicleType.Custom);
-                return;
-            }
-            if (!compat.SkipCyclops)
-            {
-                EnsureCraftingTabAvailable(upgrade, VehicleType.Cyclops);
-            }
-            if (!compat.SkipExosuit)
-            {
-                EnsureCraftingTabAvailable(upgrade, VehicleType.Prawn);
-            }
-            if (!compat.SkipAvsVehicle)
-            {
-                EnsureCraftingTabAvailable(upgrade, VehicleType.AvsVehicle);
-            }
-            if (!compat.SkipSeamoth)
-            {
-                EnsureCraftingTabAvailable(upgrade, VehicleType.Seamoth);
-            }
-        }
-        private static void EnsureCraftingTabAvailable(AvsVehicleUpgrade upgrade, VehicleType vType)
-        {
-            if (upgrade.TabPath == null)
-            {
-                if (upgrade.TabName.Equals(string.Empty))
-                {
-                    // it goes in general, so we're good
-                    return;
-                }
-                else
-                {
-                    AddCraftingTab(vType, upgrade.TabName, upgrade.TabDisplayName, upgrade.TabIcon);
-                }
+                if (KnownRootNodes.TryGetValue(name, out existing))
+                    return existing;
             }
             else
             {
-                TraceCraftingPath(upgrade.TabPath.Value,
-                    (x, y) => AddCraftingTab(x, y.DisplayName, y.Icon));
+                if (parent.Children.TryGetValue(name, out existing))
+                    return existing;
             }
+
+            if (parent != null)
+            {
+                if (parent.Modules.Count > 0)
+                    throw new InvalidOperationException($"CraftTreeHandler: Cannot add a folder to a path that already contains modules. Path: {parent.GetPath()}");
+            }
+            var folder = folderFactory();
+            var parentPath = (parent?.GetPath() ?? CraftPath.Empty);
+
+            LogWriter.Default.Write($"CraftTreeHandler: Adding crafting tab {name} with display name {folder.DisplayName} in path {parentPath}");
+            Nautilus.Handlers.CraftTreeHandler.AddTabNode(AvsFabricator.TreeType, name, folder.DisplayName, folder.Icon, parentPath.Segments);
+
+            if (parent != null)
+                parent.Children.Add(name, folder);
+            else
+                KnownRootNodes.Add(name, folder);
+            return folder;
         }
 
-        internal static Path<string> TraceCraftingPath(
-            Path<CraftingNode> path,
-            Action<Path<string>, CraftingNode>? perNonLeafAction)
-        {
-            Path<string> thisPath = Path<string>.Empty;
-            foreach (var node in path)
-            {
-                perNonLeafAction?.Invoke(thisPath, node);
-                thisPath = thisPath.Append(node.Name);
-            }
-            return thisPath;
-        }
-        private static Path<string> AddCraftingTab(VehicleType vType, string tabName, string displayName, Atlas.Sprite? icon)
-        {
-            var path = new Path<string>(tabName);
-            AddCraftingTab(path, displayName, icon);
-            return path;
-        }
-        private static void AddCraftingTab(Path<string> tabPath, string displayName, Atlas.Sprite? icon)
-        {
-            if (!KnownPaths.ContainsKey(tabPath))
-            {
-                var parentPath = tabPath.Parent;
-                LogWriter.Default.Write($"CraftTreeHandler: Adding crafting tab {tabPath.Last} with display name {displayName} in path {parentPath}");
-                if (!parentPath.IsEmpty)
-                {
-                    if (KnownPaths.TryGetValue(parentPath, out var info))
-                    {
-                        if (info.ContainsModules)
-                            throw new Exception($"CraftTreeHandler: Invalid Tab Path: {parentPath}. Cannot add a tab to a path that already contains modules.");
-                        info.ContainsTabs = true;
-                    }
-                    else
-                    {
-                        KnownPaths.Add(parentPath, new NodeInformation { ContainsTabs = true });
-                    }
-                }
-                Nautilus.Handlers.CraftTreeHandler.AddTabNode(AvsFabricator.TreeType, tabPath.Last, displayName, icon ?? StaticAssets.UpgradeIcon, parentPath.Segments);
-                KnownPaths[tabPath] = new NodeInformation();
-            }
-        }
-
-        internal static void RequireTabPathIsValidForModules(Path<string> tabPath, bool registerAsHavingModules)
-        {
-            if (!KnownPaths.TryGetValue(tabPath, out var info))
-            {
-                if (registerAsHavingModules)
-                    KnownPaths.Add(tabPath, new NodeInformation { ContainsModules = true });
-                return;
-            }
-            if (!info.ContainsTabs)
-            {
-                if (registerAsHavingModules)
-                    info.ContainsModules = true;
-                return;
-            }
-            throw new Exception($"CraftTreeHandler: Invalid Tab Path: {tabPath}. Cannot add a module to a path that already contains tabs.");
-        }
     }
 }

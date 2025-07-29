@@ -59,7 +59,17 @@ namespace AVS.SaveLoad
                 token => token.Type == JTokenType.Null ? (DateTimeOffset?)null : DateTimeOffset.Parse(token.Value<string>())) },
             { typeof(DateTimeOffset), new Handler(
                 value => new JValue(((DateTimeOffset)value!).ToString("o")),
-                token => DateTimeOffset.Parse(token.Value<string>())) },
+                token => {
+                    try
+                    {
+                        return token.Value<DateTimeOffset>();
+                    }
+                    catch
+                    {
+                        return DateTimeOffset.Parse(token.Value<string>());
+                    }
+                })
+                },
             { typeof(DateTime?), new Handler(
                 value => {
                     if (value == null)

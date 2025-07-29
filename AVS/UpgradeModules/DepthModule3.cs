@@ -1,9 +1,8 @@
 ﻿using AVS.Configuration;
 using AVS.Localization;
-using AVS.UpgradeModules;
 //using AVS.Localization;
 
-namespace AVS.DepthModules
+namespace AVS.UpgradeModules
 {
     /// <summary>
     /// Level 3 depth module for vehicles, allowing deeper dives.
@@ -25,22 +24,16 @@ namespace AVS.DepthModules
                 .Done();
         /// <inheritdoc/>
 
-        public override Atlas.Sprite? Icon { get; } = Assets.SpriteHelper.GetSprite("Sprites/DepthIcon.png");
-        /// <inheritdoc/>
-        public override Atlas.Sprite? TabIcon => Assets.SpriteHelper.GetSprite("Sprites/DepthIcon.png");
-        /// <inheritdoc/>
-        public override string TabName => "MVDM";
-        /// <inheritdoc/>
-        public override string TabDisplayName => Translator.Get(TranslationKey.Fabricator_Node_DepthModules);
+        public override Atlas.Sprite Icon => MainPatcher.Instance.DepthModule3Icon;
         /// <inheritdoc/>
         public override void OnAdded(AddActionParams param)
         {
-            Admin.Utils.EvaluateDepthModules(param);
+            AvsUtils.EvaluateDepthModules(param);
         }
         /// <inheritdoc/>
         public override void OnRemoved(AddActionParams param)
         {
-            Admin.Utils.EvaluateDepthModules(param);
+            AvsUtils.EvaluateDepthModules(param);
         }
     }
 }

@@ -105,5 +105,9 @@
       <HintPath>$(SUBNAUTICA_PATH)\Subnautica_Data\Managed\UnityEngine.XRModule.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="DepthModules\" />
+  </ItemGroup>
   
 </Project>

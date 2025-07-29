@@ -1,5 +1,6 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Crafting;
+using AVS.Localization;
 using AVS.UpgradeModules;
 using System;
 using System.Collections;
@@ -48,16 +49,22 @@ namespace AVS.Admin
         /// </summary>
         public static void RegisterDepthModules()
         {
+            var folder = Node.Create(
+                "DepthModules",
+                Translator.Get(TranslationKey.Fabricator_Node_DepthModules),
+                MainPatcher.Instance.DepthModuleNodeIcon);
+
+
             UpgradeCompat compat = UpgradeCompat.AvsVehiclesOnly;
-            UpgradeTechTypes depth1 = UpgradeRegistrar.RegisterUpgrade(new DepthModules.DepthModule1(), compat);
+            UpgradeTechTypes depth1 = folder.RegisterUpgrade(new DepthModule1(), compat);
 
-            var depthmodule2 = new DepthModules.DepthModule2();
+            var depthmodule2 = new DepthModule2();
             depthmodule2.ExtendRecipe(depth1);
-            UpgradeTechTypes depth2 = UpgradeRegistrar.RegisterUpgrade(depthmodule2, compat);
+            UpgradeTechTypes depth2 = folder.RegisterUpgrade(depthmodule2, compat);
 
-            var depthmodule3 = new DepthModules.DepthModule3();
+            var depthmodule3 = new DepthModule3();
             depthmodule3.ExtendRecipe(depth2);
-            UpgradeTechTypes depth3 = UpgradeRegistrar.RegisterUpgrade(depthmodule3, compat);
+            UpgradeTechTypes depth3 = folder.RegisterUpgrade(depthmodule3, compat);
         }
 
 

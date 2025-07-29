@@ -68,7 +68,10 @@ namespace AVS.Assets
             }
         }
 
-        public static bool CanLoad { get; private set; }
+        /// <summary>
+        /// True if the prefab can be loaded, false if any ongoing loading operation should be delayed.
+        /// </summary>
+        internal static bool CanLoad { get; private set; }
 
         private IEnumerator LoadResource()
         {

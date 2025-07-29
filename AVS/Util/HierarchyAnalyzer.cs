@@ -51,18 +51,18 @@ internal class JsonValue : JsonNode
 
     public static JsonValue Null { get; } = new JsonValue(null, new OverflowGuard());
 
-    public JsonValue(string value, OverflowGuard guard)
+    public JsonValue(string? value, OverflowGuard guard)
     {
         guard.SignalNewValue();
         Value = EscapeString(value);
     }
 
-    public static string EscapeString(string value)
+    public static string EscapeString(string? value)
          => value == null
             ? "null"
             : '"' + value.Replace("\\", "\\\\").Replace("\"", "\\\\") + '"';
 
-    public JsonValue(object value, OverflowGuard guard)
+    public JsonValue(object? value, OverflowGuard guard)
     {
         guard.SignalNewValue();
         switch (value)
@@ -391,7 +391,7 @@ internal class HierarchyAnalyzer
         {
             if (ReferenceEquals(m, null))
                 return JsonValue.Null;
-            if (m == null)
+            if (!m)
                 return new SoftNull(m.GetType(), Guard);
             if (VisitedBefore(m))
                 return new JsonReference(m, Guard);
@@ -542,7 +542,7 @@ internal class HierarchyAnalyzer
         {
             if (ReferenceEquals(t, null))
                 return JsonValue.Null;
-            if (t == null)
+            if (!t)
                 return new SoftNull(t.GetType(), Guard);
 
             if (nameOnly || VisitedBefore(t))
@@ -580,8 +580,8 @@ internal class HierarchyAnalyzer
         {
             if (ReferenceEquals(any, null))
                 return JsonValue.Null;
-            if (any == null)
-                return new SoftNull(any.GetType(), Guard);
+            if (any.Equals(null))
+                return new SoftNull(any!.GetType(), Guard);
             if (ComplexVisited(any))
                 return new JsonValue($"[{any.GetType()}] {any}", Guard);
 
@@ -604,7 +604,7 @@ internal class HierarchyAnalyzer
 
             if (ReferenceEquals(c, null))
                 return JsonValue.Null;
-            if (c == null)
+            if (!c)
                 return new SoftNull(c.GetType(), Guard);
             if (!asObject || VisitedBefore(c))
                 return new JsonReference(c, Guard);
@@ -626,7 +626,7 @@ internal class HierarchyAnalyzer
         {
             if (ReferenceEquals(c, null))
                 return JsonValue.Null;
-            if (c == null)
+            if (!c)
                 return new SoftNull(c.GetType(), Guard);
             if (VisitedBefore(c))
                 return new JsonReference(c, Guard);

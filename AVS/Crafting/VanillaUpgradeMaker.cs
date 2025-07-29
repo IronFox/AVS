@@ -31,11 +31,10 @@ namespace AVS.Crafting
         {
             Nautilus.Crafting.RecipeData moduleRecipe = upgrade.GetRecipe(vType).ToRecipeData();
 
-            var steps = upgrade.ResolveTabPath(vType);
             customPrefab
                 .SetRecipe(moduleRecipe)
                 .WithFabricatorType(Assets.AvsFabricator.TreeType)
-                .WithStepsToFabricatorTab(steps.Segments)
+                .WithStepsToFabricatorTab(upgrade.Node.GetPath().Segments)
                 .WithCraftingTime(upgrade.CraftingTime);
             return customPrefab;
         }

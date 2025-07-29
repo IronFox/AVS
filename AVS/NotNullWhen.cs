@@ -7,6 +7,9 @@ namespace System.Diagnostics.CodeAnalysis
     [AttributeUsage(AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.Property | AttributeTargets.ReturnValue, Inherited = false)]
     public sealed class NotNullAttribute : Attribute { }
 
+    /// <summary>
+    /// Indicates that a method or property may return a null value (elements without this annotation never return null)
+    /// </summary>
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field | AttributeTargets.Parameter | AttributeTargets.ReturnValue, Inherited = false)]
     public sealed class MaybeNullAttribute : Attribute
     {

@@ -67,7 +67,7 @@ namespace AVS.BaseVehicle
         /// Retrieves the composition of the vehicle.
         /// Executed once either during <see cref="Awake()"/> or vehicle registration, whichever comes first.
         /// </summary>
-        public abstract VehicleComposition GetVehicleComposition();
+        protected abstract VehicleComposition GetVehicleComposition();
 
         /// <summary>
         /// Resolved vehicle composition.
@@ -248,7 +248,7 @@ namespace AVS.BaseVehicle
             {
                 if (!isScuttled
                     && IsBoarded
-                    && !IsHelmControlling
+                    && !IsPlayerControlling()
                     && !Character.IsAnyMenuOpen
                     )
                 {

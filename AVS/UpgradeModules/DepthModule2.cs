@@ -1,9 +1,8 @@
 ﻿using AVS.Configuration;
 using AVS.Localization;
-using AVS.UpgradeModules;
 //using AVS.Localization;
 
-namespace AVS.DepthModules
+namespace AVS.UpgradeModules
 {
     /// <summary>
     /// Represents the second-tier depth module upgrade for vehicles, enhancing their maximum depth capacity.
@@ -28,22 +27,16 @@ namespace AVS.DepthModules
                 .Done();
 
         /// <inheritdoc/>
-        public override Atlas.Sprite? Icon { get; } = Assets.SpriteHelper.GetSprite("Sprites/DepthIcon.png");
-        /// <inheritdoc/>
-        public override Atlas.Sprite? TabIcon { get; } = Assets.SpriteHelper.GetSprite("Sprites/DepthIcon.png");
-        /// <inheritdoc/>
-        public override string TabName => "MVDM";
-        /// <inheritdoc/>
-        public override string TabDisplayName => Translator.Get(TranslationKey.Fabricator_Node_DepthModules);
+        public override Atlas.Sprite Icon => MainPatcher.Instance.DepthModule2Icon;
         /// <inheritdoc/>
         public override void OnAdded(AddActionParams param)
         {
-            Admin.Utils.EvaluateDepthModules(param);
+            AvsUtils.EvaluateDepthModules(param);
         }
         /// <inheritdoc/>
         public override void OnRemoved(AddActionParams param)
         {
-            Admin.Utils.EvaluateDepthModules(param);
+            AvsUtils.EvaluateDepthModules(param);
         }
     }
 }

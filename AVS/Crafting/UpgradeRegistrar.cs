@@ -217,17 +217,19 @@ namespace AVS.Crafting
         /// <summary>
         /// Registers a AvsVehicleUpgrade and sets up its icons, recipes, and actions for compatible vehicle types.
         /// </summary>
+        /// <param name="node">The folder containing the upgrade assets.</param>
         /// <param name="upgrade">The upgrade to register.</param>
         /// <param name="compat">Compatibility flags for vehicle types.</param>
-        /// <param name="verbose">If true, enables verbose logging.</param>
         /// <returns>UpgradeTechTypes containing TechTypes for each vehicle type.</returns>
-        public static UpgradeTechTypes RegisterUpgrade(AvsVehicleUpgrade upgrade, UpgradeCompat compat = default, bool verbose = false)
+        internal static UpgradeTechTypes RegisterUpgrade(Node node, AvsVehicleUpgrade upgrade, UpgradeCompat compat = default)
         {
             LogWriter.Default.Write($"Registering {nameof(AvsVehicleUpgrade)} " + upgrade.ClassId + " : " + upgrade.DisplayName);
             bool result = ValidateAvsVehicleUpgrade(upgrade, compat);
             if (result)
             {
-                CraftTreeHandler.EnsureCraftingTabsAvailable(upgrade, compat);
+                if (node.Children.Count > 0)
+                    throw new InvalidOperationException($"CraftTreeHandler: Cannot add an upgrade to a folder that already contains folders. Folder: {node.GetPath()}");
+
                 var icon = SpriteHelper.CreateSpriteFromAtlasSprite(upgrade.Icon);
                 if (icon != null)
                     UpgradeIcons.Add(upgrade.ClassId, icon);
@@ -235,15 +237,16 @@ namespace AVS.Crafting
                     LogWriter.Default.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId} has a null icon! Please provide a valid icon sprite.");
                 UpgradeTechTypes utt = new UpgradeTechTypes();
                 bool isPdaRegistered = false;
-                if (!compat.SkipAvsVehicle || upgrade.IsVehicleSpecific)
+                if (!compat.SkipAvsVehicle)
                 {
                     utt = new UpgradeTechTypes(
-                        forAvsVehicle: RegisterAvsVehicleUpgrade(upgrade)
+                        forAvsVehicle: RegisterAvsVehicleUpgrade(node, upgrade)
                     );
                     isPdaRegistered = true;
                 }
                 RegisterUpgradeMethods(upgrade, compat, ref utt, isPdaRegistered);
                 upgrade.TechTypes = utt;
+                node.Modules.Add(upgrade);
                 return utt;
             }
             else
@@ -263,24 +266,24 @@ namespace AVS.Crafting
         {
             if (compat.SkipAvsVehicle && compat.SkipSeamoth && compat.SkipExosuit && compat.SkipCyclops)
             {
-                Logger.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId}: compat cannot skip all vehicle types!");
+                LogWriter.Default.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId}: compat cannot skip all vehicle types!");
                 return false;
             }
             if (upgrade.ClassId.Equals(string.Empty))
             {
-                Logger.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId} cannot have empty class ID!");
+                LogWriter.Default.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId} cannot have empty class ID!");
                 return false;
             }
             if (upgrade.GetRecipe(VehicleType.AvsVehicle).IsEmpty)
             {
-                Logger.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId} cannot have empty recipe!");
+                LogWriter.Default.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleUpgrade)} {upgrade.ClassId} cannot have empty recipe!");
                 return false;
             }
             if (!upgrade.UnlockAtStart)
             {
                 if (!upgrade.UnlockedSprite && !upgrade.UnlockedMessage.Equals(AvsVehicleUpgrade.DefaultUnlockMessage))
                 {
-                    Logger.Warn($"UpgradeRegistrar Warning: the upgrade {upgrade.ClassId} has UnlockAtStart false and UnlockedSprite null. When unlocked, its custom UnlockedMessage will not be displayed. Add an UnlockedSprite to resolve this.");
+                    LogWriter.Default.Warn($"UpgradeRegistrar Warning: the upgrade {upgrade.ClassId} has UnlockAtStart false and UnlockedSprite null. When unlocked, its custom UnlockedMessage will not be displayed. Add an UnlockedSprite to resolve this.");
                 }
             }
             return true;
@@ -289,9 +292,10 @@ namespace AVS.Crafting
         /// <summary>
         /// Registers the <see cref="AvsVehicleUpgrade"/> for <see cref="AvsVehicle"/>, sets up its prefab, recipe, and unlock conditions.
         /// </summary>
+        /// <param name="folder">The folder containing the upgrade assets.</param>
         /// <param name="upgrade">The upgrade to register.</param>
         /// <returns>The TechType assigned to the upgrade.</returns>
-        private static TechType RegisterAvsVehicleUpgrade(AvsVehicleUpgrade upgrade)
+        private static TechType RegisterAvsVehicleUpgrade(Node folder, AvsVehicleUpgrade upgrade)
         {
             Nautilus.Crafting.RecipeData moduleRecipe = upgrade.GetRecipe(VehicleType.AvsVehicle).ToRecipeData();
             Nautilus.Assets.PrefabInfo module_info = Nautilus.Assets.PrefabInfo
@@ -304,24 +308,14 @@ namespace AVS.Crafting
             };
             module_CustomPrefab.SetGameObject(moduleTemplate);
 
-            Path<string> tabPath;
-            if (upgrade.IsVehicleSpecific)
-            {
-                tabPath = upgrade.ResolveTabPath(VehicleType.Custom);
-            }
-            else
-            {
-                tabPath = upgrade.ResolveTabPath(VehicleType.AvsVehicle);
-            }
-            CraftTreeHandler.RequireTabPathIsValidForModules(tabPath, true);
             module_CustomPrefab
                 .SetRecipe(moduleRecipe)
                 .WithCraftingTime(upgrade.CraftingTime)
                 .WithFabricatorType(AvsFabricator.TreeType)
-                .WithStepsToFabricatorTab(tabPath.Segments);
+                .WithStepsToFabricatorTab(folder.GetPath().Segments);
             module_CustomPrefab.SetPdaGroupCategory(TechGroup.VehicleUpgrades, TechCategory.VehicleUpgrades);
             module_CustomPrefab
-                .SetEquipment(VehicleBuilder.ModuleType)
+                .SetEquipment(AvsVehicleBuilder.ModuleType)
                 .WithQuickSlotType(upgrade.QuickSlotType);
             if (!upgrade.UnlockAtStart)
             {

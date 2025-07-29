@@ -125,7 +125,7 @@ namespace AVS
             RegistrySemaphore = true;
             VerboseLog(LogType.Log, verbose, $"The {mv.gameObject.name} is beginning Registration.");
             PingType registeredPingType = VehicleManager.RegisterPingType((PingType)121, verbose);
-            yield return UWE.CoroutineHost.StartCoroutine(VehicleBuilder.Prefabricate(mv, registeredPingType, verbose));
+            yield return UWE.CoroutineHost.StartCoroutine(AvsVehicleBuilder.Prefabricate(mv, registeredPingType, verbose));
             RegistrySemaphore = false;
             Logger.Log($"Finished {mv.gameObject.name} registration.");
             VehiclesRegistered++;

@@ -122,7 +122,6 @@ namespace AVS.BaseVehicle
             }
             activeSlot = -1;
             NotifySelectSlot(activeSlot);
-            IsHelmControlling = false;
 
             DoExitRoutines();
         }
@@ -186,7 +185,7 @@ namespace AVS.BaseVehicle
         internal List<string> VehicleModuleSlots => GenerateModuleSlots(Config.NumModules).ToList();
         internal Dictionary<EquipmentType, List<string>> VehicleTypeToSlots => new Dictionary<EquipmentType, List<string>>
                 {
-                    { VehicleBuilder.ModuleType, VehicleModuleSlots }
+                    { AvsVehicleBuilder.ModuleType, VehicleModuleSlots }
                 };
 
 
@@ -305,7 +304,7 @@ namespace AVS.BaseVehicle
         {
             switch (techType)
             {
-                case VehicleBuilder.InnateStorage:
+                case AvsVehicleBuilder.InnateStorage:
                     {
                         InnateStorageContainer vsc;
                         if (0 <= slotID && slotID < Com.InnateStorages.Count)
