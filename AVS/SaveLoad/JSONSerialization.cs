@@ -52,34 +52,24 @@ namespace AVS.SaveLoad
                 )) },
             { typeof(DateTimeOffset?), new Handler(
                 value => {
-                    if (value == null)
-                        return JValue.CreateNull();
-                    return new JValue(((DateTimeOffset?)value)!.Value.ToString("o"));
+                    if (value is DateTimeOffset dto)
+                        return new JValue("DT_"+dto.ToString("o"));
+                    return JValue.CreateNull();
                 },
-                token => token.Type == JTokenType.Null ? (DateTimeOffset?)null : DateTimeOffset.Parse(token.Value<string>())) },
+                token => token.Type == JTokenType.Null ? (DateTimeOffset?)null : DateTimeOffset.Parse(token.Value<string>().Substring(3))) },
             { typeof(DateTimeOffset), new Handler(
-                value => new JValue(((DateTimeOffset)value!).ToString("o")),
-                token => {
-                    try
-                    {
-                        return token.Value<DateTimeOffset>();
-                    }
-                    catch
-                    {
-                        return DateTimeOffset.Parse(token.Value<string>());
-                    }
-                })
-                },
+                value => new JValue("DT_"+((DateTimeOffset)value!).ToString("o")),
+                token => DateTimeOffset.Parse(token.Value<string>().Substring(3))) },
             { typeof(DateTime?), new Handler(
                 value => {
-                    if (value == null)
-                        return JValue.CreateNull();
-                    return new JValue(((DateTime?)value)!.Value.ToString("o"));
+                    if (value is DateTime dto)
+                        return new JValue("DT_"+dto.ToString("o"));
+                    return JValue.CreateNull();
                 },
-                token => token.Type == JTokenType.Null ? (DateTime?)null : DateTime.Parse(token.Value<string>())) },
+                token => token.Type == JTokenType.Null ? (DateTime?)null : DateTime.Parse(token.Value<string>().Substring(3))) },
             { typeof(DateTime), new Handler(
-                value => new JValue(((DateTime)value!).ToString("o")),
-                token => DateTime.Parse(token.Value<string>()))
+                value => new JValue("DT_"+((DateTime)value!).ToString("o")),
+                token => DateTime.Parse(token.Value<string>().Substring(3)))
             }
         };
 
