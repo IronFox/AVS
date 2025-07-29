@@ -117,5 +117,56 @@ namespace AVS
                 LogWriter.Default
             );
         }
+
+        internal static void Add(VehicleEntry newVE)
+        {
+            VehicleTypes.Add(newVE);
+            //if (PingManager.sCachedPingTypeStrings == null)
+            //{
+            //    LogWriter.Default.Error("PingManager.sCachedPingTypeStrings was null. Cannot add to cache");
+            //}
+            //else
+            //    PingManager.sCachedPingTypeStrings.valueToString.Add(newVE.pt, newVE.name);
+
+            //var group = SpriteManager.Group.Pings;
+            //var name = newVE.name;
+            //if (SpriteManager.mapping == null)
+            //    LogWriter.Default.Error("[PingSprite] SpriteManager.mapping was null. Cannot register ping sprite.");
+            //else
+            //{
+            //    if (SpriteManager.mapping.TryGetValue(group, out var atlasName))
+            //    {
+            //        var atlas = Atlas.GetAtlas(atlasName);
+            //        if (atlas != null)
+            //        {
+            //            atlas.nameToSprite.Add(name, newVE.ping_sprite);
+            //            LogWriter.Default.Write($"[PingSprite] Ping sprite {newVE.ping_sprite?.texture.NiceName()} registered in atlas");
+            //        }
+            //        else
+            //            LogWriter.Default.Error($"[PingSprite] SpriteManager.mapping contained group {group} but Atlas.GetAtlas returned null. Cannot register ping sprite.");
+
+
+            //    }
+            //    else
+            //    {
+            //        LogWriter.Default.Error($"[PingSprite] SpriteManager.mapping did not contain group {group}. Cannot register ping sprite.");
+            //    }
+
+
+            //}
+            //if (SpriteManager.groups == null)
+            //    LogWriter.Default.Error("[PingSprite] SpriteManager.groups was null. Cannot register ping sprite.");
+            //else
+            //{
+            //    if (SpriteManager.groups.TryGetValue(group, out var resourceGroup))
+            //    {
+            //        resourceGroup.Add(name, newVE.ping_sprite);
+            //        LogWriter.Default.Write($"[PingSprite] Ping sprite {newVE.ping_sprite?.texture.NiceName()} registered in group");
+            //    }
+            //    else
+            //        LogWriter.Default.Error($"[PingSprite] SpriteManager.groups did not contain group Pings. Cannot register ping sprite.");
+            //}
+
+        }
     }
 }

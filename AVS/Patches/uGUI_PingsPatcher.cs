@@ -1,6 +1,8 @@
-﻿using HarmonyLib;
+﻿using AVS.Log;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection.Emit;
 
 // PURPOSE: Allow ModVehicles to use (and have displayed) custom ping sprites.
@@ -19,15 +21,49 @@ namespace AVS
         [HarmonyPatch(nameof(uGUI_Pings.OnAdd))]
         static IEnumerable<CodeInstruction> uGUI_PingsOnAddTranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            CodeMatch GetPingTypeMatch = new CodeMatch(i => i.opcode == OpCodes.Callvirt && i.operand.ToString().Contains("System.String Get(PingType)"));
+
+            foreach (var instruction in instructions)
+                LogWriter.Default.Debug($"[uGUI_PingsPatcher] Instruction: '{instruction}' op '{instruction.operand}' code '{instruction.opcode}'");
+            var loadInstance = instructions.FirstOrDefault(i => i.opcode == OpCodes.Ldarg_1);
+            var loadPingType = instructions.FirstOrDefault(i => i.opcode == OpCodes.Ldfld && i.operand.ToString() == "PingType pingType");
+            if (loadInstance == null || loadPingType == null)
+            {
+                LogWriter.Default.Error("[uGUI_PingsPatcher] Failed to find required instructions for patching.");
+                return instructions;
+            }
+            LogWriter.Default.Debug($"[uGUI_PingsPatcher] loadInstance: '{loadInstance}' op '{loadInstance.operand}' code '{loadInstance.opcode}'");
+            LogWriter.Default.Debug($"[uGUI_PingsPatcher] loadPingType: '{loadPingType}' op '{loadPingType.operand}' code '{loadPingType.opcode}'");
+
+
+            CodeMatch SetIconMatch = new CodeMatch(i => i.opcode == OpCodes.Callvirt && i.operand.ToString().Contains("Void SetIcon(Sprite)"));
             var newInstructions = new CodeMatcher(instructions)
-                .MatchStartForward(GetPingTypeMatch)
+                .MatchStartForward(SetIconMatch)
                 .Repeat(x =>
                     x.RemoveInstruction()
-                    .InsertAndAdvance(Transpilers.EmitDelegate<Func<CachedEnumString<PingType>, PingType, string>>(AvsVehicleBuilder.GetPingTypeString))
-                    .RemoveInstruction()
-                    .Insert(Transpilers.EmitDelegate<Func<SpriteManager.Group, string, Atlas.Sprite?>>(AvsVehicleBuilder.GetPingTypeSprite))
+                    .InsertAndAdvance(loadInstance)
+                    .InsertAndAdvance(loadPingType)
+                    .InsertAndAdvance(Transpilers
+                        .EmitDelegate<Action<uGUI_Ping, Atlas.Sprite, PingType>>
+                        (AvsVehicleBuilder.SetIcon))
                 );
+
+
+            //var loadThis = newInstructions.EnumerateMatches()
+            //    .FirstOrDefault(m => m.IsMatch && m.MatchCount == 1 && m.InstructionList.Count > 0);
+
+            //CodeMatch VFGetPingTypeMatch = new CodeMatch(i => i.opcode == OpCodes.Call && i.operand.ToString().Contains("System.String GetPingTypeString(CachedEnumString`1[PingType], PingType)"));
+            //var newInstructions2 = new CodeMatcher(newInstructions.InstructionEnumeration())
+            //    .MatchStartForward(VFGetPingTypeMatch)
+            //    .Repeat(x =>
+            //        x.RemoveInstruction()
+            //        .InsertAndAdvance(Transpilers.EmitDelegate<Func<CachedEnumString<PingType>, PingType, string>>(AvsVehicleBuilder.GetPingTypeString))
+            //        .RemoveInstruction()
+            //        .Insert(Transpilers.EmitDelegate<Func<SpriteManager.Group, string, Atlas.Sprite?>>(AvsVehicleBuilder.GetPingTypeSprite))
+            //        );
+            foreach (var instruction in newInstructions.InstructionEnumeration())
+                LogWriter.Default.Debug($"[uGUI_PingsPatcher] Emitting:: '{instruction}' op '{instruction.operand}' code '{instruction.opcode}'");
+
+
             return newInstructions.InstructionEnumeration();
         }
     }

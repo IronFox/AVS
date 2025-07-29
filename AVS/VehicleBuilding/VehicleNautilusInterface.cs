@@ -68,7 +68,7 @@ namespace AVS
                 TechType techType = VehicleNautilusInterface.RegisterVehicle(ve);
                 VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, $"Patched the {ve.name} Craftable");
                 VehicleEntry newVE = new VehicleEntry(ve.mv, ve.unique_id, ve.pt, ve.ping_sprite, techType);
-                VehicleManager.VehicleTypes.Add(newVE);
+                VehicleManager.Add(newVE);
             }
             catch (System.Exception e)
             {

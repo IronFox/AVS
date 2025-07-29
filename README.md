@@ -51,5 +51,6 @@ Create the required publicized Subnautica DLL:
 1) dotnet tool install -g BepInEx.AssemblyPublicizer.Cli
 2) mkdir -Force "$Env:SUBNAUTICA_PATH\Subnautica_Data\Managed\publicized_assemblies"
 3) assembly-publicizer "$Env:SUBNAUTICA_PATH\Subnautica_Data\Managed\Assembly-CSharp.dll" -o "$Env:SUBNAUTICA_PATH\Subnautica_Data\Managed\publicized_assemblies\Assembly-CSharp_publicized.dll"
+4) assembly-publicizer "$Env:SUBNAUTICA_PATH\Subnautica_Data\Managed\Assembly-CSharp-firstpass.dll" -o "$Env:SUBNAUTICA_PATH\Subnautica_Data\Managed\publicized_assemblies\Assembly-CSharp-firstpass_publicized.dll"
 
 It should now build and produce the dll required for mod creation.

@@ -809,6 +809,31 @@ namespace AVS
             return SpriteManager.Get(SpriteManager.Group.Pings, name);
         }
 
+        internal static void SetIcon(uGUI_Ping ping, Atlas.Sprite sprite, PingType inputType)
+        {
+            foreach (VehicleEntry ve in VehicleManager.VehicleTypes)
+            {
+                if (ve.pt == inputType)
+                {
+                    LogWriter.Default.Debug($"[AvsVehicleBuilder] Setting icon for ping {ping.name} of type {inputType} to sprite {ve.ping_sprite?.texture.NiceName()}");
+                    ping.SetIcon(ve.ping_sprite);
+                    return;
+                }
+            }
+            foreach (var pair in Assets.SpriteHelper.PingSprites)
+            {
+                if (pair.Type == inputType)
+                {
+                    LogWriter.Default.Debug($"[AvsVehicleBuilder] Setting icon for ping {ping.name} of type {inputType} to sprite {pair.Sprite?.texture.NiceName()}");
+                    ping.SetIcon(pair.Sprite);
+                    return;
+                }
+            }
+
+            LogWriter.Default.Debug($"[AvsVehicleBuilder] No custom icons found: Setting icon for ping {ping.name} of type {inputType} to sprite {sprite?.texture.NiceName()}");
+            ping.SetIcon(sprite);   //no op
+        }
+
         /*
         //https://github.com/Metious/MetiousSubnauticaMods/blob/master/CustomDataboxes/API/Databox.cs
         public static void VehicleDataboxPatch(CustomDataboxes.API.Databox databox)
