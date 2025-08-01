@@ -234,6 +234,11 @@ namespace AVS.BaseVehicle
         /// </summary>
         public bool AnticipatePlayerIssues { get; set; } = false;
 
+        /// <summary>
+        /// Reference to the custom emitter used for crush damage sounds.
+        /// </summary>
+        public GameObject? crushDamageEmitter;
+
         ///<inheritdoc />
         public override void Update()
         {
@@ -247,6 +252,15 @@ namespace AVS.BaseVehicle
                 }
                 return;
             }
+
+            if (crushDamageEmitter != null)
+            {
+                if (IsBoarded)
+                    crushDamageEmitter.transform.position = Player.main.camRoot.transform.position;
+                else
+                    crushDamageEmitter.transform.position = transform.position;
+            }
+
             if (AnticipatePlayerIssues)
             {
                 if (!isScuttled

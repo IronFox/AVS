@@ -1542,6 +1542,11 @@
             exists the vehicle or enters helm control.
             </summary>
         </member>
+        <member name="F:AVS.BaseVehicle.AvsVehicle.crushDamageEmitter">
+            <summary>
+            Reference to the custom emitter used for crush damage sounds.
+            </summary>
+        </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.Update">
             <inheritdoc />
         </member>
@@ -2822,6 +2827,11 @@
             Absolute damage dealt to the vehicle when it decended below its crush depth.
             </summary>
         </member>
+        <member name="P:AVS.Configuration.VehicleConfiguration.CrushDamageFrequency">
+            <summary>
+            Number of times per second the vehicle will take damage when below its crush depth.
+            </summary>
+        </member>
         <member name="P:AVS.Configuration.VehicleConfiguration.GhostAdultBiteDamage">
             <summary>
             Absolute damage dealt to the vehicle when it is bit by a adult ghost leviathan.
@@ -2879,11 +2889,6 @@
         <member name="P:AVS.Configuration.VehicleConfiguration.CrushDepthUpgrade3">
             <summary>
             Crush depth increase if a level 3 depth upgrade is installed.
-            </summary>
-        </member>
-        <member name="P:AVS.Configuration.VehicleConfiguration.CrushDamageFrequency">
-            <summary>
-            Number of times per second the vehicle will take damage when below its crush depth.
             </summary>
         </member>
         <member name="P:AVS.Configuration.VehicleConfiguration.PilotingStyle">
@@ -2971,7 +2976,7 @@
             True if the HUD temperature display is in Fahrenheit.
             </summary>
         </member>
-        <member name="M:AVS.Configuration.VehicleConfiguration.#ctor(Atlas.Sprite,UnityEngine.Sprite,UnityEngine.Sprite,UnityEngine.Sprite,Atlas.Sprite,System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},AVS.MaterialAdapt.IMaterialAdaptConfig,AVS.Configuration.Recipe,System.Boolean,System.String,System.String,UnityEngine.Sprite,TechType,System.Int32,System.Int32,System.Single,System.Single,System.Single,System.Int32,System.Int32,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Single,AVS.BaseVehicle.AvsVehicle.PilotingStyle,System.Single,System.Nullable{UnityEngine.Color},System.Nullable{UnityEngine.Color},System.Boolean,System.Boolean,System.Nullable{UnityEngine.Quaternion},System.Boolean,System.Func{System.Single},System.Func{System.Boolean},System.Boolean)">
+        <member name="M:AVS.Configuration.VehicleConfiguration.#ctor(Atlas.Sprite,UnityEngine.Sprite,UnityEngine.Sprite,UnityEngine.Sprite,Atlas.Sprite,System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},AVS.MaterialAdapt.IMaterialAdaptConfig,AVS.Configuration.Recipe,System.Boolean,System.String,System.String,UnityEngine.Sprite,TechType,System.Int32,System.Nullable{System.Int32},System.Single,System.Single,System.Single,System.Int32,System.Int32,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Single,AVS.BaseVehicle.AvsVehicle.PilotingStyle,System.Single,System.Nullable{UnityEngine.Color},System.Nullable{UnityEngine.Color},System.Boolean,System.Boolean,System.Nullable{UnityEngine.Quaternion},System.Boolean,System.Func{System.Single},System.Func{System.Boolean},System.Boolean)">
             <summary>
             Initializes a new instance of the <see cref="T:AVS.Configuration.VehicleConfiguration"/> class with the specified parameters.
             </summary>

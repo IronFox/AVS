@@ -70,6 +70,11 @@ namespace AVS.Configuration
         /// </summary>
         public int CrushDamage { get; } = 7; //= MaxHealth / 15;
         /// <summary>
+        /// Number of times per second the vehicle will take damage when below its crush depth.
+        /// </summary>
+        public float CrushDamageFrequency { get; } = 1;
+
+        /// <summary>
         /// Absolute damage dealt to the vehicle when it is bit by a adult ghost leviathan.
         /// </summary>
         public float GhostAdultBiteDamage { get; } = 150f;
@@ -118,10 +123,7 @@ namespace AVS.Configuration
         /// Crush depth increase if a level 3 depth upgrade is installed.
         /// </summary>
         public int CrushDepthUpgrade3 { get; } = 600;
-        /// <summary>
-        /// Number of times per second the vehicle will take damage when below its crush depth.
-        /// </summary>
-        public float CrushDamageFrequency { get; } = 1;
+
         /// <summary>
         /// The piloting style of the vehicle. Affects player animations.
         /// </summary>
@@ -267,7 +269,7 @@ namespace AVS.Configuration
             Sprite? encyclopediaImage = null,
             TechType unlockedWith = TechType.Constructor,
             int maxHealth = 100,
-            int crushDamage = 7,
+            int? crushDamage = null,
             float ghostAdultBiteDamage = 150f,
             float ghostJuvenileBiteDamage = 100f,
             float reaperBiteDamage = 120f,
@@ -319,7 +321,7 @@ namespace AVS.Configuration
             ModuleBackgroundImage = moduleBackgroundImage ?? SpriteHelper.GetSpriteRaw("Sprites/VFModuleBackground.png");
             UnlockedWith = unlockedWith;
             MaxHealth = maxHealth;
-            CrushDamage = crushDamage;
+            CrushDamage = crushDamage ?? (maxHealth / 15);
             GhostAdultBiteDamage = ghostAdultBiteDamage;
             GhostJuvenileBiteDamage = ghostJuvenileBiteDamage;
             ReaperBiteDamage = reaperBiteDamage;

@@ -407,14 +407,21 @@ namespace AVS
         }
         public static void SetupCrushDamage(AvsVehicle mv, GameObject seamoth)
         {
-            var ce = mv.gameObject.AddComponent<FMOD_CustomEmitter>();
+            var container = new GameObject("CrushDamageContainer");
+            container.transform.SetParent(mv.transform);
+            var ce = container.AddComponent<FMOD_CustomEmitter>();
             ce.restartOnPlay = true;
             foreach (var thisCE in seamoth.GetComponentsInChildren<FMOD_CustomEmitter>())
             {
                 if (thisCE.name == "crushDamageSound")
                 {
                     ce.asset = thisCE.asset;
+                    LogWriter.Default.Write("Found crush damage sound for " + mv.name);
                 }
+            }
+            if (ce.asset == null)
+            {
+                LogWriter.Default.Error("Failed to find crush damage sound for " + mv.name);
             }
             /* For reference,
              * Prawn dies from max health in 3:00 minutes.
@@ -422,6 +429,7 @@ namespace AVS
              * Cyclops in 3:45
              * So ModVehicles can die in 3:00 as well
              */
+            mv.crushDamageEmitter = container;
             mv.crushDamage = mv.gameObject.EnsureComponent<CrushDamage>();
             mv.crushDamage.soundOnDamage = ce;
             mv.crushDamage.kBaseCrushDepth = mv.Config.BaseCrushDepth;
@@ -431,6 +439,9 @@ namespace AVS
             mv.crushDamage.liveMixin = mv.liveMixin;
             // TODO: this is of type VoiceNotification
             mv.crushDamage.crushDepthUpdate = null;
+
+            LogWriter.Default.Write("Crush sound registered: " + mv.crushDamage.soundOnDamage.NiceName());
+
         }
         public static void SetupWaterClipping(AvsVehicle mv, GameObject seamoth)
         {
