@@ -1,6 +1,7 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Crafting;
 using AVS.Localization;
+using AVS.Log;
 using AVS.UpgradeModules;
 using System;
 using System.Collections;
@@ -49,6 +50,8 @@ namespace AVS.Admin
         /// </summary>
         public static void RegisterDepthModules()
         {
+            LogWriter.Default.Write(
+                "Registering depth modules");
             var folder = Node.Create(
                 "DepthModules",
                 Translator.Get(TranslationKey.Fabricator_Node_DepthModules),
@@ -56,15 +59,23 @@ namespace AVS.Admin
 
 
             UpgradeCompat compat = UpgradeCompat.AvsVehiclesOnly;
-            UpgradeTechTypes depth1 = folder.RegisterUpgrade(new DepthModule1(), compat);
+            var depthmodule1 = new DepthModule1();
+            folder.RegisterUpgrade(depthmodule1, compat);
 
             var depthmodule2 = new DepthModule2();
-            depthmodule2.ExtendRecipe(depth1);
-            UpgradeTechTypes depth2 = folder.RegisterUpgrade(depthmodule2, compat);
+            depthmodule2.ExtendRecipe(depthmodule1);
+            folder.RegisterUpgrade(depthmodule2, compat);
 
             var depthmodule3 = new DepthModule3();
-            depthmodule3.ExtendRecipe(depth2);
-            UpgradeTechTypes depth3 = folder.RegisterUpgrade(depthmodule3, compat);
+            depthmodule3.ExtendRecipe(depthmodule2);
+            folder.RegisterUpgrade(depthmodule3, compat);
+
+            DepthModuleBase.AllDepthModuleTypes.AddRange(depthmodule1.TechTypes.AllNotNone);
+            DepthModuleBase.AllDepthModuleTypes.AddRange(depthmodule2.TechTypes.AllNotNone);
+            DepthModuleBase.AllDepthModuleTypes.AddRange(depthmodule3.TechTypes.AllNotNone);
+            LogWriter.Default.Write(
+                "Registered depth modules: " +
+                string.Join(", ", DepthModuleBase.AllDepthModuleTypes.Select(x => x.ToString())));
         }
 
 

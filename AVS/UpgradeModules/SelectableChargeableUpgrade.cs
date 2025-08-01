@@ -6,7 +6,7 @@
     /// <remarks>This abstract class provides a base for creating upgrade modules that require selection and
     /// charging in a vehicle's quick slot. It defines properties for description, quick slot type, maximum charge, and
     /// energy cost, as well as a method to handle selection actions.</remarks>
-    public abstract class SelectableChargeableUpgrade : AvsVehicleUpgrade
+    public abstract class SelectableChargeableUpgrade : AvsVehicleModule
     {
         /// <inheritdoc/>
         public override string Description => "This is a selectable-chargeable upgrade module.";

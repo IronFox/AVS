@@ -13,6 +13,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DepthModules\**" />
+    <EmbeddedResource Remove="DepthModules\**" />
+    <None Remove="DepthModules\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="0Harmony">
       <HintPath>$(SUBNAUTICA_PATH)\BepInEx\core\0Harmony.dll</HintPath>
     </Reference>
@@ -104,10 +110,6 @@
     <Reference Include="UnityEngine.XRModule">
       <HintPath>$(SUBNAUTICA_PATH)\Subnautica_Data\Managed\UnityEngine.XRModule.dll</HintPath>
     </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="DepthModules\" />
   </ItemGroup>
   
 </Project>

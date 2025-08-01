@@ -31,7 +31,7 @@ namespace AVS.UpgradeModules
         public Atlas.Sprite? Icon { get; }
 
         internal Dictionary<string, Node> Children { get; } = new Dictionary<string, Node>();
-        internal List<AvsVehicleUpgrade> Modules { get; } = new List<AvsVehicleUpgrade>();
+        internal List<AvsVehicleModule> Modules { get; } = new List<AvsVehicleModule>();
 
 
         private Node(
@@ -79,7 +79,7 @@ namespace AVS.UpgradeModules
         /// <param name="upgrade">The upgrade the register.</param>
         /// <param name="compat">The compatibility settings for the upgrade. Defaults to the standard compatibility if not specified.</param>
         /// <returns>The type of upgrade technology registered for the node.</returns>
-        public UpgradeTechTypes RegisterUpgrade(AvsVehicleUpgrade upgrade, UpgradeCompat compat = default)
+        public UpgradeTechTypes RegisterUpgrade(AvsVehicleModule upgrade, UpgradeCompat compat = default)
         {
             upgrade.SetNode(this);
             return UpgradeRegistrar.RegisterUpgrade(

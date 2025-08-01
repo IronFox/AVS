@@ -1,8 +1,6 @@
 ﻿
 using AVS;
 using AVS.BaseVehicle;
-using AVS.Crafting;
-using AVS.Localization;
 using AVS.UpgradeModules;
 using System;
 using System.Collections;
@@ -39,28 +37,6 @@ public static class AvsUtils
             return vh == Player.main.GetVehicle();
         }
         return FindVehicleInParents(current.parent, out vehicle, checkedAncestry);
-    }
-    /// <summary>
-    /// Registers the common depth modules for vehicles.
-    /// </summary>
-    public static void RegisterDepthModules()
-    {
-        var folder = Node.Create(
-            "DepthModules",
-            Translator.Get(TranslationKey.Fabricator_Node_DepthModules),
-            MainPatcher.Instance.DepthModuleNodeIcon);
-
-
-        UpgradeCompat compat = UpgradeCompat.AvsVehiclesOnly;
-        UpgradeTechTypes depth1 = folder.RegisterUpgrade(new DepthModule1(), compat);
-
-        var depthmodule2 = new DepthModule2();
-        depthmodule2.ExtendRecipe(depth1);
-        UpgradeTechTypes depth2 = folder.RegisterUpgrade(depthmodule2, compat);
-
-        var depthmodule3 = new DepthModule3();
-        depthmodule3.ExtendRecipe(depth2);
-        UpgradeTechTypes depth3 = folder.RegisterUpgrade(depthmodule3, compat);
     }
 
 

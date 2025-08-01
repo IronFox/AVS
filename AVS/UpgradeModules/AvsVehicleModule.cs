@@ -1,5 +1,6 @@
 ﻿using AVS.Configuration;
 using AVS.Crafting;
+using AVS.Log;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,9 +9,10 @@ using UnityEngine;
 namespace AVS.UpgradeModules
 {
     /// <summary>
-    /// Base class for all mod vehicle upgrades. Provides core properties, recipe handling, and extension points for custom upgrades.
+    /// Base class for all mod vehicle upgrades.
+    /// Provides core properties and recipe handling.
     /// </summary>
-    public abstract class AvsVehicleUpgrade : ILogFilter
+    public abstract class AvsVehicleModule : ILogFilter
     {
         /// <summary>
         /// If true, enables debug logging for this upgrade.
@@ -18,42 +20,30 @@ namespace AVS.UpgradeModules
         public bool LogDebug { get; set; } = false;
 
         /// <summary>
-        /// Holds TechTypes for this upgrade for each supported vehicle type.
+        /// The registered tech types of this upgrade.
+        /// Available once the upgrade has been registered.
         /// </summary>
         public UpgradeTechTypes TechTypes { get; internal set; }
+
+        /// <summary>
+        /// The last set sepcific tech type for this upgrade.
+        /// Used to daisy chain unlock conditions.
+        /// </summary>
+        internal TechType LastRegisteredTechType { get; set; } = TechType.None;
 
         internal Node? node;
 
         /// <summary>
-        /// The node this upgrade is registered to.
-        /// Set during registration.
+        /// The node this upgrade has been registered to.
+        /// Available once the upgrade has been registered.
         /// </summary>
-        public Node Node => node ?? throw new InvalidOperationException($"Cannot access {nameof(AvsVehicleUpgrade)}.{nameof(Node)} before it has been registered");
-
-        private TechType _unlockTechType = TechType.Fragment;
+        public Node Node => node ?? throw new InvalidOperationException($"Cannot access {nameof(AvsVehicleModule)}.{nameof(Node)} before it has been registered");
 
         /// <summary>
         /// Gets a value indicating whether the item is specific to a vehicle.
         /// </summary>
         public virtual bool IsVehicleSpecific => false;
 
-        /// <summary>
-        /// The TechType used to unlock this upgrade. Can only be set once if the default is <see cref="TechType.Fragment"/>.
-        /// </summary>
-        internal TechType UnlockTechType
-        {
-            get
-            {
-                return _unlockTechType;
-            }
-            set
-            {
-                if (_unlockTechType == TechType.Fragment)
-                {
-                    _unlockTechType = value;
-                }
-            }
-        }
 
         /// <summary>
         /// The unique class ID for this upgrade.
@@ -122,12 +112,64 @@ namespace AVS.UpgradeModules
         public virtual Recipe Recipe { get; } = NewRecipe.StartWith(TechType.Titanium, 1).Done();
 
         /// <summary>
+        /// Module types that are automatically displaced when this upgrade is added to a vehicle.
+        /// </summary>
+        public virtual IReadOnlyCollection<TechType>? AutoDisplace => null;
+
+        /// <summary>
         /// Called when this upgrade is added to a vehicle.
         /// </summary>
         /// <param name="param">Parameters for the add action.</param>
         public virtual void OnAdded(AddActionParams param)
         {
-            Logger.DebugLog(this, "Adding " + ClassId + " to ModVehicle: " + param.vehicle.subName.name + " in slotID: " + param.slotID.ToString());
+            var now = DateTime.Now;
+
+            LogWriter.Default.Debug($"ArchonBaseModule[{ClassId}].OnAdded(vehicle={param.vehicle},isAdded={param.isAdded},slot={param.slotID})");
+
+            if (AutoDisplace != null)
+            {
+                LogWriter.Default.Write($"Auto-displacing modules for {ClassId} in vehicle {param.vehicle.subName.name} at slot {param.slotID}");
+                try
+                {
+                    foreach (var slot in param.vehicle.slotIDs)
+                    {
+                        if (slot == param.vehicle.slotIDs[param.slotID])
+                            continue;
+                        var p = param.vehicle.modules.GetItemInSlot(slot);
+                        if (p != null)
+                        {
+                            var t = p.item.GetComponent<TechTag>();
+                            if (t != null)
+                            {
+                                if (AutoDisplace.Contains(t.type))
+                                {
+                                    LogWriter.Default.Write($"Evacuating extra {t.type} type from slot {slot}");
+                                    if (!param.vehicle.modules.RemoveItem(p.item))
+                                    {
+                                        LogWriter.Default.Error($"Failed remove");
+                                        continue;
+                                    }
+                                    Inventory.main.AddPending(p.item);
+                                    LogWriter.Default.Write($"Inventory moved");
+                                    break;
+                                }
+                                else
+                                {
+                                    LogWriter.Default.Debug($"Skipping {t.type} in slot {slot} for auto-displacement because it is not in {string.Join(", ", AutoDisplace)}");
+                                }
+                            }
+                            else
+                            {
+                                LogWriter.Default.Error($"No TechTag on item {p.item.name} in slot {slot} for auto-displacement");
+                            }
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    LogWriter.Default.Error($"Error while removing auto-displaced modules: {e.Message}", e);
+                }
+            }
         }
 
         /// <summary>
@@ -148,15 +190,24 @@ namespace AVS.UpgradeModules
             Logger.DebugLog(this, "Bumping " + ClassId + " In Cyclops: '" + param.cyclops.subName + "' in slotID: " + param.slotID.ToString());
         }
 
-        /// <summary>
-        /// Holds additional TechTypes to extend the recipe for different vehicle types.
-        /// </summary>
-        private List<UpgradeTechTypes> RecipeExtensions { get; } = new List<UpgradeTechTypes>();
+        internal void RegisterTechTypeFor(VehicleType vType, TechType newType)
+        {
+            TechTypes = TechTypes.ReplaceVehicleType(vType, newType, false);
+            LastRegisteredTechType = newType;
+        }
+
+
+        private List<AvsVehicleModule> RecipeExtensions { get; } = new List<AvsVehicleModule>();
 
         /// <summary>
         /// Holds additional simple ingredients to extend the recipe.
         /// </summary>
         private NewRecipe SimpleRecipeExtensions { get; } = NewRecipe.WithNothing();
+
+        /// <summary>
+        /// The tech type this one effectively unlocks with.
+        /// </summary>
+        internal TechType UnlockTechType => LastRegisteredTechType == TechType.None ? UnlockWith : LastRegisteredTechType;
 
         /// <summary>
         /// Gets the full recipe for this upgrade for a specific vehicle type.
@@ -174,16 +225,16 @@ namespace AVS.UpgradeModules
             switch (type)
             {
                 case VehicleType.AvsVehicle:
-                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.ForAvsVehicle));
+                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.TechTypes.ForAvsVehicle));
                     break;
                 case VehicleType.Seamoth:
-                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.ForSeamoth));
+                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.TechTypes.ForSeamoth));
                     break;
                 case VehicleType.Prawn:
-                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.ForExosuit));
+                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.TechTypes.ForExosuit));
                     break;
                 case VehicleType.Cyclops:
-                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.ForCyclops));
+                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.TechTypes.ForCyclops));
                     break;
                 default:
                     break;
@@ -192,12 +243,12 @@ namespace AVS.UpgradeModules
         }
 
         /// <summary>
-        /// Adds an <see cref="UpgradeTechTypes"/> to the recipe extensions.
+        /// Adds the given module as a single extension to the local recipe
         /// </summary>
-        /// <param name="techTypes">The tech types to add.</param>
-        public void ExtendRecipe(UpgradeTechTypes techTypes)
+        /// <param name="module">The module to add.</param>
+        public void ExtendRecipe(AvsVehicleModule module)
         {
-            RecipeExtensions.Add(techTypes);
+            RecipeExtensions.Add(module);
         }
 
         /// <summary>
@@ -234,7 +285,7 @@ namespace AVS.UpgradeModules
         internal void SetNode(Node node)
         {
             if (this.node != null && this.node != node)
-                throw new InvalidOperationException($"Trying to reset {nameof(AvsVehicleUpgrade)}.{nameof(Node)} from {this.node} to {node}");
+                throw new InvalidOperationException($"Trying to reset {nameof(AvsVehicleModule)}.{nameof(Node)} from {this.node} to {node}");
             this.node = node;
 
         }

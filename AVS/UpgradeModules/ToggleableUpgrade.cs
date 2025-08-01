@@ -2,7 +2,7 @@
 
 namespace AVS.Crafting
 {
-    public abstract class ToggleableUpgrade : AvsVehicleUpgrade
+    public abstract class ToggleableUpgrade : AvsVehicleModule
     {
         public override string Description => "This is a toggleable upgrade module.";
         public override QuickSlotType QuickSlotType => QuickSlotType.Toggleable;

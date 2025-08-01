@@ -1,6 +1,6 @@
 ﻿namespace AVS.UpgradeModules
 {
-    public abstract class SelectableUpgrade : AvsVehicleUpgrade
+    public abstract class SelectableUpgrade : AvsVehicleModule
     {
         public override string Description => "This is a selectable upgrade module.";
         public override QuickSlotType QuickSlotType => QuickSlotType.Selectable;
@@ -10,5 +10,6 @@
         {
             Logger.DebugLog(this, "Selecting " + ClassId + " on ModVehicle: " + param.Vehicle.subName.name + " in slotID: " + param.SlotID.ToString());
         }
+
     }
 }
