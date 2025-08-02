@@ -15,7 +15,8 @@ namespace AVS.BaseVehicle
         /// Unity instantiation will not preserve them.
         /// Since the vehicle has multiple custom emitters, we cannot
         /// fetch it during Awake()</remarks>
-        public FMOD_CustomEmitter? lightsOffSound;
+        [SerializeField]
+        private FMOD_CustomEmitter? lightsOffSound;
 
         /// <summary>
         /// Use <see cref="LightsOnSound"/> instead.
@@ -24,7 +25,8 @@ namespace AVS.BaseVehicle
         /// Unity instantiation will not preserve them.
         /// Since the vehicle has multiple custom emitters, we cannot
         /// fetch it during Awake()</remarks>
-        public FMOD_CustomEmitter? lightsOnSound;
+        [SerializeField]
+        private FMOD_CustomEmitter? lightsOnSound;
 
         /// <summary>
         /// Sound to play when the vehicle lights are turned on.

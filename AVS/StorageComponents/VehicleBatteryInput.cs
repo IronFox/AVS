@@ -1,5 +1,6 @@
 ﻿//using AVS.Localization;
 using AVS.BaseVehicle;
+using AVS.Localization;
 using UnityEngine;
 
 namespace AVS
@@ -8,14 +9,12 @@ namespace AVS
     {
         public EnergyMixin? mixin;
 
-        // need this SerializeField attribute or else assignment in
-        // VehicleBuilder is not propogated to instances
         [SerializeField]
-        internal string? tooltip;
+        internal TranslationKey translationKey = TranslationKey.HandOver_BatterySlot;
 
         public void OnHandHover(GUIHand hand)
         {
-            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Language.main.Get(tooltip));
+            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(translationKey));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
 

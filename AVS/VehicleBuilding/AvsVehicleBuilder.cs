@@ -12,7 +12,7 @@ using UnityEngine;
 
 namespace AVS
 {
-    public struct VehicleEntry
+    internal struct VehicleEntry
     {
         public VehicleEntry(AvsVehicle inputMv, int id, PingType pt_in, Atlas.Sprite? sprite, TechType tt = (TechType)0)
         {
@@ -31,7 +31,7 @@ namespace AVS
         public TechType techType;
     }
 
-    public static class AvsVehicleBuilder
+    internal static class AvsVehicleBuilder
     {
         public static GameObject? UpgradeConsole { get; internal set; }
 
@@ -65,7 +65,7 @@ namespace AVS
         }
 
         #region setup_funcs
-        public static bool SetupObjects(AvsVehicle mv)
+        private static bool SetupObjects(AvsVehicle mv)
         {
             // Wow, look at this:
             // This Nautilus line might be super nice if it works for us
@@ -113,7 +113,7 @@ namespace AVS
                 mv.Com.BoundingBoxCollider.enabled = false;
             return true;
         }
-        public static bool SetupObjects(Submarine mv)
+        private static bool SetupObjects(Submarine mv)
         {
             try
             {
@@ -166,7 +166,7 @@ namespace AVS
             }
             return true;
         }
-        public static bool SetupObjects(Submersible mv)
+        private static bool SetupObjects(Submersible mv)
         {
             try
             {
@@ -196,11 +196,11 @@ namespace AVS
             // Configure the Control Panel
             return true;
         }
-        public static void SetupEnergyInterface(AvsVehicle mv)
+        private static void SetupEnergyInterface(AvsVehicle mv)
         {
             var seamothEnergyMixin = SeamothHelper.RequireSeamoth.GetComponent<EnergyMixin>();
             List<EnergyMixin> energyMixins = new List<EnergyMixin>();
-            if (mv.Com.Batteries.Count() == 0)
+            if (mv.Com.Batteries.Count == 0)
             {
                 // Configure energy mixin for this battery slot
                 var energyMixin = mv.gameObject.AddComponent<VehicleComponents.ForeverBattery>();
@@ -230,7 +230,6 @@ namespace AVS
                 energyMixins.Add(energyMixin);
                 var tmp = vb.BatterySlot.EnsureComponent<VehicleBatteryInput>();
                 tmp.mixin = energyMixin;
-                tmp.tooltip = "VFVehicleBattery";
 
                 var model = vb.BatterySlot.gameObject.EnsureComponent<StorageComponents.BatteryProxy>();
                 model.proxy = vb.BatteryProxy;
@@ -247,38 +246,18 @@ namespace AVS
             mv.chargingSound = mv.gameObject.AddComponent<FMOD_CustomLoopingEmitter>();
             mv.chargingSound.asset = SeamothHelper.RequireSeamoth.GetComponent<SeaMoth>().chargingSound.asset;
         }
-        public static void SetupAIEnergyInterface(AvsVehicle mv, GameObject seamoth)
+        private static void SetupAIEnergyInterface(AvsVehicle mv, GameObject seamoth)
         {
             mv.SetupAIEnergyInterface(seamoth);
 
         }
-        public static void SetupLightSounds(AvsVehicle mv)
+        private static void SetupLightSounds(AvsVehicle mv)
         {
             mv.Log.Debug("Setting up light sounds for " + mv.name);
             FMOD_StudioEventEmitter[] fmods = SeamothHelper.RequireSeamoth.GetComponents<FMOD_StudioEventEmitter>();
-            foreach (FMOD_StudioEventEmitter fmod in fmods)
-            {
-                if (fmod.asset.name == "seamoth_light_on")
-                {
-                    mv.Log.Debug("Found light on sound for " + mv.name);
-                    var ce = mv.gameObject.AddComponent<FMOD_CustomEmitter>();
-                    ce.asset = fmod.asset;
-                    mv.lightsOnSound = ce;
-                }
-                else if (fmod.asset.name == "seamoth_light_off")
-                {
-                    mv.Log.Debug("Found light off sound for " + mv.name);
-                    var ce = mv.gameObject.AddComponent<FMOD_CustomEmitter>();
-                    ce.asset = fmod.asset;
-                    mv.lightsOffSound = ce;
-                }
-            }
-            if (mv.lightsOnSound == null || mv.lightsOffSound == null)
-            {
-                mv.Log.Error("Failed to find light sounds for " + mv.name);
-            }
+            mv.SetupLightSounds(fmods);
         }
-        public static void SetupHeadLights(AvsVehicle mv)
+        private static void SetupHeadLights(AvsVehicle mv)
         {
             GameObject seamothHeadLight = SeamothHelper.RequireSeamoth.transform.Find("lights_parent/light_left").gameObject;
             if (mv.Com.HeadLights != null)
@@ -301,7 +280,7 @@ namespace AVS
                 }
             }
         }
-        public static void SetupFloodLights(Submarine mv, GameObject seamoth)
+        private static void SetupFloodLights(Submarine mv, GameObject seamoth)
         {
             GameObject seamothHeadLight = seamoth.transform.Find("lights_parent/light_left").gameObject;
             if (mv.Com.FloodLights != null)
@@ -326,12 +305,8 @@ namespace AVS
                 }
             }
         }
-        public static void SetupVolumetricLights(AvsVehicle mv)
-        {
-            mv.SetupVolumetricLights();
 
-        }
-        public static void SetupLiveMixin(AvsVehicle mv)
+        private static void SetupLiveMixin(AvsVehicle mv)
         {
             var liveMixin = mv.gameObject.EnsureComponent<LiveMixin>();
             var lmData = ScriptableObject.CreateInstance<LiveMixinData>();
@@ -358,7 +333,7 @@ namespace AVS
             liveMixin.data = lmData;
             mv.liveMixin = liveMixin;
         }
-        public static void SetupRigidbody(AvsVehicle mv)
+        private static void SetupRigidbody(AvsVehicle mv)
         {
             var rb = mv.gameObject.EnsureComponent<Rigidbody>();
             /* 
@@ -377,7 +352,7 @@ namespace AVS
             mv.useRigidbody = rb;
         }
 
-        public static void SetupWorldForces(AvsVehicle mv, GameObject seamoth)
+        private static void SetupWorldForces(AvsVehicle mv, GameObject seamoth)
         {
             LogWriter.Default.Write("Setting up world forces for " + mv.name);
             mv.worldForces = seamoth
@@ -389,12 +364,12 @@ namespace AVS
             mv.worldForces.aboveWaterGravity = 9.8f;
             mv.worldForces.waterDepth = 0f;
         }
-        public static void SetupHudPing(AvsVehicle mv, PingType pingType)
+        private static void SetupHudPing(AvsVehicle mv, PingType pingType)
         {
             mv.PrefabSetupHudPing(pingType);
             VehicleManager.MvPings.Add(mv.HudPingInstance);
         }
-        public static void SetupVehicleConfig(AvsVehicle mv, GameObject seamoth)
+        private static void SetupVehicleConfig(AvsVehicle mv, GameObject seamoth)
         {
             // add various vehicle things
             mv.stabilizeRoll = true;
@@ -405,7 +380,7 @@ namespace AVS
             // TODO
             //atrama.vehicle.bubbles = CopyComponent<ParticleSystem>(seamoth.GetComponent<SeaMoth>().bubbles, atrama.vehicle.gameObject);
         }
-        public static void SetupCrushDamage(AvsVehicle mv, GameObject seamoth)
+        private static void SetupCrushDamage(AvsVehicle mv, GameObject seamoth)
         {
             var container = new GameObject("CrushDamageContainer");
             container.transform.SetParent(mv.transform);
@@ -443,7 +418,7 @@ namespace AVS
             LogWriter.Default.Write("Crush sound registered: " + mv.crushDamage.soundOnDamage.NiceName());
 
         }
-        public static void SetupWaterClipping(AvsVehicle mv, GameObject seamoth)
+        private static void SetupWaterClipping(AvsVehicle mv, GameObject seamoth)
         {
             if (mv.Com.WaterClipProxies != null)
             {
@@ -460,7 +435,7 @@ namespace AVS
                 }
             }
         }
-        public static void SetupSubName(AvsVehicle mv)
+        private static void SetupSubName(AvsVehicle mv)
         {
             var subname = mv.gameObject.EnsureComponent<SubName>();
             subname.pingInstance = mv.HudPingInstance;
@@ -469,7 +444,7 @@ namespace AVS
             mv.subName = subname;
             mv.SetName(mv.vehicleDefaultName);
         }
-        public static void SetupCollisionSound(AvsVehicle mv, GameObject seamoth)
+        private static void SetupCollisionSound(AvsVehicle mv, GameObject seamoth)
         {
             var colsound = mv.gameObject.EnsureComponent<CollisionSound>();
             var seamothColSound = seamoth.GetComponent<CollisionSound>();
@@ -478,16 +453,16 @@ namespace AVS
             colsound.hitSoundMedium = seamothColSound.hitSoundMedium;
             colsound.hitSoundFast = seamothColSound.hitSoundFast;
         }
-        public static void SetupOutOfBoundsWarp(AvsVehicle mv)
+        private static void SetupOutOfBoundsWarp(AvsVehicle mv)
         {
             mv.gameObject.EnsureComponent<OutOfBoundsWarp>();
         }
-        public static void SetupConstructionObstacle(AvsVehicle mv)
+        private static void SetupConstructionObstacle(AvsVehicle mv)
         {
             var co = mv.gameObject.EnsureComponent<ConstructionObstacle>();
             co.reason = mv.name + " is in the way.";
         }
-        public static void SetupSoundOnDamage(AvsVehicle mv, GameObject seamoth)
+        private static void SetupSoundOnDamage(AvsVehicle mv, GameObject seamoth)
         {
             // TODO: we could have unique sounds for each damage type
             // TODO: this might not work, might need to put it in a VehicleStatusListener
@@ -495,7 +470,7 @@ namespace AVS
             sod.damageType = DamageType.Normal;
             sod.sound = seamoth.GetComponent<SoundOnDamage>().sound;
         }
-        public static void SetupDealDamageOnImpact(AvsVehicle mv)
+        private static void SetupDealDamageOnImpact(AvsVehicle mv)
         {
             var ddoi = mv.gameObject.EnsureComponent<DealDamageOnImpact>();
             // NEWNEW
@@ -514,7 +489,7 @@ namespace AVS
             ddoi.prevPosition = Vector3.zero;
             ddoi.allowDamageToPlayer = false;
         }
-        public static void SetupDamageComponents(AvsVehicle mv, GameObject seamoth)
+        private static void SetupDamageComponents(AvsVehicle mv, GameObject seamoth)
         {
             // add vfxvehicledamages... or not
 
@@ -543,7 +518,7 @@ namespace AVS
             cr.addedComponents.Append(et as Component);
 
         }
-        public static void SetupLavaLarvaAttachPoints(AvsVehicle mv)
+        private static void SetupLavaLarvaAttachPoints(AvsVehicle mv)
         {
             if (mv.Com.LavaLarvaAttachPoints.Count > 0)
             {
@@ -571,7 +546,7 @@ namespace AVS
                 lavaLarvaTarget.attachPoints = llapList.ToArray();
             }
         }
-        public static void SetupSubRoot(Submarine mv, PowerRelay powerRelay)
+        private static void SetupSubRoot(Submarine mv, PowerRelay powerRelay)
         {
             var subroot = mv.gameObject.EnsureComponent<SubRoot>();
             subroot.rb = mv.useRigidbody;
@@ -587,14 +562,14 @@ namespace AVS
                 mv.Com.RespawnPoint.EnsureComponent<RespawnPoint>();
             }
         }
-        public static void SetupDenyBuildingTags(AvsVehicle mv)
+        private static void SetupDenyBuildingTags(AvsVehicle mv)
         {
             mv.Com.DenyBuildingColliders
                 .ForEach(x => x.tag = Builder.denyBuildingTag);
         }
 
         #endregion
-        public static bool Instrument(AvsVehicle mv, PingType pingType, GameObject seamoth)
+        private static bool Instrument(AvsVehicle mv, PingType pingType, GameObject seamoth)
         {
             LogWriter.Default.Write("Instrumenting " + mv.name + $" {mv.Id}");
             mv.Com.StorageRootObject.EnsureComponent<ChildObjectIdentifier>();
@@ -653,7 +628,7 @@ namespace AVS
 
             return true;
         }
-        public static void ApplyGlassMaterial(AvsVehicle mv, GameObject seamoth)
+        private static void ApplyGlassMaterial(AvsVehicle mv, GameObject seamoth)
         {
             // Add the [marmoset] shader to all renderers
             foreach (var renderer in mv.gameObject.GetComponentsInChildren<Renderer>(true))
@@ -675,7 +650,7 @@ namespace AVS
         //        ApplyGlassMaterial(mv);
         //    }
         //}
-        public static void ForceApplyShaders(AvsVehicle mv, Shader shader)
+        private static void ForceApplyShaders(AvsVehicle mv, Shader shader)
         {
             if (shader == null)
             {

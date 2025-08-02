@@ -4106,6 +4106,11 @@
             The undock console command did undock something.
             </summary>
         </member>
+        <member name="F:AVS.Localization.TranslationKey.HandOver_BatterySlot">
+            <summary>
+            Text displayed when the player hovers over a battery slot.
+            </summary>
+        </member>
         <member name="F:AVS.Localization.TranslationKey.HandHover_OpenStorage">
             <summary>
             Text displayed when the player hovers over a storage component.

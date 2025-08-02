@@ -289,6 +289,7 @@ namespace AVS.VehicleParts
         /// Model for the battery. Can be null
         /// </summary>
         public Transform BatteryProxy { get; }
+
         public VehicleBattery(GameObject batterySlot, Transform batteryProxy)
         {
             if (batterySlot == null)

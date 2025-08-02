@@ -62,6 +62,12 @@
         HandHover_ControlPanel_Autopilot,
 
         /// <summary>
+        /// Text displayed when the player hovers over a battery slot.
+        /// </summary>
+        HandOver_BatterySlot,
+        HandOver_AutoPilotBatterySlot,
+
+        /// <summary>
         /// Text displayed when the player hovers over a storage component.
         /// The first argument is the given display name of the storage component (which may also be localized).
         /// </summary>

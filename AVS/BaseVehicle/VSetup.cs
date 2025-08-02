@@ -289,7 +289,7 @@ namespace AVS.BaseVehicle
 
                 var tmp = vb.BatterySlot.EnsureComponent<VehicleBatteryInput>();
                 tmp.mixin = em;
-                tmp.tooltip = "VFAutoPilotBattery";
+                tmp.translationKey = TranslationKey.HandOver_AutoPilotBatterySlot;
 
                 var model = vb.BatterySlot.gameObject.EnsureComponent<StorageComponents.BatteryProxy>();
                 model.proxy = vb.BatteryProxy;
@@ -306,6 +306,32 @@ namespace AVS.BaseVehicle
         internal void SetupAmbienceSound(FMOD_StudioEventEmitter reference)
         {
             ambienceSound = reference.CopyComponentWithFieldsTo(gameObject);
+        }
+
+        internal void SetupLightSounds(FMOD_StudioEventEmitter[] fmods)
+        {
+            foreach (FMOD_StudioEventEmitter fmod in fmods)
+            {
+                if (fmod.asset.name == "seamoth_light_on")
+                {
+                    Log.Debug("Found light on sound for " + name);
+                    var ce = gameObject.AddComponent<FMOD_CustomEmitter>();
+                    ce.asset = fmod.asset;
+                    lightsOnSound = ce;
+                }
+                else if (fmod.asset.name == "seamoth_light_off")
+                {
+                    Log.Debug("Found light off sound for " + name);
+                    var ce = gameObject.AddComponent<FMOD_CustomEmitter>();
+                    ce.asset = fmod.asset;
+                    lightsOffSound = ce;
+                }
+            }
+            if (lightsOnSound == null || lightsOffSound == null)
+            {
+                Log.Error("Failed to find light sounds for " + name);
+            }
+
         }
     }
 }

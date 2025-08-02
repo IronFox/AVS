@@ -390,7 +390,8 @@ namespace AVS.BaseVehicle
         /// <remarks> Prefabrication fields must remain open fields or
         /// Unity instantiation will not preserve them. We cannot fetch it during awake because
         /// the vehicle may have multiple energy interfaces.</remarks>
-        public EnergyInterface? aiEnergyInterface;
+        [SerializeField]
+        internal EnergyInterface? aiEnergyInterface;
 
 
         /// <summary>
@@ -406,7 +407,8 @@ namespace AVS.BaseVehicle
         /// <remarks>
         /// Copied during prefab setup.
         /// </remarks>
-        public FMOD_StudioEventEmitter? ambienceSound;
+        [SerializeField]
+        internal FMOD_StudioEventEmitter? ambienceSound;
 
 
         private PowerManager? powerManager;

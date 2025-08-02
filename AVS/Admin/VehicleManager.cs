@@ -12,7 +12,7 @@ namespace AVS
     /// <summary>
     /// Provides management functions for AVS vehicles, including registration, enrollment, and loading.
     /// </summary>
-    public static class VehicleManager
+    internal static class VehicleManager
     {
         /// <summary>
         /// List of all AVS vehicles currently in play.
