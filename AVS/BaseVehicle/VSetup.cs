@@ -3,6 +3,7 @@ using AVS.Configuration;
 using AVS.Localization;
 using AVS.Log;
 using AVS.Util;
+using AVS.VehicleComponents;
 using AVS.VehicleParts;
 using System;
 using System.Collections;
@@ -275,7 +276,9 @@ namespace AVS.BaseVehicle
             foreach (VehicleBattery vb in Com.BackupBatteries)
             {
                 // Configure energy mixin for this battery slot
-                var em = vb.BatterySlot.EnsureComponent<EnergyMixin>();
+                vb.BatterySlot.GetComponents<EnergyMixin>().ForEach(em => GameObject.Destroy(em)); // remove old energy mixins
+                var em = vb.BatterySlot.AddComponent<DebugBatteryEnergyMixin>();
+                em.originalProxy = vb.BatteryProxy;
                 em.storageRoot = Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
                 em.defaultBattery = seamothEnergyMixin.defaultBattery;
                 em.compatibleBatteries = new List<TechType>() { TechType.PowerCell, TechType.PrecursorIonPowerCell };

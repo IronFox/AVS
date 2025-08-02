@@ -1,10 +1,12 @@
 ﻿using AVS.Assets;
+using AVS.Log;
+using AVS.Util;
 using System.Collections;
 using UnityEngine;
 
 namespace AVS.StorageComponents
 {
-    public class BatteryProxy : MonoBehaviour
+    internal class BatteryProxy : MonoBehaviour
     {
         public Transform? proxy = null;
         public EnergyMixin? mixin = null;
@@ -35,24 +37,28 @@ namespace AVS.StorageComponents
                 };
                 mixin.batteryModels[i] = mod;
             }
-
+            LogWriter.Default.Write($"Destroying {proxy.childCount} child(ren) in {proxy.NiceName()}");
             foreach (Transform tran in proxy)
             {
+                tran.parent = null; // detach from parent
                 GameObject.Destroy(tran.gameObject);
             }
             for (int i = 0; i < mixin.batteryModels.Length; i++)
             {
                 mixin.batteryModels[i].model.SetActive(true);
+                LogWriter.Default.Write($"Instantiating battery model #{i}/{mixin.batteryModels.Length} {mixin.batteryModels[i].techType.AsString()} in {proxy.NiceName()}");
                 var model = GameObject.Instantiate(mixin.batteryModels[i].model, proxy);
                 model.transform.localPosition = Vector3.zero;
                 model.transform.localRotation = Quaternion.identity;
                 model.transform.localScale = Vector3.one;
-                if (model.name.ToLower().Contains("ion"))
+                if (!model.name.ToLower().Contains("ion"))
                 {
-                    model.transform.localScale *= 0.01f;
+                    model.transform.localScale *= 100f;
                 }
                 mixin.batteryModels[i].model = model;
             }
+            foreach (Transform tran in proxy)
+                LogWriter.Default.Write($"BatteryProxy child: {tran.NiceName()} in {proxy.NiceName()}");
         }
         /*
         public void Awake()
