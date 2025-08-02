@@ -123,7 +123,7 @@ namespace AVS.BaseVehicle
                     GameObject newPowerCell = result.Get();
                     newPowerCell.GetComponent<Battery>().charge = 200;
                     newPowerCell.transform.SetParent(Com.StorageRootObject.transform);
-                    var mixin = Com.Batteries[0].BatterySlot.gameObject.GetComponent<EnergyMixin>();
+                    var mixin = Com.Batteries[0].Root.gameObject.GetComponent<EnergyMixin>();
                     mixin.battery = newPowerCell.GetComponent<Battery>();
                     mixin.batterySlot.AddItem(newPowerCell.GetComponent<Pickupable>());
                     newPowerCell.SetActive(false);
@@ -273,11 +273,11 @@ namespace AVS.BaseVehicle
             }
             var seamothEnergyMixin = seamoth.GetComponent<EnergyMixin>();
             List<EnergyMixin> energyMixins = new List<EnergyMixin>();
-            foreach (VehicleBattery vb in Com.BackupBatteries)
+            foreach (VehiclePowerCellDefinition vb in Com.BackupBatteries)
             {
                 // Configure energy mixin for this battery slot
-                vb.BatterySlot.GetComponents<EnergyMixin>().ForEach(em => GameObject.Destroy(em)); // remove old energy mixins
-                var em = vb.BatterySlot.AddComponent<DebugBatteryEnergyMixin>();
+                vb.Root.GetComponents<EnergyMixin>().ForEach(em => GameObject.Destroy(em)); // remove old energy mixins
+                var em = vb.Root.AddComponent<DebugBatteryEnergyMixin>();
                 em.originalProxy = vb.BatteryProxy;
                 em.storageRoot = Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
                 em.defaultBattery = seamothEnergyMixin.defaultBattery;
@@ -290,19 +290,23 @@ namespace AVS.BaseVehicle
 
                 energyMixins.Add(em);
 
-                var tmp = vb.BatterySlot.EnsureComponent<VehicleBatteryInput>();
+                var tmp = vb.Root.EnsureComponent<VehicleBatteryInput>();
+                tmp.powerCellObject = vb.Root;
                 tmp.mixin = em;
                 tmp.translationKey = TranslationKey.HandOver_AutoPilotBatterySlot;
+                tmp.displayName = vb.DisplayName?.Text;
+                tmp.displayNameLocalized = vb.DisplayName?.Localize ?? false;
+                tmp.vehicle = this;
 
-                var model = vb.BatterySlot.gameObject.EnsureComponent<StorageComponents.BatteryProxy>();
+                var model = vb.Root.gameObject.EnsureComponent<StorageComponents.BatteryProxy>();
                 model.proxy = vb.BatteryProxy;
                 model.mixin = em;
 
-                SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vb.BatterySlot.transform);
-                vb.BatterySlot.EnsureComponent<SaveLoad.AvsBatteryIdentifier>();
+                SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vb.Root.transform);
+                vb.Root.EnsureComponent<SaveLoad.AvsBatteryIdentifier>();
             }
             // Configure energy interface
-            aiEnergyInterface = Com.BackupBatteries.First().BatterySlot.EnsureComponent<EnergyInterface>();
+            aiEnergyInterface = Com.BackupBatteries.First().Root.EnsureComponent<EnergyInterface>();
             aiEnergyInterface.sources = energyMixins.ToArray();
         }
 

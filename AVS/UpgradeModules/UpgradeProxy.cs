@@ -1,4 +1,6 @@
 ﻿using AVS.Assets;
+using AVS.Log;
+using AVS.Util;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -18,7 +20,7 @@ namespace AVS
         /// Proxies for individual upgrade slots.
         /// Specifies where the upgrade modules will be instantiated.
         /// </summary>
-        public IReadOnlyList<Transform> proxies = new List<Transform>();
+        public Transform[]? proxies;
         /// <summary>
         /// Slot list passed on to the VehicleUpgradeConsoleInput.
         /// </summary>
@@ -40,25 +42,42 @@ namespace AVS
         public IEnumerator GetSeamothBitsASAP()
         {
 
+            LogWriter.Default.Write("UpgradeProxy: Waiting for Seamoth to be ready...");
             yield return SeamothHelper.Coroutine;
+
+            LogWriter.Default.Write("UpgradeProxy: Seamoth is ready, setting up upgrade slots...");
 
             slots = new List<VehicleUpgradeConsoleInput.Slot>();
             var module = SeamothHelper.RequireSeamoth.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/engine_console_key_02_geo").gameObject;
-            for (int i = 0; i < proxies.Count; i++)
+            if (module == null)
+            {
+                LogWriter.Default.Error("UpgradeProxy: Could not find the upgrade module in the Seamoth prefab.");
+                yield break;
+            }
+            if (proxies == null)
+            {
+                LogWriter.Default.Error("UpgradeProxy: Proxies array is null. Cannot proceed with upgrade slot setup.");
+                yield break;
+            }
+            LogWriter.Default.Write($"UpgradeProxy: Found upgrade module: {module.NiceName()}. Processing {proxies.Length} proxies");
+            for (int i = 0; i < proxies.Length; i++)
             {
                 foreach (Transform tran in proxies[i])
                 {
+                    tran.parent = null; // detach from parent
                     Destroy(tran.gameObject);
                 }
                 GameObject model = GameObject.Instantiate(module, proxies[i]);
                 model.transform.localPosition = Vector3.zero;
                 model.transform.localRotation = Quaternion.identity;
-                model.transform.localScale = Vector3.one;
+                model.transform.localScale = new Vector3(100, 100, 100);
+                LogWriter.Default.Write($"Instantiating upgrade module #{i}/{proxies.Length} in {proxies[i].NiceName()}: {model.NiceName()} using scale {model.transform.localScale}");
                 VehicleUpgradeConsoleInput.Slot slot;
                 slot.id = ModuleBuilder.ModuleName(i);
                 slot.model = model;
                 slots.Add(slot);
             }
+            LogWriter.Default.Write($"UpgradeProxy: Created {slots.Count} upgrade slots.");
             GetComponentInChildren<VehicleUpgradeConsoleInput>().slots = slots.ToArray();
         }
 

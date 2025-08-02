@@ -200,7 +200,21 @@ namespace AVS.BaseVehicle
             autopilot = gameObject.EnsureComponent<Autopilot>();
 
             LazyInitialize();
-            Com.Upgrades.ForEach(x => x.Interface.GetComponent<VehicleUpgradeConsoleInput>().equipment = modules);
+            Com.Upgrades.ForEach(x =>
+            {
+                if (x.Interface == null)
+                {
+                    Log.Error($"Null upgrade interface found.");
+                    return;
+                }
+                var consoleInput = x.Interface.GetComponent<VehicleUpgradeConsoleInput>();
+                if (consoleInput == null)
+                {
+                    Log.Error($"VehicleUpgradeConsoleInput not found on {x.Interface.NiceName()}. This is a required component for vehicle upgrades.");
+                }
+                else
+                    consoleInput.equipment = modules;
+            });
             var warpChipThing = GetComponent("TelePingVehicleInstance");
             if (warpChipThing != null)
             {

@@ -279,7 +279,7 @@ namespace AVS
                         return false;
                     }
                 }
-                foreach (VehicleParts.VehicleBattery vb in mv.Com.Batteries.Concat(mv.Com.BackupBatteries))
+                foreach (VehicleParts.VehiclePowerCellDefinition vb in mv.Com.Batteries.Concat(mv.Com.BackupBatteries))
                 {
                     if (!vb.CheckValidity(thisName, verbose))
                     {

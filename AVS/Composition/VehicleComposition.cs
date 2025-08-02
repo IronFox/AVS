@@ -41,7 +41,7 @@ namespace AVS.Composition
         /// <summary>
         /// Battery definitions. Can be empty which disallows any batteries.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleBattery> Batteries { get; } = Array.Empty<VehicleParts.VehicleBattery>();
+        public IReadOnlyList<VehicleParts.VehiclePowerCellDefinition> Batteries { get; } = Array.Empty<VehicleParts.VehiclePowerCellDefinition>();
 
         /// <summary>
         /// Upgrade module definitions. Can be empty which disallows any upgrades.
@@ -83,7 +83,7 @@ namespace AVS.Composition
         /// <summary>
         /// Batteries exclusively used for the AI. Not sure anyone uses these.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleBattery> BackupBatteries { get; } = Array.Empty<VehicleParts.VehicleBattery>();
+        public IReadOnlyList<VehicleParts.VehiclePowerCellDefinition> BackupBatteries { get; } = Array.Empty<VehicleParts.VehiclePowerCellDefinition>();
 
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             AbstractEngine engine,
             GameObject collisionModel,
-            IReadOnlyList<VehicleParts.VehicleBattery>? batteries = null,
+            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? batteries = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,
             IReadOnlyList<GameObject>? waterClipProxies = null,
@@ -155,7 +155,7 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
             IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
-            IReadOnlyList<VehicleParts.VehicleBattery>? backupBatteries = null,
+            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? backupBatteries = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
@@ -176,7 +176,7 @@ namespace AVS.Composition
             ModulesRootObject = modulesRootObject;
             CollisionModel = collisionModel;
             Hatches = hatches;
-            Batteries = batteries ?? Array.Empty<VehicleParts.VehicleBattery>();
+            Batteries = batteries ?? Array.Empty<VehicleParts.VehiclePowerCellDefinition>();
             Upgrades = upgrades ?? Array.Empty<VehicleParts.VehicleUpgrades>();
             BoundingBoxCollider = boundingBoxCollider;
             WaterClipProxies = waterClipProxies ?? Array.Empty<GameObject>();
@@ -184,10 +184,13 @@ namespace AVS.Composition
             ModularStorages = modularStorages ?? Array.Empty<VehicleParts.VehicleStorage>();
             HeadLights = headLights ?? Array.Empty<VehicleParts.VehicleFloodLight>();
             CanopyWindows = canopyWindows ?? Array.Empty<GameObject>();
-            BackupBatteries = backupBatteries ?? Array.Empty<VehicleParts.VehicleBattery>();
+            BackupBatteries = backupBatteries ?? Array.Empty<VehicleParts.VehiclePowerCellDefinition>();
             DenyBuildingColliders = denyBuildingColliders ?? Array.Empty<Collider>();
             SubNameDecals = subNameDecals ?? Array.Empty<TMPro.TextMeshProUGUI>();
             LavaLarvaAttachPoints = lavaLarvaAttachPoints ?? Array.Empty<Transform>();
+
+            if (Upgrades == null)
+                throw new InvalidOperationException($"Something went wrong. Upgrades should not be null at this point. {upgrades}");
         }
 
 

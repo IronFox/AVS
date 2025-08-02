@@ -83,6 +83,7 @@ namespace AVS
             {
                 foreach (VehicleParts.VehicleUpgrades vu in mv.Com.Upgrades)
                 {
+                    LogWriter.Default.Write("Setting up upgrade in " + vu.Interface.NiceName());
                     VehicleUpgradeConsoleInput vuci = vu.Interface.EnsureComponent<VehicleUpgradeConsoleInput>();
                     vuci.flap = vu.Flap.transform;
                     vuci.anglesOpened = vu.AnglesOpened;
@@ -91,7 +92,12 @@ namespace AVS
                     mv.upgradesInput = vuci;
                     var up = vu.Interface.EnsureComponent<UpgradeProxy>();
                     if (vu.ModuleProxies != null)
-                        up.proxies = vu.ModuleProxies;
+                    {
+                        mv.Log.Write($"Setting up UpgradeProxy in {vu.Interface.NiceName()} with {vu.ModuleProxies.Count} proxy/ies");
+                        up.proxies = vu.ModuleProxies.ToArray();
+                    }
+                    else
+                        mv.Log.Warn($"No module proxies defined for UpgradeProxy in {vu.Interface.NiceName()}");
 
                     SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vu.Interface.transform);
                     vu.Interface.EnsureComponent<SaveLoad.AvsUpgradesIdentifier>();
@@ -216,11 +222,11 @@ namespace AVS
                 energyMixin.controlledObjects = new GameObject[] { };
                 energyMixins.Add(energyMixin);
             }
-            foreach (VehicleParts.VehicleBattery vb in mv.Com.Batteries)
+            foreach (VehicleParts.VehiclePowerCellDefinition vb in mv.Com.Batteries)
             {
                 // Configure energy mixin for this battery slot
-                vb.BatterySlot.GetComponents<EnergyMixin>().ForEach(em => GameObject.Destroy(em)); // remove old energy mixins
-                var energyMixin = vb.BatterySlot.AddComponent<DebugBatteryEnergyMixin>();
+                vb.Root.GetComponents<EnergyMixin>().ForEach(em => GameObject.Destroy(em)); // remove old energy mixins
+                var energyMixin = vb.Root.AddComponent<DebugBatteryEnergyMixin>();
                 energyMixin.originalProxy = vb.BatteryProxy;
                 energyMixin.storageRoot = mv.Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
                 energyMixin.defaultBattery = seamothEnergyMixin.defaultBattery;
@@ -231,15 +237,19 @@ namespace AVS
                 energyMixin.soundBatteryRemove = seamothEnergyMixin.soundBatteryRemove;
                 energyMixin.batteryModels = seamothEnergyMixin.batteryModels;
                 energyMixins.Add(energyMixin);
-                var tmp = vb.BatterySlot.EnsureComponent<VehicleBatteryInput>();
+                var tmp = vb.Root.EnsureComponent<VehicleBatteryInput>();
                 tmp.mixin = energyMixin;
+                tmp.vehicle = mv;
+                tmp.powerCellObject = vb.Root;
+                tmp.displayName = vb.DisplayName?.Text;
+                tmp.displayNameLocalized = vb.DisplayName?.Localize ?? false;
 
-                var model = vb.BatterySlot.gameObject.EnsureComponent<StorageComponents.BatteryProxy>();
+                var model = vb.Root.gameObject.EnsureComponent<StorageComponents.BatteryProxy>();
                 model.proxy = vb.BatteryProxy;
                 model.mixin = energyMixin;
 
-                SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vb.BatterySlot.transform);
-                vb.BatterySlot.EnsureComponent<SaveLoad.AvsBatteryIdentifier>();
+                SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vb.Root.transform);
+                vb.Root.EnsureComponent<SaveLoad.AvsBatteryIdentifier>();
             }
             // Configure energy interface
             var eInterf = mv.gameObject.EnsureComponent<EnergyInterface>();

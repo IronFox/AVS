@@ -5,24 +5,51 @@ using UnityEngine;
 
 namespace AVS
 {
-    public class VehicleBatteryInput : HandTarget, IHandTarget
+    internal class VehicleBatteryInput : HandTarget, IHandTarget
     {
         public EnergyMixin? mixin;
+        public AvsVehicle? vehicle;
 
         [SerializeField]
         internal TranslationKey translationKey = TranslationKey.HandOver_BatterySlot;
 
+        [SerializeField]
+        internal bool displayNameLocalized;
+        [SerializeField]
+        internal string? displayName;
+        [SerializeField]
+        internal GameObject? powerCellObject;
+
         public void OnHandHover(GUIHand hand)
         {
-            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(translationKey));
+            string text;
+            if (!string.IsNullOrEmpty(displayName))
+            {
+                if (displayNameLocalized)
+                {
+                    text = Language.main.Get(displayName);
+                }
+                else
+                {
+                    text = displayName!;
+                }
+            }
+            else
+            {
+                text = Translator.Get(translationKey);
+            }
+            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, text);
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
+
         }
+
+
 
         public void OnHandClick(GUIHand hand)
         {
             gameObject.GetComponentInParent<AvsVehicle>().OnAIBatteryReload();
             if (mixin != null)
-                mixin.InitiateReload(); // this brings up the battery-changing gui
+                mixin.InitiateReload();
         }
     }
 }

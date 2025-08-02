@@ -2172,7 +2172,7 @@
             The pilot seats of the vehicle.
             </summary>
         </member>
-        <member name="M:AVS.Composition.SkimmerComposition.#ctor(UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.Helm},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBattery},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleFloodLight},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBattery},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject)">
+        <member name="M:AVS.Composition.SkimmerComposition.#ctor(UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.Helm},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleFloodLight},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject)">
             <summary>
             Initializes a new instance of the <see cref="T:AVS.Composition.SkimmerComposition"/> class, representing the composition of a
             skimmer vehicle with its associated components and configuration.
@@ -2189,7 +2189,7 @@
             be null.</param>
             <param name="engine">The engine (<see cref="T:AVS.Engines.AbstractEngine"/>) that powers the vehicle. Must not be null</param>
             <param name="collisionModel"><see cref="T:UnityEngine.GameObject"/> representing the collision model of the vehicle. Must not be null</param>
-            <param name="batteries">An optional collection of batteries (<see cref="T:AVS.VehicleParts.VehicleBattery"/>) used to power the vehicle.
+            <param name="batteries">An optional collection of batteries (<see cref="T:AVS.VehicleParts.VehiclePowerCellDefinition"/>) used to power the vehicle.
             Can be null.</param>
             <param name="upgrades">An optional collection of upgrades (<see cref="T:AVS.VehicleParts.VehicleUpgrades"/>) installed on the vehicle.
             Can be null.</param>
@@ -2203,7 +2203,7 @@
             the vehicle. Can be null.</param>
             <param name="canopyWindows">An optional collection of <see cref="T:UnityEngine.GameObject"/> instances representing the canopy windows of the vehicle.
             Can be null.</param>
-            <param name="backupBatteries">An optional collection of backup batteries (<see cref="T:AVS.VehicleParts.VehicleBattery"/>) for the vehicle. Can
+            <param name="backupBatteries">An optional collection of backup batteries (<see cref="T:AVS.VehicleParts.VehiclePowerCellDefinition"/>) for the vehicle. Can
             be null.</param>
             <param name="denyBuildingColliders">An optional collection of <see cref="T:UnityEngine.Collider"/> instances that prevent building in certain areas. Can be
             null.</param>
@@ -2295,7 +2295,7 @@
             If null, a respawn point will automatically be created in the vehicle's root object.
             </summary>
         </member>
-        <member name="M:AVS.Composition.SubmarineComposition.#ctor(UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.Helm},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleFloodLight},System.Collections.Generic.IReadOnlyList{UnityEngine.Light},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},UnityEngine.GameObject,UnityEngine.GameObject,UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBattery},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleFloodLight},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBattery},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject)">
+        <member name="M:AVS.Composition.SubmarineComposition.#ctor(UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.Helm},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleFloodLight},System.Collections.Generic.IReadOnlyList{UnityEngine.Light},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},UnityEngine.GameObject,UnityEngine.GameObject,UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleFloodLight},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject)">
             <summary>
             Initializes a new instance of the <see cref="T:AVS.Composition.SubmarineComposition"/> class with the specified components and configuration.
             </summary>
@@ -2338,7 +2338,7 @@
             Must not be null.
             </summary>
         </member>
-        <member name="M:AVS.Composition.SubmersibleComposition.#ctor(AVS.VehicleParts.Helm,UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBattery},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleFloodLight},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBattery},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject)">
+        <member name="M:AVS.Composition.SubmersibleComposition.#ctor(AVS.VehicleParts.Helm,UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleFloodLight},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject)">
             <summary>
             Represents the composition of a submersible vehicle, including all required and optional parts.
             Inherits from <see cref="T:AVS.Composition.VehicleComposition"/> and adds a required pilot seat.
@@ -2518,7 +2518,7 @@
             by the client vehicle.
             </remarks>
         </member>
-        <member name="M:AVS.Composition.VehicleComposition.#ctor(UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBattery},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleFloodLight},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBattery},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject)">
+        <member name="M:AVS.Composition.VehicleComposition.#ctor(UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleFloodLight},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject)">
             <summary>
             Constructs a VehicleComposition with required and optional parts.
             </summary>
@@ -6463,15 +6463,66 @@
             <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="container"/> is <see langword="null"/>.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="height"/> or <paramref name="width"/> is less than or equal to zero.</exception>
         </member>
-        <member name="P:AVS.VehicleParts.VehicleBattery.BatterySlot">
+        <member name="T:AVS.VehicleParts.VehicleUpgrades">
+            <summary>
+            Definition of vehicle upgrades, including the interface, flap, angles, and module proxies.
+            </summary>
+        </member>
+        <member name="P:AVS.VehicleParts.VehicleUpgrades.Interface">
+            <summary>
+            The object that serves as the hand target to open the upgrades interface.
+            </summary>
+        </member>
+        <member name="P:AVS.VehicleParts.VehicleUpgrades.Flap">
+            <summary>
+            A flap geometry that automatically rotates to indicate the upgrades interface is open or closed.
+            </summary>
+        </member>
+        <member name="P:AVS.VehicleParts.VehicleUpgrades.AnglesOpened">
+            <summary>
+            Euler angles of flap when opened
+            </summary>
+        </member>
+        <member name="P:AVS.VehicleParts.VehicleUpgrades.AnglesClosed">
+            <summary>
+            Euler angles of flap when closed
+            </summary>
+        </member>
+        <member name="P:AVS.VehicleParts.VehicleUpgrades.ModuleProxies">
+            <summary>
+            Parent transforms to put module models into.
+            If null, no model will be provided for installed modules.
+            </summary>
+        </member>
+        <member name="T:AVS.VehicleParts.VehiclePowerCellDefinition">
+            <summary>
+            Represents a vehicle power cell definition, including the battery slot, proxy, and display name.
+            </summary>
+        </member>
+        <member name="P:AVS.VehicleParts.VehiclePowerCellDefinition.Root">
             <summary>
             Primary access point for the battery slot.
             </summary>
         </member>
-        <member name="P:AVS.VehicleParts.VehicleBattery.BatteryProxy">
+        <member name="P:AVS.VehicleParts.VehiclePowerCellDefinition.BatteryProxy">
             <summary>
-            Model for the battery. Can be null
+            Parent to place the respective power cell model in.
+            Any other contained children are purged on prefabrication.
+            If null, the power cell model will not be placed.
             </summary>
+        </member>
+        <member name="P:AVS.VehicleParts.VehiclePowerCellDefinition.DisplayName">
+            <summary>
+            Name to display for the battery slot, which can be localized.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleParts.VehiclePowerCellDefinition.#ctor(UnityEngine.GameObject,UnityEngine.Transform,System.Nullable{AVS.Localization.MaybeTranslate})">
+            <summary>
+            Constructs a new instance of <see cref="T:AVS.VehicleParts.VehiclePowerCellDefinition"/>.
+            </summary>
+            <param name="root">The game object representing the battery slot. Cannot be null.</param>
+            <param name="batteryProxy">The transform where the battery model will be placed. Can be null if no model is needed.</param>
+            <param name="displayName">The display name for the battery slot, which can be localized. Can be null if no display name is needed.</param>
         </member>
         <member name="T:AVS.PositiveValueThresholdTracker">
             <summary>

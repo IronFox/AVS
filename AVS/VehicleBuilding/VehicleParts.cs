@@ -240,14 +240,34 @@ namespace AVS.VehicleParts
             return true;
         }
     }
+
+    /// <summary>
+    /// Definition of vehicle upgrades, including the interface, flap, angles, and module proxies.
+    /// </summary>
     public readonly struct VehicleUpgrades
     {
+        /// <summary>
+        /// The object that serves as the hand target to open the upgrades interface.
+        /// </summary>
         public GameObject Interface { get; }
+        /// <summary>
+        /// A flap geometry that automatically rotates to indicate the upgrades interface is open or closed.
+        /// </summary>
         public GameObject Flap { get; }
+        /// <summary>
+        /// Euler angles of flap when opened
+        /// </summary>
         public Vector3 AnglesOpened { get; }
+        /// <summary>
+        /// Euler angles of flap when closed
+        /// </summary>
         public Vector3 AnglesClosed { get; }
+        /// <summary>
+        /// Parent transforms to put module models into.
+        /// If null, no model will be provided for installed modules.
+        /// </summary>
         public IReadOnlyList<Transform>? ModuleProxies { get; }
-        public VehicleUpgrades(GameObject @interface, GameObject flap, Vector3 openAngles, Vector3 closedAngles, IReadOnlyList<Transform>? iProxies = null)
+        public VehicleUpgrades(GameObject @interface, GameObject flap, Vector3 openAngles, Vector3 closedAngles, IReadOnlyList<Transform>? moduleProxies = null)
         {
             if (@interface == null)
                 throw new ArgumentNullException(nameof(@interface), "Vehicle upgrades interface cannot be null.");
@@ -257,7 +277,7 @@ namespace AVS.VehicleParts
             Flap = flap;
             AnglesOpened = openAngles;
             AnglesClosed = closedAngles;
-            ModuleProxies = iProxies;
+            ModuleProxies = moduleProxies;
         }
 
         internal bool CheckValidity(string thisName, bool verbose)
@@ -279,28 +299,46 @@ namespace AVS.VehicleParts
             return true;
         }
     }
-    public readonly struct VehicleBattery
+
+    /// <summary>
+    /// Represents a vehicle power cell definition, including the battery slot, proxy, and display name.
+    /// </summary>
+    public readonly struct VehiclePowerCellDefinition
     {
         /// <summary>
         /// Primary access point for the battery slot.
         /// </summary>
-        public GameObject BatterySlot { get; }
+        public GameObject Root { get; }
         /// <summary>
-        /// Model for the battery. Can be null
+        /// Parent to place the respective power cell model in.
+        /// Any other contained children are purged on prefabrication.
+        /// If null, the power cell model will not be placed.
         /// </summary>
         public Transform BatteryProxy { get; }
 
-        public VehicleBattery(GameObject batterySlot, Transform batteryProxy)
+        /// <summary>
+        /// Name to display for the battery slot, which can be localized.
+        /// </summary>
+        public MaybeTranslate? DisplayName { get; }
+
+        /// <summary>
+        /// Constructs a new instance of <see cref="VehiclePowerCellDefinition"/>.
+        /// </summary>
+        /// <param name="root">The game object representing the battery slot. Cannot be null.</param>
+        /// <param name="batteryProxy">The transform where the battery model will be placed. Can be null if no model is needed.</param>
+        /// <param name="displayName">The display name for the battery slot, which can be localized. Can be null if no display name is needed.</param>
+        public VehiclePowerCellDefinition(GameObject root, Transform batteryProxy, MaybeTranslate? displayName = null)
         {
-            if (batterySlot == null)
-                throw new ArgumentNullException(nameof(batterySlot), "Vehicle battery slot cannot be null.");
-            BatterySlot = batterySlot;
+            if (root == null)
+                throw new ArgumentNullException(nameof(root), "Vehicle battery slot cannot be null.");
+            Root = root;
             BatteryProxy = batteryProxy;
+            DisplayName = displayName;
         }
 
         internal bool CheckValidity(string thisName, bool verbose)
         {
-            if (!BatterySlot)
+            if (!Root)
             {
                 Logger.Error(thisName + "A null VehicleBattery.BatterySlot was provided. There would be no way to access this battery.");
                 return false;

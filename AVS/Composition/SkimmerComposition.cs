@@ -31,7 +31,7 @@ namespace AVS.Composition
         /// be null.</param>
         /// <param name="engine">The engine (<see cref="AbstractEngine"/>) that powers the vehicle. Must not be null</param>
         /// <param name="collisionModel"><see cref="GameObject"/> representing the collision model of the vehicle. Must not be null</param>
-        /// <param name="batteries">An optional collection of batteries (<see cref="VehicleParts.VehicleBattery"/>) used to power the vehicle.
+        /// <param name="batteries">An optional collection of batteries (<see cref="VehicleParts.VehiclePowerCellDefinition"/>) used to power the vehicle.
         /// Can be null.</param>
         /// <param name="upgrades">An optional collection of upgrades (<see cref="VehicleParts.VehicleUpgrades"/>) installed on the vehicle.
         /// Can be null.</param>
@@ -45,7 +45,7 @@ namespace AVS.Composition
         /// the vehicle. Can be null.</param>
         /// <param name="canopyWindows">An optional collection of <see cref="GameObject"/> instances representing the canopy windows of the vehicle.
         /// Can be null.</param>
-        /// <param name="backupBatteries">An optional collection of backup batteries (<see cref="VehicleParts.VehicleBattery"/>) for the vehicle. Can
+        /// <param name="backupBatteries">An optional collection of backup batteries (<see cref="VehicleParts.VehiclePowerCellDefinition"/>) for the vehicle. Can
         /// be null.</param>
         /// <param name="denyBuildingColliders">An optional collection of <see cref="Collider"/> instances that prevent building in certain areas. Can be
         /// null.</param>
@@ -60,7 +60,7 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.Helm> pilotSeats,
             AbstractEngine engine,
             GameObject collisionModel,
-            IReadOnlyList<VehicleParts.VehicleBattery>? batteries = null,
+            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? batteries = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,
             IReadOnlyList<GameObject>? waterClipProxies = null,
@@ -68,7 +68,7 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
             IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
-            IReadOnlyList<VehicleParts.VehicleBattery>? backupBatteries = null,
+            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? backupBatteries = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,

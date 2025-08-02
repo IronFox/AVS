@@ -143,7 +143,7 @@ namespace AVS.Composition
             GameObject? colorPicker = null,
             GameObject? respawnPoint = null,
             // VehicleComposition base parameters
-            IReadOnlyList<VehicleParts.VehicleBattery>? batteries = null,
+            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? batteries = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,
             IReadOnlyList<GameObject>? waterClipProxies = null,
@@ -151,7 +151,7 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
             IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
-            IReadOnlyList<VehicleParts.VehicleBattery>? backupBatteries = null,
+            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? backupBatteries = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,

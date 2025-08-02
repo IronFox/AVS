@@ -171,7 +171,7 @@ namespace AVS
             mv = GetComponent<AvsVehicle>();
             if (mv.Com.BackupBatteries.Count > 0)
             {
-                aiEI = mv.Com.BackupBatteries[0].BatterySlot.GetComponent<EnergyInterface>();
+                aiEI = mv.Com.BackupBatteries[0].Root.GetComponent<EnergyInterface>();
             }
             else
             {
