@@ -32,7 +32,7 @@ namespace AVS.Crafting
         /// <param name="param"></param>
         public virtual void OnRepeat(ToggleActionParams param)
         {
-            LogWriter.Default.Debug(this, $"OnRepeat {ClassId} on Vehicle: {param.Vehicle.NiceName()} in slotID: {param.SlotID} active: {param.IsActive} elapsed: {param.SecondsSinceActivation}");
+            LogWriter.Default.Debug(this, $"OnRepeat {ClassId} on Vehicle: {param.Vehicle.NiceName()} in slotID: {param.SlotID} active: {param.IsActive} elapsed: {param.RepeatTime}");
         }
 
         /// <summary>
@@ -41,7 +41,16 @@ namespace AVS.Crafting
         /// <param name="param"></param>
         public virtual void OnToggle(ToggleActionParams param)
         {
-            LogWriter.Default.Write($"Toggle {ClassId} on Vehicle: {param.Vehicle.NiceName()} in slotID: {param.SlotID} active: {param.IsActive} elapsed: {param.SecondsSinceActivation}");
+            LogWriter.Default.Write($"Toggle {ClassId} on Vehicle: {param.Vehicle.NiceName()} in slotID: {param.SlotID} active: {param.IsActive} elapsed: {param.RepeatTime}");
+        }
+
+        /// <summary>
+        /// Helper method to deactivate the module as specified by <paramref name="param"/>.
+        /// </summary>
+        /// <param name="param">Definition of what to deactivate</param>
+        public static void Deactivate(ToggleActionParams param)
+        {
+            param.Vehicle.ToggleSlot(param.SlotID, false);
         }
     }
 }

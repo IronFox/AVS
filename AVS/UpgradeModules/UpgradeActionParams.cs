@@ -33,24 +33,32 @@ namespace AVS.UpgradeModules
         /// </summary>
         public bool IsActive { get; }
         /// <summary>
-        /// The total time in seconds since the upgrade was activated.
+        /// The current time in seconds since the upgrade was activated.
         /// </summary>
-        public float SecondsSinceActivation { get; }
+        public float RepeatTime { get; }
+        /// <summary>
+        /// The last time (<see cref="RepeatTime"/>) in seconds the upgrade was repeated.
+        /// </summary>
+        public float LastRepeatTime { get; }
 
-        internal ToggleActionParams(Vehicle vehicle, int slotID, TechType techType, bool isActive, float secondsSinceActivation = 0)
+        internal ToggleActionParams(Vehicle vehicle, int slotID, TechType techType, bool isActive, float repeatTime = 0, float lastRepeatTime = 0)
         {
             Vehicle = vehicle;
             SlotID = slotID;
             TechType = techType;
             IsActive = isActive;
-            SecondsSinceActivation = secondsSinceActivation;
+            RepeatTime = repeatTime;
+            LastRepeatTime = lastRepeatTime;
         }
 
-        internal ToggleActionParams IncreaseSecondsSinceActivation(float secondsElapsed)
-            => new ToggleActionParams(Vehicle, SlotID, TechType, IsActive, SecondsSinceActivation + secondsElapsed);
+        internal ToggleActionParams AdvanceRepeatTime(float secondsElapsed)
+            => new ToggleActionParams(Vehicle, SlotID, TechType, IsActive, RepeatTime + secondsElapsed, RepeatTime);
 
-        internal ToggleActionParams SetInactive()
-            => new ToggleActionParams(Vehicle, SlotID, TechType, false, SecondsSinceActivation);
+        /// <summary>
+        /// Creates a new instance of <see cref="ToggleActionParams"/> with the upgrade set to inactive.
+        /// </summary>
+        public ToggleActionParams SetInactive()
+            => new ToggleActionParams(Vehicle, SlotID, TechType, false, RepeatTime, LastRepeatTime);
     }
 
 

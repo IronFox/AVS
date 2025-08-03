@@ -3664,6 +3664,12 @@
             </summary>
             <param name="param"></param>
         </member>
+        <member name="M:AVS.Crafting.ToggleableUpgrade.Deactivate(AVS.UpgradeModules.ToggleActionParams)">
+            <summary>
+            Helper method to deactivate the module as specified by <paramref name="param"/>.
+            </summary>
+            <param name="param">Definition of what to deactivate</param>
+        </member>
         <member name="T:AVS.Engines.AbstractEngine">
             <summary>
             Base class for vehicle engines in the mod framework.
@@ -6031,9 +6037,19 @@
             True if the upgrade is toggled on, false if off.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.ToggleActionParams.SecondsSinceActivation">
+        <member name="P:AVS.UpgradeModules.ToggleActionParams.RepeatTime">
             <summary>
-            The total time in seconds since the upgrade was activated.
+            The current time in seconds since the upgrade was activated.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.ToggleActionParams.LastRepeatTime">
+            <summary>
+            The last time (<see cref="P:AVS.UpgradeModules.ToggleActionParams.RepeatTime"/>) in seconds the upgrade was repeated.
+            </summary>
+        </member>
+        <member name="M:AVS.UpgradeModules.ToggleActionParams.SetInactive">
+            <summary>
+            Creates a new instance of <see cref="T:AVS.UpgradeModules.ToggleActionParams"/> with the upgrade set to inactive.
             </summary>
         </member>
         <member name="P:AVS.UpgradeModules.SelectableActionParams.Vehicle">

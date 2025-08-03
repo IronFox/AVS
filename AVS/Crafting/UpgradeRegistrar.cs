@@ -660,8 +660,10 @@ namespace AVS.Crafting
                         param.Vehicle.ToggleSlot(param.SlotID, false);
                         yield break;
                     }
+                    float preTime = Time.time;
                     yield return new WaitForSeconds(timeToFirstActivation);
-                    param = param.IncreaseSecondsSinceActivation(timeToFirstActivation);
+                    float elapsed = Time.time - preTime;
+                    param = param.AdvanceRepeatTime(elapsed);
                     while (true)
                     {
                         bool shouldStopWorking = isAvsVehicle ? !isAvsVehicle.IsBoarded : !param.Vehicle.GetPilotingMode();
@@ -711,8 +713,10 @@ namespace AVS.Crafting
                             yield break;
                         }
                         param.Vehicle.energyInterface.ConsumeEnergy(energyCostPerActivation);
+                        preTime = Time.time;
                         yield return new WaitForSeconds(repeatDelay);
-                        param = param.IncreaseSecondsSinceActivation(repeatDelay);
+                        elapsed = Time.time - preTime;
+                        param = param.AdvanceRepeatTime(elapsed);
                     }
                 }
                 VanillaUpgradeMaker.CreateToggleModule(toggle, compat, ref utt, isPDASetup);
