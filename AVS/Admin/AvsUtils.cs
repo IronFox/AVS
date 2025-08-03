@@ -9,6 +9,9 @@ using System.Linq;
 using UnityEngine;
 using Logger = AVS.Logger;
 
+/// <summary>
+/// Various utility methods for AVS.
+/// </summary>
 public static class AvsUtils
 {
     /// <summary>
@@ -57,25 +60,20 @@ public static class AvsUtils
             Subtitles.Add("This upgrade is not compatible with this vehicle.");
             return;
         }
+        var depthModule1Count = DepthModule1.DepthModuleTechTypes.CountSumIn(mv.modules);
+        var depthModule2Count = DepthModule2.DepthModuleTechTypes.CountSumIn(mv.modules);
+        var depthModule3Count = DepthModule3.DepthModuleTechTypes.CountSumIn(mv.modules);
+
+
         // Iterate over all upgrade modules,
         // in order to determine our max depth module level
-        int maxDepthModuleLevel = 0;
-        List<string> upgrades = mv.GetCurrentUpgrades();
-        foreach (var upgrade in upgrades)
-        {
-            if (string.Equals(upgrade, "AvsDepthModule1(Clone)", StringComparison.OrdinalIgnoreCase))
-            {
-                maxDepthModuleLevel = maxDepthModuleLevel < 1 ? 1 : maxDepthModuleLevel;
-            }
-            else if (string.Equals(upgrade, "AvsDepthModule2(Clone)", StringComparison.OrdinalIgnoreCase))
-            {
-                maxDepthModuleLevel = maxDepthModuleLevel < 2 ? 2 : maxDepthModuleLevel;
-            }
-            else if (string.Equals(upgrade, "AvsDepthModule3(Clone)", StringComparison.OrdinalIgnoreCase))
-            {
-                maxDepthModuleLevel = maxDepthModuleLevel < 3 ? 3 : maxDepthModuleLevel;
-            }
-        }
+        int maxDepthModuleLevel =
+            Mathf.Max(
+                Math.Min(1, depthModule3Count) * 3,
+                Math.Min(1, depthModule2Count) * 2,
+                Math.Min(1, depthModule1Count) * 1
+                );
+
         int extraDepthToAdd = 0;
         extraDepthToAdd = maxDepthModuleLevel > 0 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade1 : extraDepthToAdd;
         extraDepthToAdd = maxDepthModuleLevel > 1 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade2 : extraDepthToAdd;

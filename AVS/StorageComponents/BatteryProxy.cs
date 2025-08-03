@@ -1,6 +1,4 @@
 ﻿using AVS.Assets;
-using AVS.Log;
-using AVS.Util;
 using System.Collections;
 using UnityEngine;
 
@@ -37,7 +35,7 @@ namespace AVS.StorageComponents
                 };
                 mixin.batteryModels[i] = mod;
             }
-            LogWriter.Default.Write($"Destroying {proxy.childCount} child(ren) in {proxy.NiceName()}");
+            //LogWriter.Default.Write($"Destroying {proxy.childCount} child(ren) in {proxy.NiceName()}");
             foreach (Transform tran in proxy)
             {
                 tran.parent = null; // detach from parent
@@ -46,7 +44,7 @@ namespace AVS.StorageComponents
             for (int i = 0; i < mixin.batteryModels.Length; i++)
             {
                 mixin.batteryModels[i].model.SetActive(true);
-                LogWriter.Default.Write($"Instantiating battery model #{i}/{mixin.batteryModels.Length} {mixin.batteryModels[i].techType.AsString()} in {proxy.NiceName()}");
+                //LogWriter.Default.Write($"Instantiating battery model #{i}/{mixin.batteryModels.Length} {mixin.batteryModels[i].techType.AsString()} in {proxy.NiceName()}");
                 var model = GameObject.Instantiate(mixin.batteryModels[i].model, proxy);
                 model.transform.localPosition = Vector3.zero;
                 model.transform.localRotation = Quaternion.identity;
@@ -57,8 +55,8 @@ namespace AVS.StorageComponents
                 }
                 mixin.batteryModels[i].model = model;
             }
-            foreach (Transform tran in proxy)
-                LogWriter.Default.Write($"BatteryProxy child: {tran.NiceName()} in {proxy.NiceName()}");
+            //foreach (Transform tran in proxy)
+            //    LogWriter.Default.Write($"BatteryProxy child: {tran.NiceName()} in {proxy.NiceName()}");
         }
         /*
         public void Awake()

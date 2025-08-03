@@ -29,10 +29,21 @@ namespace AVS
         /// </summary>
         /// <param name="vehicle">The vehicle instance.</param>
         /// <returns>A list of upgrade module names.</returns>
-        public static List<string> GetCurrentUpgrades(this Vehicle vehicle)
+        public static List<string> GetCurrentUpgradeNames(this Vehicle vehicle)
         {
             return vehicle.modules.equipment.Select(x => x.Value).Where(x => x != null && x.item != null).Select(x => x.item.name).ToList();
         }
+
+        /// <summary>
+        /// Gets the list of current upgrade modules installed in the vehicle.
+        /// </summary>
+        /// <param name="vehicle">The vehicle instance.</param>
+        /// <returns>A list of upgrade module names.</returns>
+        public static List<Pickupable> GetCurrentUpgrades(this Vehicle vehicle)
+        {
+            return vehicle.modules.equipment.Select(x => x.Value).Where(x => x != null && x.item != null).Select(x => x.item).ToList();
+        }
+
 
         /// <summary>
         /// Gets the list of current upgrade module names installed in all upgrade consoles of the subroot.

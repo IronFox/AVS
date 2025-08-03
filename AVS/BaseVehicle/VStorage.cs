@@ -45,6 +45,11 @@ namespace AVS.BaseVehicle
         public GameObject GetOrCreateDefaultModulesRootObject()
             => GetOrCreateChild("ModulesRootObject");
 
+        /// <summary>
+        /// Checks if the vehicle has room for the specified pickupable item in any of its storage containers.
+        /// </summary>
+        /// <param name="pickup">Pickupable to check</param>
+        /// <returns>True if there is enough room, false if not</returns>
         public bool HasRoomFor(Pickupable pickup)
         {
             foreach (var container in Com.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().Container))
@@ -63,6 +68,15 @@ namespace AVS.BaseVehicle
             }
             return false;
         }
+
+        /// <summary>
+        /// Checks if the vehicle has at least the given number of items of
+        /// the specified TechType in any of its storage containers.
+        /// </summary>
+        /// <param name="techType">Tech type to look for</param>
+        /// <param name="count">Number of items to require</param>
+        /// <returns>True if there are at least the given amount of items of the given
+        /// tech type in this vehicle's storages</returns>
         public bool HasInStorage(TechType techType, int count = 1)
         {
             foreach (var container in Com.InnateStorages.Select(x => x.Container.GetComponent<InnateStorageContainer>().Container))
@@ -87,6 +101,12 @@ namespace AVS.BaseVehicle
             }
             return false;
         }
+
+        /// <summary>
+        /// Attempts to add a pickupable item to the vehicle's storage.
+        /// </summary>
+        /// <param name="pickup">The pickupable item to add.</param>
+        /// <returns>True if the given pickupable could be placed in this vehicle's storages</returns>
         public bool AddToStorage(Pickupable pickup)
         {
             if (!HasRoomFor(pickup))
@@ -127,6 +147,12 @@ namespace AVS.BaseVehicle
             }
             return false;
         }
+
+        /// <summary>
+        /// Queries the currently stored and total capacity of the vehicle's storage.
+        /// </summary>
+        /// <param name="stored">Out storage capacity occupied</param>
+        /// <param name="capacity">Out total storage capacity</param>
         public void GetStorageValues(out int stored, out int capacity)
         {
             int retStored = 0;

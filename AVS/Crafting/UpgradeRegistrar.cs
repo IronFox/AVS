@@ -68,7 +68,7 @@ namespace AVS.Crafting
     /// <summary>
     /// Holds TechTypes for an upgrade for each supported vehicle type.
     /// </summary>
-    public readonly struct UpgradeTechTypes
+    public readonly struct UpgradeTechTypes : IEquatable<UpgradeTechTypes>
     {
         /// <summary>
         /// Tech type applicable for any AVS vehicle.
@@ -209,6 +209,41 @@ namespace AVS.Crafting
                         return this;
             }
         }
+
+        /// <inheritdoc/>
+        public bool Equals(UpgradeTechTypes other)
+            => ForAvsVehicle == other.ForAvsVehicle
+            && ForSeamoth == other.ForSeamoth
+            && ForExosuit == other.ForExosuit
+            && ForCyclops == other.ForCyclops;
+
+        /// <summary>
+        /// Counts the total number of upgrades locally registered
+        /// in the provided <see cref="Equipment"/> instance.
+        /// </summary>
+        /// <param name="modules">Modules to count instances in</param>
+        /// <returns>The total number of modules installed of the local type</returns>
+        public int CountSumIn(Equipment modules)
+        {
+            int sum = 0;
+            foreach (var techType in AllNotNone)
+            {
+                sum += modules.GetCount(techType);
+            }
+            return sum;
+        }
+
+
+        /// <inheritdoc/>
+        public static bool operator ==(UpgradeTechTypes left, UpgradeTechTypes right)
+        {
+            return left.Equals(right);
+        }
+        /// <inheritdoc/>
+        public static bool operator !=(UpgradeTechTypes left, UpgradeTechTypes right)
+        {
+            return !(left == right);
+        }
     }
     /// <summary>
     /// Enum representing supported vehicle types.
@@ -281,7 +316,78 @@ namespace AVS.Crafting
         /// <summary>
         /// Tracks currently toggled actions for vehicles, by vehicle, slot, and coroutine.
         /// </summary>
-        internal static List<Tuple<Vehicle, int, Coroutine>> ToggledActions { get; } = new List<Tuple<Vehicle, int, Coroutine>>();
+        private static Dictionary<VehicleSlotId, ActiveAction> ToggledActions { get; } = new Dictionary<VehicleSlotId, ActiveAction>();
+
+
+        internal readonly struct ActiveAction
+        {
+            public Coroutine Action { get; }
+            public ToggleableUpgrade? ToggleableUpgrade { get; }
+            public Vehicle Vehicle { get; }
+
+            public ActiveAction(Coroutine action, Vehicle vehicle, ToggleableUpgrade? toggleableUpgrade)
+            {
+                Action = action;
+                ToggleableUpgrade = toggleableUpgrade;
+                Vehicle = vehicle;
+            }
+
+            public bool IsValid => Action != null && Vehicle != null;
+
+            public void Stop(ToggleActionParams inactiveParams)
+            {
+                if (Action != null && Vehicle != null)
+                {
+                    Vehicle.StopCoroutine(Action);
+                    if (ToggleableUpgrade != null)
+                        try
+                        {
+                            ToggleableUpgrade.OnToggle(inactiveParams);
+                        }
+                        catch (Exception e)
+                        {
+                            LogWriter.Default.Error($"Error in {ToggleableUpgrade.ClassId} OnToggle: {e.Message}", e);
+                        }
+                }
+            }
+        }
+
+        internal readonly struct VehicleSlotId : IEquatable<VehicleSlotId>
+        {
+
+            public Vehicle Vehicle { get; }
+            public int SlotID { get; }
+            public VehicleSlotId(Vehicle vehicle, int slotID)
+            {
+                Vehicle = vehicle;
+                SlotID = slotID;
+            }
+
+            public bool Equals(VehicleSlotId other)
+            {
+                return Vehicle == other.Vehicle && SlotID == other.SlotID;
+            }
+            public override bool Equals(object? obj)
+            {
+                return obj is VehicleSlotId other && Equals(other);
+            }
+            public override int GetHashCode()
+            {
+                int hash = 17;
+                hash = hash * 23 + Vehicle.GetHashCode();
+                hash = hash * 23 + SlotID.GetHashCode();
+                return hash;
+            }
+            public static bool operator ==(VehicleSlotId left, VehicleSlotId right)
+            {
+                return left.Equals(right);
+            }
+            public static bool operator !=(VehicleSlotId left, VehicleSlotId right)
+            {
+                return !(left == right);
+            }
+        }
+
 
         /// <summary>
         /// Registers a AvsVehicleUpgrade and sets up its icons, recipes, and actions for compatible vehicle types.
@@ -541,27 +647,72 @@ namespace AVS.Crafting
         {
             if (upgrade is ToggleableUpgrade toggle)
             {
-                IEnumerator DoToggleAction(ToggleActionParams param, float timeToFirstActivation, float repeatRate, float energyCostPerActivation)
+                IEnumerator DoToggleAction(ToggleActionParams param, float timeToFirstActivation, float repeatDelay, float energyCostPerActivation)
                 {
-                    var isAvsVehicle = param.vehicle.GetComponent<AvsVehicle>();
+                    var isAvsVehicle = param.Vehicle.GetComponent<AvsVehicle>();
+                    try
+                    {
+                        toggle.OnToggle(param);
+                    }
+                    catch (Exception e)
+                    {
+                        LogWriter.Default.Error($"Error in {toggle.ClassId} OnToggle: {e.Message}", e);
+                        param.Vehicle.ToggleSlot(param.SlotID, false);
+                        yield break;
+                    }
                     yield return new WaitForSeconds(timeToFirstActivation);
+                    param = param.IncreaseSecondsSinceActivation(timeToFirstActivation);
                     while (true)
                     {
-                        bool shouldStopWorking = isAvsVehicle ? !isAvsVehicle.IsBoarded : !param.vehicle.GetPilotingMode();
+                        bool shouldStopWorking = isAvsVehicle ? !isAvsVehicle.IsBoarded : !param.Vehicle.GetPilotingMode();
                         if (shouldStopWorking)
                         {
-                            param.vehicle.ToggleSlot(param.slotID, false);
+                            param.Vehicle.ToggleSlot(param.SlotID, false);
+                            try
+                            {
+                                toggle.OnToggle(param.SetInactive());
+                            }
+                            catch (Exception e)
+                            {
+                                LogWriter.Default.Error($"Error in {toggle.ClassId} OnToggle: {e.Message}", e);
+                            }
                             yield break;
                         }
-                        toggle.OnRepeat(param);
-                        float availablePower = param.vehicle.energyInterface.TotalCanProvide(out _);
+                        try
+                        {
+                            toggle.OnRepeat(param);
+                        }
+                        catch (Exception e)
+                        {
+                            LogWriter.Default.Error($"Error in {toggle.ClassId} OnRepeat: {e.Message}", e);
+                            param.Vehicle.ToggleSlot(param.SlotID, false);
+                            try
+                            {
+                                toggle.OnToggle(param.SetInactive());
+                            }
+                            catch (Exception e2)
+                            {
+                                LogWriter.Default.Error($"Error in {toggle.ClassId} OnToggle: {e2.Message}", e2);
+                            }
+                            yield break;
+                        }
+                        float availablePower = param.Vehicle.energyInterface.TotalCanProvide(out _);
                         if (availablePower < energyCostPerActivation)
                         {
-                            param.vehicle.ToggleSlot(param.slotID, false);
+                            param.Vehicle.ToggleSlot(param.SlotID, false);
+                            try
+                            {
+                                toggle.OnToggle(param.SetInactive());
+                            }
+                            catch (Exception e)
+                            {
+                                LogWriter.Default.Error($"Error in {toggle.ClassId} OnToggle: {e.Message}", e);
+                            }
                             yield break;
                         }
-                        param.vehicle.energyInterface.ConsumeEnergy(energyCostPerActivation);
-                        yield return new WaitForSeconds(repeatRate);
+                        param.Vehicle.energyInterface.ConsumeEnergy(energyCostPerActivation);
+                        yield return new WaitForSeconds(repeatDelay);
+                        param = param.IncreaseSecondsSinceActivation(repeatDelay);
                     }
                 }
                 VanillaUpgradeMaker.CreateToggleModule(toggle, compat, ref utt, isPDASetup);
@@ -572,27 +723,33 @@ namespace AVS.Crafting
                 TechType cTT = utt.ForCyclops;
                 void WrappedOnToggle(ToggleActionParams param)
                 {
-                    ToggledActions.RemoveAll(x => x.Item3 == null);
-                    if (param.techType != TechType.None && (param.techType == mvTT || param.techType == sTT || param.techType == eTT || param.techType == cTT))
+                    var remove = ToggledActions.Where(x => !x.Value.IsValid).Select(x => x.Key).ToList();
+                    foreach (var r in remove)
                     {
-                        var relevantActions = ToggledActions.Where(x => x.Item1 == param.vehicle).Where(x => x.Item2 == param.slotID);
-                        if (param.active)
+                        ToggledActions.Remove(r);
+                    }
+                    if (param.TechType != TechType.None && (param.TechType == mvTT || param.TechType == sTT || param.TechType == eTT || param.TechType == cTT))
+                    {
+                        var key = new VehicleSlotId(param.Vehicle, param.SlotID);
+
+                        var doesExist = ToggledActions.TryGetValue(key, out var existing);
+                        if (param.IsActive)
                         {
-                            if (relevantActions.Any())
+                            if (doesExist)
                             {
                                 // Something triggers my Nautilus WithOnModuleToggled action doubly for the Seamoth.
                                 // So if the toggle action already exists, don't add another one.
                                 return;
                             }
-                            var thisToggleCoroutine = param.vehicle.StartCoroutine(DoToggleAction(param, toggle.TimeToFirstActivation, toggle.RepeatRate, toggle.EnergyCostPerActivation));
-                            ToggledActions.Add(new Tuple<Vehicle, int, Coroutine>(param.vehicle, param.slotID, thisToggleCoroutine));
+                            var thisToggleCoroutine = param.Vehicle.StartCoroutine(DoToggleAction(param, toggle.DelayUntilFirstOnRepeat, toggle.RepeatDelay, toggle.EnergyCostPerActivation));
+                            ToggledActions.Add(key, new ActiveAction(thisToggleCoroutine, param.Vehicle, toggle));
                         }
                         else
                         {
-                            foreach (var innerAction in relevantActions)
+                            if (doesExist)
                             {
-                                ToggledActions.RemoveAll(x => x == innerAction);
-                                param.vehicle.StopCoroutine(innerAction.Item3);
+                                existing.Stop(param);
+                                ToggledActions.Remove(key);
                             }
                         }
                     }

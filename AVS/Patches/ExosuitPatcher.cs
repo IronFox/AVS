@@ -28,12 +28,12 @@ namespace AVS.Patches
             {
                 TechType techType = exo.modules.GetTechTypeInSlot(exo.slotIDs[slotID]);
                 var param = new ToggleActionParams
-                {
-                    active = active,
-                    vehicle = exo,
-                    slotID = slotID,
-                    techType = techType
-                };
+                (
+                    isActive: active,
+                    vehicle: exo,
+                    slotID: slotID,
+                    techType: techType
+                );
                 UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
             }
         }

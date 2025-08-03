@@ -5,6 +5,9 @@ using UnityEngine;
 
 namespace AVS.Composition
 {
+    /// <summary>
+    /// The vehicle composition for submersible vehicles.
+    /// </summary>
     public class SubmersibleComposition : VehicleComposition
     {
         /// <summary>

@@ -4,6 +4,11 @@
         <name>AVS</name>
     </assembly>
     <members>
+        <member name="T:AvsUtils">
+            <summary>
+            Various utility methods for AVS.
+            </summary>
+        </member>
         <member name="M:AvsUtils.FindVehicleInParents(UnityEngine.Transform,Vehicle@,System.Collections.Generic.List{UnityEngine.Transform})">
             <summary>
             Determines whether the specified transform or any of its ancestors is the currently mounted vehicle.
@@ -412,9 +417,16 @@
             <param name="player">The player instance.</param>
             <returns>The <see cref="T:AVS.BaseVehicle.AvsVehicle"/> associated with the player, or null if not found.</returns>
         </member>
-        <member name="M:AVS.ExtensionMethods.GetCurrentUpgrades(Vehicle)">
+        <member name="M:AVS.ExtensionMethods.GetCurrentUpgradeNames(Vehicle)">
             <summary>
             Gets the list of current upgrade module names installed in the vehicle.
+            </summary>
+            <param name="vehicle">The vehicle instance.</param>
+            <returns>A list of upgrade module names.</returns>
+        </member>
+        <member name="M:AVS.ExtensionMethods.GetCurrentUpgrades(Vehicle)">
+            <summary>
+            Gets the list of current upgrade modules installed in the vehicle.
             </summary>
             <param name="vehicle">The vehicle instance.</param>
             <returns>A list of upgrade module names.</returns>
@@ -2162,6 +2174,37 @@
             Gets or creates a modules root object named "ModulesRootObject".
             </summary>
         </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.HasRoomFor(Pickupable)">
+            <summary>
+            Checks if the vehicle has room for the specified pickupable item in any of its storage containers.
+            </summary>
+            <param name="pickup">Pickupable to check</param>
+            <returns>True if there is enough room, false if not</returns>
+        </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.HasInStorage(TechType,System.Int32)">
+            <summary>
+            Checks if the vehicle has at least the given number of items of
+            the specified TechType in any of its storage containers.
+            </summary>
+            <param name="techType">Tech type to look for</param>
+            <param name="count">Number of items to require</param>
+            <returns>True if there are at least the given amount of items of the given
+            tech type in this vehicle's storages</returns>
+        </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.AddToStorage(Pickupable)">
+            <summary>
+            Attempts to add a pickupable item to the vehicle's storage.
+            </summary>
+            <param name="pickup">The pickupable item to add.</param>
+            <returns>True if the given pickupable could be placed in this vehicle's storages</returns>
+        </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.GetStorageValues(System.Int32@,System.Int32@)">
+            <summary>
+            Queries the currently stored and total capacity of the vehicle's storage.
+            </summary>
+            <param name="stored">Out storage capacity occupied</param>
+            <param name="capacity">Out total storage capacity</param>
+        </member>
         <member name="T:AVS.Composition.SkimmerComposition">
             <summary>
             Vehicle composition for skimmers, which are small, fast vehicles designed for surface travel.
@@ -2331,6 +2374,11 @@
             <param name="leviathanGrabPoint">Leviathan grab point. Optional.</param>
             <param name="engine">The engine that powers the vehicle. Must not be null.</param>
             <exception cref="T:System.ArgumentException">Thrown if <paramref name="tetherSources"/> or <paramref name="helms"/> is null or empty.</exception>
+        </member>
+        <member name="T:AVS.Composition.SubmersibleComposition">
+            <summary>
+            The vehicle composition for submersible vehicles.
+            </summary>
         </member>
         <member name="P:AVS.Composition.SubmersibleComposition.PilotSeat">
             <summary>
@@ -3406,6 +3454,23 @@
             and equal to any of the contained types.
             </summary>
         </member>
+        <member name="M:AVS.Crafting.UpgradeTechTypes.Equals(AVS.Crafting.UpgradeTechTypes)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeTechTypes.CountSumIn(Equipment)">
+            <summary>
+            Counts the total number of upgrades locally registered
+            in the provided <see cref="T:Equipment"/> instance.
+            </summary>
+            <param name="modules">Modules to count instances in</param>
+            <returns>The total number of modules installed of the local type</returns>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeTechTypes.op_Equality(AVS.Crafting.UpgradeTechTypes,AVS.Crafting.UpgradeTechTypes)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeTechTypes.op_Inequality(AVS.Crafting.UpgradeTechTypes,AVS.Crafting.UpgradeTechTypes)">
+            <inheritdoc/>
+        </member>
         <member name="T:AVS.Crafting.VehicleType">
             <summary>
             Enum representing supported vehicle types.
@@ -3560,6 +3625,44 @@
             <param name="compat">Compatibility flags.</param>
             <param name="utt">Reference to UpgradeTechTypes to update.</param>
             <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
+        </member>
+        <member name="T:AVS.Crafting.ToggleableUpgrade">
+            <summary>
+            Abstract base class for toggleable upgrade modules on AVS vehicles.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.ToggleableUpgrade.QuickSlotType">
+            <inheritdoc />
+        </member>
+        <member name="P:AVS.Crafting.ToggleableUpgrade.RepeatDelay">
+            <summary>
+            Time in seconds between calls to <see cref="M:AVS.Crafting.ToggleableUpgrade.OnRepeat(AVS.UpgradeModules.ToggleActionParams)"/>
+            while the module is active.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.ToggleableUpgrade.DelayUntilFirstOnRepeat">
+            <summary>
+            The time in seconds before the first call to <see cref="M:AVS.Crafting.ToggleableUpgrade.OnRepeat(AVS.UpgradeModules.ToggleActionParams)"/>
+            after the module is activated.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.ToggleableUpgrade.EnergyCostPerActivation">
+            <summary>
+            The energy cost per <see cref="M:AVS.Crafting.ToggleableUpgrade.OnRepeat(AVS.UpgradeModules.ToggleActionParams)"/> call.
+            If the vehicle does not have enough energy, the module will auto-toggle off.
+            </summary>
+        </member>
+        <member name="M:AVS.Crafting.ToggleableUpgrade.OnRepeat(AVS.UpgradeModules.ToggleActionParams)">
+            <summary>
+            Executed once every <see cref="P:AVS.Crafting.ToggleableUpgrade.RepeatDelay"/> seconds while the module is active.
+            </summary>
+            <param name="param"></param>
+        </member>
+        <member name="M:AVS.Crafting.ToggleableUpgrade.OnToggle(AVS.UpgradeModules.ToggleActionParams)">
+            <summary>
+            Executed when the module is toggled on or off, before waiting <see cref="P:AVS.Crafting.ToggleableUpgrade.DelayUntilFirstOnRepeat"/>.
+            </summary>
+            <param name="param"></param>
         </member>
         <member name="T:AVS.Engines.AbstractEngine">
             <summary>
@@ -4064,6 +4167,18 @@
             <inheritdoc/>
         </member>
         <member name="M:AVS.Localization.MaybeTranslate.Equals(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Localization.MaybeTranslate.Equals(System.Object)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Localization.MaybeTranslate.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Localization.MaybeTranslate.op_Equality(AVS.Localization.MaybeTranslate,AVS.Localization.MaybeTranslate)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Localization.MaybeTranslate.op_Inequality(AVS.Localization.MaybeTranslate,AVS.Localization.MaybeTranslate)">
             <inheritdoc/>
         </member>
         <member name="T:AVS.Localization.TranslationKey">
@@ -5522,6 +5637,17 @@
             If true, enables debug logging for this upgrade.
             </summary>
         </member>
+        <member name="M:AVS.UpgradeModules.AvsVehicleModule.GetModule(TechType)">
+            <summary>
+            Resolves the module for the given tech type.
+            </summary>
+            <remarks>
+            Only resolves instances of type <see cref="T:AVS.UpgradeModules.AvsVehicleModule"/>
+            that have been registered
+            </remarks>
+            <param name="tt">Tech type to lookup</param>
+            <returns>Corresponding module or null</returns>
+        </member>
         <member name="P:AVS.UpgradeModules.AvsVehicleModule.TechTypes">
             <summary>
             The registered tech types of this upgrade.
@@ -5677,6 +5803,23 @@
             <param name="vehicle">The vehicle to check.</param>
             <returns>The number of upgrades installed.</returns>
         </member>
+        <member name="M:AVS.UpgradeModules.AvsVehicleModule.CanRemoveFrom(AVS.BaseVehicle.AvsVehicle,System.Nullable{AVS.Localization.MaybeTranslate}@)">
+            <summary>
+            Checks if this upgrade can be removed from the specified vehicle.
+            </summary>
+            <param name="vehicle">Vehicle that this upgrade is being removed from</param>
+            <param name="errorMessage">An error message to show via the PDA message system if this method returns false.</param>
+            <returns></returns>
+        </member>
+        <member name="M:AVS.UpgradeModules.AvsVehicleModule.OnTechTypesAssigned(AVS.Crafting.UpgradeTechTypes)">
+            <summary>
+            Invoked when the <see cref="T:AVS.Crafting.UpgradeTechTypes"/> are assigned to the object.
+            </summary>
+            <remarks>This method provides a hook for derived classes to perform custom logic when tech
+            types are assigned. The default implementation does nothing. Override this method in a derived class to
+            handle the event.</remarks>
+            <param name="techTypes">The <see cref="T:AVS.Crafting.UpgradeTechTypes"/> that have been assigned.</param>
+        </member>
         <member name="T:AVS.UpgradeModules.DepthModule1">
             <summary>
             Represents the first depth module upgrade for vehicles, enhancing their maximum depth capability.
@@ -5763,6 +5906,11 @@
         </member>
         <member name="P:AVS.UpgradeModules.DepthModuleBase.AutoDisplace">
             <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.DepthModuleBase`1.DepthModuleTechTypes">
+            <summary>
+            Tech types of the derived depth module.
+            </summary>
         </member>
         <member name="T:AVS.UpgradeModules.Node">
             <summary>
@@ -5857,6 +6005,36 @@
             <remarks>This method logs the selection of a chargeable action for a specific vehicle and
             slot. Override this method to implement custom behavior when an action is selected.</remarks>
             <param name="param">The parameters associated with the selected chargeable action, including the vehicle and slot information.</param>
+        </member>
+        <member name="T:AVS.UpgradeModules.ToggleActionParams">
+            <summary>
+            Parameters for toggleable upgrade actions.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.ToggleActionParams.Vehicle">
+            <summary>
+            The vehicle the action is being performed on.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.ToggleActionParams.SlotID">
+            <summary>
+            The index of the slot in which the upgrade is located.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.ToggleActionParams.TechType">
+            <summary>
+            The tech type of the upgrade being acted upon.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.ToggleActionParams.IsActive">
+            <summary>
+            True if the upgrade is toggled on, false if off.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.ToggleActionParams.SecondsSinceActivation">
+            <summary>
+            The total time in seconds since the upgrade was activated.
+            </summary>
         </member>
         <member name="P:AVS.UpgradeModules.SelectableActionParams.Vehicle">
             <summary>

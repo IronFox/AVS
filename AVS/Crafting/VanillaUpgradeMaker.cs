@@ -180,12 +180,12 @@ namespace AVS.Crafting
                 .WithOnModuleToggled((vehicleInstance, slotId, energyCost, isActive) =>
                 {
                     var param = new ToggleActionParams
-                    {
-                        active = isActive,
-                        vehicle = vehicleInstance,
-                        slotID = slotId,
-                        techType = info.TechType
-                    };
+                    (
+                        isActive: isActive,
+                        vehicle: vehicleInstance,
+                        slotID: slotId,
+                        techType: info.TechType
+                    );
                     UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
                 });
         }

@@ -64,5 +64,26 @@ namespace AVS.Localization
         public bool Equals(string other)
             => string.Equals(Text, other, StringComparison.Ordinal)
             || string.Equals(Rendered, other, StringComparison.Ordinal);
+
+
+        /// <inheritdoc/>
+        public override bool Equals(object? obj)
+            => obj is MaybeTranslate other && Equals(other) || obj is string str && Equals(str);
+
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            int hash = 17;
+            hash = hash * 31 + (Text?.GetHashCode() ?? 0);
+            hash = hash * 31 + Localize.GetHashCode();
+            return hash;
+        }
+
+        /// <inheritdoc/>
+        public static bool operator ==(MaybeTranslate left, MaybeTranslate right)
+            => left.Equals(right);
+        /// <inheritdoc/>
+        public static bool operator !=(MaybeTranslate left, MaybeTranslate right)
+            => !left.Equals(right);
     }
 }

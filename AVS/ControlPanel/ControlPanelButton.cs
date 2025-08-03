@@ -1,6 +1,6 @@
 ﻿namespace AVS
 {
-    public class ControlPanelButton : HandTarget, IHandTarget
+    internal class ControlPanelButton : HandTarget, IHandTarget
     {
         private System.Action? myClickFunction;
         private System.Action? myHoverFunction;

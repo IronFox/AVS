@@ -1,6 +1,7 @@
 ﻿using AVS.Crafting;
 using AVS.Localization;
 using AVS.UpgradeModules;
+using AVS.Util;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,12 +24,12 @@ namespace AVS.BaseVehicle
         {
             TechType techType = modules.GetTechTypeInSlot(slotIDs[slotID]);
             var param = new ToggleActionParams
-            {
-                active = active,
-                vehicle = this,
-                slotID = slotID,
-                techType = techType
-            };
+            (
+                isActive: active,
+                vehicle: this,
+                slotID: slotID,
+                techType: techType
+            );
             UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
             base.OnUpgradeModuleToggle(slotID, active);
         }
@@ -212,6 +213,11 @@ namespace AVS.BaseVehicle
                 _ = added ? NumEfficiencyModules++ : NumEfficiencyModules--;
             }
         }
+
+
+        private MaybeTranslate? lastRemovalError = null;
+        private float lastRemovalTime = -1;
+
         private bool IsAllowedToRemove(Pickupable pickupable, bool verbose)
         {
             if (pickupable.GetTechType() == TechType.VehicleStorageModule)
@@ -228,6 +234,23 @@ namespace AVS.BaseVehicle
                     return flag;
                 }
                 Debug.LogError("No VehicleStorageContainer found on VehicleStorageModule item");
+            }
+            else
+            {
+                var mod = AvsVehicleModule.GetModule(pickupable.GetTechType());
+                if (mod != null && !mod.CanRemoveFrom(this, out var message))
+                {
+                    if (lastRemovalError == null || lastRemovalError != message.Value
+                        || Time.time - lastRemovalTime > 5)
+                    {
+                        lastRemovalError = message.Value;
+                        lastRemovalTime = Time.time;
+                        Log.Warn($"Trying to remove {pickupable.GetTechType()} but this type cannot be removed from {this.NiceName()} '{VehicleName}': {message.Value.Text}");
+                        ErrorMessage.AddError(message.Value.Rendered);
+                    }
+                    return false;
+                }
+
             }
             return true;
         }

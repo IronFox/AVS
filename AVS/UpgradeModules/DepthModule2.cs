@@ -10,7 +10,7 @@ namespace AVS.UpgradeModules
     /// <remarks>This module is part of the vehicle upgrade system and provides an increased depth limit for
     /// supported vehicles. It can be crafted using specific materials and installed in the vehicle's upgrade
     /// console.</remarks>
-    internal class DepthModule2 : DepthModuleBase
+    internal class DepthModule2 : DepthModuleBase<DepthModule2>
     {
         /// <inheritdoc/>
         public override string ClassId => "AvsDepthModule2";

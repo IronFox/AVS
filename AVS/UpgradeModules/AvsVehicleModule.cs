@@ -1,8 +1,11 @@
-﻿using AVS.Configuration;
+﻿using AVS.BaseVehicle;
+using AVS.Configuration;
 using AVS.Crafting;
+using AVS.Localization;
 using AVS.Log;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using UnityEngine;
 
@@ -19,11 +22,45 @@ namespace AVS.UpgradeModules
         /// </summary>
         public bool LogDebug { get; set; } = false;
 
+        private UpgradeTechTypes techTypes = default;
+
+        private static Dictionary<TechType, AvsVehicleModule> RegisteredModules { get; }
+            = new Dictionary<TechType, AvsVehicleModule>();
+
+        /// <summary>
+        /// Resolves the module for the given tech type.
+        /// </summary>
+        /// <remarks>
+        /// Only resolves instances of type <see cref="AvsVehicleModule"/>
+        /// that have been registered
+        /// </remarks>
+        /// <param name="tt">Tech type to lookup</param>
+        /// <returns>Corresponding module or null</returns>
+        public static AvsVehicleModule? GetModule(TechType tt)
+        {
+            if (RegisteredModules.TryGetValue(tt, out var module))
+                return module;
+            return null;
+        }
+
+
         /// <summary>
         /// The registered tech types of this upgrade.
         /// Available once the upgrade has been registered.
         /// </summary>
-        public UpgradeTechTypes TechTypes { get; internal set; }
+        public UpgradeTechTypes TechTypes
+        {
+            get => techTypes;
+            internal set
+            {
+                if (value == techTypes)
+                    return;
+                techTypes = value;
+                OnTechTypesAssigned(value);
+                foreach (var tt in value.AllNotNone)
+                    RegisteredModules[tt] = this;
+            }
+        }
 
         /// <summary>
         /// The last set sepcific tech type for this upgrade.
@@ -279,7 +316,7 @@ namespace AVS.UpgradeModules
             {
                 return 0;
             }
-            return vehicle.GetCurrentUpgrades().Where(x => x.Contains(ClassId)).Count();
+            return vehicle.GetCurrentUpgradeNames().Where(x => x.Contains(ClassId)).Count();
         }
 
         internal void SetNode(Node node)
@@ -289,5 +326,28 @@ namespace AVS.UpgradeModules
             this.node = node;
 
         }
+
+
+        /// <summary>
+        /// Checks if this upgrade can be removed from the specified vehicle.
+        /// </summary>
+        /// <param name="vehicle">Vehicle that this upgrade is being removed from</param>
+        /// <param name="errorMessage">An error message to show via the PDA message system if this method returns false.</param>
+        /// <returns></returns>
+        public virtual bool CanRemoveFrom(AvsVehicle vehicle, [NotNullWhen(false)] out MaybeTranslate? errorMessage)
+        {
+            errorMessage = null;
+            return true;
+        }
+
+        /// <summary>
+        /// Invoked when the <see cref="UpgradeTechTypes"/> are assigned to the object.
+        /// </summary>
+        /// <remarks>This method provides a hook for derived classes to perform custom logic when tech
+        /// types are assigned. The default implementation does nothing. Override this method in a derived class to
+        /// handle the event.</remarks>
+        /// <param name="techTypes">The <see cref="UpgradeTechTypes"/> that have been assigned.</param>
+        protected virtual void OnTechTypesAssigned(UpgradeTechTypes techTypes)
+        { }
     }
 }

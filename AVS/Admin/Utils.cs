@@ -99,7 +99,7 @@ namespace AVS.Admin
             // Iterate over all upgrade modules,
             // in order to determine our max depth module level
             int maxDepthModuleLevel = 0;
-            List<string> upgrades = mv.GetCurrentUpgrades();
+            List<string> upgrades = mv.GetCurrentUpgradeNames();
             foreach (var upgrade in upgrades)
             {
                 if (string.Equals(upgrade, "AvsDepthModule1(Clone)", StringComparison.OrdinalIgnoreCase))

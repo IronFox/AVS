@@ -7,7 +7,7 @@ namespace AVS.UpgradeModules
     /// <summary>
     /// Level 3 depth module for vehicles, allowing deeper dives.
     /// </summary>
-    internal class DepthModule3 : DepthModuleBase
+    internal class DepthModule3 : DepthModuleBase<DepthModule3>
     {
         /// <inheritdoc/>
         public override string ClassId => "AvsDepthModule3";
