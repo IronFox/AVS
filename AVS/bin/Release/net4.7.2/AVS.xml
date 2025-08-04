@@ -445,11 +445,12 @@
             <param name="source">The audio source to register.</param>
             <returns>The registered <see cref="T:UnityEngine.AudioSource"/>.</returns>
         </member>
-        <member name="M:AVS.ExtensionMethods.Undock(Vehicle)">
+        <member name="M:AVS.ExtensionMethods.Undock(Vehicle,System.Boolean)">
             <summary>
             Undocks the vehicle from its docking bay, if docked.
             </summary>
             <param name="vehicle">The vehicle to undock.</param>
+            <param name="boardPlayer">Whether to integrate the player into the undocked vehicle (if AVS vehicle).</param>
         </member>
         <member name="M:AVS.ExtensionMethods.MaybeToggleCyclopsCollision(VehicleDockingBay)">
             <summary>
@@ -1755,10 +1756,11 @@
             <remarks>Calls <see cref="M:AVS.BaseVehicle.AvsVehicle.ClosestPlayerExit(System.Boolean)" /></remarks>
             <param name="exitLocation">If non-zero, the player should relocate to this location</param>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.OnVehicleUndocked">
+        <member name="M:AVS.BaseVehicle.AvsVehicle.OnVehicleUndocked(System.Boolean)">
             <summary>
             Executed when the vehicle undocks from a docking bay (e.g. a moonpool).
             </summary>
+            <param name="boardPlayer">Whether to board the player into this vehicle</param>
             <remarks>Calls <see cref="M:AVS.BaseVehicle.AvsVehicle.OnPlayerUndocked" /></remarks>
         </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.OnPlayerUndocked">
@@ -3464,6 +3466,12 @@
             </summary>
             <param name="modules">Modules to count instances in</param>
             <returns>The total number of modules installed of the local type</returns>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeTechTypes.GetHashCode">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeTechTypes.Equals(System.Object)">
+            <inheritdoc/>
         </member>
         <member name="M:AVS.Crafting.UpgradeTechTypes.op_Equality(AVS.Crafting.UpgradeTechTypes,AVS.Crafting.UpgradeTechTypes)">
             <inheritdoc/>
@@ -7128,6 +7136,30 @@
         </member>
         <member name="M:AVS.VehicleTypes.Submarine.OnKill">
             <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.OnStorageOpen(System.String,System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.EnableFabricator(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.OnVehicleDocked(UnityEngine.Vector3)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.OnVehicleUndocked(System.Boolean)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.OnPlayerDocked(UnityEngine.Vector3)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.OnPlayerUndocked">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.ScuttleVehicle">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.VehicleTypes.Submarine.UnscuttleVehicle">
+            <inheritdoc />
         </member>
         <member name="M:AVS.VehicleTypes.Submarine.DoExitRoutines">
             <inheritdoc/>

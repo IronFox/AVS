@@ -554,13 +554,13 @@ namespace AVS.VehicleTypes
             base.OnAIBatteryReload();
         }
 
-        // this function returns the number of seconds to wait before opening the PDA,
-        // to show off the cool animations~
+        /// <inheritdoc />
         public override float OnStorageOpen(string name, bool open)
         {
             return 0;
         }
 
+        /// <inheritdoc />
         public void EnableFabricator(bool enabled)
         {
             foreach (Transform tran in transform)
@@ -574,33 +574,39 @@ namespace AVS.VehicleTypes
                 }
             }
         }
+        /// <inheritdoc />
         public override void OnVehicleDocked(Vector3 exitLocation)
         {
             base.OnVehicleDocked(exitLocation);
             EnableFabricator(false);
         }
-        public override void OnVehicleUndocked()
+        /// <inheritdoc />
+        public override void OnVehicleUndocked(bool boardPlayer = true)
         {
-            base.OnVehicleUndocked();
+            base.OnVehicleUndocked(boardPlayer);
             EnableFabricator(true);
         }
-        public override void OnPlayerDocked(Vector3 exitLocation)
+        /// <inheritdoc />
+        protected override void OnPlayerDocked(Vector3 exitLocation)
         {
             EndHelmControl(0.5f);
             base.OnPlayerDocked(exitLocation);
             //UWE.CoroutineHost.StartCoroutine(TryStandUpFromChair());
         }
-        public override void OnPlayerUndocked()
+        /// <inheritdoc />
+        protected override void OnPlayerUndocked()
         {
             base.OnPlayerUndocked();
             var helm = Com.Helms[0];
             BeginHelmControl(helm);
         }
+        /// <inheritdoc />
         public override void ScuttleVehicle()
         {
             base.ScuttleVehicle();
             EnableFabricator(false);
         }
+        /// <inheritdoc />
         public override void UnscuttleVehicle()
         {
             base.UnscuttleVehicle();

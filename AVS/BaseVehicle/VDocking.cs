@@ -40,7 +40,7 @@ namespace AVS.BaseVehicle
         /// </summary>
         /// <remarks>Calls <see cref="ClosestPlayerExit" /></remarks>
         /// <param name="exitLocation">If non-zero, the player should relocate to this location</param>
-        public virtual void OnPlayerDocked(Vector3 exitLocation)
+        protected virtual void OnPlayerDocked(Vector3 exitLocation)
         {
             ClosestPlayerExit(false);
             if (exitLocation != Vector3.zero)
@@ -53,13 +53,14 @@ namespace AVS.BaseVehicle
         /// <summary>
         /// Executed when the vehicle undocks from a docking bay (e.g. a moonpool).
         /// </summary>
+        /// <param name="boardPlayer">Whether to board the player into this vehicle</param>
         /// <remarks>Calls <see cref="OnPlayerUndocked()" /></remarks>
-        public virtual void OnVehicleUndocked()
+        public virtual void OnVehicleUndocked(bool boardPlayer = true)
         {
             if (Config.AutoFixMaterials)
                 MaterialFixer.OnVehicleUndocked();
             // The Moonpool invokes this once upon vehicle exit from the dock
-            if (!isScuttled && !Admin.ConsoleCommands.isUndockConsoleCommand)
+            if (!isScuttled && !Admin.ConsoleCommands.isUndockConsoleCommand && boardPlayer)
             {
                 OnPlayerUndocked();
             }
@@ -80,7 +81,7 @@ namespace AVS.BaseVehicle
         /// Executed when the player should reenter a newly undocked local vehicle.
         /// </summary>
         /// <remarks>Calls <see cref="ClosestPlayerEntry"/></remarks>
-        public virtual void OnPlayerUndocked()
+        protected virtual void OnPlayerUndocked()
         {
             ClosestPlayerEntry();
         }

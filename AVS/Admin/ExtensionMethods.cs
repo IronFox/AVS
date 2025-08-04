@@ -75,13 +75,14 @@ namespace AVS
         /// Undocks the vehicle from its docking bay, if docked.
         /// </summary>
         /// <param name="vehicle">The vehicle to undock.</param>
-        public static void Undock(this Vehicle vehicle)
+        /// <param name="boardPlayer">Whether to integrate the player into the undocked vehicle (if AVS vehicle).</param>
+        public static void Undock(this Vehicle vehicle, bool boardPlayer = true)
         {
             void UndockAvsVehicle(Vehicle thisVehicle)
             {
                 if (vehicle is AvsVehicle mv)
                 {
-                    mv.OnVehicleUndocked();
+                    mv.OnVehicleUndocked(boardPlayer);
                     vehicle.useRigidbody.detectCollisions = true;
                 }
             }

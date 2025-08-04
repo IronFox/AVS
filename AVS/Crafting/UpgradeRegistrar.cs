@@ -233,6 +233,23 @@ namespace AVS.Crafting
             return sum;
         }
 
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            int hash = 17;
+            hash = hash * 23 + ForAvsVehicle.GetHashCode();
+            hash = hash * 23 + ForSeamoth.GetHashCode();
+            hash = hash * 23 + ForExosuit.GetHashCode();
+            hash = hash * 23 + ForCyclops.GetHashCode();
+            return hash;
+        }
+
+        /// <inheritdoc/>
+        public override bool Equals(object? obj)
+        {
+            return obj is UpgradeTechTypes other && Equals(other);
+        }
+
 
         /// <inheritdoc/>
         public static bool operator ==(UpgradeTechTypes left, UpgradeTechTypes right)
