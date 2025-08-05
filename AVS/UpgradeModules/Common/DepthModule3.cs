@@ -2,7 +2,7 @@
 using AVS.Localization;
 //using AVS.Localization;
 
-namespace AVS.UpgradeModules
+namespace AVS.UpgradeModules.Common
 {
     /// <summary>
     /// Level 3 depth module for vehicles, allowing deeper dives.

@@ -3,6 +3,8 @@ using AVS.Crafting;
 using AVS.Localization;
 using AVS.Log;
 using AVS.UpgradeModules;
+using AVS.UpgradeModules.Common;
+using AVS.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -90,10 +92,10 @@ namespace AVS.Admin
         /// <param name="param">The parameters containing the vehicle to evaluate and its associated data.</param>
         public static void EvaluateDepthModules(AddActionParams param)
         {
-            AvsVehicle mv = param.vehicle.GetComponent<AvsVehicle>();
-            if (!mv)
+            var mv = param.Vehicle.SafeGetComponent<AvsVehicle>();
+            if (mv == null)
             {
-                Subtitles.Add("This upgrade is not compatible with this vehicle.");
+                Subtitles.Add(Translator.Get(TranslationKey.Error_UpgradeNotAddable_Incompatible));
                 return;
             }
             // Iterate over all upgrade modules,

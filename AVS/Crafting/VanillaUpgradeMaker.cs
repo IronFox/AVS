@@ -1,4 +1,5 @@
 ﻿using AVS.UpgradeModules;
+using AVS.UpgradeModules.Variations;
 using Nautilus.Assets.Gadgets;
 using System.Collections.Generic;
 
@@ -137,24 +138,24 @@ namespace AVS.Crafting
             gadget
                  .WithOnModuleAdded((vehicleInstance, slotId) =>
                  {
-                     var addedParams = new AddActionParams
-                     {
-                         vehicle = vehicleInstance,
-                         slotID = slotId,
-                         techType = info.TechType,
-                         isAdded = true
-                     };
+                     var addedParams = AddActionParams.CreateForVehicle
+                     (
+                         vehicle: vehicleInstance,
+                         slotID: slotId,
+                         techType: info.TechType,
+                         added: true
+                     );
                      upgrade.OnAdded(addedParams);
                  })
                  .WithOnModuleRemoved((vehicleInstance, slotId) =>
                  {
-                     var addedParams = new AddActionParams
-                     {
-                         vehicle = vehicleInstance,
-                         slotID = slotId,
-                         techType = info.TechType,
-                         isAdded = false
-                     };
+                     var addedParams = AddActionParams.CreateForVehicle
+                     (
+                         vehicle: vehicleInstance,
+                         slotID: slotId,
+                         techType: info.TechType,
+                         added: false
+                     );
                      upgrade.OnAdded(addedParams);
                  });
         }
@@ -165,7 +166,7 @@ namespace AVS.Crafting
                 .WithEnergyCost(upgrade.EnergyCost)
                 .WithOnModuleUsed((vehicleInstance, slotId, charge, chargeFraction) =>
                 {
-                    var selectParams = new SelectableActionParams
+                    var selectParams = new SelectableUpgrade.Params
                     (
                         vehicle: vehicleInstance,
                         slotID: slotId,
@@ -179,7 +180,7 @@ namespace AVS.Crafting
             gadget
                 .WithOnModuleToggled((vehicleInstance, slotId, energyCost, isActive) =>
                 {
-                    var param = new ToggleActionParams
+                    var param = new ToggleableUpgrade.Params
                     (
                         isActive: isActive,
                         vehicle: vehicleInstance,
@@ -192,19 +193,19 @@ namespace AVS.Crafting
         internal static void AddChargeActions(UpgradeModuleGadget gadget, SelectableChargeableUpgrade upgrade, Nautilus.Assets.PrefabInfo info)
         {
             gadget
-                .WithMaxCharge(upgrade.MaxCharge) // this creates a harmless Nautilus warning
-                .WithEnergyCost(upgrade.EnergyCost) // this creates a harmless Nautilus warning
+                .WithMaxCharge(upgrade.ChargeLimit) // this creates a harmless Nautilus warning
+                .WithEnergyCost(upgrade.EnergyCostPerSecond) // this creates a harmless Nautilus warning
                 .WithOnModuleUsed((vehicleInstance, slotId, charge, chargeFraction) =>
                 {
-                    var chargeParams = new SelectableChargeableActionParams
+                    var chargeParams = new SelectableChargeableUpgrade.Params
                     (
                         vehicle: vehicleInstance,
                         slotID: slotId,
                         techType: info.TechType,
                         charge: charge,
-                        slotCharge: chargeFraction
+                        chargeFraction: chargeFraction
                     );
-                    upgrade.OnSelected(chargeParams);
+                    upgrade.OnActivate(chargeParams);
                 });
         }
         #endregion

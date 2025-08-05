@@ -1,7 +1,7 @@
 ﻿using AVS.Crafting;
 using System.Collections.Generic;
 
-namespace AVS.UpgradeModules
+namespace AVS.UpgradeModules.Common
 {
     internal abstract class DepthModuleBase : AvsVehicleModule
     {
@@ -26,12 +26,12 @@ namespace AVS.UpgradeModules
         /// <summary>
         /// Tech types of the derived depth module.
         /// </summary>
-        public static UpgradeTechTypes DepthModuleTechTypes { get; private set; }
+        public static UpgradeTechTypes Registered { get; private set; }
 
         protected override void OnTechTypesAssigned(UpgradeTechTypes techTypes)
         {
             base.OnTechTypesAssigned(techTypes);
-            DepthModuleTechTypes = techTypes;
+            Registered = techTypes;
         }
 
     }

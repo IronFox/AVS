@@ -2,7 +2,7 @@
 using AVS.Localization;
 //using AVS.Localization;
 
-namespace AVS.UpgradeModules
+namespace AVS.UpgradeModules.Common
 {
     /// <summary>
     /// Represents the first depth module upgrade for vehicles, enhancing their maximum depth capability.

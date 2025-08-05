@@ -1,103 +1,53 @@
-﻿using UnityEngine;
+﻿
 
 namespace AVS.UpgradeModules
 {
-    public struct AddActionParams
-    {
-        public Vehicle vehicle;
-        public SubRoot cyclops;
-        public int slotID;
-        public TechType techType;
-        public bool isAdded;
-    }
-
     /// <summary>
-    /// Parameters for toggleable upgrade actions.
+    /// Parameters passed to <see cref="AvsVehicleModule.OnAdded(AddActionParams)"/> and
+    /// <see cref="AvsVehicleModule.OnRemoved(AddActionParams)"/>.
     /// </summary>
-    public struct ToggleActionParams
+    public readonly struct AddActionParams
     {
         /// <summary>
-        /// The vehicle the action is being performed on.
+        /// The vehicle that a module was added to or removed from.
+        /// Null if the module was added to or removed from a Cyclops.
         /// </summary>
-        public Vehicle Vehicle { get; }
+        public Vehicle? Vehicle { get; }
         /// <summary>
-        /// The index of the slot in which the upgrade is located.
-        /// </summary>
-        public int SlotID { get; }
-        /// <summary>
-        /// The tech type of the upgrade being acted upon.
-        /// </summary>
-        public TechType TechType { get; }
-        /// <summary>
-        /// True if the upgrade is toggled on, false if off.
-        /// </summary>
-        public bool IsActive { get; }
-        /// <summary>
-        /// The current time in seconds since the upgrade was activated.
-        /// </summary>
-        public float RepeatTime { get; }
-        /// <summary>
-        /// The last time (<see cref="RepeatTime"/>) in seconds the upgrade was repeated.
-        /// </summary>
-        public float LastRepeatTime { get; }
-
-        internal ToggleActionParams(Vehicle vehicle, int slotID, TechType techType, bool isActive, float repeatTime = 0, float lastRepeatTime = 0)
-        {
-            Vehicle = vehicle;
-            SlotID = slotID;
-            TechType = techType;
-            IsActive = isActive;
-            RepeatTime = repeatTime;
-            LastRepeatTime = lastRepeatTime;
-        }
-
-        internal ToggleActionParams AdvanceRepeatTime(float secondsElapsed)
-            => new ToggleActionParams(Vehicle, SlotID, TechType, IsActive, RepeatTime + secondsElapsed, RepeatTime);
-
-        /// <summary>
-        /// Creates a new instance of <see cref="ToggleActionParams"/> with the upgrade set to inactive.
-        /// </summary>
-        public ToggleActionParams SetInactive()
-            => new ToggleActionParams(Vehicle, SlotID, TechType, false, RepeatTime, LastRepeatTime);
-    }
-
-
-    public readonly struct SelectableActionParams
-    {
-        /// <summary>
-        /// The vehicle to which the upgrade belongs. May be null if <see cref="Cyclops"/> is not null.
-        /// </summary>
-        public Vehicle Vehicle { get; }
-        /// <summary>
-        /// Reference to the owning Cyclops vehicle, if any. May be null.
+        /// If the vehicle is a Cyclops, this is the Cyclops subroot.
         /// </summary>
         public SubRoot? Cyclops { get; }
         /// <summary>
-        /// The index of the slot in which the upgrade is located.
+        /// The index of the slot in which the module was added or removed.
         /// </summary>
         public int SlotID { get; }
         /// <summary>
-        /// The tech type of the upgrade being acted upon.
+        /// Gets the tech type of the module that was added or removed.
         /// </summary>
         public TechType TechType { get; }
-        public SelectableActionParams(
-            Vehicle vehicle,
-            int slotID,
-            TechType techType,
-            SubRoot? cyclops = null)
+        /// <summary>
+        /// True if the module has just been added to the vehicle.
+        /// False if it has just been removed from the vehicle.
+        /// </summary>
+        public bool Added { get; }
+
+        internal AddActionParams(Vehicle? vehicle, SubRoot? cyclops, int slotID, TechType techType, bool added)
         {
             Vehicle = vehicle;
             Cyclops = cyclops;
             SlotID = slotID;
             TechType = techType;
+            Added = added;
         }
-    }
-    public struct ArmActionParams
-    {
-        public Vehicle vehicle;
-        public SubRoot cyclops;
-        public int slotID;
-        public TechType techType;
-        public GameObject arm;
+
+        internal static AddActionParams CreateForVehicle(Vehicle vehicle, int slotID, TechType techType, bool added)
+        {
+            return new AddActionParams(vehicle, null, slotID, techType, added);
+        }
+
+        internal static AddActionParams CreateForCyclops(SubRoot cyclops, int slotID, TechType techType, bool added)
+        {
+            return new AddActionParams(null, cyclops, slotID, techType, added);
+        }
     }
 }

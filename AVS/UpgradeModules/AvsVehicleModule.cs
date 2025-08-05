@@ -3,6 +3,7 @@ using AVS.Configuration;
 using AVS.Crafting;
 using AVS.Localization;
 using AVS.Log;
+using AVS.Util;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -161,18 +162,18 @@ namespace AVS.UpgradeModules
         {
             var now = DateTime.Now;
 
-            LogWriter.Default.Debug($"ArchonBaseModule[{ClassId}].OnAdded(vehicle={param.vehicle},isAdded={param.isAdded},slot={param.slotID})");
+            LogWriter.Default.Debug($"AvsVehicleModule[{ClassId}].OnAdded(vehicle={param.Vehicle},isAdded={param.Added},slot={param.SlotID})");
 
-            if (AutoDisplace != null)
+            if (AutoDisplace != null && param.Vehicle != null)
             {
-                LogWriter.Default.Write($"Auto-displacing modules for {ClassId} in vehicle {param.vehicle.subName.name} at slot {param.slotID}");
+                LogWriter.Default.Write($"Auto-displacing modules for {ClassId} in {param.Vehicle.GetVehicleName()} at slot {param.SlotID}");
                 try
                 {
-                    foreach (var slot in param.vehicle.slotIDs)
+                    foreach (var slot in param.Vehicle.slotIDs)
                     {
-                        if (slot == param.vehicle.slotIDs[param.slotID])
+                        if (slot == param.Vehicle.slotIDs[param.SlotID])
                             continue;
-                        var p = param.vehicle.modules.GetItemInSlot(slot);
+                        var p = param.Vehicle.modules.GetItemInSlot(slot);
                         if (p != null)
                         {
                             var t = p.item.GetComponent<TechTag>();
@@ -181,7 +182,7 @@ namespace AVS.UpgradeModules
                                 if (AutoDisplace.Contains(t.type))
                                 {
                                     LogWriter.Default.Write($"Evacuating extra {t.type} type from slot {slot}");
-                                    if (!param.vehicle.modules.RemoveItem(p.item))
+                                    if (!param.Vehicle.modules.RemoveItem(p.item))
                                     {
                                         LogWriter.Default.Error($"Failed remove");
                                         continue;
@@ -215,16 +216,15 @@ namespace AVS.UpgradeModules
         /// <param name="param">Parameters for the remove action.</param>
         public virtual void OnRemoved(AddActionParams param)
         {
-            Logger.DebugLog(this, "Removing " + ClassId + " to ModVehicle: " + param.vehicle.subName.name + " in slotID: " + param.slotID.ToString());
+            LogWriter.Default.Debug($"ArchonBaseModule[{ClassId}].OnRemoved(vehicle={param.Vehicle},isAdded={param.Added},slot={param.SlotID})");
         }
 
         /// <summary>
-        /// Called when this upgrade is cycled in a Cyclops vehicle.
+        /// Called when this upgrade is added to or removed from a Cyclops.
         /// </summary>
-        /// <param name="param">Parameters for the Cyclops action.</param>
         public virtual void OnCyclops(AddActionParams param)
         {
-            Logger.DebugLog(this, "Bumping " + ClassId + " In Cyclops: '" + param.cyclops.subName + "' in slotID: " + param.slotID.ToString());
+            LogWriter.Default.Debug(this, $"Cyclops module {ClassId} action: {(param.Added ? "Added" : "Removed")} in slot {param.SlotID} for Cyclops '{param.Cyclops.NiceName()}'");
         }
 
         internal void RegisterTechTypeFor(VehicleType vType, TechType newType)

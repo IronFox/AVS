@@ -1,6 +1,7 @@
 ﻿using AVS.Crafting;
 using AVS.Localization;
 using AVS.UpgradeModules;
+using AVS.UpgradeModules.Variations;
 using AVS.Util;
 using System;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace AVS.BaseVehicle
         public override void OnUpgradeModuleToggle(int slotID, bool active)
         {
             TechType techType = modules.GetTechTypeInSlot(slotIDs[slotID]);
-            var param = new ToggleActionParams
+            var param = new ToggleableUpgrade.Params
             (
                 isActive: active,
                 vehicle: this,
@@ -40,7 +41,7 @@ namespace AVS.BaseVehicle
         /// <param name="slotID">Upgrade module slot</param>
         public override void OnUpgradeModuleUse(TechType techType, int slotID)
         {
-            var param = new SelectableActionParams
+            var param = new SelectableUpgrade.Params
             (
                 vehicle: this,
                 slotID: slotID,
@@ -48,13 +49,13 @@ namespace AVS.BaseVehicle
             );
             UpgradeRegistrar.OnSelectActions.ForEach(x => x(param));
 
-            var param2 = new SelectableChargeableActionParams
+            var param2 = new SelectableChargeableUpgrade.Params
             (
                 vehicle: this,
                 slotID: slotID,
                 techType: techType,
                 charge: param.Vehicle.quickSlotCharge[param.SlotID],
-                slotCharge: param.Vehicle.GetSlotCharge(param.SlotID)
+                chargeFraction: param.Vehicle.GetSlotCharge(param.SlotID)
             );
             UpgradeRegistrar.OnSelectChargeActions.ForEach(x => x(param2));
 
@@ -70,13 +71,13 @@ namespace AVS.BaseVehicle
         public override void OnUpgradeModuleChange(int slotID, TechType techType, bool added)
         {
             UpgradeOnAddedActions.ForEach(x => x(slotID, techType, added));
-            var addedParams = new AddActionParams
-            {
-                vehicle = this,
-                slotID = slotID,
-                techType = techType,
-                isAdded = added
-            };
+            var addedParams = AddActionParams.CreateForVehicle
+            (
+                vehicle: this,
+                slotID: slotID,
+                techType: techType,
+                added: added
+            );
             UpgradeRegistrar.OnAddActions.ForEach(x => x(addedParams));
         }
         /// <summary>

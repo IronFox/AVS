@@ -5,12 +5,12 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-// PURPOSE: allow VF upgrades to function as expected in a Cyclops
-// VALUE: High.
-
 namespace AVS.Patches
 {
-    public class VFUpgradesListener : MonoBehaviour
+    /// <summary>
+    /// Helper for enabling AVS upgrades on a Cyclops.
+    /// </summary>
+    internal class AvsUpgradesListener : MonoBehaviour
     {
         private UpgradeConsole UpgradeConsole => GetComponent<UpgradeConsole>();
         private SubRoot Subroot => GetComponentInParent<SubRoot>();
@@ -41,13 +41,13 @@ namespace AVS.Patches
             }
             if (item.techType != TechType.None)
             {
-                var addedParams = new AddActionParams
-                {
-                    cyclops = Subroot,
-                    slotID = GetSlotNumber(slot),
-                    techType = item.techType,
-                    isAdded = true
-                };
+                var addedParams = AddActionParams.CreateForCyclops
+                (
+                    cyclops: Subroot,
+                    slotID: GetSlotNumber(slot),
+                    techType: item.techType,
+                    added: true
+                );
                 UpgradeRegistrar.OnAddActions.ForEach(x => x(addedParams));
                 UWE.CoroutineHost.StartCoroutine(BroadcastMessageSoon());
             }
@@ -61,13 +61,13 @@ namespace AVS.Patches
             }
             if (item.techType != TechType.None)
             {
-                var addedParams = new AddActionParams
-                {
-                    cyclops = Subroot,
-                    slotID = GetSlotNumber(slot),
-                    techType = item.techType,
-                    isAdded = false
-                };
+                var addedParams = AddActionParams.CreateForCyclops
+                (
+                    cyclops: Subroot,
+                    slotID: GetSlotNumber(slot),
+                    techType: item.techType,
+                    added: false
+                );
                 UpgradeRegistrar.OnAddActions.ForEach(x => x(addedParams));
                 UWE.CoroutineHost.StartCoroutine(BroadcastMessageSoon());
             }
@@ -81,6 +81,9 @@ namespace AVS.Patches
             }
         }
     }
+    /// <summary>
+    /// Patcher for Cyclops Upgrade Console to ensure AVS upgrades work correctly.
+    /// </summary>
     [HarmonyPatch(typeof(UpgradeConsole))]
     public class UpgradeConsolePatcher
     {
@@ -115,7 +118,7 @@ namespace AVS.Patches
 
             if (thisSubRoot.isCyclops && console.modules != null && console.modules.equipment != null)
             {
-                var listener = console.gameObject.EnsureComponent<VFUpgradesListener>();
+                var listener = console.gameObject.EnsureComponent<AvsUpgradesListener>();
                 console.modules.onEquip -= listener.OnSlotEquipped;
                 console.modules.onUnequip -= listener.OnSlotUnequipped;
                 console.modules.onEquip += listener.OnSlotEquipped;

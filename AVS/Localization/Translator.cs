@@ -128,6 +128,10 @@
         /// </summary>
         Error_UpgradeNotRemovable_StorageNotEmpty,
         /// <summary>
+        /// When the user tries to add an upgrade that is not compatible with the vehicle.
+        /// </summary>
+        Error_UpgradeNotAddable_Incompatible,
+        /// <summary>
         /// Then trying to add an item to a storage that is full.
         /// </summary>
         Error_CannotAdd_StorageFull,

@@ -2,6 +2,8 @@
 using AVS;
 using AVS.BaseVehicle;
 using AVS.UpgradeModules;
+using AVS.UpgradeModules.Common;
+using AVS.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -54,15 +56,15 @@ public static class AvsUtils
     /// <param name="param">The parameters containing the vehicle to evaluate and its associated data.</param>
     public static void EvaluateDepthModules(AddActionParams param)
     {
-        AvsVehicle mv = param.vehicle.GetComponent<AvsVehicle>();
-        if (!mv)
+        var mv = param.Vehicle.SafeGetComponent<AvsVehicle>();
+        if (mv == null)
         {
             Subtitles.Add("This upgrade is not compatible with this vehicle.");
             return;
         }
-        var depthModule1Count = DepthModule1.DepthModuleTechTypes.CountSumIn(mv.modules);
-        var depthModule2Count = DepthModule2.DepthModuleTechTypes.CountSumIn(mv.modules);
-        var depthModule3Count = DepthModule3.DepthModuleTechTypes.CountSumIn(mv.modules);
+        var depthModule1Count = DepthModule1.Registered.CountSumIn(mv.modules);
+        var depthModule2Count = DepthModule2.Registered.CountSumIn(mv.modules);
+        var depthModule3Count = DepthModule3.Registered.CountSumIn(mv.modules);
 
 
         // Iterate over all upgrade modules,

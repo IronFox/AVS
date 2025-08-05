@@ -2,6 +2,7 @@
 using AVS.BaseVehicle;
 using AVS.Log;
 using AVS.UpgradeModules;
+using AVS.UpgradeModules.Variations;
 using Nautilus.Assets.Gadgets;
 using System;
 using System.Collections;
@@ -305,31 +306,15 @@ namespace AVS.Crafting
         /// <summary>
         /// List of actions to invoke when a toggleable upgrade is toggled.
         /// </summary>
-        internal static List<Action<ToggleActionParams>> OnToggleActions { get; } = new List<Action<ToggleActionParams>>();
+        internal static List<Action<ToggleableUpgrade.Params>> OnToggleActions { get; } = new List<Action<ToggleableUpgrade.Params>>();
         /// <summary>
         /// List of actions to invoke when a selectable chargeable upgrade is selected.
         /// </summary>
-        internal static List<Action<SelectableChargeableActionParams>> OnSelectChargeActions { get; } = new List<Action<SelectableChargeableActionParams>>();
+        internal static List<Action<SelectableChargeableUpgrade.Params>> OnSelectChargeActions { get; } = new List<Action<SelectableChargeableUpgrade.Params>>();
         /// <summary>
         /// List of actions to invoke when a selectable upgrade is selected.
         /// </summary>
-        internal static List<Action<SelectableActionParams>> OnSelectActions { get; } = new List<Action<SelectableActionParams>>();
-        /// <summary>
-        /// List of actions to invoke when an arm action is performed (down).
-        /// </summary>
-        internal static List<Action<ArmActionParams>> OnArmDownActions { get; } = new List<Action<ArmActionParams>>();
-        /// <summary>
-        /// List of actions to invoke when an arm action is held.
-        /// </summary>
-        internal static List<Action<ArmActionParams>> OnArmHeldActions { get; } = new List<Action<ArmActionParams>>();
-        /// <summary>
-        /// List of actions to invoke when an arm action is released (up).
-        /// </summary>
-        internal static List<Action<ArmActionParams>> OnArmUpActions { get; } = new List<Action<ArmActionParams>>();
-        /// <summary>
-        /// List of actions to invoke when an alternate arm action is performed.
-        /// </summary>
-        internal static List<Action<ArmActionParams>> OnArmAltActions { get; } = new List<Action<ArmActionParams>>();
+        internal static List<Action<SelectableUpgrade.Params>> OnSelectActions { get; } = new List<Action<SelectableUpgrade.Params>>();
         /// <summary>
         /// Tracks currently toggled actions for vehicles, by vehicle, slot, and coroutine.
         /// </summary>
@@ -351,7 +336,7 @@ namespace AVS.Crafting
 
             public bool IsValid => Action != null && Vehicle != null;
 
-            public void Stop(ToggleActionParams inactiveParams)
+            public void Stop(ToggleableUpgrade.Params inactiveParams)
             {
                 if (Action != null && Vehicle != null)
                 {
@@ -565,11 +550,11 @@ namespace AVS.Crafting
             TechType cTT = utt.ForCyclops;
             void WrappedOnAdded(AddActionParams param)
             {
-                if (param.techType != TechType.None && (param.techType == mvTT || param.techType == sTT || param.techType == eTT || param.techType == cTT))
+                if (param.TechType != TechType.None && (param.TechType == mvTT || param.TechType == sTT || param.TechType == eTT || param.TechType == cTT))
                 {
-                    if (param.vehicle != null)
+                    if (param.Vehicle != null)
                     {
-                        if (param.isAdded)
+                        if (param.Added)
                         {
                             upgrade.OnAdded(param);
                         }
@@ -579,7 +564,7 @@ namespace AVS.Crafting
                         }
 
                     }
-                    else if (param.cyclops != null)
+                    else if (param.Cyclops != null)
                     {
                         upgrade.OnCyclops(param);
                     }
@@ -605,7 +590,7 @@ namespace AVS.Crafting
                 TechType sTT = utt.ForSeamoth;
                 TechType eTT = utt.ForExosuit;
                 TechType cTT = utt.ForCyclops;
-                void WrappedOnSelected(SelectableActionParams param)
+                void WrappedOnSelected(SelectableUpgrade.Params param)
                 {
                     if (param.TechType != TechType.None && (param.TechType == mvTT || param.TechType == sTT || param.TechType == eTT || param.TechType == cTT))
                     {
@@ -636,17 +621,17 @@ namespace AVS.Crafting
                     // Set MaxCharge and EnergyCost for all possible TechTypes emerging from this upgrade.
                     TechType value = (TechType)field.GetValue(utt);
                     Logger.Log(value.AsString());
-                    Nautilus.Handlers.CraftDataHandler.SetMaxCharge(value, selectcharge.MaxCharge);
-                    Nautilus.Handlers.CraftDataHandler.SetEnergyCost(value, selectcharge.EnergyCost);
+                    Nautilus.Handlers.CraftDataHandler.SetMaxCharge(value, selectcharge.ChargeLimit);
+                    Nautilus.Handlers.CraftDataHandler.SetEnergyCost(value, selectcharge.EnergyCostPerSecond);
                 }
                 isPDASetup = true;
                 var myType = utt;
-                void WrappedOnSelectedCharged(SelectableChargeableActionParams param)
+                void WrappedOnSelectedCharged(SelectableChargeableUpgrade.Params param)
                 {
                     if (myType.HasTechType(param.TechType))
                     {
-                        selectcharge.OnSelected(param);
-                        param.Vehicle.energyInterface.ConsumeEnergy(selectcharge.EnergyCost);
+                        selectcharge.OnActivate(param);
+                        param.Vehicle.energyInterface.ConsumeEnergy(selectcharge.EnergyCostPerSecond);
                     }
                 }
                 OnSelectChargeActions.Add(WrappedOnSelectedCharged);
@@ -664,7 +649,7 @@ namespace AVS.Crafting
         {
             if (upgrade is ToggleableUpgrade toggle)
             {
-                IEnumerator DoToggleAction(ToggleActionParams param, float timeToFirstActivation, float repeatDelay, float energyCostPerActivation)
+                IEnumerator DoToggleAction(ToggleableUpgrade.Params param, float timeToFirstActivation, float repeatDelay, float energyCostPerActivation)
                 {
                     var isAvsVehicle = param.Vehicle.GetComponent<AvsVehicle>();
                     try
@@ -742,7 +727,7 @@ namespace AVS.Crafting
                 TechType sTT = utt.ForSeamoth;
                 TechType eTT = utt.ForExosuit;
                 TechType cTT = utt.ForCyclops;
-                void WrappedOnToggle(ToggleActionParams param)
+                void WrappedOnToggle(ToggleableUpgrade.Params param)
                 {
                     var remove = ToggledActions.Where(x => !x.Value.IsValid).Select(x => x.Key).ToList();
                     foreach (var r in remove)

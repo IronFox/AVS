@@ -584,7 +584,7 @@ namespace AVS.BaseVehicle
         /// <summary>
         /// Gets the applied local vehicle name
         /// </summary>
-        public string VehicleName => subName != null ? subName.GetName() : vehicleName;
+        public string VehicleName => this.GetVehicleName();
 
         internal SubRoot? _subRoot;
         /// <summary>

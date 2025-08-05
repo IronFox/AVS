@@ -536,5 +536,18 @@ namespace AVS.Util
         public static bool ReadData(this PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer)
             => SaveFiles.Current.ReadPrefabData(prefabID, prefix, data, writer);
 
+        /// <summary>
+        /// Resolves the vehicle name of a vehicle.
+        /// </summary>
+        /// <param name="vehicle">Vehicle to get the name of</param>
+        /// <returns>Vehicle name or "&lt;null&gt;"</returns>
+        public static string GetVehicleName(this Vehicle? vehicle)
+        {
+            if (vehicle == null)
+            {
+                return "<null>";
+            }
+            return vehicle.subName != null ? vehicle.subName.GetName() : vehicle.vehicleName;
+        }
     }
 }

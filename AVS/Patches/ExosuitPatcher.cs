@@ -1,5 +1,5 @@
 ﻿using AVS.Crafting;
-using AVS.UpgradeModules;
+using AVS.UpgradeModules.Variations;
 using HarmonyLib;
 
 // PURPOSE: allow VF upgrades for the Prawn to be used as expected
@@ -27,7 +27,7 @@ namespace AVS.Patches
             if (exo != null)
             {
                 TechType techType = exo.modules.GetTechTypeInSlot(exo.slotIDs[slotID]);
-                var param = new ToggleActionParams
+                var param = new ToggleableUpgrade.Params
                 (
                     isActive: active,
                     vehicle: exo,
@@ -45,7 +45,7 @@ namespace AVS.Patches
             var exo = __instance as Exosuit;
             if (exo != null)
             {
-                var param = new SelectableActionParams
+                var param = new SelectableUpgrade.Params
                 (
                     vehicle: __instance,
                     slotID: slotID,
@@ -53,13 +53,13 @@ namespace AVS.Patches
                 );
                 UpgradeRegistrar.OnSelectActions.ForEach(x => x(param));
 
-                var param2 = new SelectableChargeableActionParams
+                var param2 = new SelectableChargeableUpgrade.Params
                 (
                     vehicle: __instance,
                     slotID: slotID,
                     techType: techType,
                     charge: param.Vehicle.quickSlotCharge[param.SlotID],
-                    slotCharge: param.Vehicle.GetSlotCharge(param.SlotID)
+                    chargeFraction: param.Vehicle.GetSlotCharge(param.SlotID)
                 );
                 UpgradeRegistrar.OnSelectChargeActions.ForEach(x => x(param2));
             }
