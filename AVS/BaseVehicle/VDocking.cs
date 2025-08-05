@@ -1,4 +1,5 @@
 ﻿using AVS.MaterialAdapt;
+using System;
 using System.Collections;
 using UnityEngine;
 
@@ -16,75 +17,177 @@ namespace AVS.BaseVehicle
         /// </summary>
         protected bool IsVehicleDocked { get; private set; } = false;
 
+
         /// <summary>
+        /// Handles docking procedures for the vehicle.
         /// Executed when the vehicle docks in a docking bay (e.g. a moonpool).
+        /// Relocates the player if they are currently controlling the vehicle,
         /// </summary>
-        /// <remarks>Calls <see cref="OnPlayerDocked(Vector3)" /> if the vessel is currently being controlled</remarks>
-        /// <param name="exitLocation">
-        /// The location the player should exit to after docking</param>
-        public virtual void OnVehicleDocked(Vector3 exitLocation)
+        /// <remarks>
+        /// Updates <see cref="IsVehicleDocked"/> and <see cref="Vehicle.docked"/>.
+        /// Calls <see cref="OnPreVehicleDocked()"/>,
+        /// <see cref="OnVehicleDocked()"/>,
+        /// and potentially <see cref="OnPreDockingPlayerExit()"/>
+        /// and <see cref="OnDockingPlayerExit()"/>.
+        /// </remarks>
+        /// <param name="doNotRelocatePlayer">
+        /// If set, the player will not be relocated to the exit hatch of the vehicle.
+        /// Also <see cref="OnPreDockingPlayerExit"/> and <see cref="OnDockingPlayerExit"/> will not be called.
+        /// This is a very crude option and requires that the caller ensures the player
+        /// is properly relocated, and all states (e.g. swimming, sitting) are properly updated.
+        /// </param>
+        /// <param name="overridePlayerExitLocation">
+        /// The location the player should exit to after docking.
+        /// If <see cref="Vector3.zero" /> / <see langword="default"/>,
+        /// the player will only relocate to the exit location of the respective hatch</param>
+        public void DockVehicle(Vector3 overridePlayerExitLocation = default,
+            bool doNotRelocatePlayer = false)
         {
+            SafeSignal(OnPreVehicleDocked, nameof(OnPreVehicleDocked));
+            docked = true;
+
             if (Config.AutoFixMaterials)
                 MaterialFixer.OnVehicleDocked();
             // The Moonpool invokes this once upon vehicle entry into the dock
             IsVehicleDocked = true;
-            if (IsBoarded)
-                OnPlayerDocked(exitLocation);
+            if (!doNotRelocatePlayer)
+            {
+                if (IsBoarded)
+                {
+                    SafeSignal(OnPreDockingPlayerExit, nameof(OnPreDockingPlayerExit));
+                    ClosestPlayerExit(false);
+                    if (overridePlayerExitLocation != Vector3.zero)
+                    {
+                        Player.main.transform.position = overridePlayerExitLocation;
+                        Player.main.transform.LookAt(transform);
+                    }
+                    SafeSignal(OnDockingPlayerExit, nameof(OnDockingPlayerExit));
+                }
+            }
+            else
+                IsBoarded = false; // If we do not relocate the player, we should not be boarded
+
             useRigidbody.detectCollisions = false;
             foreach (var component in GetComponentsInChildren<IDockListener>())
                 component.OnDock();
+
+            SafeSignal(OnVehicleDocked, nameof(OnVehicleDocked));
         }
 
-        /// <summary>
-        /// Executed when the player should evict the vehicle after being docked in a docking bay (e.g. a moonpool).
-        /// </summary>
-        /// <remarks>Calls <see cref="ClosestPlayerExit" /></remarks>
-        /// <param name="exitLocation">If non-zero, the player should relocate to this location</param>
-        protected virtual void OnPlayerDocked(Vector3 exitLocation)
+        private void SafeSignal(Action action, string actionName)
         {
-            ClosestPlayerExit(false);
-            if (exitLocation != Vector3.zero)
+            try
             {
-                Player.main.transform.position = exitLocation;
-                Player.main.transform.LookAt(transform);
+                action();
+
+            }
+            catch (Exception e)
+            {
+                Log.Error($"Error while executing {actionName} for {GetType().Name}: {e}");
             }
         }
 
         /// <summary>
+        /// Called before the vehicle is docked in a docking bay (e.g. a moonpool).
+        /// </summary>
+        protected virtual void OnPreVehicleDocked()
+        { }
+        /// <summary>
+        /// Called after the vehicle handled docking procedures
+        /// and potentially relocated the player.
+        /// </summary>
+        protected virtual void OnVehicleDocked()
+        { }
+
+        /// <summary>
+        /// Called before the player exits the vehicle in a docking bay (e.g. a moonpool).
+        /// </summary>
+        protected virtual void OnPreDockingPlayerExit()
+        { }
+
+        /// <summary>
+        /// Called after the player has exited the vehicle in a docking bay (e.g. a moonpool).
+        /// </summary>
+        protected virtual void OnDockingPlayerExit()
+        { }
+
+        /// <summary>
+        /// Handles undocking procedures for the vehicle.
         /// Executed when the vehicle undocks from a docking bay (e.g. a moonpool).
         /// </summary>
+        /// <remarks>
+        /// Updates <see cref="IsVehicleDocked"/> and <see cref="Vehicle.docked"/>.
+        /// Calls <see cref="OnPreVehicleUndocked()"/>,
+        /// <see cref="OnVehicleUndocked()"/>, and potentially
+        /// <see cref="OnPreUndockingPlayerEntry()"/> and
+        /// <see cref="OnUndockingPlayerEntry()"/>.
+        /// </remarks>
         /// <param name="boardPlayer">Whether to board the player into this vehicle</param>
-        /// <remarks>Calls <see cref="OnPlayerUndocked()" /></remarks>
-        public virtual void OnVehicleUndocked(bool boardPlayer = true)
+        /// <param name="suspendCollisions">
+        /// If false, the vehicle's rigidbody will immediately enable collisions after undocking.
+        /// Otherwise, it will disable collisions, then wait 5 seconds before enabling collisions.
+        /// </param>
+        public void UndockVehicle(bool boardPlayer = true, bool suspendCollisions = true)
         {
+            SafeSignal(OnPreVehicleUndocked, nameof(OnPreVehicleUndocked));
             if (Config.AutoFixMaterials)
                 MaterialFixer.OnVehicleUndocked();
+            docked = false;
+
             // The Moonpool invokes this once upon vehicle exit from the dock
             if (!isScuttled && !Admin.ConsoleCommands.isUndockConsoleCommand && boardPlayer)
             {
-                OnPlayerUndocked();
+                SafeSignal(OnPreUndockingPlayerEntry, nameof(OnPreUndockingPlayerEntry));
+
+                ClosestPlayerEntry();
+
+                SafeSignal(OnUndockingPlayerEntry, nameof(OnUndockingPlayerEntry));
             }
             IsVehicleDocked = false;
             foreach (var component in GetComponentsInChildren<IDockListener>())
             {
                 component.OnUndock();
             }
-            IEnumerator EnsureCollisionsEnabledEventually()
+            if (!suspendCollisions)
             {
-                yield return new WaitForSeconds(5f);
                 useRigidbody.detectCollisions = true;
             }
-            UWE.CoroutineHost.StartCoroutine(EnsureCollisionsEnabledEventually());
+            else
+            {
+                useRigidbody.detectCollisions = false;
+                IEnumerator EnsureCollisionsEnabledEventually()
+                {
+                    yield return new WaitForSeconds(5f);
+                    useRigidbody.detectCollisions = true;
+                }
+                UWE.CoroutineHost.StartCoroutine(EnsureCollisionsEnabledEventually());
+            }
+            SafeSignal(OnVehicleUndocked, nameof(OnVehicleUndocked));
         }
 
         /// <summary>
-        /// Executed when the player should reenter a newly undocked local vehicle.
+        /// Executed before the vehicle is undocked from a docking bay (e.g. a moonpool).
         /// </summary>
-        /// <remarks>Calls <see cref="ClosestPlayerEntry"/></remarks>
-        protected virtual void OnPlayerUndocked()
-        {
-            ClosestPlayerEntry();
-        }
+        protected virtual void OnPreVehicleUndocked()
+        { }
+
+        /// <summary>
+        /// Executed when the vehicle has undocking from a docking bay (e.g. a moonpool).
+        /// </summary>
+        protected virtual void OnVehicleUndocked()
+        { }
+
+        /// <summary>
+        /// Executed before the player reenters a newly undocked local vehicle.
+        /// </summary>
+        protected virtual void OnPreUndockingPlayerEntry()
+        { }
+
+        /// <summary>
+        /// Executed when the player reentered a newly undocked local vehicle.
+        /// </summary>
+        protected virtual void OnUndockingPlayerEntry()
+        { }
         /// <summary>
         /// Animation routine to execute when the vehicle is (un)docked in a moonpool.
         /// </summary>

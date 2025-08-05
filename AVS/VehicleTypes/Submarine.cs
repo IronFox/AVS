@@ -575,28 +575,27 @@ namespace AVS.VehicleTypes
             }
         }
         /// <inheritdoc />
-        public override void OnVehicleDocked(Vector3 exitLocation)
+        protected override void OnVehicleDocked()
         {
-            base.OnVehicleDocked(exitLocation);
+            base.OnVehicleDocked();
             EnableFabricator(false);
         }
         /// <inheritdoc />
-        public override void OnVehicleUndocked(bool boardPlayer = true)
+        protected override void OnVehicleUndocked()
         {
-            base.OnVehicleUndocked(boardPlayer);
+            base.OnVehicleUndocked();
             EnableFabricator(true);
         }
         /// <inheritdoc />
-        protected override void OnPlayerDocked(Vector3 exitLocation)
+        protected override void OnPreDockingPlayerExit()
         {
             EndHelmControl(0.5f);
-            base.OnPlayerDocked(exitLocation);
-            //UWE.CoroutineHost.StartCoroutine(TryStandUpFromChair());
+            base.OnPreDockingPlayerExit();
         }
         /// <inheritdoc />
-        protected override void OnPlayerUndocked()
+        protected override void OnUndockingPlayerEntry()
         {
-            base.OnPlayerUndocked();
+            base.OnUndockingPlayerEntry();
             var helm = Com.Helms[0];
             BeginHelmControl(helm);
         }

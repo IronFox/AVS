@@ -359,7 +359,7 @@ namespace AVS.Crafting
                     if (ToggleableUpgrade != null)
                         try
                         {
-                            ToggleableUpgrade.OnToggle(inactiveParams);
+                            ToggleableUpgrade.OnToggleInternal(inactiveParams);
                         }
                         catch (Exception e)
                         {
@@ -669,7 +669,7 @@ namespace AVS.Crafting
                     var isAvsVehicle = param.Vehicle.GetComponent<AvsVehicle>();
                     try
                     {
-                        toggle.OnToggle(param);
+                        toggle.OnToggleInternal(param);
                     }
                     catch (Exception e)
                     {
@@ -689,7 +689,7 @@ namespace AVS.Crafting
                             param.Vehicle.ToggleSlot(param.SlotID, false);
                             try
                             {
-                                toggle.OnToggle(param.SetInactive());
+                                toggle.OnToggleInternal(param.SetInactive());
                             }
                             catch (Exception e)
                             {
@@ -699,7 +699,7 @@ namespace AVS.Crafting
                         }
                         try
                         {
-                            toggle.OnRepeat(param);
+                            toggle.OnRepeatInternal(param);
                         }
                         catch (Exception e)
                         {
@@ -707,7 +707,7 @@ namespace AVS.Crafting
                             param.Vehicle.ToggleSlot(param.SlotID, false);
                             try
                             {
-                                toggle.OnToggle(param.SetInactive());
+                                toggle.OnToggleInternal(param.SetInactive());
                             }
                             catch (Exception e2)
                             {
@@ -721,7 +721,7 @@ namespace AVS.Crafting
                             param.Vehicle.ToggleSlot(param.SlotID, false);
                             try
                             {
-                                toggle.OnToggle(param.SetInactive());
+                                toggle.OnToggleInternal(param.SetInactive());
                             }
                             catch (Exception e)
                             {

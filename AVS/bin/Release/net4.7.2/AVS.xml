@@ -1741,33 +1741,88 @@
             True if the vehicle is currently docked in a docking bay (e.g. a moonpool).
             </summary>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.OnVehicleDocked(UnityEngine.Vector3)">
+        <member name="M:AVS.BaseVehicle.AvsVehicle.DockVehicle(UnityEngine.Vector3,System.Boolean)">
             <summary>
+            Handles docking procedures for the vehicle.
             Executed when the vehicle docks in a docking bay (e.g. a moonpool).
+            Relocates the player if they are currently controlling the vehicle,
             </summary>
-            <remarks>Calls <see cref="M:AVS.BaseVehicle.AvsVehicle.OnPlayerDocked(UnityEngine.Vector3)" /> if the vessel is currently being controlled</remarks>
-            <param name="exitLocation">
-            The location the player should exit to after docking</param>
+            <remarks>
+            Updates <see cref="P:AVS.BaseVehicle.AvsVehicle.IsVehicleDocked"/> and <see cref="P:Vehicle.docked"/>.
+            Calls <see cref="M:AVS.BaseVehicle.AvsVehicle.OnPreVehicleDocked"/>,
+            <see cref="M:AVS.BaseVehicle.AvsVehicle.OnVehicleDocked"/>,
+            and potentially <see cref="M:AVS.BaseVehicle.AvsVehicle.OnPreDockingPlayerExit"/>
+            and <see cref="M:AVS.BaseVehicle.AvsVehicle.OnDockingPlayerExit"/>.
+            </remarks>
+            <param name="doNotRelocatePlayer">
+            If set, the player will not be relocated to the exit hatch of the vehicle.
+            Also <see cref="M:AVS.BaseVehicle.AvsVehicle.OnPreDockingPlayerExit"/> and <see cref="M:AVS.BaseVehicle.AvsVehicle.OnDockingPlayerExit"/> will not be called.
+            This is a very crude option and requires that the caller ensures the player
+            is properly relocated, and all state (e.g. swimming, sitting are properly handled).
+            </param>
+            <param name="overridePlayerExitLocation">
+            The location the player should exit to after docking.
+            If <see cref="P:UnityEngine.Vector3.zero" /> / <see langword="default"/>,
+            the player will only relocate to the exit location of the respective hatch</param>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.OnPlayerDocked(UnityEngine.Vector3)">
+        <member name="M:AVS.BaseVehicle.AvsVehicle.OnPreVehicleDocked">
             <summary>
-            Executed when the player should evict the vehicle after being docked in a docking bay (e.g. a moonpool).
+            Called before the vehicle is docked in a docking bay (e.g. a moonpool).
             </summary>
-            <remarks>Calls <see cref="M:AVS.BaseVehicle.AvsVehicle.ClosestPlayerExit(System.Boolean)" /></remarks>
-            <param name="exitLocation">If non-zero, the player should relocate to this location</param>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.OnVehicleUndocked(System.Boolean)">
+        <member name="M:AVS.BaseVehicle.AvsVehicle.OnVehicleDocked">
             <summary>
+            Called after the vehicle handled docking procedures
+            and potentially relocated the player.
+            </summary>
+        </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.OnPreDockingPlayerExit">
+            <summary>
+            Called before the player exits the vehicle in a docking bay (e.g. a moonpool).
+            </summary>
+        </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.OnDockingPlayerExit">
+            <summary>
+            Called after the player has exited the vehicle in a docking bay (e.g. a moonpool).
+            </summary>
+        </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.UndockVehicle(System.Boolean,System.Boolean)">
+            <summary>
+            Handles undocking procedures for the vehicle.
             Executed when the vehicle undocks from a docking bay (e.g. a moonpool).
             </summary>
+            <remarks>
+            Updates <see cref="P:AVS.BaseVehicle.AvsVehicle.IsVehicleDocked"/> and <see cref="P:Vehicle.docked"/>.
+            Calls <see cref="M:AVS.BaseVehicle.AvsVehicle.OnPreVehicleUndocked"/>,
+            <see cref="M:AVS.BaseVehicle.AvsVehicle.OnVehicleUndocked"/>, and potentially
+            <see cref="M:AVS.BaseVehicle.AvsVehicle.OnPreUndockingPlayerEntry"/> and
+            <see cref="M:AVS.BaseVehicle.AvsVehicle.OnUndockingPlayerEntry"/>.
+            </remarks>
             <param name="boardPlayer">Whether to board the player into this vehicle</param>
-            <remarks>Calls <see cref="M:AVS.BaseVehicle.AvsVehicle.OnPlayerUndocked" /></remarks>
+            <param name="suspendCollisions">
+            If false, the vehicle's rigidbody will immediately enable collisions after undocking.
+            Otherwise, it will disable collisions, then wait 5 seconds before enabling collisions.
+            </param>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.OnPlayerUndocked">
+        <member name="M:AVS.BaseVehicle.AvsVehicle.OnPreVehicleUndocked">
             <summary>
-            Executed when the player should reenter a newly undocked local vehicle.
+            Executed before the vehicle is undocked from a docking bay (e.g. a moonpool).
             </summary>
-            <remarks>Calls <see cref="M:AVS.BaseVehicle.AvsVehicle.ClosestPlayerEntry"/></remarks>
+        </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.OnVehicleUndocked">
+            <summary>
+            Executed when the vehicle has undocking from a docking bay (e.g. a moonpool).
+            </summary>
+        </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.OnPreUndockingPlayerEntry">
+            <summary>
+            Executed before the player reenters a newly undocked local vehicle.
+            </summary>
+        </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.OnUndockingPlayerEntry">
+            <summary>
+            Executed when the player reentered a newly undocked local vehicle.
+            </summary>
         </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.AnimateMoonPoolArms(VehicleDockingBay)">
             <summary>
@@ -3637,7 +3692,11 @@
         <member name="T:AVS.Crafting.ToggleableUpgrade">
             <summary>
             Abstract base class for toggleable upgrade modules on AVS vehicles.
+            A module of this type will consume <see cref="P:AVS.Crafting.ToggleableUpgrade.EnergyCostPerActivation"/> energy
+            every <see cref="P:AVS.Crafting.ToggleableUpgrade.RepeatDelay"/> seconds and call <see cref="M:AVS.Crafting.ToggleableUpgrade.OnRepeat(AVS.UpgradeModules.ToggleActionParams)"/>
+            while active.
             </summary>
+            <remarks>Use the static <see cref="M:AVS.Crafting.ToggleableUpgrade.Deactivate(AVS.UpgradeModules.ToggleActionParams)" /> method to deactive a toggleable module</remarks>
         </member>
         <member name="P:AVS.Crafting.ToggleableUpgrade.QuickSlotType">
             <inheritdoc />
@@ -7143,16 +7202,16 @@
         <member name="M:AVS.VehicleTypes.Submarine.EnableFabricator(System.Boolean)">
             <inheritdoc />
         </member>
-        <member name="M:AVS.VehicleTypes.Submarine.OnVehicleDocked(UnityEngine.Vector3)">
+        <member name="M:AVS.VehicleTypes.Submarine.OnVehicleDocked">
             <inheritdoc />
         </member>
-        <member name="M:AVS.VehicleTypes.Submarine.OnVehicleUndocked(System.Boolean)">
+        <member name="M:AVS.VehicleTypes.Submarine.OnVehicleUndocked">
             <inheritdoc />
         </member>
-        <member name="M:AVS.VehicleTypes.Submarine.OnPlayerDocked(UnityEngine.Vector3)">
+        <member name="M:AVS.VehicleTypes.Submarine.OnPreDockingPlayerExit">
             <inheritdoc />
         </member>
-        <member name="M:AVS.VehicleTypes.Submarine.OnPlayerUndocked">
+        <member name="M:AVS.VehicleTypes.Submarine.OnUndockingPlayerEntry">
             <inheritdoc />
         </member>
         <member name="M:AVS.VehicleTypes.Submarine.ScuttleVehicle">

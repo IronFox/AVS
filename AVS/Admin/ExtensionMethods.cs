@@ -82,8 +82,7 @@ namespace AVS
             {
                 if (vehicle is AvsVehicle mv)
                 {
-                    mv.OnVehicleUndocked(boardPlayer);
-                    vehicle.useRigidbody.detectCollisions = true;
+                    mv.UndockVehicle(boardPlayer, suspendCollisions: false);
                 }
             }
             var theseBays = vehicle.transform.parent

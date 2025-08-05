@@ -131,12 +131,12 @@ namespace AVS.Patches
                 if (moonpool != null || cmm != null)
                 {
                     Transform playerSpawn = dock.transform.Find("playerSpawn");
-                    mv.OnVehicleDocked(playerSpawn.position);
+                    mv.DockVehicle(playerSpawn.position);
                 }
                 else
                 {
-                    Logger.Warn("Vehicle Framework is not aware of this dock. The player is probably in a weird position now.");
-                    mv.OnVehicleDocked(Vector3.zero);
+                    mv.Log.Warn("Vehicle Framework is not aware of this dock. The player is probably in a weird position now.");
+                    mv.DockVehicle();
                 }
             }
         }

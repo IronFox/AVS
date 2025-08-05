@@ -142,7 +142,7 @@ namespace AVS.VehicleComponents
                 mv.DeselectSlots();
                 Player.main.SetPosition(PlayerExitLocation.position);
                 Character.TeleportTo(PlayerExitLocation.position);
-                mv.OnVehicleDocked(Vector3.zero);
+                mv.DockVehicle();
             }
             dockingVehicle.transform.SetParent(transform);
             GetComponent<VehicleTypes.Submarine>().SafeDo(x => x.ClosestPlayerEntry());
@@ -172,8 +172,7 @@ namespace AVS.VehicleComponents
             }
             if (currentDockedVehicle is AvsVehicle mv)
             {
-                mv.OnVehicleUndocked();
-                mv.useRigidbody.detectCollisions = false;
+                mv.UndockVehicle();
             }
         }
         protected virtual IEnumerator DoUndockingAnimations()

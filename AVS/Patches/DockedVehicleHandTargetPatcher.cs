@@ -164,7 +164,7 @@ namespace AVS.Patches
                 }
             }
             SkyEnvironmentChanged.Broadcast(mv.gameObject, (GameObject?)null);
-            mv.OnVehicleUndocked();
+            mv.UndockVehicle();
 
 
             return false;

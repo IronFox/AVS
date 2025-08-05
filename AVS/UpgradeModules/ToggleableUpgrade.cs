@@ -6,7 +6,11 @@ namespace AVS.Crafting
 {
     /// <summary>
     /// Abstract base class for toggleable upgrade modules on AVS vehicles.
+    /// A module of this type will consume <see cref="EnergyCostPerActivation"/> energy
+    /// every <see cref="RepeatDelay"/> seconds and call <see cref="OnRepeat(ToggleActionParams)"/>
+    /// while active.
     /// </summary>
+    /// <remarks>Use the static <see cref="Deactivate" /> method to deactive a toggleable module</remarks>
     public abstract class ToggleableUpgrade : AvsVehicleModule
     {
         /// <inheritdoc />
@@ -30,19 +34,24 @@ namespace AVS.Crafting
         /// Executed once every <see cref="RepeatDelay"/> seconds while the module is active.
         /// </summary>
         /// <param name="param"></param>
-        public virtual void OnRepeat(ToggleActionParams param)
+        protected virtual void OnRepeat(ToggleActionParams param)
         {
             LogWriter.Default.Debug(this, $"OnRepeat {ClassId} on Vehicle: {param.Vehicle.NiceName()} in slotID: {param.SlotID} active: {param.IsActive} elapsed: {param.RepeatTime}");
         }
+        internal void OnRepeatInternal(ToggleActionParams param)
+            => OnRepeat(param);
 
         /// <summary>
         /// Executed when the module is toggled on or off, before waiting <see cref="DelayUntilFirstOnRepeat"/>.
         /// </summary>
         /// <param name="param"></param>
-        public virtual void OnToggle(ToggleActionParams param)
+        protected virtual void OnToggle(ToggleActionParams param)
         {
             LogWriter.Default.Write($"Toggle {ClassId} on Vehicle: {param.Vehicle.NiceName()} in slotID: {param.SlotID} active: {param.IsActive} elapsed: {param.RepeatTime}");
         }
+
+        internal void OnToggleInternal(ToggleActionParams param)
+            => OnToggle(param);
 
         /// <summary>
         /// Helper method to deactivate the module as specified by <paramref name="param"/>.
