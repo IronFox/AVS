@@ -3,12 +3,14 @@ using AVS.BaseVehicle;
 using AVS.Log;
 using AVS.UpgradeModules;
 using AVS.UpgradeModules.Variations;
+using AVS.Util;
 using Nautilus.Assets.Gadgets;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using static AVS.Crafting.UpgradeRegistrar;
 
 namespace AVS.Crafting
 {
@@ -289,6 +291,54 @@ namespace AVS.Crafting
         /// </summary>
         Custom
     }
+
+    internal class ToggleableTracker
+    {
+        public ToggleableModule Module { get; }
+
+        public ToggleableTracker(ToggleableModule toggle)
+        {
+            Module = toggle;
+        }
+
+        private Dictionary<VehicleSlotId, ActiveToggle> ToggledActions { get; }
+            = new Dictionary<VehicleSlotId, ActiveToggle>();
+
+        /// <summary>
+        /// Invoked if the toggleable upgrade is toggled on or off.
+        /// </summary>
+        internal void OnToggle(Vehicle vehicle, int slotId, bool active)
+        {
+            var remove = ToggledActions.Where(x => !x.Value.IsValid).Select(x => x.Key).ToList();
+            foreach (var r in remove)
+            {
+                ToggledActions.Remove(r);
+            }
+            var key = new VehicleSlotId(vehicle, slotId);
+
+            var doesExist = ToggledActions.TryGetValue(key, out var existing);
+            if (active)
+            {
+                if (doesExist)
+                {
+                    // Something triggers my Nautilus WithOnModuleToggled action doubly for the Seamoth.
+                    // So if the toggle action already exists, don't add another one.
+                    return;
+                }
+                //var thisToggleCoroutine = vehicle.StartCoroutine(DoToggleAction(param, toggle.DelayUntilFirstOnRepeat, toggle.RepeatDelay, toggle.EnergyCostPerActivation));
+                ToggledActions.Add(key, new ActiveToggle(vehicle, slotId, Module));
+            }
+            else
+            {
+                if (doesExist)
+                {
+                    existing.Deactivate();
+                    ToggledActions.Remove(key);
+                }
+            }
+        }
+    }
+
     /// <summary>
     /// Handles registration and management of vehicle upgrades, including their icons, actions, and compatibility.
     /// </summary>
@@ -306,7 +356,7 @@ namespace AVS.Crafting
         /// <summary>
         /// List of actions to invoke when a toggleable upgrade is toggled.
         /// </summary>
-        internal static List<Action<ToggleableModule.Params>> OnToggleActions { get; } = new List<Action<ToggleableModule.Params>>();
+        internal static Dictionary<TechType, ToggleableTracker> OnToggleActions { get; } = new Dictionary<TechType, ToggleableTracker>();
         /// <summary>
         /// List of actions to invoke when a selectable chargeable upgrade is selected.
         /// </summary>
@@ -322,38 +372,125 @@ namespace AVS.Crafting
         /// <summary>
         /// Tracks currently toggled actions for vehicles, by vehicle, slot, and coroutine.
         /// </summary>
-        private static Dictionary<VehicleSlotId, ActiveAction> ToggledActions { get; } = new Dictionary<VehicleSlotId, ActiveAction>();
+        private static Dictionary<VehicleSlotId, ActiveToggle> ToggledActions { get; } = new Dictionary<VehicleSlotId, ActiveToggle>();
 
 
-        internal readonly struct ActiveAction
+
+
+
+        internal class ActiveToggle : IToggleState
         {
-            public Coroutine Action { get; }
-            public ToggleableModule? ToggleableUpgrade { get; }
+            private Coroutine Action { get; }
+            public ToggleableModule Module { get; }
             public Vehicle Vehicle { get; }
+            public float StartTime { get; }
 
-            public ActiveAction(Coroutine action, Vehicle vehicle, ToggleableModule? toggleableUpgrade)
+            public bool IsActive { get; private set; }
+
+            public ActiveToggle(Vehicle vehicle, int slotId, ToggleableModule toggleableUpgrade)
             {
-                Action = action;
-                ToggleableUpgrade = toggleableUpgrade;
+                Module = toggleableUpgrade;
                 Vehicle = vehicle;
+                StartTime = Time.time;
+                SlotID = slotId;
+                Action = vehicle.StartCoroutine(Routine());
             }
 
             public bool IsValid => Action != null && Vehicle != null;
 
-            public void Stop(ToggleableModule.Params inactiveParams)
+            public int SlotID { get; }
+
+            /// <summary>
+            /// The Unity time at which the event is processed.
+            /// </summary>
+            public float EventTime { get; private set; }
+
+            /// <summary>
+            /// The Unity time of last execution of <see cref="ToggleableModule.OnRepeat(IToggleState)"/>
+            /// before this one (if currently processing this).
+            /// </summary>
+            public float LastRepeatTime { get; private set; }
+
+
+            public void Deactivate()
             {
                 if (Action != null && Vehicle != null)
                 {
                     Vehicle.StopCoroutine(Action);
-                    if (ToggleableUpgrade != null)
-                        try
-                        {
-                            ToggleableUpgrade.OnToggleInternal(inactiveParams);
-                        }
-                        catch (Exception e)
-                        {
-                            LogWriter.Default.Error($"Error in {ToggleableUpgrade.ClassId} OnToggle: {e.Message}", e);
-                        }
+                }
+                UntoggleAndSignal();
+            }
+
+
+            private bool Untoggle()
+            {
+                if (!IsActive)
+                    return false;
+                Vehicle.ToggleSlot(SlotID, false);
+                IsActive = false;
+                return true;
+            }
+
+            private void UntoggleAndSignal()
+            {
+                if (!Untoggle())
+                    return;
+                UpdateEventTime();
+                try
+                {
+                    Module.OnToggleInternal(this);
+                }
+                catch (Exception e)
+                {
+                    LogWriter.Default.Error($"Error in {Module.ClassId} OnToggle: {e.Message}", e);
+                }
+            }
+
+            private void UpdateEventTime()
+                => EventTime = Time.time - StartTime;
+
+            private IEnumerator Routine()
+            {
+                IsActive = true;
+                var isAvsVehicle = Vehicle.SafeGetComponent<AvsVehicle>();
+                try
+                {
+                    Module.OnToggleInternal(this);
+                }
+                catch (Exception e)
+                {
+                    LogWriter.Default.Error($"Error in {Module.ClassId} OnToggle: {e.Message}", e);
+                    Untoggle();
+                    yield break;
+                }
+                yield return new WaitForSeconds(Module.DelayUntilFirstOnRepeat);
+                while (true)
+                {
+                    bool shouldStopWorking = isAvsVehicle != null ? !isAvsVehicle.IsBoarded : !Vehicle.GetPilotingMode();
+                    if (shouldStopWorking)
+                    {
+                        UntoggleAndSignal();
+                        yield break;
+                    }
+                    try
+                    {
+                        UpdateEventTime();
+                        Module.OnRepeatInternal(this);
+                        LastRepeatTime = EventTime;
+                    }
+                    catch (Exception e)
+                    {
+                        LogWriter.Default.Error($"Error in {Module.ClassId} OnRepeat: {e.Message}", e);
+                        UntoggleAndSignal();
+                        yield break;
+                    }
+                    float availablePower = Vehicle.energyInterface.TotalCanProvide(out _);
+                    if (availablePower < Module.EnergyCostPerActivation)
+                    {
+                        UntoggleAndSignal();
+                        yield break;
+                    }
+                    yield return new WaitForSeconds(Module.RepeatDelay);
                 }
             }
         }
@@ -361,17 +498,17 @@ namespace AVS.Crafting
         internal readonly struct VehicleSlotId : IEquatable<VehicleSlotId>
         {
 
-            public Vehicle Vehicle { get; }
-            public int SlotID { get; }
+            public int VehicleInstanceId { get; }
+            public int SlotId { get; }
             public VehicleSlotId(Vehicle vehicle, int slotID)
             {
-                Vehicle = vehicle;
-                SlotID = slotID;
+                VehicleInstanceId = vehicle.GetInstanceID();
+                SlotId = slotID;
             }
 
             public bool Equals(VehicleSlotId other)
             {
-                return Vehicle == other.Vehicle && SlotID == other.SlotID;
+                return VehicleInstanceId == other.VehicleInstanceId && SlotId == other.SlotId;
             }
             public override bool Equals(object? obj)
             {
@@ -380,8 +517,8 @@ namespace AVS.Crafting
             public override int GetHashCode()
             {
                 int hash = 17;
-                hash = hash * 23 + Vehicle.GetHashCode();
-                hash = hash * 23 + SlotID.GetHashCode();
+                hash = hash * 23 + VehicleInstanceId.GetHashCode();
+                hash = hash * 23 + SlotId.GetHashCode();
                 return hash;
             }
             public static bool operator ==(VehicleSlotId left, VehicleSlotId right)
@@ -688,118 +825,12 @@ namespace AVS.Crafting
         {
             if (upgrade is ToggleableModule toggle)
             {
-                IEnumerator DoToggleAction(ToggleableModule.Params param, float timeToFirstActivation, float repeatDelay, float energyCostPerActivation)
-                {
-                    var isAvsVehicle = param.Vehicle.GetComponent<AvsVehicle>();
-                    try
-                    {
-                        toggle.OnToggleInternal(param);
-                    }
-                    catch (Exception e)
-                    {
-                        LogWriter.Default.Error($"Error in {toggle.ClassId} OnToggle: {e.Message}", e);
-                        param.Vehicle.ToggleSlot(param.SlotID, false);
-                        yield break;
-                    }
-                    float preTime = Time.time;
-                    yield return new WaitForSeconds(timeToFirstActivation);
-                    float elapsed = Time.time - preTime;
-                    param = param.AdvanceRepeatTime(elapsed);
-                    while (true)
-                    {
-                        bool shouldStopWorking = isAvsVehicle ? !isAvsVehicle.IsBoarded : !param.Vehicle.GetPilotingMode();
-                        if (shouldStopWorking)
-                        {
-                            param.Vehicle.ToggleSlot(param.SlotID, false);
-                            try
-                            {
-                                toggle.OnToggleInternal(param.SetInactive());
-                            }
-                            catch (Exception e)
-                            {
-                                LogWriter.Default.Error($"Error in {toggle.ClassId} OnToggle: {e.Message}", e);
-                            }
-                            yield break;
-                        }
-                        try
-                        {
-                            toggle.OnRepeatInternal(param);
-                        }
-                        catch (Exception e)
-                        {
-                            LogWriter.Default.Error($"Error in {toggle.ClassId} OnRepeat: {e.Message}", e);
-                            param.Vehicle.ToggleSlot(param.SlotID, false);
-                            try
-                            {
-                                toggle.OnToggleInternal(param.SetInactive());
-                            }
-                            catch (Exception e2)
-                            {
-                                LogWriter.Default.Error($"Error in {toggle.ClassId} OnToggle: {e2.Message}", e2);
-                            }
-                            yield break;
-                        }
-                        float availablePower = param.Vehicle.energyInterface.TotalCanProvide(out _);
-                        if (availablePower < energyCostPerActivation)
-                        {
-                            param.Vehicle.ToggleSlot(param.SlotID, false);
-                            try
-                            {
-                                toggle.OnToggleInternal(param.SetInactive());
-                            }
-                            catch (Exception e)
-                            {
-                                LogWriter.Default.Error($"Error in {toggle.ClassId} OnToggle: {e.Message}", e);
-                            }
-                            yield break;
-                        }
-                        param.Vehicle.energyInterface.ConsumeEnergy(energyCostPerActivation);
-                        preTime = Time.time;
-                        yield return new WaitForSeconds(repeatDelay);
-                        elapsed = Time.time - preTime;
-                        param = param.AdvanceRepeatTime(elapsed);
-                    }
-                }
+
                 VanillaUpgradeMaker.CreateToggleModule(toggle, compat, ref utt, isPDASetup);
                 isPDASetup = true;
-                TechType mvTT = utt.ForAvsVehicle;
-                TechType sTT = utt.ForSeamoth;
-                TechType eTT = utt.ForExosuit;
-                TechType cTT = utt.ForCyclops;
-                void WrappedOnToggle(ToggleableModule.Params param)
-                {
-                    var remove = ToggledActions.Where(x => !x.Value.IsValid).Select(x => x.Key).ToList();
-                    foreach (var r in remove)
-                    {
-                        ToggledActions.Remove(r);
-                    }
-                    if (param.TechType != TechType.None && (param.TechType == mvTT || param.TechType == sTT || param.TechType == eTT || param.TechType == cTT))
-                    {
-                        var key = new VehicleSlotId(param.Vehicle, param.SlotID);
-
-                        var doesExist = ToggledActions.TryGetValue(key, out var existing);
-                        if (param.IsActive)
-                        {
-                            if (doesExist)
-                            {
-                                // Something triggers my Nautilus WithOnModuleToggled action doubly for the Seamoth.
-                                // So if the toggle action already exists, don't add another one.
-                                return;
-                            }
-                            var thisToggleCoroutine = param.Vehicle.StartCoroutine(DoToggleAction(param, toggle.DelayUntilFirstOnRepeat, toggle.RepeatDelay, toggle.EnergyCostPerActivation));
-                            ToggledActions.Add(key, new ActiveAction(thisToggleCoroutine, param.Vehicle, toggle));
-                        }
-                        else
-                        {
-                            if (doesExist)
-                            {
-                                existing.Stop(param);
-                                ToggledActions.Remove(key);
-                            }
-                        }
-                    }
-                }
-                OnToggleActions.Add(WrappedOnToggle);
+                foreach (var t in utt.AllNotNone)
+                    if (!OnToggleActions.ContainsKey(t))
+                        OnToggleActions.Add(t, new ToggleableTracker(toggle));
             }
         }
     }

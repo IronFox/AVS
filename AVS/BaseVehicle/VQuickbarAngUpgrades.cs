@@ -24,14 +24,8 @@ namespace AVS.BaseVehicle
         public override void OnUpgradeModuleToggle(int slotID, bool active)
         {
             TechType techType = modules.GetTechTypeInSlot(slotIDs[slotID]);
-            var param = new ToggleableModule.Params
-            (
-                isActive: active,
-                vehicle: this,
-                slotID: slotID,
-                techType: techType
-            );
-            UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
+            if (UpgradeRegistrar.OnToggleActions.TryGetValue(techType, out var tracker))
+                tracker.OnToggle(this, slotID, active);
             base.OnUpgradeModuleToggle(slotID, active);
         }
         /// <summary>

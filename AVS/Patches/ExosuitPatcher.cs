@@ -27,14 +27,8 @@ namespace AVS.Patches
             if (exo != null)
             {
                 TechType techType = exo.modules.GetTechTypeInSlot(exo.slotIDs[slotID]);
-                var param = new ToggleableModule.Params
-                (
-                    isActive: active,
-                    vehicle: exo,
-                    slotID: slotID,
-                    techType: techType
-                );
-                UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
+                if (UpgradeRegistrar.OnToggleActions.TryGetValue(techType, out var tracker))
+                    tracker.OnToggle(exo, slotID, active);
             }
         }
 

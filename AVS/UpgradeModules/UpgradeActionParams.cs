@@ -50,4 +50,20 @@ namespace AVS.UpgradeModules
             return new AddActionParams(null, cyclops, slotID, techType, added);
         }
     }
+
+
+    internal readonly struct ToggleableParams
+    {
+        public bool IsActive { get; }
+        public Vehicle Vehicle { get; }
+        public int SlotID { get; }
+        public TechType TechType { get; }
+        internal ToggleableParams(bool isActive, Vehicle vehicle, int slotID, TechType techType)
+        {
+            IsActive = isActive;
+            Vehicle = vehicle;
+            SlotID = slotID;
+            TechType = techType;
+        }
+    }
 }

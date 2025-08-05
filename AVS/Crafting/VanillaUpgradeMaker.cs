@@ -202,14 +202,8 @@ namespace AVS.Crafting
             gadget
                 .WithOnModuleToggled((vehicleInstance, slotId, energyCost, isActive) =>
                 {
-                    var param = new ToggleableModule.Params
-                    (
-                        isActive: isActive,
-                        vehicle: vehicleInstance,
-                        slotID: slotId,
-                        techType: info.TechType
-                    );
-                    UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
+                    if (UpgradeRegistrar.OnToggleActions.TryGetValue(info.TechType, out var tracker))
+                        tracker.OnToggle(vehicleInstance, slotId, isActive);
                 });
         }
         internal static void AddChargeActions(UpgradeModuleGadget gadget, SelectableChargeableModule upgrade, Nautilus.Assets.PrefabInfo info)

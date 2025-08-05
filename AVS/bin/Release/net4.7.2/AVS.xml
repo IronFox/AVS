@@ -3564,6 +3564,11 @@
             Vehicle specific type, used for upgrades that are specific to one vehicle type.
             </summary>
         </member>
+        <member name="M:AVS.Crafting.ToggleableTracker.OnToggle(Vehicle,System.Int32,System.Boolean)">
+            <summary>
+            Invoked if the toggleable upgrade is toggled on or off.
+            </summary>
+        </member>
         <member name="T:AVS.Crafting.UpgradeRegistrar">
             <summary>
             Handles registration and management of vehicle upgrades, including their icons, actions, and compatibility.
@@ -3602,6 +3607,17 @@
         <member name="P:AVS.Crafting.UpgradeRegistrar.ToggledActions">
             <summary>
             Tracks currently toggled actions for vehicles, by vehicle, slot, and coroutine.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.ActiveToggle.EventTime">
+            <summary>
+            The Unity time at which the event is processed.
+            </summary>
+        </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.ActiveToggle.LastRepeatTime">
+            <summary>
+            The Unity time of last execution of <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.IToggleState)"/>
+            before this one (if currently processing this).
             </summary>
         </member>
         <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterUpgrade(AVS.UpgradeModules.Node,AVS.UpgradeModules.AvsVehicleModule,AVS.Crafting.UpgradeCompat)">
@@ -6207,53 +6223,47 @@
         <member name="P:AVS.UpgradeModules.Variations.SelectableModule.QuickSlotType">
             <inheritdoc/>
         </member>
-        <member name="T:AVS.UpgradeModules.Variations.ToggleableModule">
-            <summary>
-            Abstract base class for toggleable upgrade modules on AVS vehicles.
-            A module of this type will consume <see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.EnergyCostPerActivation"/> energy
-            every <see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.RepeatDelay"/> seconds and call <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.ToggleableModule.Params)"/>
-            while active.
-            </summary>
-            <remarks>Use the static <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.Deactivate(AVS.UpgradeModules.Variations.ToggleableModule.Params)" /> method to deactive a toggleable module</remarks>
-        </member>
-        <member name="T:AVS.UpgradeModules.Variations.ToggleableModule.Params">
+        <member name="T:AVS.UpgradeModules.Variations.IToggleState">
             <summary>
             Parameters for toggleable upgrade actions.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.Vehicle">
+        <member name="P:AVS.UpgradeModules.Variations.IToggleState.Vehicle">
             <summary>
             The vehicle the action is being performed on.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.SlotID">
+        <member name="P:AVS.UpgradeModules.Variations.IToggleState.SlotID">
             <summary>
             The index of the slot in which the upgrade is located.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.TechType">
-            <summary>
-            The tech type of the upgrade being acted upon.
-            </summary>
-        </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.IsActive">
+        <member name="P:AVS.UpgradeModules.Variations.IToggleState.IsActive">
             <summary>
             True if the upgrade is toggled on, false if off.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.RepeatTime">
+        <member name="P:AVS.UpgradeModules.Variations.IToggleState.EventTime">
             <summary>
             The current time in seconds since the upgrade was activated.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.LastRepeatTime">
+        <member name="P:AVS.UpgradeModules.Variations.IToggleState.LastRepeatTime">
             <summary>
-            The last time (<see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.RepeatTime"/>) in seconds the upgrade was repeated.
+            The last time (<see cref="P:AVS.UpgradeModules.Variations.IToggleState.EventTime"/>) in seconds the upgrade was repeated.
             </summary>
         </member>
-        <member name="M:AVS.UpgradeModules.Variations.ToggleableModule.Params.SetInactive">
+        <member name="M:AVS.UpgradeModules.Variations.IToggleState.Deactivate">
             <summary>
-            Creates a new instance of <see cref="T:AVS.UpgradeModules.Variations.ToggleableModule.Params"/> with the upgrade set to inactive.
+            Deactivates the upgrade module.
+            </summary>
+        </member>
+        <member name="T:AVS.UpgradeModules.Variations.ToggleableModule">
+            <summary>
+            Abstract base class for toggleable upgrade modules on AVS vehicles.
+            A module of this type will consume <see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.EnergyCostPerActivation"/> energy
+            every <see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.RepeatDelay"/> seconds and call <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.IToggleState)"/>
+            while active.
             </summary>
         </member>
         <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.QuickSlotType">
@@ -6261,39 +6271,33 @@
         </member>
         <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.RepeatDelay">
             <summary>
-            Time in seconds between calls to <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.ToggleableModule.Params)"/>
+            Time in seconds between calls to <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.IToggleState)"/>
             while the module is active.
             </summary>
         </member>
         <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.DelayUntilFirstOnRepeat">
             <summary>
-            The time in seconds before the first call to <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.ToggleableModule.Params)"/>
+            The time in seconds before the first call to <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.IToggleState)"/>
             after the module is activated.
             </summary>
         </member>
         <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.EnergyCostPerActivation">
             <summary>
-            The energy cost per <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.ToggleableModule.Params)"/> call.
+            The energy cost per <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.IToggleState)"/> call.
             If the vehicle does not have enough energy, the module will auto-toggle off.
             </summary>
         </member>
-        <member name="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.ToggleableModule.Params)">
+        <member name="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.IToggleState)">
             <summary>
             Executed once every <see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.RepeatDelay"/> seconds while the module is active.
             </summary>
-            <param name="param"></param>
+            <param name="state"></param>
         </member>
-        <member name="M:AVS.UpgradeModules.Variations.ToggleableModule.OnToggle(AVS.UpgradeModules.Variations.ToggleableModule.Params)">
+        <member name="M:AVS.UpgradeModules.Variations.ToggleableModule.OnToggle(AVS.UpgradeModules.Variations.IToggleState)">
             <summary>
             Executed when the module is toggled on or off, before waiting <see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.DelayUntilFirstOnRepeat"/>.
             </summary>
-            <param name="param"></param>
-        </member>
-        <member name="M:AVS.UpgradeModules.Variations.ToggleableModule.Deactivate(AVS.UpgradeModules.Variations.ToggleableModule.Params)">
-            <summary>
-            Helper method to deactivate the module as specified by <paramref name="param"/>.
-            </summary>
-            <param name="param">Definition of what to deactivate</param>
+            <param name="state"></param>
         </member>
         <member name="T:AVS.UpgradeProxy">
             <summary>

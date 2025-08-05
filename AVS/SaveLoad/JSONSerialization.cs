@@ -2,6 +2,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEngine;
 
 namespace AVS.SaveLoad
@@ -74,17 +75,31 @@ namespace AVS.SaveLoad
         };
 
         internal static JToken ToJson<T>(T value)
+            => ToJson(value, typeof(T));
+        internal static JToken ToJson(object? value, Type t)
         {
             if (value == null)
             {
                 return JValue.CreateNull();
             }
-            if (Handlers.TryGetValue(typeof(T), out var handler))
+            if (Handlers.TryGetValue(t, out var handler))
             {
                 return handler.ToJson(value);
             }
 
-            if (!typeof(T).IsPrimitive && typeof(T) != typeof(string) && !typeof(T).IsEnum)
+            var nul = Nullable.GetUnderlyingType(t);
+            if (nul != null)
+            {
+                PropertyInfo hasValueProperty = t.GetProperty("HasValue");
+                if (hasValueProperty == null)
+                    throw new InvalidOperationException($"Type {t.Name} does not have a 'HasValue' property, cannot serialize as nullable type.");
+                if (!(bool)hasValueProperty.GetValue(value))
+                    return JValue.CreateNull();
+                PropertyInfo valueProperty = t.GetProperty("Value");
+                return ToJson(valueProperty.GetValue(value), nul);
+            }
+
+            if (!t.IsPrimitive && t != typeof(string) && !t.IsEnum)
             {
                 try
                 {
@@ -92,7 +107,7 @@ namespace AVS.SaveLoad
                 }
                 catch (Exception ex)
                 {
-                    throw new InvalidOperationException($"Failed to serialize {typeof(T).Name} to JSON", ex);
+                    throw new InvalidOperationException($"Failed to serialize {t.Name} to JSON", ex);
                 }
             }
             return new JValue(value);
