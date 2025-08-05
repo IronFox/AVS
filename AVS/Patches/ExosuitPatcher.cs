@@ -27,7 +27,7 @@ namespace AVS.Patches
             if (exo != null)
             {
                 TechType techType = exo.modules.GetTechTypeInSlot(exo.slotIDs[slotID]);
-                var param = new ToggleableUpgrade.Params
+                var param = new ToggleableModule.Params
                 (
                     isActive: active,
                     vehicle: exo,
@@ -45,7 +45,7 @@ namespace AVS.Patches
             var exo = __instance as Exosuit;
             if (exo != null)
             {
-                var param = new SelectableUpgrade.Params
+                var param = new SelectableModule.Params
                 (
                     vehicle: __instance,
                     slotID: slotID,
@@ -53,15 +53,28 @@ namespace AVS.Patches
                 );
                 UpgradeRegistrar.OnSelectActions.ForEach(x => x(param));
 
-                var param2 = new SelectableChargeableUpgrade.Params
+                var charge = param.Vehicle.quickSlotCharge[param.SlotID];
+                var chargeFraction = param.Vehicle.GetSlotCharge(param.SlotID);
+
+                var param2 = new SelectableChargeableModule.Params
                 (
                     vehicle: __instance,
                     slotID: slotID,
                     techType: techType,
-                    charge: param.Vehicle.quickSlotCharge[param.SlotID],
-                    chargeFraction: param.Vehicle.GetSlotCharge(param.SlotID)
+                    charge: charge,
+                    chargeFraction: chargeFraction
                 );
                 UpgradeRegistrar.OnSelectChargeActions.ForEach(x => x(param2));
+
+                var param3 = new ChargeableModule.Params
+                (
+                    vehicle: __instance,
+                    slotID: slotID,
+                    techType: techType,
+                    charge: charge,
+                    chargeFraction: chargeFraction
+                );
+                UpgradeRegistrar.OnChargeActions.ForEach(x => x(param3));
             }
         }
     }

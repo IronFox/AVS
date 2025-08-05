@@ -4,12 +4,12 @@ using System;
 namespace AVS.UpgradeModules.Variations
 {
     /// <summary>
-    /// An upgrade that can be selected in the quickbar and charged by holding the left mouse button.
+    /// An upgrade module that can be charged by holding the quickbar button.
     /// </summary>
-    public abstract class SelectableChargeableUpgrade : AvsVehicleModule
+    public abstract class ChargeableModule : AvsVehicleModule
     {
         /// <summary>
-        /// Parameters passed to <see cref="SelectableChargeableUpgrade.OnActivate(Params)"/>.
+        /// Parameters passed to <see cref="SelectableChargeableModule.OnActivate(Params)"/>.
         /// </summary>
         public readonly struct Params
         {
@@ -65,8 +65,6 @@ namespace AVS.UpgradeModules.Variations
         }
 
 
-        /// <inheritdoc/>
-        public override string Description => "This is a selectable-chargeable upgrade module.";
         /// <inheritdoc/>
         public override QuickSlotType QuickSlotType => QuickSlotType.SelectableChargeable;
         /// <summary>

@@ -306,15 +306,19 @@ namespace AVS.Crafting
         /// <summary>
         /// List of actions to invoke when a toggleable upgrade is toggled.
         /// </summary>
-        internal static List<Action<ToggleableUpgrade.Params>> OnToggleActions { get; } = new List<Action<ToggleableUpgrade.Params>>();
+        internal static List<Action<ToggleableModule.Params>> OnToggleActions { get; } = new List<Action<ToggleableModule.Params>>();
         /// <summary>
         /// List of actions to invoke when a selectable chargeable upgrade is selected.
         /// </summary>
-        internal static List<Action<SelectableChargeableUpgrade.Params>> OnSelectChargeActions { get; } = new List<Action<SelectableChargeableUpgrade.Params>>();
+        internal static List<Action<SelectableChargeableModule.Params>> OnSelectChargeActions { get; } = new List<Action<SelectableChargeableModule.Params>>();
+        /// <summary>
+        /// List of actions to invoke when a selectable chargeable upgrade is selected.
+        /// </summary>
+        internal static List<Action<ChargeableModule.Params>> OnChargeActions { get; } = new List<Action<ChargeableModule.Params>>();
         /// <summary>
         /// List of actions to invoke when a selectable upgrade is selected.
         /// </summary>
-        internal static List<Action<SelectableUpgrade.Params>> OnSelectActions { get; } = new List<Action<SelectableUpgrade.Params>>();
+        internal static List<Action<SelectableModule.Params>> OnSelectActions { get; } = new List<Action<SelectableModule.Params>>();
         /// <summary>
         /// Tracks currently toggled actions for vehicles, by vehicle, slot, and coroutine.
         /// </summary>
@@ -324,10 +328,10 @@ namespace AVS.Crafting
         internal readonly struct ActiveAction
         {
             public Coroutine Action { get; }
-            public ToggleableUpgrade? ToggleableUpgrade { get; }
+            public ToggleableModule? ToggleableUpgrade { get; }
             public Vehicle Vehicle { get; }
 
-            public ActiveAction(Coroutine action, Vehicle vehicle, ToggleableUpgrade? toggleableUpgrade)
+            public ActiveAction(Coroutine action, Vehicle vehicle, ToggleableModule? toggleableUpgrade)
             {
                 Action = action;
                 ToggleableUpgrade = toggleableUpgrade;
@@ -336,7 +340,7 @@ namespace AVS.Crafting
 
             public bool IsValid => Action != null && Vehicle != null;
 
-            public void Stop(ToggleableUpgrade.Params inactiveParams)
+            public void Stop(ToggleableModule.Params inactiveParams)
             {
                 if (Action != null && Vehicle != null)
                 {
@@ -520,6 +524,7 @@ namespace AVS.Crafting
             RegisterPassiveUpgradeActions(upgrade, compat, ref utt, ref isPDASetupLocal);
             RegisterSelectableUpgradeActions(upgrade, compat, ref utt, ref isPDASetupLocal);
             RegisterSelectableChargeableUpgradeActions(upgrade, compat, ref utt, ref isPDASetupLocal);
+            RegisterChargeableUpgradeActions(upgrade, compat, ref utt, ref isPDASetupLocal);
             RegisterToggleableUpgradeActions(upgrade, compat, ref utt, ref isPDASetupLocal);
         }
 
@@ -532,9 +537,9 @@ namespace AVS.Crafting
         /// <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
         private static void RegisterPassiveUpgradeActions(AvsVehicleModule upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
         {
-            if (upgrade is SelectableUpgrade
-                || upgrade is ToggleableUpgrade
-                || upgrade is SelectableChargeableUpgrade
+            if (upgrade is SelectableModule
+                || upgrade is ToggleableModule
+                || upgrade is SelectableChargeableModule
                 )
             {
 
@@ -582,7 +587,7 @@ namespace AVS.Crafting
         /// <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
         private static void RegisterSelectableUpgradeActions(AvsVehicleModule upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
         {
-            if (upgrade is SelectableUpgrade select)
+            if (upgrade is SelectableModule select)
             {
                 VanillaUpgradeMaker.CreateSelectModule(select, compat, ref utt, isPDASetup);
                 isPDASetup = true;
@@ -590,7 +595,7 @@ namespace AVS.Crafting
                 TechType sTT = utt.ForSeamoth;
                 TechType eTT = utt.ForExosuit;
                 TechType cTT = utt.ForCyclops;
-                void WrappedOnSelected(SelectableUpgrade.Params param)
+                void WrappedOnSelected(SelectableModule.Params param)
                 {
                     if (param.TechType != TechType.None && (param.TechType == mvTT || param.TechType == sTT || param.TechType == eTT || param.TechType == cTT))
                     {
@@ -613,7 +618,7 @@ namespace AVS.Crafting
         /// <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
         private static void RegisterSelectableChargeableUpgradeActions(AvsVehicleModule upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
         {
-            if (upgrade is SelectableChargeableUpgrade selectcharge)
+            if (upgrade is SelectableChargeableModule selectcharge)
             {
                 VanillaUpgradeMaker.CreateChargeModule(selectcharge, compat, ref utt, isPDASetup);
                 foreach (System.Reflection.FieldInfo field in typeof(UpgradeTechTypes).GetFields())
@@ -626,7 +631,7 @@ namespace AVS.Crafting
                 }
                 isPDASetup = true;
                 var myType = utt;
-                void WrappedOnSelectedCharged(SelectableChargeableUpgrade.Params param)
+                void WrappedOnSelectedCharged(SelectableChargeableModule.Params param)
                 {
                     if (myType.HasTechType(param.TechType))
                     {
@@ -639,6 +644,40 @@ namespace AVS.Crafting
         }
 
         /// <summary>
+        /// Registers chargeable upgrade actions for the upgrade.
+        /// </summary>
+        /// <param name="upgrade">The upgrade to register.</param>
+        /// <param name="compat">Compatibility flags.</param>
+        /// <param name="utt">Reference to UpgradeTechTypes to update.</param>
+        /// <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
+        private static void RegisterChargeableUpgradeActions(AvsVehicleModule upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
+        {
+            if (upgrade is ChargeableModule charge)
+            {
+                VanillaUpgradeMaker.CreateChargeModule(charge, compat, ref utt, isPDASetup);
+                foreach (System.Reflection.FieldInfo field in typeof(UpgradeTechTypes).GetFields())
+                {
+                    // Set MaxCharge and EnergyCost for all possible TechTypes emerging from this upgrade.
+                    TechType value = (TechType)field.GetValue(utt);
+                    Logger.Log(value.AsString());
+                    Nautilus.Handlers.CraftDataHandler.SetMaxCharge(value, charge.ChargeLimit);
+                    Nautilus.Handlers.CraftDataHandler.SetEnergyCost(value, charge.EnergyCostPerSecond);
+                }
+                isPDASetup = true;
+                var myType = utt;
+                void WrappedOnSelectedCharged(ChargeableModule.Params param)
+                {
+                    if (myType.HasTechType(param.TechType))
+                    {
+                        charge.OnActivate(param);
+                        param.Vehicle.energyInterface.ConsumeEnergy(charge.EnergyCostPerSecond);
+                    }
+                }
+                OnChargeActions.Add(WrappedOnSelectedCharged);
+            }
+        }
+
+        /// <summary>
         /// Registers toggleable upgrade actions for the upgrade.
         /// </summary>
         /// <param name="upgrade">The upgrade to register.</param>
@@ -647,9 +686,9 @@ namespace AVS.Crafting
         /// <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
         private static void RegisterToggleableUpgradeActions(AvsVehicleModule upgrade, UpgradeCompat compat, ref UpgradeTechTypes utt, ref bool isPDASetup)
         {
-            if (upgrade is ToggleableUpgrade toggle)
+            if (upgrade is ToggleableModule toggle)
             {
-                IEnumerator DoToggleAction(ToggleableUpgrade.Params param, float timeToFirstActivation, float repeatDelay, float energyCostPerActivation)
+                IEnumerator DoToggleAction(ToggleableModule.Params param, float timeToFirstActivation, float repeatDelay, float energyCostPerActivation)
                 {
                     var isAvsVehicle = param.Vehicle.GetComponent<AvsVehicle>();
                     try
@@ -727,7 +766,7 @@ namespace AVS.Crafting
                 TechType sTT = utt.ForSeamoth;
                 TechType eTT = utt.ForExosuit;
                 TechType cTT = utt.ForCyclops;
-                void WrappedOnToggle(ToggleableUpgrade.Params param)
+                void WrappedOnToggle(ToggleableModule.Params param)
                 {
                     var remove = ToggledActions.Where(x => !x.Value.IsValid).Select(x => x.Key).ToList();
                     foreach (var r in remove)

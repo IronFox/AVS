@@ -3589,6 +3589,11 @@
             List of actions to invoke when a selectable chargeable upgrade is selected.
             </summary>
         </member>
+        <member name="P:AVS.Crafting.UpgradeRegistrar.OnChargeActions">
+            <summary>
+            List of actions to invoke when a selectable chargeable upgrade is selected.
+            </summary>
+        </member>
         <member name="P:AVS.Crafting.UpgradeRegistrar.OnSelectActions">
             <summary>
             List of actions to invoke when a selectable upgrade is selected.
@@ -3654,6 +3659,15 @@
         <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterSelectableChargeableUpgradeActions(AVS.UpgradeModules.AvsVehicleModule,AVS.Crafting.UpgradeCompat,AVS.Crafting.UpgradeTechTypes@,System.Boolean@)">
             <summary>
             Registers selectable chargeable upgrade actions for the upgrade.
+            </summary>
+            <param name="upgrade">The upgrade to register.</param>
+            <param name="compat">Compatibility flags.</param>
+            <param name="utt">Reference to UpgradeTechTypes to update.</param>
+            <param name="isPDASetup">Indicates if PDA registration has occurred.</param>
+        </member>
+        <member name="M:AVS.Crafting.UpgradeRegistrar.RegisterChargeableUpgradeActions(AVS.UpgradeModules.AvsVehicleModule,AVS.Crafting.UpgradeCompat,AVS.Crafting.UpgradeTechTypes@,System.Boolean@)">
+            <summary>
+            Registers chargeable upgrade actions for the upgrade.
             </summary>
             <param name="upgrade">The upgrade to register.</param>
             <param name="compat">Compatibility flags.</param>
@@ -6021,42 +6035,42 @@
             False if it has just been removed from the vehicle.
             </summary>
         </member>
-        <member name="T:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade">
+        <member name="T:AVS.UpgradeModules.Variations.ChargeableModule">
             <summary>
-            An upgrade that can be selected in the quickbar and charged by holding the left mouse button.
+            An upgrade module that can be charged by holding the quickbar button.
             </summary>
         </member>
-        <member name="T:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.Params">
+        <member name="T:AVS.UpgradeModules.Variations.ChargeableModule.Params">
             <summary>
-            Parameters passed to <see cref="M:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.OnActivate(AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.Params)"/>.
+            Parameters passed to <see cref="!:SelectableChargeableModule.OnActivate(Params)"/>.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.Params.Vehicle">
+        <member name="P:AVS.UpgradeModules.Variations.ChargeableModule.Params.Vehicle">
             <summary>
             The vehicle that the upgrade is being used on.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.Params.SlotID">
+        <member name="P:AVS.UpgradeModules.Variations.ChargeableModule.Params.SlotID">
             <summary>
             The index of the slot in the quickbar where the upgrade is selected.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.Params.TechType">
+        <member name="P:AVS.UpgradeModules.Variations.ChargeableModule.Params.TechType">
             <summary>
             The tech type of the upgrade being acted upon.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.Params.Charge">
+        <member name="P:AVS.UpgradeModules.Variations.ChargeableModule.Params.Charge">
             <summary>
             Total charge level reached (>0)
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.Params.ChargeFraction">
+        <member name="P:AVS.UpgradeModules.Variations.ChargeableModule.Params.ChargeFraction">
             <summary>
             Relative charge level (>0, 1 = fully charged, 0 = empty)
             </summary>
         </member>
-        <member name="M:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.Params.#ctor(Vehicle,System.Int32,TechType,System.Single,System.Single)">
+        <member name="M:AVS.UpgradeModules.Variations.ChargeableModule.Params.#ctor(Vehicle,System.Int32,TechType,System.Single,System.Single)">
             <summary>
             Represents the parameters for a chargeable action that can be selected, associated with a specific vehicle
             and slot.
@@ -6070,132 +6084,212 @@
             <param name="charge">Total charge level reached. Must be a non-negative value.</param>
             <param name="chargeFraction">The fraction of the total charge capacity to be applied. Must be a value between 0 and 1, inclusive.</param>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.Description">
+        <member name="P:AVS.UpgradeModules.Variations.ChargeableModule.QuickSlotType">
             <inheritdoc/>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.QuickSlotType">
-            <inheritdoc/>
-        </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.ChargeLimit">
+        <member name="P:AVS.UpgradeModules.Variations.ChargeableModule.ChargeLimit">
             <summary>
             Gets the maximum charge level that must be reached in order to activate.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.EnergyCostPerSecond">
+        <member name="P:AVS.UpgradeModules.Variations.ChargeableModule.EnergyCostPerSecond">
             <summary>
             Gets the energy cost per second when the player holds the quick slot key to charge the upgrade.
             This value accumulates over time while the player holds the key until the maximum charge is reached.
             </summary>
         </member>
-        <member name="M:AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.OnActivate(AVS.UpgradeModules.Variations.SelectableChargeableUpgrade.Params)">
+        <member name="M:AVS.UpgradeModules.Variations.ChargeableModule.OnActivate(AVS.UpgradeModules.Variations.ChargeableModule.Params)">
             <summary>
             Triggered when the charge limit was reached or the left mouse button was released.
             </summary>
             <param name="param">The current charge state.</param>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableUpgrade.Params.Vehicle">
+        <member name="T:AVS.UpgradeModules.Variations.SelectableChargeableModule">
             <summary>
-            The vehicle to which the upgrade belongs. May be null if <see cref="P:AVS.UpgradeModules.Variations.SelectableUpgrade.Params.Cyclops"/> is not null.
+            An upgrade that can be selected in the quickbar and charged by holding the left mouse button.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableUpgrade.Params.Cyclops">
+        <member name="T:AVS.UpgradeModules.Variations.SelectableChargeableModule.Params">
+            <summary>
+            Parameters passed to <see cref="M:AVS.UpgradeModules.Variations.SelectableChargeableModule.OnActivate(AVS.UpgradeModules.Variations.SelectableChargeableModule.Params)"/>.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableModule.Params.Vehicle">
+            <summary>
+            The vehicle that the upgrade is being used on.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableModule.Params.SlotID">
+            <summary>
+            The index of the slot in the quickbar where the upgrade is selected.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableModule.Params.TechType">
+            <summary>
+            The tech type of the upgrade being acted upon.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableModule.Params.Charge">
+            <summary>
+            Total charge level reached (>0)
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableModule.Params.ChargeFraction">
+            <summary>
+            Relative charge level (>0, 1 = fully charged, 0 = empty)
+            </summary>
+        </member>
+        <member name="M:AVS.UpgradeModules.Variations.SelectableChargeableModule.Params.#ctor(Vehicle,System.Int32,TechType,System.Single,System.Single)">
+            <summary>
+            Represents the parameters for a chargeable action that can be selected, associated with a specific vehicle
+            and slot.
+            </summary>
+            <remarks>This constructor initializes the parameters required for a chargeable action,
+            including the vehicle, slot, technology type, and charge details. Ensure that the provided values meet the
+            specified constraints to avoid unexpected behavior.</remarks>
+            <param name="vehicle">The vehicle associated with the chargeable action. Cannot be null.</param>
+            <param name="slotID">The ID of the slot within the vehicle where the action is applied. Must be a non-negative integer.</param>
+            <param name="techType">The type of technology associated with the chargeable action.</param>
+            <param name="charge">Total charge level reached. Must be a non-negative value.</param>
+            <param name="chargeFraction">The fraction of the total charge capacity to be applied. Must be a value between 0 and 1, inclusive.</param>
+        </member>
+        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableModule.QuickSlotType">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableModule.ChargeLimit">
+            <summary>
+            Gets the maximum charge level that must be reached in order to activate.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.Variations.SelectableChargeableModule.EnergyCostPerSecond">
+            <summary>
+            Gets the energy cost per second when the player holds the quick slot key to charge the upgrade.
+            This value accumulates over time while the player holds the key until the maximum charge is reached.
+            </summary>
+        </member>
+        <member name="M:AVS.UpgradeModules.Variations.SelectableChargeableModule.OnActivate(AVS.UpgradeModules.Variations.SelectableChargeableModule.Params)">
+            <summary>
+            Triggered when the charge limit was reached or the left mouse button was released.
+            </summary>
+            <param name="param">The current charge state.</param>
+        </member>
+        <member name="T:AVS.UpgradeModules.Variations.SelectableModule">
+            <summary>
+            Abstract base class for selectable vehicle upgrade modules.
+            This modules can be selected in the quickbar and used by the player.
+            </summary>
+        </member>
+        <member name="T:AVS.UpgradeModules.Variations.SelectableModule.Params">
+            <summary>
+            Parameters passed to <see cref="M:AVS.UpgradeModules.Variations.SelectableModule.OnSelected(AVS.UpgradeModules.Variations.SelectableModule.Params)"/>.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.Variations.SelectableModule.Params.Vehicle">
+            <summary>
+            The vehicle to which the upgrade belongs. May be null if <see cref="P:AVS.UpgradeModules.Variations.SelectableModule.Params.Cyclops"/> is not null.
+            </summary>
+        </member>
+        <member name="P:AVS.UpgradeModules.Variations.SelectableModule.Params.Cyclops">
             <summary>
             Reference to the owning Cyclops vehicle, if any. May be null.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableUpgrade.Params.SlotID">
+        <member name="P:AVS.UpgradeModules.Variations.SelectableModule.Params.SlotID">
             <summary>
             The index of the slot in which the upgrade is located.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.SelectableUpgrade.Params.TechType">
+        <member name="P:AVS.UpgradeModules.Variations.SelectableModule.Params.TechType">
             <summary>
             The tech type of the upgrade being acted upon.
             </summary>
         </member>
-        <member name="T:AVS.UpgradeModules.Variations.ToggleableUpgrade">
+        <member name="P:AVS.UpgradeModules.Variations.SelectableModule.QuickSlotType">
+            <inheritdoc/>
+        </member>
+        <member name="T:AVS.UpgradeModules.Variations.ToggleableModule">
             <summary>
             Abstract base class for toggleable upgrade modules on AVS vehicles.
-            A module of this type will consume <see cref="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.EnergyCostPerActivation"/> energy
-            every <see cref="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.RepeatDelay"/> seconds and call <see cref="M:AVS.UpgradeModules.Variations.ToggleableUpgrade.OnRepeat(AVS.UpgradeModules.Variations.ToggleableUpgrade.Params)"/>
+            A module of this type will consume <see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.EnergyCostPerActivation"/> energy
+            every <see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.RepeatDelay"/> seconds and call <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.ToggleableModule.Params)"/>
             while active.
             </summary>
-            <remarks>Use the static <see cref="M:AVS.UpgradeModules.Variations.ToggleableUpgrade.Deactivate(AVS.UpgradeModules.Variations.ToggleableUpgrade.Params)" /> method to deactive a toggleable module</remarks>
+            <remarks>Use the static <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.Deactivate(AVS.UpgradeModules.Variations.ToggleableModule.Params)" /> method to deactive a toggleable module</remarks>
         </member>
-        <member name="T:AVS.UpgradeModules.Variations.ToggleableUpgrade.Params">
+        <member name="T:AVS.UpgradeModules.Variations.ToggleableModule.Params">
             <summary>
             Parameters for toggleable upgrade actions.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.Params.Vehicle">
+        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.Vehicle">
             <summary>
             The vehicle the action is being performed on.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.Params.SlotID">
+        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.SlotID">
             <summary>
             The index of the slot in which the upgrade is located.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.Params.TechType">
+        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.TechType">
             <summary>
             The tech type of the upgrade being acted upon.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.Params.IsActive">
+        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.IsActive">
             <summary>
             True if the upgrade is toggled on, false if off.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.Params.RepeatTime">
+        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.RepeatTime">
             <summary>
             The current time in seconds since the upgrade was activated.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.Params.LastRepeatTime">
+        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.LastRepeatTime">
             <summary>
-            The last time (<see cref="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.Params.RepeatTime"/>) in seconds the upgrade was repeated.
+            The last time (<see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.Params.RepeatTime"/>) in seconds the upgrade was repeated.
             </summary>
         </member>
-        <member name="M:AVS.UpgradeModules.Variations.ToggleableUpgrade.Params.SetInactive">
+        <member name="M:AVS.UpgradeModules.Variations.ToggleableModule.Params.SetInactive">
             <summary>
-            Creates a new instance of <see cref="T:AVS.UpgradeModules.Variations.ToggleableUpgrade.Params"/> with the upgrade set to inactive.
+            Creates a new instance of <see cref="T:AVS.UpgradeModules.Variations.ToggleableModule.Params"/> with the upgrade set to inactive.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.QuickSlotType">
+        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.QuickSlotType">
             <inheritdoc />
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.RepeatDelay">
+        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.RepeatDelay">
             <summary>
-            Time in seconds between calls to <see cref="M:AVS.UpgradeModules.Variations.ToggleableUpgrade.OnRepeat(AVS.UpgradeModules.Variations.ToggleableUpgrade.Params)"/>
+            Time in seconds between calls to <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.ToggleableModule.Params)"/>
             while the module is active.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.DelayUntilFirstOnRepeat">
+        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.DelayUntilFirstOnRepeat">
             <summary>
-            The time in seconds before the first call to <see cref="M:AVS.UpgradeModules.Variations.ToggleableUpgrade.OnRepeat(AVS.UpgradeModules.Variations.ToggleableUpgrade.Params)"/>
+            The time in seconds before the first call to <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.ToggleableModule.Params)"/>
             after the module is activated.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.EnergyCostPerActivation">
+        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.EnergyCostPerActivation">
             <summary>
-            The energy cost per <see cref="M:AVS.UpgradeModules.Variations.ToggleableUpgrade.OnRepeat(AVS.UpgradeModules.Variations.ToggleableUpgrade.Params)"/> call.
+            The energy cost per <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.ToggleableModule.Params)"/> call.
             If the vehicle does not have enough energy, the module will auto-toggle off.
             </summary>
         </member>
-        <member name="M:AVS.UpgradeModules.Variations.ToggleableUpgrade.OnRepeat(AVS.UpgradeModules.Variations.ToggleableUpgrade.Params)">
+        <member name="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.ToggleableModule.Params)">
             <summary>
-            Executed once every <see cref="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.RepeatDelay"/> seconds while the module is active.
+            Executed once every <see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.RepeatDelay"/> seconds while the module is active.
             </summary>
             <param name="param"></param>
         </member>
-        <member name="M:AVS.UpgradeModules.Variations.ToggleableUpgrade.OnToggle(AVS.UpgradeModules.Variations.ToggleableUpgrade.Params)">
+        <member name="M:AVS.UpgradeModules.Variations.ToggleableModule.OnToggle(AVS.UpgradeModules.Variations.ToggleableModule.Params)">
             <summary>
-            Executed when the module is toggled on or off, before waiting <see cref="P:AVS.UpgradeModules.Variations.ToggleableUpgrade.DelayUntilFirstOnRepeat"/>.
+            Executed when the module is toggled on or off, before waiting <see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.DelayUntilFirstOnRepeat"/>.
             </summary>
             <param name="param"></param>
         </member>
-        <member name="M:AVS.UpgradeModules.Variations.ToggleableUpgrade.Deactivate(AVS.UpgradeModules.Variations.ToggleableUpgrade.Params)">
+        <member name="M:AVS.UpgradeModules.Variations.ToggleableModule.Deactivate(AVS.UpgradeModules.Variations.ToggleableModule.Params)">
             <summary>
             Helper method to deactivate the module as specified by <paramref name="param"/>.
             </summary>

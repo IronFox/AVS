@@ -63,7 +63,7 @@ namespace AVS.Crafting
                 CreatePassiveModuleCyclops(upgrade, ref utt, isPdaRegistered);
             }
         }
-        internal static void CreateSelectModule(SelectableUpgrade select, UpgradeCompat compat, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreateSelectModule(SelectableModule select, UpgradeCompat compat, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             if (select.IsVehicleSpecific)
             {
@@ -85,7 +85,7 @@ namespace AVS.Crafting
                 //CreateSelectModuleCyclops(select, ref utt);
             }
         }
-        internal static void CreateChargeModule(SelectableChargeableUpgrade selectcharge, UpgradeCompat compat, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreateChargeModule(SelectableChargeableModule selectcharge, UpgradeCompat compat, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             if (selectcharge.IsVehicleSpecific)
             {
@@ -107,7 +107,29 @@ namespace AVS.Crafting
                 //CreateSelectModuleCyclops(select, ref utt);
             }
         }
-        internal static void CreateToggleModule(ToggleableUpgrade toggle, UpgradeCompat compat, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreateChargeModule(ChargeableModule charge, UpgradeCompat compat, ref UpgradeTechTypes utt, bool isPdaSetup)
+        {
+            if (charge.IsVehicleSpecific)
+            {
+                return;
+            }
+            bool isPdaRegistered = isPdaSetup;
+            if (!compat.SkipSeamoth)
+            {
+                CreateChargeModuleSeamoth(charge, ref utt, isPdaRegistered);
+                isPdaRegistered = true;
+            }
+            if (!compat.SkipExosuit)
+            {
+                CreateChargeModuleExosuit(charge, ref utt, isPdaRegistered);
+                isPdaRegistered = true;
+            }
+            if (!compat.SkipCyclops)
+            {
+                //CreateSelectModuleCyclops(select, ref utt);
+            }
+        }
+        internal static void CreateToggleModule(ToggleableModule toggle, UpgradeCompat compat, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             if (toggle.IsVehicleSpecific)
             {
@@ -159,14 +181,14 @@ namespace AVS.Crafting
                      upgrade.OnAdded(addedParams);
                  });
         }
-        internal static void AddSelectActions(UpgradeModuleGadget gadget, SelectableUpgrade upgrade, Nautilus.Assets.PrefabInfo info)
+        internal static void AddSelectActions(UpgradeModuleGadget gadget, SelectableModule upgrade, Nautilus.Assets.PrefabInfo info)
         {
             gadget
                 .WithCooldown(upgrade.Cooldown)
                 .WithEnergyCost(upgrade.EnergyCost)
                 .WithOnModuleUsed((vehicleInstance, slotId, charge, chargeFraction) =>
                 {
-                    var selectParams = new SelectableUpgrade.Params
+                    var selectParams = new SelectableModule.Params
                     (
                         vehicle: vehicleInstance,
                         slotID: slotId,
@@ -175,12 +197,12 @@ namespace AVS.Crafting
                     upgrade.OnSelected(selectParams);
                 });
         }
-        internal static void AddToggleActions(UpgradeModuleGadget gadget, ToggleableUpgrade upgrade, Nautilus.Assets.PrefabInfo info)
+        internal static void AddToggleActions(UpgradeModuleGadget gadget, ToggleableModule upgrade, Nautilus.Assets.PrefabInfo info)
         {
             gadget
                 .WithOnModuleToggled((vehicleInstance, slotId, energyCost, isActive) =>
                 {
-                    var param = new ToggleableUpgrade.Params
+                    var param = new ToggleableModule.Params
                     (
                         isActive: isActive,
                         vehicle: vehicleInstance,
@@ -190,14 +212,32 @@ namespace AVS.Crafting
                     UpgradeRegistrar.OnToggleActions.ForEach(x => x(param));
                 });
         }
-        internal static void AddChargeActions(UpgradeModuleGadget gadget, SelectableChargeableUpgrade upgrade, Nautilus.Assets.PrefabInfo info)
+        internal static void AddChargeActions(UpgradeModuleGadget gadget, SelectableChargeableModule upgrade, Nautilus.Assets.PrefabInfo info)
         {
             gadget
                 .WithMaxCharge(upgrade.ChargeLimit) // this creates a harmless Nautilus warning
                 .WithEnergyCost(upgrade.EnergyCostPerSecond) // this creates a harmless Nautilus warning
                 .WithOnModuleUsed((vehicleInstance, slotId, charge, chargeFraction) =>
                 {
-                    var chargeParams = new SelectableChargeableUpgrade.Params
+                    var chargeParams = new SelectableChargeableModule.Params
+                    (
+                        vehicle: vehicleInstance,
+                        slotID: slotId,
+                        techType: info.TechType,
+                        charge: charge,
+                        chargeFraction: chargeFraction
+                    );
+                    upgrade.OnActivate(chargeParams);
+                });
+        }
+        internal static void AddChargeActions(UpgradeModuleGadget gadget, ChargeableModule upgrade, Nautilus.Assets.PrefabInfo info)
+        {
+            gadget
+                .WithMaxCharge(upgrade.ChargeLimit) // this creates a harmless Nautilus warning
+                .WithEnergyCost(upgrade.EnergyCostPerSecond) // this creates a harmless Nautilus warning
+                .WithOnModuleUsed((vehicleInstance, slotId, charge, chargeFraction) =>
+                {
+                    var chargeParams = new ChargeableModule.Params
                     (
                         vehicle: vehicleInstance,
                         slotID: slotId,
@@ -265,7 +305,7 @@ namespace AVS.Crafting
         #endregion
 
         #region SelectModules
-        internal static TechType CreateSelectModuleVanilla(SelectableUpgrade upgrade, bool isPdaSetup, Nautilus.Assets.PrefabInfo info, EquipmentType equipType, VehicleType vType)
+        internal static TechType CreateSelectModuleVanilla(SelectableModule upgrade, bool isPdaSetup, Nautilus.Assets.PrefabInfo info, EquipmentType equipType, VehicleType vType)
         {
             Nautilus.Assets.CustomPrefab prefab = CreateModuleVanilla(upgrade, isPdaSetup, info)
                 .AddRecipe(upgrade, vType);
@@ -276,21 +316,21 @@ namespace AVS.Crafting
             upgrade.RegisterTechTypeFor(vType, info.TechType);
             return info.TechType;
         }
-        internal static void CreateSelectModuleSeamoth(SelectableUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreateSelectModuleSeamoth(SelectableModule upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Seamoth", "Seamoth " + upgrade.DisplayName, "An upgrade for the Seamoth. " + upgrade.Description, unlockAtStart: upgrade.UnlockAtStart)
                 .WithIcon(upgrade.Icon);
             utt = utt.ReplaceSeamoth(prefabInfo.TechType);
             CreateSelectModuleVanilla(upgrade, isPdaSetup, prefabInfo, EquipmentType.SeamothModule, VehicleType.Seamoth);
         }
-        internal static void CreateSelectModuleExosuit(SelectableUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreateSelectModuleExosuit(SelectableModule upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Exosuit", "Exosuit " + upgrade.DisplayName, "An upgrade for the Exosuit. " + upgrade.Description, unlockAtStart: upgrade.UnlockAtStart)
                 .WithIcon(upgrade.Icon);
             utt = utt.ReplaceExosuit(prefabInfo.TechType);
             CreateSelectModuleVanilla(upgrade, isPdaSetup, prefabInfo, EquipmentType.ExosuitModule, VehicleType.Prawn);
         }
-        internal static void CreateSelectModuleCyclops(SelectableUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreateSelectModuleCyclops(SelectableModule upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Cyclops", "Cyclops " + upgrade.DisplayName, "An upgrade for the Exosuit. " + upgrade.Description)
                 .WithIcon(upgrade.Icon);
@@ -300,7 +340,7 @@ namespace AVS.Crafting
         #endregion
 
         #region ChargeModules
-        internal static TechType CreateChargeModuleVanilla(SelectableChargeableUpgrade upgrade, bool isPdaSetup, Nautilus.Assets.PrefabInfo info, EquipmentType equipType, VehicleType vType)
+        internal static TechType CreateChargeModuleVanilla(SelectableChargeableModule upgrade, bool isPdaSetup, Nautilus.Assets.PrefabInfo info, EquipmentType equipType, VehicleType vType)
         {
             Nautilus.Assets.CustomPrefab prefab = CreateModuleVanilla(upgrade, isPdaSetup, info)
                 .AddRecipe(upgrade, vType);
@@ -311,21 +351,54 @@ namespace AVS.Crafting
             upgrade.RegisterTechTypeFor(vType, info.TechType);
             return info.TechType;
         }
-        internal static void CreateChargeModuleSeamoth(SelectableChargeableUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreateChargeModuleSeamoth(SelectableChargeableModule upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Seamoth", "Seamoth " + upgrade.DisplayName, "An upgrade for the Seamoth. " + upgrade.Description, unlockAtStart: upgrade.UnlockAtStart)
                 .WithIcon(upgrade.Icon);
             utt = utt.ReplaceSeamoth(prefabInfo.TechType);
             CreateChargeModuleVanilla(upgrade, isPdaSetup, prefabInfo, EquipmentType.SeamothModule, VehicleType.Seamoth);
         }
-        internal static void CreateChargeModuleExosuit(SelectableChargeableUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreateChargeModuleExosuit(SelectableChargeableModule upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Exosuit", "Exosuit " + upgrade.DisplayName, "An upgrade for the Exosuit. " + upgrade.Description, unlockAtStart: upgrade.UnlockAtStart)
                 .WithIcon(upgrade.Icon);
             utt = utt.ReplaceExosuit(prefabInfo.TechType);
             CreateChargeModuleVanilla(upgrade, isPdaSetup, prefabInfo, EquipmentType.ExosuitModule, VehicleType.Prawn);
         }
-        internal static void CreateChargeModuleCyclops(SelectableChargeableUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreateChargeModuleCyclops(SelectableChargeableModule upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        {
+            var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Cyclops", "Cyclops " + upgrade.DisplayName, "An upgrade for the Exosuit. " + upgrade.Description)
+                .WithIcon(upgrade.Icon);
+            utt = utt.ReplaceCyclops(prefabInfo.TechType);
+            CreateChargeModuleVanilla(upgrade, isPdaSetup, prefabInfo, EquipmentType.CyclopsModule, VehicleType.Cyclops);
+        }
+
+        internal static TechType CreateChargeModuleVanilla(ChargeableModule upgrade, bool isPdaSetup, Nautilus.Assets.PrefabInfo info, EquipmentType equipType, VehicleType vType)
+        {
+            Nautilus.Assets.CustomPrefab prefab = CreateModuleVanilla(upgrade, isPdaSetup, info)
+                .AddRecipe(upgrade, vType);
+            UpgradeModuleGadget gadget = prefab.SetVehicleUpgradeModule(equipType, QuickSlotType.SelectableChargeable);
+            AddPassiveActions(gadget, upgrade, info);
+            AddChargeActions(gadget, upgrade, info);
+            prefab.Register();
+            upgrade.RegisterTechTypeFor(vType, info.TechType);
+            return info.TechType;
+        }
+        internal static void CreateChargeModuleSeamoth(ChargeableModule upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        {
+            var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Seamoth", "Seamoth " + upgrade.DisplayName, "An upgrade for the Seamoth. " + upgrade.Description, unlockAtStart: upgrade.UnlockAtStart)
+                .WithIcon(upgrade.Icon);
+            utt = utt.ReplaceSeamoth(prefabInfo.TechType);
+            CreateChargeModuleVanilla(upgrade, isPdaSetup, prefabInfo, EquipmentType.SeamothModule, VehicleType.Seamoth);
+        }
+        internal static void CreateChargeModuleExosuit(ChargeableModule upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        {
+            var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Exosuit", "Exosuit " + upgrade.DisplayName, "An upgrade for the Exosuit. " + upgrade.Description, unlockAtStart: upgrade.UnlockAtStart)
+                .WithIcon(upgrade.Icon);
+            utt = utt.ReplaceExosuit(prefabInfo.TechType);
+            CreateChargeModuleVanilla(upgrade, isPdaSetup, prefabInfo, EquipmentType.ExosuitModule, VehicleType.Prawn);
+        }
+        internal static void CreateChargeModuleCyclops(ChargeableModule upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Cyclops", "Cyclops " + upgrade.DisplayName, "An upgrade for the Exosuit. " + upgrade.Description)
                 .WithIcon(upgrade.Icon);
@@ -335,7 +408,7 @@ namespace AVS.Crafting
         #endregion
 
         #region ToggleModules
-        internal static TechType CreateToggleModuleVanilla(ToggleableUpgrade upgrade, bool isPdaSetup, Nautilus.Assets.PrefabInfo info, EquipmentType equipType, VehicleType vType)
+        internal static TechType CreateToggleModuleVanilla(ToggleableModule upgrade, bool isPdaSetup, Nautilus.Assets.PrefabInfo info, EquipmentType equipType, VehicleType vType)
         {
             Nautilus.Assets.CustomPrefab prefab = CreateModuleVanilla(upgrade, isPdaSetup, info)
                 .AddRecipe(upgrade, vType);
@@ -346,21 +419,21 @@ namespace AVS.Crafting
             upgrade.RegisterTechTypeFor(vType, info.TechType);
             return info.TechType;
         }
-        internal static void CreateToggleModuleSeamoth(ToggleableUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreateToggleModuleSeamoth(ToggleableModule upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Seamoth", "Seamoth " + upgrade.DisplayName, "An upgrade for the Seamoth. " + upgrade.Description, unlockAtStart: upgrade.UnlockAtStart)
                 .WithIcon(upgrade.Icon);
             utt = utt.ReplaceSeamoth(prefabInfo.TechType);
             CreateToggleModuleVanilla(upgrade, isPdaSetup, prefabInfo, EquipmentType.SeamothModule, VehicleType.Seamoth);
         }
-        internal static void CreateToggleModuleExosuit(ToggleableUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreateToggleModuleExosuit(ToggleableModule upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Exosuit", "Exosuit " + upgrade.DisplayName, "An upgrade for the Exosuit. " + upgrade.Description, unlockAtStart: upgrade.UnlockAtStart)
                 .WithIcon(upgrade.Icon);
             utt = utt.ReplaceExosuit(prefabInfo.TechType);
             CreateToggleModuleVanilla(upgrade, isPdaSetup, prefabInfo, EquipmentType.ExosuitModule, VehicleType.Prawn);
         }
-        internal static void CreateToggleModuleCyclops(ToggleableUpgrade upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
+        internal static void CreateToggleModuleCyclops(ToggleableModule upgrade, ref UpgradeTechTypes utt, bool isPdaSetup)
         {
             var prefabInfo = Nautilus.Assets.PrefabInfo.WithTechType(upgrade.ClassId + "Cyclops", "Cyclops " + upgrade.DisplayName, "An upgrade for the Exosuit. " + upgrade.Description)
                 .WithIcon(upgrade.Icon);

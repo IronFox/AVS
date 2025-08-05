@@ -10,7 +10,7 @@ namespace AVS.UpgradeModules.Variations
     /// while active.
     /// </summary>
     /// <remarks>Use the static <see cref="Deactivate" /> method to deactive a toggleable module</remarks>
-    public abstract class ToggleableUpgrade : AvsVehicleModule
+    public abstract class ToggleableModule : AvsVehicleModule
     {
 
         /// <summary>

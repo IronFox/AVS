@@ -1,8 +1,14 @@
 ﻿namespace AVS.UpgradeModules.Variations
 {
-    public abstract class SelectableUpgrade : AvsVehicleModule
+    /// <summary>
+    /// Abstract base class for selectable vehicle upgrade modules.
+    /// This modules can be selected in the quickbar and used by the player.
+    /// </summary>
+    public abstract class SelectableModule : AvsVehicleModule
     {
-
+        /// <summary>
+        /// Parameters passed to <see cref="OnSelected(Params)"/>.
+        /// </summary>
         public readonly struct Params
         {
             /// <summary>
@@ -21,7 +27,8 @@
             /// The tech type of the upgrade being acted upon.
             /// </summary>
             public TechType TechType { get; }
-            public Params(
+
+            internal Params(
                 Vehicle vehicle,
                 int slotID,
                 TechType techType,
@@ -34,8 +41,8 @@
             }
         }
 
-        public override string Description => "This is a selectable upgrade module.";
-        public override QuickSlotType QuickSlotType => QuickSlotType.Selectable;
+        /// <inheritdoc/>
+        public sealed override QuickSlotType QuickSlotType => QuickSlotType.Selectable;
         public virtual float Cooldown => 0;
         public virtual float EnergyCost => 0;
         public virtual void OnSelected(Params param)

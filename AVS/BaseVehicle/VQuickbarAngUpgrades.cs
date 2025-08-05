@@ -24,7 +24,7 @@ namespace AVS.BaseVehicle
         public override void OnUpgradeModuleToggle(int slotID, bool active)
         {
             TechType techType = modules.GetTechTypeInSlot(slotIDs[slotID]);
-            var param = new ToggleableUpgrade.Params
+            var param = new ToggleableModule.Params
             (
                 isActive: active,
                 vehicle: this,
@@ -41,7 +41,7 @@ namespace AVS.BaseVehicle
         /// <param name="slotID">Upgrade module slot</param>
         public override void OnUpgradeModuleUse(TechType techType, int slotID)
         {
-            var param = new SelectableUpgrade.Params
+            var param = new SelectableModule.Params
             (
                 vehicle: this,
                 slotID: slotID,
@@ -49,15 +49,28 @@ namespace AVS.BaseVehicle
             );
             UpgradeRegistrar.OnSelectActions.ForEach(x => x(param));
 
-            var param2 = new SelectableChargeableUpgrade.Params
+            var charge = param.Vehicle.quickSlotCharge[param.SlotID];
+            var chargeFraction = param.Vehicle.GetSlotCharge(param.SlotID);
+
+            var param2 = new SelectableChargeableModule.Params
             (
                 vehicle: this,
                 slotID: slotID,
                 techType: techType,
-                charge: param.Vehicle.quickSlotCharge[param.SlotID],
-                chargeFraction: param.Vehicle.GetSlotCharge(param.SlotID)
+                charge: charge,
+                chargeFraction: chargeFraction
             );
             UpgradeRegistrar.OnSelectChargeActions.ForEach(x => x(param2));
+
+            var param3 = new ChargeableModule.Params
+            (
+                vehicle: this,
+                slotID: slotID,
+                techType: techType,
+                charge: charge,
+                chargeFraction: chargeFraction
+            );
+            UpgradeRegistrar.OnChargeActions.ForEach(x => x(param3));
 
             Patches.CompatibilityPatches.BetterVehicleStoragePatcher.TryUseBetterVehicleStorage(this, slotID, techType);
             base.OnUpgradeModuleUse(techType, slotID);
