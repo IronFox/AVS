@@ -698,7 +698,7 @@ namespace AVS
             }
         }
 
-        internal static void SetIcon(uGUI_Ping ping, Atlas.Sprite sprite, PingType inputType)
+        internal static void SetIcon(uGUI_Ping ping, PingType inputType)
         {
             foreach (VehicleEntry ve in VehicleManager.VehicleTypes)
             {
@@ -719,8 +719,7 @@ namespace AVS
                 }
             }
 
-            LogWriter.Default.Debug($"[AvsVehicleBuilder] No custom icons found: Setting icon for ping {ping.name} of type {inputType} to sprite {sprite?.texture.NiceName()}");
-            ping.SetIcon(sprite);   //no op
+            LogWriter.Default.Debug($"[AvsVehicleBuilder] No custom icons found for type {inputType}. Skipping");
         }
 
         /*
