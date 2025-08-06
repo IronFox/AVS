@@ -2,7 +2,6 @@
 using AVS.BaseVehicle;
 using AVS.Log;
 using AVS.Util;
-using AVS.VehicleComponents;
 using AVS.VehicleTypes;
 using System;
 using System.Collections;
@@ -208,59 +207,11 @@ namespace AVS
         }
         private static void SetupEnergyInterface(AvsVehicle mv)
         {
-            var seamothEnergyMixin = SeamothHelper.RequireSeamoth.GetComponent<EnergyMixin>();
-            List<EnergyMixin> energyMixins = new List<EnergyMixin>();
-            if (mv.Com.Batteries.Count == 0)
-            {
-                // Configure energy mixin for this battery slot
-                var energyMixin = mv.gameObject.AddComponent<VehicleComponents.ForeverBattery>();
-                energyMixin.storageRoot = mv.Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
-                energyMixin.defaultBattery = seamothEnergyMixin.defaultBattery;
-                energyMixin.compatibleBatteries = seamothEnergyMixin.compatibleBatteries;
-                energyMixin.soundPowerUp = seamothEnergyMixin.soundPowerUp;
-                energyMixin.soundPowerDown = seamothEnergyMixin.soundPowerDown;
-                energyMixin.soundBatteryAdd = seamothEnergyMixin.soundBatteryAdd;
-                energyMixin.soundBatteryRemove = seamothEnergyMixin.soundBatteryRemove;
-                energyMixin.batteryModels = seamothEnergyMixin.batteryModels;
-                energyMixin.controlledObjects = new GameObject[] { };
-                energyMixins.Add(energyMixin);
-            }
-            foreach (VehicleParts.VehiclePowerCellDefinition vb in mv.Com.Batteries)
-            {
-                // Configure energy mixin for this battery slot
-                vb.Root.GetComponents<EnergyMixin>().ForEach(em => GameObject.Destroy(em)); // remove old energy mixins
-                var energyMixin = vb.Root.AddComponent<DebugBatteryEnergyMixin>();
-                energyMixin.originalProxy = vb.BatteryProxy;
-                energyMixin.storageRoot = mv.Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
-                energyMixin.defaultBattery = seamothEnergyMixin.defaultBattery;
-                energyMixin.compatibleBatteries = seamothEnergyMixin.compatibleBatteries;
-                energyMixin.soundPowerUp = seamothEnergyMixin.soundPowerUp;
-                energyMixin.soundPowerDown = seamothEnergyMixin.soundPowerDown;
-                energyMixin.soundBatteryAdd = seamothEnergyMixin.soundBatteryAdd;
-                energyMixin.soundBatteryRemove = seamothEnergyMixin.soundBatteryRemove;
-                energyMixin.batteryModels = seamothEnergyMixin.batteryModels;
-                energyMixins.Add(energyMixin);
-                var tmp = vb.Root.EnsureComponent<VehicleBatteryInput>();
-                tmp.mixin = energyMixin;
-                tmp.vehicle = mv;
-                tmp.powerCellObject = vb.Root;
-                tmp.displayName = vb.DisplayName?.Text;
-                tmp.displayNameLocalized = vb.DisplayName?.Localize ?? false;
-
-                var model = vb.Root.gameObject.EnsureComponent<StorageComponents.BatteryProxy>();
-                model.proxy = vb.BatteryProxy;
-                model.mixin = energyMixin;
-
-                SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vb.Root.transform);
-                vb.Root.EnsureComponent<SaveLoad.AvsBatteryIdentifier>();
-            }
-            // Configure energy interface
-            var eInterf = mv.gameObject.EnsureComponent<EnergyInterface>();
-            eInterf.sources = energyMixins.ToArray();
-            mv.energyInterface = eInterf;
-
             mv.chargingSound = mv.gameObject.AddComponent<FMOD_CustomLoopingEmitter>();
             mv.chargingSound.asset = SeamothHelper.RequireSeamoth.GetComponent<SeaMoth>().chargingSound.asset;
+
+            mv.SetupPowerCells();
+
         }
         private static void SetupAIEnergyInterface(AvsVehicle mv, GameObject seamoth)
         {

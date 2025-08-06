@@ -7166,11 +7166,6 @@
             to process.
             </summary>
         </member>
-        <member name="F:AVS.VehicleComponents.MaterialReactor.localizeInteractText">
-            <summary>
-            If true, the <see cref="!:interactText"/> will be localized.
-            </summary>
-        </member>
         <member name="F:AVS.VehicleComponents.MaterialReactor.canViewWhitelist">
             <summary>
             True if the PDA should show the whitelist of materials that can be processed by this reactor

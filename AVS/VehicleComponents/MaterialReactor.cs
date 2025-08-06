@@ -110,10 +110,7 @@ namespace AVS.VehicleComponents
         public bool isGeneratingEnergy;
 
         private MaybeTranslate label;
-        /// <summary>
-        /// If true, the <see cref="interactText"/> will be localized.
-        /// </summary>
-        public bool localizeInteractText = false;
+
 
         /// <summary>
         /// True if the PDA should show the whitelist of materials that can be processed by this reactor
@@ -229,9 +226,10 @@ namespace AVS.VehicleComponents
             mv.energyInterface.sources = mv.energyInterface.sources.Append(eMix).ToArray();
             gameObject.AddComponent<ChildObjectIdentifier>();
             isInitialized = true;
+            mv.Log.Debug($"MaterialReactor {label} initialized with width {width}, height {height}, and capacity {capacity}.");
         }
 
-        internal void Update()
+        public void Update()
         {
             if (!isInitialized)
             {
@@ -246,7 +244,14 @@ namespace AVS.VehicleComponents
             foreach (var reactant in reactants)
             {
                 float rate = rateEnergies[reactant.techType] * Time.deltaTime;
+                float totalCanConsume = mv!.energyInterface.TotalCanConsume(out var sources);
                 float consumed = mv!.energyInterface.AddEnergy(rate);
+                //foreach (var em in mv.energyInterface.sources)
+                //{
+                //    if (em != null)
+                //        mv.Log.Debug($"{em.NiceName()}: {em.charge} < {em.capacity}");
+                //}
+                //mv.Log.Debug($"MaterialReactor {label} processing {reactant.techType.AsString()} at rate {rate}. Added {consumed} to {mv.Id} {mv.energyInterface.NiceName()}. RequiresPower := {GameModeUtils.RequiresPower()}. totalCanConsume:={totalCanConsume}, #sources:={sources} ");
                 currentEnergies[reactant] -= consumed;
                 any |= consumed > 0;
             }

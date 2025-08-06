@@ -225,6 +225,7 @@ namespace AVS.BaseVehicle
             ReSetupInnateStorages();    //preserve labels. Also adapt to changes in language to some extent
             ReSetupModularStorages();    //preserve labels. Also adapt to changes in language to some extent
             ReSetupWaterParks();
+            CheckEnergyInterface();
         }
 
         ///<inheritdoc />
