@@ -170,6 +170,81 @@ namespace AVS.VehicleParts
     }
 
     /// <summary>
+    /// Definition of a fish tank within a vehicle.
+    /// The fish tank can accommodate fish and other aquatic life
+    /// that may be added to a water park.
+    /// Eggs will hatch eventually and fish may reproduce.
+    /// </summary>
+    public readonly struct MobileWaterPark
+    {
+        /// <summary>
+        /// The game object that represents the fish tank.
+        /// </summary>
+        public GameObject Container { get; }
+        /// <summary>
+        /// The grid height of the total tank storage capacity.
+        /// </summary>
+        public int Height { get; }
+        /// <summary>
+        /// The grid width of the total tank storage capacity.
+        /// </summary>
+        public int Width { get; }
+
+        /// <summary>
+        /// The display text for the vehicle storage, which can be localized.
+        /// </summary>
+        public MaybeTranslate? DisplayName { get; }
+
+        /// <summary>
+        /// True if fish in the tank can reproduce.
+        /// </summary>
+        public bool AllowReproduction { get; }
+
+        /// <summary>
+        /// True if eggs in the tank can hatch.
+        /// </summary>
+        public bool HatchEggs { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MobileWaterPark"/> class with the specified container, display name,
+        /// dimensions, and behavior settings.
+        /// </summary>
+        /// <param name="container">The <see cref="GameObject"/> that represents the physical container for the fish tank.  This parameter
+        /// cannot be <see langword="null"/>.</param>
+        /// <param name="displayName">An optional display name for the fish tank, which may be translated.  If <see langword="null"/>, no display
+        /// name is assigned.</param>
+        /// <param name="height">The height of the fish tank, measured in arbitrary units.  Must be greater than zero. Defaults to 4.</param>
+        /// <param name="width">The width of the fish tank, measured in arbitrary units.  Must be greater than zero. Defaults to 4.</param>
+        /// <param name="allowReproduction">A value indicating whether fish in the tank are allowed to reproduce.  Defaults to <see langword="true"/>.</param>
+        /// <param name="hatchEggs">A value indicating whether fish eggs in the tank are allowed to hatch.  Defaults to <see langword="true"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="container"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="height"/> or <paramref name="width"/> is less than or equal to zero.</exception>
+        public MobileWaterPark(
+            GameObject container,
+            MaybeTranslate? displayName,
+            int height = 4,
+            int width = 4,
+            bool allowReproduction = true,
+            bool hatchEggs = true
+            )
+        {
+            if (container == null)
+                throw new ArgumentNullException(nameof(container), "Fish tank container cannot be null.");
+            if (height <= 0)
+                throw new ArgumentOutOfRangeException(nameof(height), "Fish tank height must be greater than zero.");
+            if (width <= 0)
+                throw new ArgumentOutOfRangeException(nameof(width), "Fish tank width must be greater than zero.");
+            Container = container;
+            DisplayName = displayName;
+            Height = height;
+            Width = width;
+            AllowReproduction = allowReproduction;
+            HatchEggs = hatchEggs;
+        }
+    }
+
+
+    /// <summary>
     /// Represents a storage unit within a vehicle, defined by its container and grid dimensions.
     /// </summary>
     /// <remarks>The <see cref="VehicleStorage"/> struct encapsulates the storage characteristics of a
@@ -196,6 +271,18 @@ namespace AVS.VehicleParts
         public MaybeTranslate? DisplayName { get; }
 
         /// <summary>
+        /// Custom logic to determine if items can be added to this storage.
+        /// Only applicable for innate storage containers.
+        /// </summary>
+        public IsAllowedToAdd? InnateIsAllowedToAdd { get; }
+
+        /// <summary>
+        /// Custom logic to determine if items can be removed from this storage.
+        /// Only applicable for innate storage containers.
+        /// </summary>
+        public IsAllowedToRemove? InnateIsAllowedToRemove { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="VehicleStorage"/> class with the specified container, display
         /// name, and dimensions.
         /// </summary>
@@ -204,9 +291,18 @@ namespace AVS.VehicleParts
         /// <param name="displayName">The display name for the vehicle storage. This can be <see langword="null"/> if no display name is required.</param>
         /// <param name="height">The height of the vehicle storage. Must be greater than zero.</param>
         /// <param name="width">The width of the vehicle storage. Must be greater than zero.</param>
+        /// <param name="innateIsAllowedToAdd">Custom logic to determine if items can be added to this innate storage. Not effective on modular storages. May be null</param>
+        /// <param name="innateIsAllowedToRemove">Custom logic to determine if items can be removed from this innate storage. Not effective on modular storages.May be null</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="container"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="height"/> or <paramref name="width"/> is less than or equal to zero.</exception>
-        public VehicleStorage(GameObject container, MaybeTranslate? displayName, int height = 4, int width = 4)
+        public VehicleStorage(
+            GameObject container,
+            MaybeTranslate? displayName,
+            int height = 4,
+            int width = 4,
+            IsAllowedToAdd? innateIsAllowedToAdd = null,
+            IsAllowedToRemove? innateIsAllowedToRemove = null
+            )
         {
             if (container == null)
                 throw new ArgumentNullException(nameof(container), "Vehicle storage container cannot be null.");
@@ -218,6 +314,8 @@ namespace AVS.VehicleParts
             DisplayName = displayName;
             Height = height;
             Width = width;
+            InnateIsAllowedToAdd = innateIsAllowedToAdd;
+            InnateIsAllowedToRemove = innateIsAllowedToRemove;
         }
         internal bool CheckValidity(string thisName)
         {

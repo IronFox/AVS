@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace AVS.SaveLoad
 {
-    internal class VFInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListener
+    internal class AvsInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListener
     {
         internal AvsVehicle mv => GetComponentInParent<AvsVehicle>();
         const string saveFileNameSuffix = "innatestorage";

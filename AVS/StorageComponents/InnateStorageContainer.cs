@@ -14,6 +14,16 @@ namespace AVS
     public class InnateStorageContainer : MonoBehaviour, ICraftTarget//, IProtoEventListener, IProtoTreeEventListener
     {
 
+        /// <summary>
+        /// Custom delegate to check if an item is allowed to be added to the storage container.
+        /// </summary>
+        public IsAllowedToAdd? isAllowedToAdd = null;
+        /// <summary>
+        /// Indicates whether the current entity is allowed to be removed.
+        /// </summary>
+        public IsAllowedToRemove? isAllowedToRemove = null;
+
+
         private ItemsContainer? _container = null;
         /// <summary>
         /// Accessor for the storage container.
@@ -38,9 +48,14 @@ namespace AVS
             _container = new ItemsContainer(this.width, this.height,
                 storageRoot!.transform, this.DisplayName.Rendered, null);
             _container.SetAllowedTechTypes(this.allowedTech);
-            _container.isAllowedToRemove = null;
+            _container.isAllowedToAdd = this.isAllowedToAdd;
+            _container.isAllowedToRemove = this.isAllowedToRemove;
         }
 
+        /// <summary>
+        /// Called via reflection when the vehicle is crafted.
+        /// </summary>
+        /// <param name="techType"></param>
         public void OnCraftEnd(TechType techType)
         {
             // NEWNEW

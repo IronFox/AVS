@@ -193,6 +193,16 @@ namespace AVS.Util
                 return null;
             return component.gameObject;
         }
+        /// <summary>
+        /// Selectively returns the transform of a Component.
+        /// Returns null if the Component is null.
+        /// </summary>
+        public static Transform? SafeGetTransform(this Component? component)
+        {
+            if (component == null)
+                return null;
+            return component.transform;
+        }
 
         /// <summary>
         /// Selectively returns the Texture2D of a Sprite.

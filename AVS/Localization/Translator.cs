@@ -146,6 +146,27 @@
         /// </summary>
         Error_CannotRemoveMaterialsFromReactor,
 
+        /// <summary>
+        /// If the player tries to add a dead fish to the mobile water park.
+        /// The first parameter is the tech type name of the fish.
+        /// </summary>
+        Error_MobileWaterPark_CannotAdd_FishIsDead,
+
+        /// <summary>
+        /// If the player tries to add a hatched egg to the mobile water park.
+        /// The first parameter is the tech type name of the egg.
+        /// </summary>
+        Error_MobileWaterPark_CannotAdd_EggIsHatched,
+        /// <summary>
+        /// If the player tries to add something that is not a fish or an egg to the mobile water park.
+        /// The first parameter is the tech type name of the item.
+        /// </summary>
+        Error_MobileWaterPark_CannotAdd_Incompatible,
+        /// <summary>
+        /// If the player tries to remove an egg from the mobile water park that is in the process of hatching.
+        /// </summary>
+        Error_MobileWaterPark_CannotRemove_HatchingEgg,
+
 
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
     }

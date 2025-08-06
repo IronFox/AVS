@@ -61,14 +61,20 @@ namespace AVS.Composition
         /// </summary>
         public IReadOnlyList<GameObject> WaterClipProxies { get; } = Array.Empty<GameObject>();
 
+
+        /// <summary>
+        /// Mobile water parks in the vehicle.
+        /// </summary>
+        public IReadOnlyList<VehicleParts.MobileWaterPark> WaterParks { get; }
+
         /// <summary>
         /// Storages that the vehicle always has.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleStorage> InnateStorages { get; } = Array.Empty<VehicleParts.VehicleStorage>();
+        public IReadOnlyList<VehicleParts.VehicleStorage> InnateStorages { get; }
         /// <summary>
         /// Storages that can be added to the vehicle by the player.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleStorage> ModularStorages { get; } = Array.Empty<VehicleParts.VehicleStorage>();
+        public IReadOnlyList<VehicleParts.VehicleStorage> ModularStorages { get; }
 
         /// <summary>
         /// Collection and configuration of headlights, to be rendered volumetrically while the player is outside the vehicle.
@@ -140,6 +146,7 @@ namespace AVS.Composition
         /// <param name="subNameDecals">Sub name decals. Optional.</param>
         /// <param name="lavaLarvaAttachPoints">Lava larva attach points. Optional.</param>
         /// <param name="leviathanGrabPoint">Leviathan grab point. Optional.</param>
+        /// <param name="waterParks">Mobile water parks. Optional.</param>
         /// <param name="engine">The engine that powers the vehicle. Must not be null.</param>
         public VehicleComposition(
             GameObject storageRootObject,
@@ -159,7 +166,8 @@ namespace AVS.Composition
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
-            GameObject? leviathanGrabPoint = null
+            GameObject? leviathanGrabPoint = null,
+            IReadOnlyList<VehicleParts.MobileWaterPark>? waterParks = null
         )
         {
             if (!storageRootObject)
@@ -188,6 +196,7 @@ namespace AVS.Composition
             DenyBuildingColliders = denyBuildingColliders ?? Array.Empty<Collider>();
             SubNameDecals = subNameDecals ?? Array.Empty<TMPro.TextMeshProUGUI>();
             LavaLarvaAttachPoints = lavaLarvaAttachPoints ?? Array.Empty<Transform>();
+            WaterParks = waterParks ?? Array.Empty<VehicleParts.MobileWaterPark>();
 
             if (Upgrades == null)
                 throw new InvalidOperationException($"Something went wrong. Upgrades should not be null at this point. {upgrades}");

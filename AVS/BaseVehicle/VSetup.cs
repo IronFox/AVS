@@ -2,6 +2,7 @@
 using AVS.Configuration;
 using AVS.Localization;
 using AVS.Log;
+using AVS.StorageComponents;
 using AVS.Util;
 using AVS.VehicleComponents;
 using AVS.VehicleParts;
@@ -10,6 +11,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using MobileWaterPark = AVS.StorageComponents.MobileWaterPark;
 
 namespace AVS.BaseVehicle
 {
@@ -213,47 +215,87 @@ namespace AVS.BaseVehicle
             }
         }
 
+        internal bool ReSetupWaterParks()
+        {
+            int iter = 0;
+            try
+            {
+                LogWriter.Default.Debug($"Setting up {Com.WaterParks.Count} Mobile Water Parks");
+                foreach (var vp in Com.WaterParks)
+                {
+                    vp.Container.SetActive(false);
+
+                    var cont = vp.Container.EnsureComponent<MobileWaterPark>();
+                    LogWriter.Default.Debug("Setting up Mobile Water Park " + cont.NiceName() + $" '{cont.DisplayName}'");
+                    var name = vp.DisplayName ?? Text.Untranslated("Innate Vehicle Storage " + iter);
+                    cont.Setup(this, name, vp, iter + 1);
+                    FMODAsset storageCloseSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().closeSound;
+                    FMODAsset storageOpenSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().openSound;
+                    var inp = vp.Container.EnsureComponent<WaterParkStorageInput>();
+                    inp.displayName = name;
+                    inp.mv = this;
+                    inp.slotID = iter;
+                    iter++;
+                    inp.model = vp.Container;
+                    if (vp.Container.GetComponentInChildren<Collider>() is null)
+                    {
+                        inp.collider = vp.Container.EnsureComponent<BoxCollider>();
+                    }
+                    inp.openSound = storageOpenSound;
+                    inp.closeSound = storageCloseSound;
+                    vp.Container.SetActive(true);
+
+                    SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vp.Container.transform);
+                }
+                return true;
+            }
+            catch (Exception e)
+            {
+                LogWriter.Default.Error("There was a problem setting up the Innate Storage. Check VehicleStorage.Container and ModVehicle.StorageRootObject", e);
+                return false;
+            }
+        }
+
         internal bool ReSetupInnateStorages()
         {
 
             int iter = 0;
             try
             {
-                if (Com.InnateStorages != null)
+                foreach (VehicleParts.VehicleStorage vs in Com.InnateStorages)
                 {
-                    foreach (VehicleParts.VehicleStorage vs in Com.InnateStorages)
+                    vs.Container.SetActive(false);
+
+                    var cont = vs.Container.EnsureComponent<InnateStorageContainer>();
+                    var name = vs.DisplayName ?? Text.Untranslated("Innate Vehicle Storage " + iter);
+                    cont.storageRoot = Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
+                    cont.DisplayName = name;
+                    cont.height = vs.Height;
+                    cont.width = vs.Width;
+                    cont.isAllowedToAdd = vs.InnateIsAllowedToAdd;
+                    cont.isAllowedToRemove = vs.InnateIsAllowedToRemove;
+                    //cont.name = "Innate Vehicle Storage " + iter;
+
+                    LogWriter.Default.Debug("Setting up Innate Storage " + cont.NiceName() + $" '{cont.DisplayName}'");
+
+                    FMODAsset storageCloseSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().closeSound;
+                    FMODAsset storageOpenSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().openSound;
+                    var inp = vs.Container.EnsureComponent<InnateStorageInput>();
+                    inp.displayName = name;
+                    inp.mv = this;
+                    inp.slotID = iter;
+                    iter++;
+                    inp.model = vs.Container;
+                    if (vs.Container.GetComponentInChildren<Collider>() is null)
                     {
-                        vs.Container.SetActive(false);
-
-                        var cont = vs.Container.EnsureComponent<InnateStorageContainer>();
-                        var name = vs.DisplayName ?? Text.Untranslated("Innate Vehicle Storage " + iter);
-                        cont.storageRoot = Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
-                        cont.DisplayName = name;
-                        cont.height = vs.Height;
-                        cont.width = vs.Width;
-                        //cont.name = "Innate Vehicle Storage " + iter;
-
-                        LogWriter.Default.Debug("Setting up Innate Storage " + cont.NiceName() + $" '{cont.DisplayName}'");
-
-                        FMODAsset storageCloseSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().closeSound;
-                        FMODAsset storageOpenSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1").GetComponent<SeamothStorageInput>().openSound;
-                        var inp = vs.Container.EnsureComponent<InnateStorageInput>();
-                        inp.displayName = name;
-                        inp.mv = this;
-                        inp.slotID = iter;
-                        iter++;
-                        inp.model = vs.Container;
-                        if (vs.Container.GetComponentInChildren<Collider>() is null)
-                        {
-                            inp.collider = vs.Container.EnsureComponent<BoxCollider>();
-                        }
-                        inp.openSound = storageOpenSound;
-                        inp.closeSound = storageCloseSound;
-                        vs.Container.SetActive(true);
-
-                        SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vs.Container.transform);
-                        vs.Container.EnsureComponent<SaveLoad.VFInnateStorageIdentifier>();
+                        inp.collider = vs.Container.EnsureComponent<BoxCollider>();
                     }
+                    inp.openSound = storageOpenSound;
+                    inp.closeSound = storageCloseSound;
+                    vs.Container.SetActive(true);
+
+                    SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vs.Container.transform);
+                    vs.Container.EnsureComponent<SaveLoad.AvsInnateStorageIdentifier>();
                 }
                 return true;
             }

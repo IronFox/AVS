@@ -255,6 +255,18 @@ namespace AVS.BaseVehicle
         /// </summary>
         public virtual void OnFinishedLoading()
         {
+            ReSetupWaterParks();
+            foreach (var wp in Com.WaterParks)
+            {
+                var waterPark = wp.Container.GetComponent<StorageComponents.MobileWaterPark>();
+                if (waterPark == null)
+                {
+                    Log.Error($"WaterPark {wp.Container.name} has no MobileWaterPark component!");
+                    continue;
+                }
+                waterPark.OnVehicleLoaded();
+            }
+
             if (lateBoardAt != null)
             {
                 RegisterPlayerEntry(() =>

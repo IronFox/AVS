@@ -122,6 +122,7 @@ namespace AVS.Composition
         /// <param name="lavaLarvaAttachPoints">Lava larva attach points. Optional.</param>
         /// <param name="leviathanGrabPoint">Leviathan grab point. Optional.</param>
         /// <param name="engine">The engine that powers the vehicle. Must not be null.</param>
+        /// <param name="waterParks">Optional mobile water parks</param>
         /// <exception cref="ArgumentException">Thrown if <paramref name="tetherSources"/> or <paramref name="helms"/> is null or empty.</exception>
         public SubmarineComposition(
             GameObject storageRootObject,
@@ -155,7 +156,9 @@ namespace AVS.Composition
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
-            GameObject? leviathanGrabPoint = null
+            GameObject? leviathanGrabPoint = null,
+            IReadOnlyList<VehicleParts.MobileWaterPark>? waterParks = null
+
         )
         : base(
               engine: engine,
@@ -175,7 +178,8 @@ namespace AVS.Composition
             denyBuildingColliders: denyBuildingColliders,
             subNameDecals: subNameDecals,
             lavaLarvaAttachPoints: lavaLarvaAttachPoints,
-            leviathanGrabPoint: leviathanGrabPoint
+            leviathanGrabPoint: leviathanGrabPoint,
+            waterParks: waterParks
         )
         {
             if (tetherSources == null || tetherSources.Count == 0)

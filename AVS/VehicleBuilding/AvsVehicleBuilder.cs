@@ -79,6 +79,9 @@ namespace AVS
             if (!mv.ReSetupModularStorages())
                 return false;
 
+            if (!mv.ReSetupWaterParks())
+                return false;
+
             try
             {
                 foreach (VehicleParts.VehicleUpgrades vu in mv.Com.Upgrades)

@@ -30,7 +30,7 @@ namespace AVS.SaveLoad
                 }
             }
         }
-        private static void SaveThisModularStorage(AvsVehicle mv, ItemsContainer container, int slotID)
+        public static void SaveThisModularStorage(AvsVehicle mv, ItemsContainer container, int slotID)
         {
             List<Tuple<TechType, float, TechType>> result = new List<Tuple<TechType, float, TechType>>();
             foreach (var item in container.ToList())
