@@ -45,26 +45,14 @@ namespace AVS.Configuration
     }
 
     /// <summary>
-    /// Sequential builder for a <see cref="Recipe"/>.
+    /// Recipe builder for creating complex recipes with multiple ingredients.
     /// </summary>
-    public class NewRecipe
+    public sealed class RecipeBuilder
     {
         private Dictionary<TechType, int> Ingredients { get; } = new Dictionary<TechType, int>();
+        internal RecipeBuilder()
+        { }
 
-        private NewRecipe()
-        {
-            // Private constructor to enforce the use of static methods for instantiation.
-        }
-
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="NewRecipe"/> class with no ingredients.
-        /// </summary>
-        /// <returns>A new <see cref="NewRecipe"/> instance.</returns>
-        public static NewRecipe WithNothing()
-        {
-            return new NewRecipe();
-        }
         private void AddOne(RecipeIngredient ingredient)
         {
             if (ingredient.Type == TechType.None || ingredient.Amount <= 0)
@@ -79,7 +67,7 @@ namespace AVS.Configuration
             }
         }
 
-        private NewRecipe AddRange(IEnumerable<RecipeIngredient> ingredients)
+        internal RecipeBuilder AddRange(IEnumerable<RecipeIngredient> ingredients)
         {
             foreach (var ingredient in ingredients)
             {
@@ -89,47 +77,11 @@ namespace AVS.Configuration
         }
 
         /// <summary>
-        /// Creates a new <see cref="NewRecipe"/> instance from the specified <see cref="Recipe"/>.
-        /// </summary>
-        /// <param name="recipe">The source <see cref="Recipe"/> to convert. Must not be <see langword="null"/>.</param>
-        /// <returns>A new <see cref="NewRecipe"/> instance containing the ingredients from the specified <see cref="Recipe"/>.</returns>
-        /// <exception cref="ArgumentNullException">Thrown if <paramref name="recipe"/> is <see langword="null"/>.</exception>
-        public static NewRecipe StartWith(Recipe recipe)
-        {
-            if (recipe is null)
-                throw new ArgumentNullException(nameof(recipe), "Recipe must not be null");
-            NewRecipe n = new NewRecipe();
-            return n.AddRange(recipe);
-        }
-
-
-        /// <summary>
-        /// Creates a new instance of the <see cref="NewRecipe"/> class with an initial ingredient.
-        /// </summary>
-        /// <param name="type">The type of the ingredient to add to the recipe.</param>
-        /// <param name="amount">The quantity of the ingredient to add. Must be a positive integer.</param>
-        /// <returns>A new <see cref="NewRecipe"/> instance containing the specified ingredient.</returns>
-        public static NewRecipe StartWith(TechType type, int amount)
-        {
-            return new NewRecipe().Include(new RecipeIngredient(type, amount));
-        }
-        /// <summary>
-        /// Creates a new instance of <see cref="NewRecipe"/> with the specified ingredient.
-        /// </summary>
-        /// <param name="ingredient">A tuple containing the ingredient's <see cref="TechType"/> and the amount to be added. The <see
-        /// cref="TechType"/> specifies the type of the ingredient, and the amount must be a positive integer.</param>
-        /// <returns>A new <see cref="NewRecipe"/> instance with the specified ingredient added.</returns>
-        public static NewRecipe StartWith((TechType Type, int Amount) ingredient)
-        {
-            return new NewRecipe().Include(ingredient.Type, ingredient.Amount);
-        }
-
-        /// <summary>
         /// Adds the ingredients from the specified <see cref="Recipe"/> to the current recipe.
         /// </summary>
         /// <param name="recipe">Recipe to add ingredients of</param>
         /// <returns>this</returns>
-        public NewRecipe Include(IEnumerable<RecipeIngredient> recipe)
+        public RecipeBuilder Add(IEnumerable<RecipeIngredient> recipe)
         {
             return AddRange(recipe);
         }
@@ -138,22 +90,24 @@ namespace AVS.Configuration
         /// Combines the current recipe with another recipe by merging their ingredients.
         /// </summary>
         /// <param name="other">The recipe to combine with the current recipe. Must not be <see langword="null"/>.</param>
-        /// <returns>A new <see cref="NewRecipe"/> instance containing the combined ingredients of both recipes.</returns>
+        /// <returns>A new <see cref="RecipeBuilder"/> instance containing the combined ingredients of both recipes.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="other"/> is <see langword="null"/>.</exception>
-        public NewRecipe Include(NewRecipe other)
+        public RecipeBuilder Include(RecipeBuilder other)
         {
             if (other is null)
                 throw new ArgumentNullException(nameof(other), "Other recipe must not be null");
             return AddRange(other.Ingredients.Select(i => new RecipeIngredient(i.Key, i.Value)));
         }
 
+
+
         /// <summary>
         /// Adds one unit of each specified <see cref="TechType"/> to the recipe.
         /// </summary>
         /// <param name="types">A collection of <see cref="TechType"/> values to add to the recipe. Any <see cref="TechType.None"/> values
         /// in the collection are ignored.</param>
-        /// <returns>The updated <see cref="NewRecipe"/> instance, allowing for method chaining.</returns>
-        public NewRecipe IncludeOneOfEach(IEnumerable<TechType> types)
+        /// <returns>The updated <see cref="RecipeBuilder"/> instance, allowing for method chaining.</returns>
+        public RecipeBuilder AddOneOfEach(IEnumerable<TechType> types)
         {
             foreach (var type in types)
             {
@@ -165,6 +119,7 @@ namespace AVS.Configuration
             return this;
         }
 
+
         /// <summary>
         /// Adds a specified ingredient and its quantity to the recipe.
         /// </summary>
@@ -173,42 +128,45 @@ namespace AVS.Configuration
         /// instance.</remarks>
         /// <param name="type">The type of ingredient to add. Must not be <see cref="TechType.None"/>.</param>
         /// <param name="amount">The quantity of the ingredient to add. Must be greater than zero.</param>
-        /// <returns>The current <see cref="NewRecipe"/> instance, allowing for method chaining.</returns>
-        public NewRecipe Include(TechType type, int amount)
+        /// <returns>The current <see cref="RecipeBuilder"/> instance, allowing for method chaining.</returns>
+        public RecipeBuilder Add(TechType type, int amount)
         {
             if (type == TechType.None || amount <= 0)
                 return this;
             AddOne(new RecipeIngredient(type, amount));
             return this;
         }
+
         /// <summary>
         /// Adds an ingredient to the recipe with the specified type and amount.
         /// </summary>
         /// <param name="ingredient">A tuple containing the type of the ingredient and the amount to add.  <paramref name="ingredient.Type"/>
         /// specifies the ingredient type, and  <paramref name="ingredient.Amount"/> specifies the quantity to add.</param>
-        /// <returns>The current <see cref="NewRecipe"/> instance, allowing for method chaining.</returns>
-        public NewRecipe And((TechType Type, int Amount) ingredient)
+        /// <returns>The current <see cref="RecipeBuilder"/> instance, allowing for method chaining.</returns>
+        public RecipeBuilder Add((TechType Type, int Amount) ingredient)
         {
-            return Include(ingredient.Type, ingredient.Amount);
+            return Add(ingredient.Type, ingredient.Amount);
         }
+
+
         /// <summary>
         /// Adds the specified ingredient to the recipe.
         /// </summary>
         /// <param name="ingredient">The ingredient to add, including its type and amount.</param>
-        /// <returns>A <see cref="NewRecipe"/> instance with the ingredient added, allowing for method chaining.</returns>
-        public NewRecipe Include(RecipeIngredient ingredient)
+        /// <returns>A <see cref="RecipeBuilder"/> instance with the ingredient added, allowing for method chaining.</returns>
+        public RecipeBuilder Add(RecipeIngredient ingredient)
         {
-            return Include(ingredient.Type, ingredient.Amount);
+            return Add(ingredient.Type, ingredient.Amount);
         }
 
 
         /// <summary>
-        /// Adds a <see cref="RecipeIngredient"/> to the <see cref="NewRecipe"/> and returns the updated builder.
+        /// Adds a <see cref="RecipeIngredient"/> to the <see cref="RecipeBuilder"/> and returns the updated builder.
         /// </summary>
-        /// <param name="builder">The <see cref="NewRecipe"/> to which the ingredient will be added.</param>
+        /// <param name="builder">The <see cref="RecipeBuilder"/> to which the ingredient will be added.</param>
         /// <param name="ingredient">The <see cref="RecipeIngredient"/> to add to the builder.</param>
-        /// <returns>The updated <see cref="NewRecipe"/> instance with the added ingredient.</returns>
-        public static NewRecipe operator +(NewRecipe builder, RecipeIngredient ingredient)
+        /// <returns>The updated <see cref="RecipeBuilder"/> instance with the added ingredient.</returns>
+        public static RecipeBuilder operator +(RecipeBuilder builder, RecipeIngredient ingredient)
         {
             builder.AddOne(ingredient);
             return builder;
@@ -218,13 +176,13 @@ namespace AVS.Configuration
         /// </summary>
         /// <remarks>This operator provides a convenient way to add ingredients to a recipe by using the
         /// <c>+</c> operator.</remarks>
-        /// <param name="builder">The <see cref="NewRecipe"/> instance to which the ingredient will be added.</param>
+        /// <param name="builder">The <see cref="RecipeBuilder"/> instance to which the ingredient will be added.</param>
         /// <param name="ingredient">A tuple containing the <see cref="TechType"/> of the ingredient and the amount to add. The first item
         /// represents the type of the ingredient, and the second item represents the quantity.</param>
-        /// <returns>A new <see cref="NewRecipe"/> instance with the specified ingredient added.</returns>
-        public static NewRecipe operator +(NewRecipe builder, (TechType Type, int Amount) ingredient)
+        /// <returns>A new <see cref="RecipeBuilder"/> instance with the specified ingredient added.</returns>
+        public static RecipeBuilder operator +(RecipeBuilder builder, (TechType Type, int Amount) ingredient)
         {
-            return builder.Include(ingredient.Type, ingredient.Amount);
+            return builder.Add(ingredient.Type, ingredient.Amount);
         }
         /// <summary>
         /// Constructs a new <see cref="Recipe"/> instance using the specified ingredients.
@@ -234,6 +192,63 @@ namespace AVS.Configuration
         {
             return new Recipe(Ingredients);
         }
+    }
+
+
+    /// <summary>
+    /// Sequential builder for a <see cref="Recipe"/>.
+    /// </summary>
+    public static class NewRecipe
+    {
+
+
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="NewRecipe"/> class with no ingredients.
+        /// </summary>
+        /// <returns>A new <see cref="NewRecipe"/> instance.</returns>
+        public static RecipeBuilder FromNothing()
+        {
+            return new RecipeBuilder();
+        }
+
+        /// <summary>
+        /// Creates a new <see cref="NewRecipe"/> instance from the specified <see cref="Recipe"/>.
+        /// </summary>
+        /// <param name="recipe">The source <see cref="Recipe"/> to convert. Must not be <see langword="null"/>.</param>
+        /// <returns>A new <see cref="NewRecipe"/> instance containing the ingredients from the specified <see cref="Recipe"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="recipe"/> is <see langword="null"/>.</exception>
+        public static RecipeBuilder From(Recipe recipe)
+        {
+            if (recipe is null)
+                throw new ArgumentNullException(nameof(recipe), "Recipe must not be null");
+            RecipeBuilder n = new RecipeBuilder();
+            return n.AddRange(recipe);
+        }
+
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="NewRecipe"/> class with an initial ingredient.
+        /// </summary>
+        /// <param name="type">The type of the ingredient to add to the recipe.</param>
+        /// <param name="amount">The quantity of the ingredient to add. Must be a positive integer.</param>
+        /// <returns>A new <see cref="NewRecipe"/> instance containing the specified ingredient.</returns>
+        public static RecipeBuilder Add(TechType type, int amount)
+        {
+            return new RecipeBuilder().Add(new RecipeIngredient(type, amount));
+        }
+        /// <summary>
+        /// Creates a new instance of <see cref="NewRecipe"/> with the specified ingredient.
+        /// </summary>
+        /// <param name="ingredient">A tuple containing the ingredient's <see cref="TechType"/> and the amount to be added. The <see
+        /// cref="TechType"/> specifies the type of the ingredient, and the amount must be a positive integer.</param>
+        /// <returns>A new <see cref="NewRecipe"/> instance with the specified ingredient added.</returns>
+        public static RecipeBuilder Add((TechType Type, int Amount) ingredient)
+        {
+            return new RecipeBuilder().Add(ingredient.Type, ingredient.Amount);
+        }
+
+
 
     }
 
@@ -248,9 +263,9 @@ namespace AVS.Configuration
         /// </summary>
         public static Recipe Example { get; } =
             NewRecipe
-                .StartWith(TechType.Titanium, 2)
-                .Include(TechType.Quartz, 1)
-                .Include(TechType.PowerCell, 1)
+                .Add(TechType.Titanium, 2)
+                .Add(TechType.Quartz, 1)
+                .Add(TechType.PowerCell, 1)
                 .Done();
 
         /// <summary>

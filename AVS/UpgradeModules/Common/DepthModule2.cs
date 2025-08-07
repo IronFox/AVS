@@ -20,10 +20,10 @@ namespace AVS.UpgradeModules.Common
         public override string Description => Translator.Get(TranslationKey.Module_Depth2_Description);
         /// <inheritdoc/>
         public override Recipe Recipe { get; } = NewRecipe
-                .StartWith(TechType.TitaniumIngot, 3)
-                .Include(TechType.Lithium, 3)
-                .Include(TechType.EnameledGlass, 3)
-                .Include(TechType.AluminumOxide, 5)
+                .Add(TechType.TitaniumIngot, 3)
+                .Add(TechType.Lithium, 3)
+                .Add(TechType.EnameledGlass, 3)
+                .Add(TechType.AluminumOxide, 5)
                 .Done();
 
         /// <inheritdoc/>

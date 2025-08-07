@@ -147,7 +147,7 @@ namespace AVS.UpgradeModules
         /// <summary>
         /// The base recipe for this upgrade.
         /// </summary>
-        public virtual Recipe Recipe { get; } = NewRecipe.StartWith(TechType.Titanium, 1).Done();
+        public virtual Recipe Recipe { get; } = NewRecipe.Add(TechType.Titanium, 1).Done();
 
         /// <summary>
         /// Module types that are automatically displaced when this upgrade is added to a vehicle.
@@ -239,7 +239,7 @@ namespace AVS.UpgradeModules
         /// <summary>
         /// Holds additional simple ingredients to extend the recipe.
         /// </summary>
-        private NewRecipe SimpleRecipeExtensions { get; } = NewRecipe.WithNothing();
+        private RecipeBuilder SimpleRecipeExtensions { get; } = NewRecipe.FromNothing();
 
         /// <summary>
         /// The tech type this one effectively unlocks with.
@@ -254,7 +254,7 @@ namespace AVS.UpgradeModules
         public Recipe GetRecipe(VehicleType type)
         {
             var r = NewRecipe
-                .StartWith(Recipe)
+                .From(Recipe)
                 .Include(SimpleRecipeExtensions);
 
 
@@ -262,16 +262,16 @@ namespace AVS.UpgradeModules
             switch (type)
             {
                 case VehicleType.AvsVehicle:
-                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.TechTypes.ForAvsVehicle));
+                    r = r.AddOneOfEach(RecipeExtensions.Select(x => x.TechTypes.ForAvsVehicle));
                     break;
                 case VehicleType.Seamoth:
-                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.TechTypes.ForSeamoth));
+                    r = r.AddOneOfEach(RecipeExtensions.Select(x => x.TechTypes.ForSeamoth));
                     break;
                 case VehicleType.Prawn:
-                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.TechTypes.ForExosuit));
+                    r = r.AddOneOfEach(RecipeExtensions.Select(x => x.TechTypes.ForExosuit));
                     break;
                 case VehicleType.Cyclops:
-                    r = r.IncludeOneOfEach(RecipeExtensions.Select(x => x.TechTypes.ForCyclops));
+                    r = r.AddOneOfEach(RecipeExtensions.Select(x => x.TechTypes.ForCyclops));
                     break;
                 default:
                     break;
@@ -294,7 +294,7 @@ namespace AVS.UpgradeModules
         /// <param name="ingredient">The ingredient to add.</param>
         public void ExtendRecipeSimple(RecipeIngredient ingredient)
         {
-            SimpleRecipeExtensions.Include(ingredient);
+            SimpleRecipeExtensions.Add(ingredient);
         }
 
         /// <summary>

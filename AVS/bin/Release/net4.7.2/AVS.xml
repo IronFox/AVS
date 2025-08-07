@@ -2681,65 +2681,35 @@
             </summary>
             <returns>Converted ingredient</returns>
         </member>
-        <member name="T:AVS.Configuration.NewRecipe">
+        <member name="T:AVS.Configuration.RecipeBuilder">
             <summary>
-            Sequential builder for a <see cref="T:AVS.Configuration.Recipe"/>.
+            Recipe builder for creating complex recipes with multiple ingredients.
             </summary>
         </member>
-        <member name="M:AVS.Configuration.NewRecipe.WithNothing">
-            <summary>
-            Creates a new instance of the <see cref="T:AVS.Configuration.NewRecipe"/> class with no ingredients.
-            </summary>
-            <returns>A new <see cref="T:AVS.Configuration.NewRecipe"/> instance.</returns>
-        </member>
-        <member name="M:AVS.Configuration.NewRecipe.StartWith(AVS.Configuration.Recipe)">
-            <summary>
-            Creates a new <see cref="T:AVS.Configuration.NewRecipe"/> instance from the specified <see cref="T:AVS.Configuration.Recipe"/>.
-            </summary>
-            <param name="recipe">The source <see cref="T:AVS.Configuration.Recipe"/> to convert. Must not be <see langword="null"/>.</param>
-            <returns>A new <see cref="T:AVS.Configuration.NewRecipe"/> instance containing the ingredients from the specified <see cref="T:AVS.Configuration.Recipe"/>.</returns>
-            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="recipe"/> is <see langword="null"/>.</exception>
-        </member>
-        <member name="M:AVS.Configuration.NewRecipe.StartWith(TechType,System.Int32)">
-            <summary>
-            Creates a new instance of the <see cref="T:AVS.Configuration.NewRecipe"/> class with an initial ingredient.
-            </summary>
-            <param name="type">The type of the ingredient to add to the recipe.</param>
-            <param name="amount">The quantity of the ingredient to add. Must be a positive integer.</param>
-            <returns>A new <see cref="T:AVS.Configuration.NewRecipe"/> instance containing the specified ingredient.</returns>
-        </member>
-        <member name="M:AVS.Configuration.NewRecipe.StartWith(System.ValueTuple{TechType,System.Int32})">
-            <summary>
-            Creates a new instance of <see cref="T:AVS.Configuration.NewRecipe"/> with the specified ingredient.
-            </summary>
-            <param name="ingredient">A tuple containing the ingredient's <see cref="T:TechType"/> and the amount to be added. The <see
-            cref="T:TechType"/> specifies the type of the ingredient, and the amount must be a positive integer.</param>
-            <returns>A new <see cref="T:AVS.Configuration.NewRecipe"/> instance with the specified ingredient added.</returns>
-        </member>
-        <member name="M:AVS.Configuration.NewRecipe.Include(System.Collections.Generic.IEnumerable{AVS.Configuration.RecipeIngredient})">
+        <member name="M:AVS.Configuration.RecipeBuilder.Add(System.Collections.Generic.IEnumerable{AVS.Configuration.RecipeIngredient})">
             <summary>
             Adds the ingredients from the specified <see cref="T:AVS.Configuration.Recipe"/> to the current recipe.
             </summary>
             <param name="recipe">Recipe to add ingredients of</param>
             <returns>this</returns>
         </member>
-        <member name="M:AVS.Configuration.NewRecipe.Include(AVS.Configuration.NewRecipe)">
+        <member name="M:AVS.Configuration.RecipeBuilder.Include(AVS.Configuration.RecipeBuilder)">
             <summary>
             Combines the current recipe with another recipe by merging their ingredients.
             </summary>
             <param name="other">The recipe to combine with the current recipe. Must not be <see langword="null"/>.</param>
-            <returns>A new <see cref="T:AVS.Configuration.NewRecipe"/> instance containing the combined ingredients of both recipes.</returns>
+            <returns>A new <see cref="T:AVS.Configuration.RecipeBuilder"/> instance containing the combined ingredients of both recipes.</returns>
             <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="other"/> is <see langword="null"/>.</exception>
         </member>
-        <member name="M:AVS.Configuration.NewRecipe.IncludeOneOfEach(System.Collections.Generic.IEnumerable{TechType})">
+        <member name="M:AVS.Configuration.RecipeBuilder.AddOneOfEach(System.Collections.Generic.IEnumerable{TechType})">
             <summary>
             Adds one unit of each specified <see cref="T:TechType"/> to the recipe.
             </summary>
             <param name="types">A collection of <see cref="T:TechType"/> values to add to the recipe. Any <see cref="F:TechType.None"/> values
             in the collection are ignored.</param>
-            <returns>The updated <see cref="T:AVS.Configuration.NewRecipe"/> instance, allowing for method chaining.</returns>
+            <returns>The updated <see cref="T:AVS.Configuration.RecipeBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:AVS.Configuration.NewRecipe.Include(TechType,System.Int32)">
+        <member name="M:AVS.Configuration.RecipeBuilder.Add(TechType,System.Int32)">
             <summary>
             Adds a specified ingredient and its quantity to the recipe.
             </summary>
@@ -2748,47 +2718,82 @@
             instance.</remarks>
             <param name="type">The type of ingredient to add. Must not be <see cref="F:TechType.None"/>.</param>
             <param name="amount">The quantity of the ingredient to add. Must be greater than zero.</param>
-            <returns>The current <see cref="T:AVS.Configuration.NewRecipe"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:AVS.Configuration.RecipeBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:AVS.Configuration.NewRecipe.And(System.ValueTuple{TechType,System.Int32})">
+        <member name="M:AVS.Configuration.RecipeBuilder.Add(System.ValueTuple{TechType,System.Int32})">
             <summary>
             Adds an ingredient to the recipe with the specified type and amount.
             </summary>
             <param name="ingredient">A tuple containing the type of the ingredient and the amount to add.  <paramref name="ingredient.Type.Type"/>
             specifies the ingredient type, and  <paramref name="ingredient.Amount.Amount"/> specifies the quantity to add.</param>
-            <returns>The current <see cref="T:AVS.Configuration.NewRecipe"/> instance, allowing for method chaining.</returns>
+            <returns>The current <see cref="T:AVS.Configuration.RecipeBuilder"/> instance, allowing for method chaining.</returns>
         </member>
-        <member name="M:AVS.Configuration.NewRecipe.Include(AVS.Configuration.RecipeIngredient)">
+        <member name="M:AVS.Configuration.RecipeBuilder.Add(AVS.Configuration.RecipeIngredient)">
             <summary>
             Adds the specified ingredient to the recipe.
             </summary>
             <param name="ingredient">The ingredient to add, including its type and amount.</param>
-            <returns>A <see cref="T:AVS.Configuration.NewRecipe"/> instance with the ingredient added, allowing for method chaining.</returns>
+            <returns>A <see cref="T:AVS.Configuration.RecipeBuilder"/> instance with the ingredient added, allowing for method chaining.</returns>
         </member>
-        <member name="M:AVS.Configuration.NewRecipe.op_Addition(AVS.Configuration.NewRecipe,AVS.Configuration.RecipeIngredient)">
+        <member name="M:AVS.Configuration.RecipeBuilder.op_Addition(AVS.Configuration.RecipeBuilder,AVS.Configuration.RecipeIngredient)">
             <summary>
-            Adds a <see cref="T:AVS.Configuration.RecipeIngredient"/> to the <see cref="T:AVS.Configuration.NewRecipe"/> and returns the updated builder.
+            Adds a <see cref="T:AVS.Configuration.RecipeIngredient"/> to the <see cref="T:AVS.Configuration.RecipeBuilder"/> and returns the updated builder.
             </summary>
-            <param name="builder">The <see cref="T:AVS.Configuration.NewRecipe"/> to which the ingredient will be added.</param>
+            <param name="builder">The <see cref="T:AVS.Configuration.RecipeBuilder"/> to which the ingredient will be added.</param>
             <param name="ingredient">The <see cref="T:AVS.Configuration.RecipeIngredient"/> to add to the builder.</param>
-            <returns>The updated <see cref="T:AVS.Configuration.NewRecipe"/> instance with the added ingredient.</returns>
+            <returns>The updated <see cref="T:AVS.Configuration.RecipeBuilder"/> instance with the added ingredient.</returns>
         </member>
-        <member name="M:AVS.Configuration.NewRecipe.op_Addition(AVS.Configuration.NewRecipe,System.ValueTuple{TechType,System.Int32})">
+        <member name="M:AVS.Configuration.RecipeBuilder.op_Addition(AVS.Configuration.RecipeBuilder,System.ValueTuple{TechType,System.Int32})">
             <summary>
             Adds an ingredient to the recipe using the specified <see cref="T:TechType"/> and amount.
             </summary>
             <remarks>This operator provides a convenient way to add ingredients to a recipe by using the
             <c>+</c> operator.</remarks>
-            <param name="builder">The <see cref="T:AVS.Configuration.NewRecipe"/> instance to which the ingredient will be added.</param>
+            <param name="builder">The <see cref="T:AVS.Configuration.RecipeBuilder"/> instance to which the ingredient will be added.</param>
             <param name="ingredient">A tuple containing the <see cref="T:TechType"/> of the ingredient and the amount to add. The first item
             represents the type of the ingredient, and the second item represents the quantity.</param>
-            <returns>A new <see cref="T:AVS.Configuration.NewRecipe"/> instance with the specified ingredient added.</returns>
+            <returns>A new <see cref="T:AVS.Configuration.RecipeBuilder"/> instance with the specified ingredient added.</returns>
         </member>
-        <member name="M:AVS.Configuration.NewRecipe.Done">
+        <member name="M:AVS.Configuration.RecipeBuilder.Done">
             <summary>
             Constructs a new <see cref="T:AVS.Configuration.Recipe"/> instance using the specified ingredients.
             </summary>
             <returns>A <see cref="T:AVS.Configuration.Recipe"/> object containing the provided ingredients.</returns>
+        </member>
+        <member name="T:AVS.Configuration.NewRecipe">
+            <summary>
+            Sequential builder for a <see cref="T:AVS.Configuration.Recipe"/>.
+            </summary>
+        </member>
+        <member name="M:AVS.Configuration.NewRecipe.FromNothing">
+            <summary>
+            Creates a new instance of the <see cref="T:AVS.Configuration.NewRecipe"/> class with no ingredients.
+            </summary>
+            <returns>A new <see cref="T:AVS.Configuration.NewRecipe"/> instance.</returns>
+        </member>
+        <member name="M:AVS.Configuration.NewRecipe.From(AVS.Configuration.Recipe)">
+            <summary>
+            Creates a new <see cref="T:AVS.Configuration.NewRecipe"/> instance from the specified <see cref="T:AVS.Configuration.Recipe"/>.
+            </summary>
+            <param name="recipe">The source <see cref="T:AVS.Configuration.Recipe"/> to convert. Must not be <see langword="null"/>.</param>
+            <returns>A new <see cref="T:AVS.Configuration.NewRecipe"/> instance containing the ingredients from the specified <see cref="T:AVS.Configuration.Recipe"/>.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="recipe"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:AVS.Configuration.NewRecipe.Add(TechType,System.Int32)">
+            <summary>
+            Creates a new instance of the <see cref="T:AVS.Configuration.NewRecipe"/> class with an initial ingredient.
+            </summary>
+            <param name="type">The type of the ingredient to add to the recipe.</param>
+            <param name="amount">The quantity of the ingredient to add. Must be a positive integer.</param>
+            <returns>A new <see cref="T:AVS.Configuration.NewRecipe"/> instance containing the specified ingredient.</returns>
+        </member>
+        <member name="M:AVS.Configuration.NewRecipe.Add(System.ValueTuple{TechType,System.Int32})">
+            <summary>
+            Creates a new instance of <see cref="T:AVS.Configuration.NewRecipe"/> with the specified ingredient.
+            </summary>
+            <param name="ingredient">A tuple containing the ingredient's <see cref="T:TechType"/> and the amount to be added. The <see
+            cref="T:TechType"/> specifies the type of the ingredient, and the amount must be a positive integer.</param>
+            <returns>A new <see cref="T:AVS.Configuration.NewRecipe"/> instance with the specified ingredient added.</returns>
         </member>
         <member name="T:AVS.Configuration.Recipe">
             <summary>

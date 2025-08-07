@@ -20,10 +20,10 @@ namespace AVS.UpgradeModules.Common
         public override string Description => Translator.Get(TranslationKey.Module_Depth1_Description);
         /// <inheritdoc/>
         public override Recipe Recipe { get; } = NewRecipe
-                .StartWith(TechType.TitaniumIngot, 1)
-                .Include(TechType.Magnetite, 3)
-                .Include(TechType.Glass, 3)
-                .Include(TechType.AluminumOxide, 3)
+                .Add(TechType.TitaniumIngot, 1)
+                .Add(TechType.Magnetite, 3)
+                .Add(TechType.Glass, 3)
+                .Add(TechType.AluminumOxide, 3)
                 .Done();
         /// <inheritdoc/>
         public override Atlas.Sprite Icon => MainPatcher.Instance.DepthModule1Icon;
