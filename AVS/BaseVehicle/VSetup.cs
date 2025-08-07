@@ -155,6 +155,10 @@ namespace AVS.BaseVehicle
                 }
                 energyInterface.sources = energyMixins.ToArray();
             }
+
+            if (!IsPowered())
+                GetComponentsInChildren<IPowerListener>(true).ForEach(x => x.OnBatteryDead());
+
             Log.Debug(this, $"EnergyInterface for {energyInterface.NiceName()} has {energyInterface.sources.Length} sources.");
         }
 

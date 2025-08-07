@@ -3086,9 +3086,16 @@
         <member name="P:AVS.Configuration.VehicleConfiguration.HudTemperatureIsFahrenheit">
             <summary>
             True if the HUD temperature display is in Fahrenheit.
+            Defaults to false.
             </summary>
         </member>
-        <member name="M:AVS.Configuration.VehicleConfiguration.#ctor(Atlas.Sprite,UnityEngine.Sprite,UnityEngine.Sprite,UnityEngine.Sprite,Atlas.Sprite,System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},AVS.MaterialAdapt.IMaterialAdaptConfig,AVS.Configuration.Recipe,System.Boolean,System.String,System.String,UnityEngine.Sprite,TechType,System.Int32,System.Nullable{System.Int32},System.Single,System.Single,System.Single,System.Int32,System.Int32,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Single,AVS.BaseVehicle.AvsVehicle.PilotingStyle,System.Single,System.Nullable{UnityEngine.Color},System.Nullable{UnityEngine.Color},System.Boolean,System.Boolean,System.Nullable{UnityEngine.Quaternion},System.Boolean,System.Func{System.Single},System.Func{System.Boolean},System.Boolean)">
+        <member name="P:AVS.Configuration.VehicleConfiguration.CanEnterHelmWithoutPower">
+            <summary>
+            True if the player can enter the helm of the vehicle even if the vehicle has no power.
+            Defaults to false.
+            </summary>
+        </member>
+        <member name="M:AVS.Configuration.VehicleConfiguration.#ctor(Atlas.Sprite,UnityEngine.Sprite,UnityEngine.Sprite,UnityEngine.Sprite,Atlas.Sprite,System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},System.Nullable{AVS.VehicleComponents.VehicleColor},AVS.MaterialAdapt.IMaterialAdaptConfig,AVS.Configuration.Recipe,System.Boolean,System.String,System.String,UnityEngine.Sprite,TechType,System.Int32,System.Nullable{System.Int32},System.Single,System.Single,System.Single,System.Int32,System.Int32,System.String,System.Int32,System.Int32,System.Int32,System.Int32,System.Single,AVS.BaseVehicle.AvsVehicle.PilotingStyle,System.Single,System.Nullable{UnityEngine.Color},System.Nullable{UnityEngine.Color},System.Boolean,System.Boolean,System.Nullable{UnityEngine.Quaternion},System.Boolean,System.Func{System.Single},System.Func{System.Boolean},System.Boolean,System.Boolean)">
             <summary>
             Initializes a new instance of the <see cref="T:AVS.Configuration.VehicleConfiguration"/> class with the specified parameters.
             </summary>
@@ -3140,6 +3147,7 @@
             <param name="getVoiceSubtitlesEnabled">Query function to get whether to show subtitles for voice messages sent by the vehicle's <see cref="T:AVS.VoiceQueue"/> component. If null, defaults to always false</param>
             <param name="materialAdaptConfig">Optional configuration for material adaptation</param>
             <param name="hudTemperatureIsFahrenheit">True if the HUD temperature display is in Fahrenheit.</param>
+            <param name="canEnterHelmWithoutPower">True if the player can enter the helm of the vehicle even if the vehicle has no power.</param>
         </member>
         <member name="T:AVS.ControlPanel">
             <summary>

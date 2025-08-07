@@ -27,7 +27,7 @@ namespace AVS
             LogWriter.Default.Write($"PilotingTrigger.OnHandClick: {mv?.NiceName()}");
             if (mv != null
                 && !mv.GetPilotingMode()
-                && mv.IsPowered()
+                && (mv.Config.CanEnterHelmWithoutPower || mv.IsPowered())
                 && isLive)
             {
                 if (mv is Submarine submarine)
@@ -43,7 +43,7 @@ namespace AVS
         {
             if (mv != null
                 && !mv.GetPilotingMode()
-                && mv.IsPowered()
+                && (mv.Config.CanEnterHelmWithoutPower || mv.IsPowered())
                 && isLive)
             {
                 HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);

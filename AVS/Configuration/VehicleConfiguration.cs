@@ -196,8 +196,15 @@ namespace AVS.Configuration
 
         /// <summary>
         /// True if the HUD temperature display is in Fahrenheit.
+        /// Defaults to false.
         /// </summary>
         public bool HudTemperatureIsFahrenheit { get; }
+
+        /// <summary>
+        /// True if the player can enter the helm of the vehicle even if the vehicle has no power.
+        /// Defaults to false.
+        /// </summary>
+        public bool CanEnterHelmWithoutPower { get; }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="VehicleConfiguration"/> class with the specified parameters.
@@ -250,6 +257,7 @@ namespace AVS.Configuration
         /// <param name="getVoiceSubtitlesEnabled">Query function to get whether to show subtitles for voice messages sent by the vehicle's <see cref="VoiceQueue"/> component. If null, defaults to always false</param>
         /// <param name="materialAdaptConfig">Optional configuration for material adaptation</param>
         /// <param name="hudTemperatureIsFahrenheit">True if the HUD temperature display is in Fahrenheit.</param>
+        /// <param name="canEnterHelmWithoutPower">True if the player can enter the helm of the vehicle even if the vehicle has no power.</param>
         public VehicleConfiguration(
 
             Atlas.Sprite pingSprite,
@@ -291,7 +299,8 @@ namespace AVS.Configuration
             bool autoFixMaterials = true,
             Func<float>? getVoiceSoundVolume = null,
             Func<bool>? getVoiceSubtitlesEnabled = null,
-            bool hudTemperatureIsFahrenheit = false
+            bool hudTemperatureIsFahrenheit = false,
+            bool canEnterHelmWithoutPower = false
         )
         {
             if (maxHealth <= 0)
@@ -341,6 +350,7 @@ namespace AVS.Configuration
             CanMoonpoolDock = canMoonpoolDock;
             CyclopsDockRotation = cyclopsDockRotation ?? Quaternion.identity;
             AutoFixMaterials = autoFixMaterials;
+            CanEnterHelmWithoutPower = canEnterHelmWithoutPower;
         }
 
 
