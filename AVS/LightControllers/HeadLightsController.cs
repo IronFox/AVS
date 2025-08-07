@@ -1,4 +1,6 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Log;
+using AVS.Util;
 using UnityEngine;
 
 namespace AVS
@@ -51,8 +53,10 @@ namespace AVS
 
         protected virtual void Awake()
         {
+            LogWriter.Default.Debug($"Awake {this.NiceName()} for {MV.NiceName()}: {MV.Com.HeadLights.Count} head light(s)");
             if (MV.Com.HeadLights.Count == 0)
             {
+                LogWriter.Default.Write($"Destroying headlights controller because there are no lights to control");
                 Component.DestroyImmediate(this);
             }
         }
@@ -62,6 +66,7 @@ namespace AVS
             var isHeadlightsButtonPressed = GameInput.GetButtonDown(GameInput.Button.RightHand);
             if (MV.IsPlayerControlling() && isHeadlightsButtonPressed && !Player.main.GetPDA().isInUse)
             {
+                LogWriter.Default.Debug($"Toggling headlights for {MV.NiceName()}");
                 Toggle();
             }
         }

@@ -237,7 +237,7 @@ namespace AVS
                 {
                     Logger.Warn(thisName + $"No {nameof(AvsVehicle)}.Upgrades were provided. These specify interfaces the player can click to insert and remove upgrades.");
                 }
-                if (mv.Com.Batteries.Count == 0)
+                if (mv.Com.PowerCells.Count == 0)
                 {
                     Logger.Warn(thisName + $"No {nameof(AvsVehicle)}.Batteries were provided. These are necessary to power the engines. This vehicle will be always powered.");
                 }
@@ -279,14 +279,14 @@ namespace AVS
                         return false;
                     }
                 }
-                foreach (VehicleParts.VehiclePowerCellDefinition vb in mv.Com.Batteries.Concat(mv.Com.BackupBatteries))
+                foreach (VehicleParts.VehiclePowerCellDefinition vb in mv.Com.PowerCells.Concat(mv.Com.BackupBatteries))
                 {
                     if (!vb.CheckValidity(thisName, verbose))
                     {
                         return false;
                     }
                 }
-                foreach (VehicleParts.VehicleFloodLight vfl in mv.Com.HeadLights)
+                foreach (VehicleParts.VehicleSpotLightDefinition vfl in mv.Com.HeadLights)
                 {
                     if (!vfl.CheckValidity(thisName))
                     {
@@ -419,7 +419,7 @@ namespace AVS
                     if (!vs.CheckValidity(thisName))
                         return false;
                 }
-                foreach (VehicleParts.VehicleFloodLight vfl in mv.Com.FloodLights)
+                foreach (VehicleParts.VehicleSpotLightDefinition vfl in mv.Com.FloodLights)
                 {
                     if (!vfl.CheckValidity(thisName))
                         return false;

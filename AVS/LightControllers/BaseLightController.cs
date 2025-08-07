@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using AVS.Log;
+using UnityEngine;
 
 namespace AVS
 {
@@ -17,6 +18,11 @@ namespace AVS
             private set
             {
                 bool oldValue = _isLightsOn;
+                if (oldValue == value)
+                {
+                    return; // no change
+                }
+                LogWriter.Default.Debug($"Setting IsLightsOn to {value} (was {oldValue}) for {gameObject.name}, with canLightsBeEnabled={canLightsBeEnabled}, isScuttled={isScuttled}, isDocked={isDocked}");
                 if (canLightsBeEnabled && !isScuttled && !isDocked)
                 {
                     _isLightsOn = value;
@@ -26,7 +32,7 @@ namespace AVS
                     _isLightsOn = false;
                 }
                 HandleLighting(IsLightsOn);
-                if(oldValue != IsLightsOn)
+                if (oldValue != IsLightsOn)
                 {
                     HandleSound(IsLightsOn);
                 }
@@ -40,7 +46,13 @@ namespace AVS
         }
         void IPowerChanged.OnPowerChanged(bool hasBatteryPower, bool isSwitchedOn)
         {
-            canLightsBeEnabled = hasBatteryPower && isSwitchedOn;
+
+            bool now = hasBatteryPower && isSwitchedOn;
+            if (canLightsBeEnabled != now)
+            {
+                LogWriter.Default.Debug($"Power changed: canLightsBeEnabled was {canLightsBeEnabled}, now {now}");
+                canLightsBeEnabled = now;
+            }
             IsLightsOn = IsLightsOn;
         }
 

@@ -448,14 +448,54 @@ namespace AVS.VehicleParts
             return true;
         }
     }
-    public readonly struct VehicleFloodLight
+    /// <summary>
+    /// Head- or floodlight definition for vehicles.
+    /// Defined spot lights will be maintained by AVS, toggled on- and off automatically,
+    /// and configured to standard.
+    /// The source objects may or may not already contain a light component.
+    /// All AVS-created light sources will be configured to use the Subnautica volumetric light system,
+    /// hard shadows, and a spot light type.
+    /// </summary>
+    public readonly struct VehicleSpotLightDefinition
     {
+        /// <summary>
+        /// The game object that represents the light source. The light shines along the Z axis of this object.
+        /// If this object does not have a <see cref="UnityEngine.Light"/> component, AVS will add one.
+        /// </summary>
         public GameObject Light { get; }
+        /// <summary>
+        /// The intensity of the light, which must be non-negative.
+        /// </summary>
         public float Intensity { get; }
+        /// <summary>
+        /// The range of the light in meters, which must be greater than zero.
+        /// </summary>
         public float Range { get; }
+        /// <summary>
+        /// The color of the light, which can be any valid Unity <see cref="Color"/>.
+        /// </summary>
         public Color Color { get; }
+        /// <summary>
+        /// The angle of the light cone in degrees, which must be between 0 and 179.
+        /// Note that the volumetric Subnautica light cone visualization seems to be fixed at around 55 degrees.
+        /// While <see cref="Angle" /> will impact the light source's <see cref="Light.spotAngle" /> maintained by AVS,
+        /// the volumetric light cone is harded-coded in Subnautica and will not change.
+        /// </summary>
         public float Angle { get; }
-        public VehicleFloodLight(GameObject light, float intensity, float range, Color color, float angle)
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="VehicleSpotLightDefinition"/> class with the specified light object,
+        /// intensity, range, color, and angle.
+        /// </summary>
+        /// <param name="light">The <see cref="GameObject"/> representing the spotlight. Cannot be <see langword="null"/>.</param>
+        /// <param name="intensity">The brightness of the spotlight. Must be non-negative.</param>
+        /// <param name="range">The effective range of the spotlight, in meters. Must be greater than zero.</param>
+        /// <param name="color">The color of the spotlight.</param>
+        /// <param name="angle">The beam angle of the spotlight, in degrees. Must be between 0 and 179 inclusive.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="light"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="intensity"/> is negative, <paramref name="range"/> is less than or equal to zero,
+        /// or <paramref name="angle"/> is outside the range 0 to 179 degrees.</exception>
+        public VehicleSpotLightDefinition(GameObject light, float intensity, float range, Color color, float angle)
         {
             if (light == null)
                 throw new ArgumentNullException(nameof(light), "Vehicle flood light cannot be null.");
@@ -463,7 +503,7 @@ namespace AVS.VehicleParts
                 throw new ArgumentOutOfRangeException(nameof(intensity), "Vehicle flood light intensity must be non-negative.");
             if (range <= 0)
                 throw new ArgumentOutOfRangeException(nameof(range), "Vehicle flood light range must be greater than zero.");
-            if (angle < 0 || angle > 360)
+            if (angle < 0 || angle > 179)
                 throw new ArgumentOutOfRangeException(nameof(angle), "Vehicle flood light angle must be between 0 and 360 degrees.");
             Light = light;
             Intensity = intensity;

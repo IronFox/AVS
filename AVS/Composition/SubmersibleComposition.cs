@@ -36,8 +36,8 @@ namespace AVS.Composition
         /// <param name="collisionModel">
         /// Object containing all colliders. Must not be null. Should not be the same as the vehicle object.
         /// </param>
-        /// <param name="batteries">
-        /// Battery definitions. Optional. Can be null or empty.
+        /// <param name="powerCells">
+        /// Power cell definitions. Optional. Can be null or empty.
         /// </param>
         /// <param name="upgrades">
         /// Upgrade module definitions. Optional. Can be null or empty.
@@ -86,13 +86,13 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             AbstractEngine engine,
             GameObject collisionModel,
-            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? batteries = null,
+            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? powerCells = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,
             IReadOnlyList<GameObject>? waterClipProxies = null,
             IReadOnlyList<VehicleParts.VehicleStorage>? innateStorages = null,
             IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
-            IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
+            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? headLights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
             IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? backupBatteries = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
@@ -105,7 +105,7 @@ namespace AVS.Composition
             modulesRootObject: modulesRootObject,
             hatches: hatches,
             collisionModel: collisionModel,
-            batteries: batteries,
+            powerCells: powerCells,
             upgrades: upgrades,
             boundingBoxCollider: boundingBoxCollider,
             waterClipProxies: waterClipProxies,

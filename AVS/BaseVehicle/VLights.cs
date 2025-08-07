@@ -48,9 +48,10 @@ namespace AVS.BaseVehicle
                     $"Trying to access LightsOnSound but the prefabrication did not assign this field"));
 
         /// <summary>
-        /// Populated during prefabrication/Awake().
+        /// Populated during prefabrication.
         /// </summary>
-        internal List<GameObject> VolumetricLights { get; } = new List<GameObject>();
+        [SerializeField]
+        internal List<GameObject> volumetricLights = new List<GameObject>();
 
 
         /// <summary>

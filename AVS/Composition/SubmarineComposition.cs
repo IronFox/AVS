@@ -33,7 +33,7 @@ namespace AVS.Composition
         /// Optional flood light definitions.
         /// If non-empty, these lights will be controlled using the control panel, if installed.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleFloodLight> FloodLights { get; } = Array.Empty<VehicleParts.VehicleFloodLight>();
+        public IReadOnlyList<VehicleParts.VehicleSpotLightDefinition> FloodLights { get; } = Array.Empty<VehicleParts.VehicleSpotLightDefinition>();
 
         /// <summary>
         /// Optional interior light definitions.
@@ -108,7 +108,7 @@ namespace AVS.Composition
         /// <param name="colorPicker">Optional color picker console game object to construct necessary components in.</param>
         /// <param name="respawnPoint">Optional respawn point in case the character dies. If null, a respawn point will automatically be created in the vehicle's root object.</param>
         /// <param name="collisionModel">Object containing all colliders. Must not be null. Should not be the same as the vehicle object.</param>
-        /// <param name="batteries">Battery definitions. Optional.</param>
+        /// <param name="powerCells">Power cell definitions. Optional.</param>
         /// <param name="upgrades">Upgrade module definitions. Optional.</param>
         /// <param name="boundingBoxCollider">Single box collider for the vehicle. Can be null.</param>
         /// <param name="waterClipProxies">Water clip proxies. Optional.</param>
@@ -132,7 +132,7 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             AbstractEngine engine,
             GameObject collisionModel,
-            IReadOnlyList<VehicleParts.VehicleFloodLight>? floodLights = null,
+            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? floodLights = null,
             IReadOnlyList<Light>? interiorLights = null,
             IReadOnlyList<GameObject>? navigationPortLights = null,
             IReadOnlyList<GameObject>? navigationStarboardLights = null,
@@ -144,13 +144,13 @@ namespace AVS.Composition
             GameObject? colorPicker = null,
             GameObject? respawnPoint = null,
             // VehicleComposition base parameters
-            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? batteries = null,
+            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? powerCells = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,
             IReadOnlyList<GameObject>? waterClipProxies = null,
             IReadOnlyList<VehicleParts.VehicleStorage>? innateStorages = null,
             IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
-            IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
+            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? headLights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
             IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? backupBatteries = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
@@ -166,7 +166,7 @@ namespace AVS.Composition
             storageRootObject: storageRootObject,
             modulesRootObject: modulesRootObject,
             collisionModel: collisionModel,
-            batteries: batteries,
+            powerCells: powerCells,
             upgrades: upgrades,
             boundingBoxCollider: boundingBoxCollider,
             waterClipProxies: waterClipProxies,
@@ -189,7 +189,7 @@ namespace AVS.Composition
 
             TetherSources = tetherSources;
             Helms = helms;
-            FloodLights = floodLights ?? Array.Empty<VehicleParts.VehicleFloodLight>();
+            FloodLights = floodLights ?? Array.Empty<VehicleParts.VehicleSpotLightDefinition>();
             InteriorLights = interiorLights ?? Array.Empty<Light>();
             NavigationPortLights = navigationPortLights ?? Array.Empty<GameObject>();
             NavigationStarboardLights = navigationStarboardLights ?? Array.Empty<GameObject>();

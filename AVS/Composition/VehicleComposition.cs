@@ -39,9 +39,9 @@ namespace AVS.Composition
         public IReadOnlyList<VehicleParts.VehicleHatchDefinition> Hatches { get; } = Array.Empty<VehicleParts.VehicleHatchDefinition>();
 
         /// <summary>
-        /// Battery definitions. Can be empty which disallows any batteries.
+        /// Power cell definitions. Can be empty which disallows any batteries.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehiclePowerCellDefinition> Batteries { get; } = Array.Empty<VehicleParts.VehiclePowerCellDefinition>();
+        public IReadOnlyList<VehicleParts.VehiclePowerCellDefinition> PowerCells { get; } = Array.Empty<VehicleParts.VehiclePowerCellDefinition>();
 
         /// <summary>
         /// Upgrade module definitions. Can be empty which disallows any upgrades.
@@ -79,7 +79,7 @@ namespace AVS.Composition
         /// <summary>
         /// Collection and configuration of headlights, to be rendered volumetrically while the player is outside the vehicle.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleFloodLight> HeadLights { get; } = Array.Empty<VehicleParts.VehicleFloodLight>();
+        public IReadOnlyList<VehicleParts.VehicleSpotLightDefinition> HeadLights { get; } = Array.Empty<VehicleParts.VehicleSpotLightDefinition>();
 
         /// <summary>
         /// Window objects automatically hidden when the vehicle is being piloted as to avoid reflections.
@@ -133,7 +133,7 @@ namespace AVS.Composition
         /// <param name="modulesRootObject">The parent object for all modules. Must not be null and not the same as vehicle object.</param>
         /// <param name="collisionModel">Base object containing all colliders. Can be null.</param>
         /// <param name="hatches">Entry/exit hatches. Must not be null or empty.</param>
-        /// <param name="batteries">Battery definitions. Optional.</param>
+        /// <param name="powerCells">Power cell definitions. Optional.</param>
         /// <param name="upgrades">Upgrade module definitions. Optional.</param>
         /// <param name="boundingBoxCollider">Single box collider for the vehicle. Can be null.</param>
         /// <param name="waterClipProxies">Water clip proxies. Optional.</param>
@@ -154,13 +154,13 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             AbstractEngine engine,
             GameObject collisionModel,
-            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? batteries = null,
+            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? powerCells = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,
             IReadOnlyList<GameObject>? waterClipProxies = null,
             IReadOnlyList<VehicleParts.VehicleStorage>? innateStorages = null,
             IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
-            IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
+            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? headLights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
             IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? backupBatteries = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
@@ -184,13 +184,13 @@ namespace AVS.Composition
             ModulesRootObject = modulesRootObject;
             CollisionModel = collisionModel;
             Hatches = hatches;
-            Batteries = batteries ?? Array.Empty<VehicleParts.VehiclePowerCellDefinition>();
+            PowerCells = powerCells ?? Array.Empty<VehicleParts.VehiclePowerCellDefinition>();
             Upgrades = upgrades ?? Array.Empty<VehicleParts.VehicleUpgrades>();
             BoundingBoxCollider = boundingBoxCollider;
             WaterClipProxies = waterClipProxies ?? Array.Empty<GameObject>();
             InnateStorages = innateStorages ?? Array.Empty<VehicleParts.VehicleStorage>();
             ModularStorages = modularStorages ?? Array.Empty<VehicleParts.VehicleStorage>();
-            HeadLights = headLights ?? Array.Empty<VehicleParts.VehicleFloodLight>();
+            HeadLights = headLights ?? Array.Empty<VehicleParts.VehicleSpotLightDefinition>();
             CanopyWindows = canopyWindows ?? Array.Empty<GameObject>();
             BackupBatteries = backupBatteries ?? Array.Empty<VehicleParts.VehiclePowerCellDefinition>();
             DenyBuildingColliders = denyBuildingColliders ?? Array.Empty<Collider>();

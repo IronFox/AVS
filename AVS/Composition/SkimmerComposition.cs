@@ -41,7 +41,7 @@ namespace AVS.Composition
         /// the vehicle. Can be null.</param>
         /// <param name="modularStorages">An optional collection of modular storage components (<see cref="VehicleParts.VehicleStorage"/>) that can be
         /// added to the vehicle. Can be null.</param>
-        /// <param name="headLights">An optional collection of floodlights (<see cref="VehicleParts.VehicleFloodLight"/>) used as headlights for
+        /// <param name="headLights">An optional collection of floodlights (<see cref="VehicleParts.VehicleSpotLightDefinition"/>) used as headlights for
         /// the vehicle. Can be null.</param>
         /// <param name="canopyWindows">An optional collection of <see cref="GameObject"/> instances representing the canopy windows of the vehicle.
         /// Can be null.</param>
@@ -66,7 +66,7 @@ namespace AVS.Composition
             IReadOnlyList<GameObject>? waterClipProxies = null,
             IReadOnlyList<VehicleParts.VehicleStorage>? innateStorages = null,
             IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
-            IReadOnlyList<VehicleParts.VehicleFloodLight>? headLights = null,
+            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? headLights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
             IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? backupBatteries = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
@@ -79,7 +79,7 @@ namespace AVS.Composition
             modulesRootObject: modulesRootObject,
             hatches: hatches,
             collisionModel: collisionModel,
-            batteries: batteries,
+            powerCells: batteries,
             upgrades: upgrades,
             boundingBoxCollider: boundingBoxCollider,
             waterClipProxies: waterClipProxies,

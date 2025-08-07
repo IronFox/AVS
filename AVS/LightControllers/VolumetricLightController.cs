@@ -8,7 +8,7 @@ namespace AVS
         private AvsVehicle MV => GetComponent<AvsVehicle>();
         protected virtual void Awake()
         {
-            if (MV.VolumetricLights.Count == 0)
+            if (MV.volumetricLights.Count == 0)
             {
                 Component.DestroyImmediate(this);
             }
@@ -16,7 +16,7 @@ namespace AVS
 
         private void SetVolumetricLights(bool active)
         {
-            MV.VolumetricLights.ForEach(x => x.SetActive(active));
+            MV.volumetricLights.ForEach(x => x.SetActive(active));
         }
 
         void IPlayerListener.OnPilotBegin()

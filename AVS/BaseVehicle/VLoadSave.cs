@@ -216,7 +216,7 @@ namespace AVS.BaseVehicle
         internal void SaveBatteryData(string path, Tuple<TechType, float> batteryData)
         {
             int batteryCount = 0;
-            batteryCount += Com.Batteries.Count;
+            batteryCount += Com.PowerCells.Count;
             batteryCount += Com.BackupBatteries.Count;
 
             batterySaveData.Add(path, batteryData);

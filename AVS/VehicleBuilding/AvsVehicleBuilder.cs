@@ -229,7 +229,7 @@ namespace AVS
             GameObject seamothHeadLight = SeamothHelper.RequireSeamoth.transform.Find("lights_parent/light_left").gameObject;
             if (mv.Com.HeadLights != null)
             {
-                foreach (VehicleParts.VehicleFloodLight pc in mv.Com.HeadLights)
+                foreach (VehicleParts.VehicleSpotLightDefinition pc in mv.Com.HeadLights)
                 {
                     seamothHeadLight.GetComponent<LightShadowQuality>().CopyComponentWithFieldsTo(pc.Light);
                     var thisLight = pc.Light.EnsureComponent<Light>();
@@ -252,7 +252,7 @@ namespace AVS
             GameObject seamothHeadLight = seamoth.transform.Find("lights_parent/light_left").gameObject;
             if (mv.Com.FloodLights != null)
             {
-                foreach (VehicleParts.VehicleFloodLight pc in mv.Com.FloodLights)
+                foreach (VehicleParts.VehicleSpotLightDefinition pc in mv.Com.FloodLights)
                 {
                     seamothHeadLight
                         .GetComponent<LightShadowQuality>()
