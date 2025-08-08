@@ -41,7 +41,7 @@ namespace AVS
         /// Null if no subtitle should be displayed (even if configured).
         /// Effective only if <see cref="VehicleConfiguration.GetVoiceSubtitlesEnabled"/> is true.
         /// </summary>
-        public string TextTranslationKey { get; }
+        public string? TextTranslationKey { get; }
         /// <summary>
         /// The queue priority of this voice line.
         /// Voice lines of higher priority will interrupt queued clips of lower priority.
@@ -63,7 +63,7 @@ namespace AVS
         /// <param name="clip">Clip to play. May be null</param>
         /// <param name="textTranslationKey">Text translation key of this line. Null if no subtitle of this line should ever be shown</param>
         /// <param name="priority">Interruption priority</param>
-        public VoiceLine(AudioClip? clip, string textTranslationKey, int priority = 0)
+        public VoiceLine(AudioClip? clip, string? textTranslationKey, int priority = 0)
         {
             Clip = clip;
             TextTranslationKey = textTranslationKey;
@@ -77,7 +77,7 @@ namespace AVS
         /// <param name="textTranslationKey">Text translation key of this line</param>
         /// <param name="priority">Interruption priority</param>
         /// <param name="gaps">Time in seconds between each two clips in <paramref name="clips"/>. Should have one less element than <paramref name="clips"/> or be null. </param>
-        public VoiceLine(IReadOnlyList<AudioClip>? clips, IReadOnlyList<float>? gaps, string textTranslationKey, int priority = 0)
+        public VoiceLine(IReadOnlyList<AudioClip>? clips, IReadOnlyList<float>? gaps, string? textTranslationKey, int priority = 0)
         {
             Clips = clips;
             Gaps = gaps;
