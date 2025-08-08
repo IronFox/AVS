@@ -42,7 +42,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(VehicleUpgradeConsoleInput.OnHandClick))]
         public static void VehicleUpgradeConsoleInputOnHandClickHarmonyPostfix(VehicleUpgradeConsoleInput __instance)
         {
-            foreach (var mv in VehicleManager.VehiclesInPlay.Where(x => x != null))
+            foreach (var mv in AvsVehicleManager.VehiclesInPlay.Where(x => x != null))
             {
                 if (mv.upgradesInput == __instance)
                 {

@@ -411,6 +411,7 @@ namespace AVS.Crafting
             /// </summary>
             public float LastRepeatTime { get; private set; }
 
+            public int RepeatIteration { get; private set; } = -1;
 
             public void Deactivate()
             {
@@ -475,6 +476,7 @@ namespace AVS.Crafting
                     try
                     {
                         UpdateEventTime();
+                        RepeatIteration++;
                         Module.OnRepeatInternal(this);
                         LastRepeatTime = EventTime;
                     }

@@ -28,6 +28,12 @@ namespace AVS.UpgradeModules.Variations
         /// The last time (<see cref="EventTime"/>) in seconds the upgrade was repeated.
         /// </summary>
         public float LastRepeatTime { get; }
+        /// <summary>
+        /// The iteration number of this repition.
+        /// -1 before the first call to <see cref="ToggleableModule.OnRepeat"/>,
+        /// 0 during the first call, incremented by 1 for each subsequent call.
+        /// </summary>
+        public int RepeatIteration { get; }
 
         /// <summary>
         /// Deactivates the upgrade module.

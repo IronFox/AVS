@@ -158,7 +158,7 @@ namespace AVS
                 //}
                 try
                 {
-                    VehicleManager.CreateSpritesFile(sender, e);
+                    AvsVehicleManager.CreateSpritesFile(sender, e);
                     LogWriter.Default.Write("Sprites file created successfully.");
                 }
                 catch (Exception ex)

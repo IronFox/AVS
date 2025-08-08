@@ -58,9 +58,9 @@ namespace AVS
             VehicleEntry ve = new VehicleEntry(mv, numVehicleTypes, pingType, mv.Config.PingSprite);
             numVehicleTypes++;
             VehicleEntry naiveVE = new VehicleEntry(ve.mv, ve.unique_id, ve.pt, ve.ping_sprite, TechType.None);
-            VehicleManager.VehicleTypes.Add(naiveVE); // must add/remove this vehicle entry so that we can call VFConfig.Setup.
+            AvsVehicleManager.VehicleTypes.Add(naiveVE); // must add/remove this vehicle entry so that we can call VFConfig.Setup.
             VehicleNautilusInterface.PatchCraftable(ref ve, verbose);
-            VehicleManager.VehicleTypes.Remove(naiveVE); // must remove this vehicle entry bc PatchCraftable adds a more complete one (with tech type)
+            AvsVehicleManager.VehicleTypes.Remove(naiveVE); // must remove this vehicle entry bc PatchCraftable adds a more complete one (with tech type)
             mv.gameObject.SetActive(true);
         }
 
@@ -334,7 +334,7 @@ namespace AVS
         private static void SetupHudPing(AvsVehicle mv, PingType pingType)
         {
             mv.PrefabSetupHudPing(pingType);
-            VehicleManager.MvPings.Add(mv.HudPingInstance);
+            AvsVehicleManager.MvPings.Add(mv.HudPingInstance);
         }
         private static void SetupVehicleConfig(AvsVehicle mv, GameObject seamoth)
         {
@@ -654,7 +654,7 @@ namespace AVS
 
         internal static void SetIcon(uGUI_Ping ping, PingType inputType)
         {
-            foreach (VehicleEntry ve in VehicleManager.VehicleTypes)
+            foreach (VehicleEntry ve in AvsVehicleManager.VehicleTypes)
             {
                 if (ve.pt == inputType)
                 {

@@ -57,17 +57,17 @@ namespace AVS.Admin
         /// vehicles.</exception>
         public static ExternalVehicleConfig<T> GetAvsVehicleConfig(string vehicleName)
         {
-            var MVs = VehicleManager.VehicleTypes.Where(x => x.name.Equals(vehicleName, StringComparison.OrdinalIgnoreCase)).ToList();
+            var MVs = AvsVehicleManager.VehicleTypes.Where(x => x.name.Equals(vehicleName, StringComparison.OrdinalIgnoreCase)).ToList();
             if (MVs.Count == 0)
             {
                 StringBuilder sb = new StringBuilder();
-                VehicleManager.VehicleTypes.ForEach(x => sb.AppendLine(x.name));
+                AvsVehicleManager.VehicleTypes.ForEach(x => sb.AppendLine(x.name));
                 throw new ArgumentException($"{nameof(GetAvsVehicleConfig)}: vehicle name does not identify a {nameof(AvsVehicle)}: {vehicleName}. Options are: {sb}");
             }
             if (MVs.Count > 1)
             {
                 StringBuilder sb = new StringBuilder();
-                VehicleManager.VehicleTypes.ForEach(x => sb.AppendLine(x.name));
+                AvsVehicleManager.VehicleTypes.ForEach(x => sb.AppendLine(x.name));
                 throw new ArgumentException($"{nameof(GetAvsVehicleConfig)}: vehicle name does not uniquely identify a {nameof(AvsVehicle)}: {vehicleName}. There were {MVs.Count()} matches: {sb}");
             }
             AvsVehicle mv = MVs[0].mv;
@@ -283,7 +283,7 @@ namespace AVS.Admin
                 {
                     void DoThisAction(object sender, EventArgs e)
                     {
-                        foreach (AvsVehicle innerMV in VehicleManager.VehicleTypes.Select(x => x.mv))
+                        foreach (AvsVehicle innerMV in AvsVehicleManager.VehicleTypes.Select(x => x.mv))
                         {
                             if (innerMV.GetType().ToString() == vehicleName)
                             {
@@ -306,7 +306,7 @@ namespace AVS.Admin
             }
             // wait until the player exists, so that we're sure every vehicle is done with registration
             yield return new UnityEngine.WaitUntil(() => Player.main != null);
-            var MVs = VehicleManager.VehicleTypes.Where(x => x.name.ToLower().Contains(vehicleName.ToLower()));
+            var MVs = AvsVehicleManager.VehicleTypes.Where(x => x.name.ToLower().Contains(vehicleName.ToLower()));
             if (!MVs.Any())
             {
                 throw new ArgumentException($"{nameof(RegisterForVehicleInternal)}: vehicle name does not identify a {nameof(AvsVehicle)}: {vehicleName}");

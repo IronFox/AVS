@@ -188,7 +188,7 @@ namespace AVS.BaseVehicle
 
             base.Awake();
 
-            VehicleManager.EnrollVehicle(this); // Register our new vehicle with Vehicle Framework
+            AvsVehicleManager.EnrollVehicle(this); // Register our new vehicle with Vehicle Framework
             UpgradeOnAddedActions.Add(StorageModuleAction);
             UpgradeOnAddedActions.Add(ArmorPlatingModuleAction);
             UpgradeOnAddedActions.Add(PowerUpgradeModuleAction);

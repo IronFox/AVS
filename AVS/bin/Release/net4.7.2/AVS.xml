@@ -63,7 +63,7 @@
             List of all AVS vehicles currently in play.
             </summary>
         </member>
-        <member name="P:AVS.AvsVehicleManager.PingInstances">
+        <member name="P:AVS.AvsVehicleManager.MvPings">
             <summary>
             List of all registered ping instances for vehicles.
             </summary>
@@ -487,61 +487,6 @@
             </summary>
             <param name="vehicle">The vehicle instance.</param>
             <returns>The <see cref="T:TechType"/> of the vehicle, or <see cref="F:TechType.None"/> if not found.</returns>
-        </member>
-        <member name="T:AVS.VehicleManager">
-            <summary>
-            Provides management functions for AVS vehicles, including registration, enrollment, and loading.
-            </summary>
-        </member>
-        <member name="P:AVS.VehicleManager.VehiclesInPlay">
-            <summary>
-            List of all AVS vehicles currently in play.
-            </summary>
-        </member>
-        <member name="P:AVS.VehicleManager.MvPings">
-            <summary>
-            List of all registered ping instances for vehicles.
-            </summary>
-        </member>
-        <member name="P:AVS.VehicleManager.VehicleTypes">
-            <summary>
-            List of all registered vehicle types.
-            </summary>
-        </member>
-        <member name="M:AVS.VehicleManager.RegisterPingType(PingType)">
-            <summary>
-            Registers a new <see cref="T:PingType"/> for a vehicle, ensuring it is unique and above the minimum value.
-            </summary>
-            <param name="pt">The initial ping type to register.</param>
-            <returns>The registered, unique ping type.</returns>
-        </member>
-        <member name="M:AVS.VehicleManager.RegisterPingType(PingType,System.Boolean)">
-            <summary>
-            Registers a new <see cref="T:PingType"/> for a vehicle, ensuring it is unique and above the minimum value.
-            Optionally logs the registration process.
-            </summary>
-            <param name="pt">The initial ping type to register.</param>
-            <param name="verbose">If true, logs detailed registration steps.</param>
-            <returns>The registered, unique ping type.</returns>
-        </member>
-        <member name="M:AVS.VehicleManager.EnrollVehicle(AVS.BaseVehicle.AvsVehicle)">
-            <summary>
-            Enrolls a vehicle into the <see cref="P:AVS.VehicleManager.VehiclesInPlay"/> list and starts loading it if constructed.
-            </summary>
-            <param name="mv">The vehicle to enroll.</param>
-        </member>
-        <member name="M:AVS.VehicleManager.DeregisterVehicle(AVS.BaseVehicle.AvsVehicle)">
-            <summary>
-            Removes a vehicle from the <see cref="P:AVS.VehicleManager.VehiclesInPlay"/> list.
-            </summary>
-            <param name="mv">The vehicle to deregister.</param>
-        </member>
-        <member name="M:AVS.VehicleManager.LoadVehicle(AVS.BaseVehicle.AvsVehicle)">
-            <summary>
-            Coroutine that waits for the world to be ready, then calls <see cref="M:AVS.BaseVehicle.AvsVehicle.OnFinishedLoading"/> on the vehicle.
-            </summary>
-            <param name="mv">The vehicle to load.</param>
-            <returns>Coroutine enumerator.</returns>
         </member>
         <member name="T:AVS.VehicleRegistrar">
             <summary>
@@ -2072,6 +2017,11 @@
         <member name="P:AVS.BaseVehicle.AvsVehicle.PrefabID">
             <summary>
             Fetches the prefab identifier of this vehicle.
+            </summary>
+        </member>
+        <member name="P:AVS.BaseVehicle.AvsVehicle.VehicleIsReady">
+            <summary>
+            True if this vehicle has completed loading
             </summary>
         </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.OnGameSaved">
@@ -6513,6 +6463,13 @@
             The last time (<see cref="P:AVS.UpgradeModules.Variations.IToggleState.EventTime"/>) in seconds the upgrade was repeated.
             </summary>
         </member>
+        <member name="P:AVS.UpgradeModules.Variations.IToggleState.RepeatIteration">
+            <summary>
+            The iteration number of this repition.
+            -1 before the first call to <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.IToggleState)"/>,
+            0 during the first call, incremented by 1 for each subsequent call.
+            </summary>
+        </member>
         <member name="M:AVS.UpgradeModules.Variations.IToggleState.Deactivate">
             <summary>
             Deactivates the upgrade module.
@@ -7590,7 +7547,7 @@
             <summary>
             The translation key for the text associated with this voice line.
             Null if no subtitle should be displayed (even if configured).
-            Effective only if <see cref="!:VehicleConfiguration.ShowVoiceSubtitles"/> is true.
+            Effective only if <see cref="P:AVS.Configuration.VehicleConfiguration.GetVoiceSubtitlesEnabled"/> is true.
             </summary>
         </member>
         <member name="P:AVS.VoiceLine.Priority">
@@ -7601,14 +7558,19 @@
         </member>
         <member name="P:AVS.VoiceLine.Volume">
             <summary>
-            Individual volume of this voice line, further modified by <see cref="!:VehicleConfiguration.VoiceSoundVolume"/>,
+            Individual volume of this voice line, further modified by <see cref="P:AVS.Configuration.VehicleConfiguration.GetVoiceSoundVolume"/>,
+            </summary>
+        </member>
+        <member name="P:AVS.VoiceLine.HasAnyClips">
+            <summary>
+            Checks if this voice line has any audio clips assigned.
             </summary>
         </member>
         <member name="M:AVS.VoiceLine.#ctor(UnityEngine.AudioClip,System.String,System.Int32)">
             <summary>
             Constructs a new <see cref="T:AVS.VoiceLine"/> with a single audio clip, a text translation key, and an optional priority.
             </summary>
-            <param name="clip">Clip to play</param>
+            <param name="clip">Clip to play. May be null</param>
             <param name="textTranslationKey">Text translation key of this line. Null if no subtitle of this line should ever be shown</param>
             <param name="priority">Interruption priority</param>
         </member>

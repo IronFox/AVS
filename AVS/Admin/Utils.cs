@@ -137,13 +137,13 @@ namespace AVS.Admin
         {
             try
             {
-                VehicleEntry ve = VehicleManager.VehicleTypes.Where(x => x.name.Contains(name)).First();
+                VehicleEntry ve = AvsVehicleManager.VehicleTypes.Where(x => x.name.Contains(name)).First();
                 return ve.techType;
             }
             catch
             {
                 Logger.Error("GetTechTypeFromVehicleName Error. Could not find a vehicle by the name: " + name + ". Here are all vehicle names:");
-                VehicleManager.VehicleTypes.ForEach(x => Logger.Log(x.name));
+                AvsVehicleManager.VehicleTypes.ForEach(x => Logger.Log(x.name));
                 return 0;
             }
         }

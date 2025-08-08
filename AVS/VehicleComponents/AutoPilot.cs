@@ -241,6 +241,8 @@ namespace AVS
         {
             MaybeRefillOxygen();
 
+            if (!mv.VehicleIsReady)
+                return;
             var listeners = mv.GetComponentsInChildren<IAutopilotEventListener>();
             if (listeners.Length == 0)
                 return;
@@ -317,6 +319,12 @@ namespace AVS
             try
             {
                 mv.GetEnergyValues(out float totalPower, out float totalCapacity);
+                Log.Debug($"Total power: {totalPower}, Total capacity: {totalCapacity}");
+                if (totalCapacity <= 0)
+                {
+                    Log.Error("Total capacity is zero, cannot update power state.");
+                    return;
+                }
                 Emit(listeners, PowerTracker.Update(totalPower, 0.1f, 0.1f * totalCapacity, 0.3f * totalCapacity));
             }
             catch (System.Exception e)

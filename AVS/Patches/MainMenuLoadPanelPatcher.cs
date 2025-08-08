@@ -26,7 +26,7 @@ namespace AVS.Patches
         /// <param name="lb">The load button to add sprites to.</param>
         public static void AddLoadButtonSprites(MainMenuLoadButton lb)
         {
-            foreach (var ve in VehicleManager.VehicleTypes)
+            foreach (var ve in AvsVehicleManager.VehicleTypes)
             {
                 if (ve.mv != null && ve.mv.Config.SaveFileSprite)
                 {

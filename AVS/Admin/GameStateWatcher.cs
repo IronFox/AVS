@@ -41,7 +41,7 @@ namespace AVS.Admin
         /// <param name="scene">Scene that has been unloaded</param>
         public static void SignalSceneUnloaded(Scene scene)
         {
-            VehicleManager.VehiclesInPlay.Clear();
+            AvsVehicleManager.VehiclesInPlay.Clear();
             OnSceneUnloaded.ForEach(x => x.Invoke());
             IsPlayerAwakened = false;
             IsPlayerStarted = false;

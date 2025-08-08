@@ -39,7 +39,7 @@ namespace AVS
         /// <summary>
         /// The translation key for the text associated with this voice line.
         /// Null if no subtitle should be displayed (even if configured).
-        /// Effective only if <see cref="VehicleConfiguration.ShowVoiceSubtitles"/> is true.
+        /// Effective only if <see cref="VehicleConfiguration.GetVoiceSubtitlesEnabled"/> is true.
         /// </summary>
         public string TextTranslationKey { get; }
         /// <summary>
@@ -49,17 +49,21 @@ namespace AVS
         public int Priority { get; }
 
         /// <summary>
-        /// Individual volume of this voice line, further modified by <see cref="VehicleConfiguration.VoiceSoundVolume"/>,
+        /// Individual volume of this voice line, further modified by <see cref="VehicleConfiguration.GetVoiceSoundVolume"/>,
         /// </summary>
         public float Volume { get; set; } = 1f;
+        /// <summary>
+        /// Checks if this voice line has any audio clips assigned.
+        /// </summary>
+        public bool HasAnyClips => Clip != null || (Clips != null && Clips.Count > 0);
 
         /// <summary>
         /// Constructs a new <see cref="VoiceLine"/> with a single audio clip, a text translation key, and an optional priority.
         /// </summary>
-        /// <param name="clip">Clip to play</param>
+        /// <param name="clip">Clip to play. May be null</param>
         /// <param name="textTranslationKey">Text translation key of this line. Null if no subtitle of this line should ever be shown</param>
         /// <param name="priority">Interruption priority</param>
-        public VoiceLine(AudioClip clip, string textTranslationKey, int priority = 0)
+        public VoiceLine(AudioClip? clip, string textTranslationKey, int priority = 0)
         {
             Clip = clip;
             TextTranslationKey = textTranslationKey;
@@ -73,7 +77,7 @@ namespace AVS
         /// <param name="textTranslationKey">Text translation key of this line</param>
         /// <param name="priority">Interruption priority</param>
         /// <param name="gaps">Time in seconds between each two clips in <paramref name="clips"/>. Should have one less element than <paramref name="clips"/> or be null. </param>
-        public VoiceLine(IReadOnlyList<AudioClip> clips, IReadOnlyList<float>? gaps, string textTranslationKey, int priority = 0)
+        public VoiceLine(IReadOnlyList<AudioClip>? clips, IReadOnlyList<float>? gaps, string textTranslationKey, int priority = 0)
         {
             Clips = clips;
             Gaps = gaps;
@@ -101,7 +105,7 @@ namespace AVS
             }
             else
             {
-                throw new ArgumentException("VoiceLine must have at least one clip or a single clip assigned.");
+                partQueue.Enqueue(new Queued(this, null, true, 0));
             }
         }
     }
@@ -109,17 +113,20 @@ namespace AVS
     internal readonly struct Queued
     {
         public VoiceLine Line { get; }
-        public AudioClip Clip { get; }
+        public AudioClip? Clip { get; }
         public bool IsFirst { get; }
         public float Volume => Line.Volume;
         public float DelayInSeconds { get; }
-        public Queued(VoiceLine line, AudioClip clip, bool isFirst, float delayInSeconds)
+        public bool HasClips { get; }
+
+        public Queued(VoiceLine line, AudioClip? clip, bool isFirst, float delayInSeconds)
         {
             Line = line;
             Clip = clip;
             IsFirst = isFirst;
             DelayInSeconds = delayInSeconds;
-            Logger.DebugLog($"Queued voice line: {line.TextTranslationKey}, clip: {clip.name}, isFirst: {isFirst}, delay: {delayInSeconds:F2}s, volume: {Volume:F2}");
+            HasClips = line.HasAnyClips;
+            Logger.DebugLog($"Queued voice line: {line.TextTranslationKey}, clip: {clip.NiceName()}, isFirst: {isFirst}, delay: {delayInSeconds:F2}s, volume: {Volume:F2}");
         }
     }
 
@@ -289,19 +296,25 @@ namespace AVS
                 var part = PartQueue.Peek();
                 if (timeSinceLastStart < part.DelayInSeconds)
                 {
-                    Logger.DebugLog($"Waiting for {part.DelayInSeconds - timeSinceLastStart:F2}s before playing next clip.");
+                    //Logger.DebugLog($"Waiting for {part.DelayInSeconds - timeSinceLastStart:F2}s before playing next clip.");
                     return; // not enough time has passed since the last clip started
                 }
                 part = PartQueue.Dequeue();
-                foreach (var speaker in speakers)
+                if (part.HasClips)
                 {
-                    speaker.volume = part.Volume * mv!.Config.GetVoiceSoundVolume() * SoundSystem.GetVoiceVolume() * SoundSystem.GetMasterVolume();
-                    speaker.clip = part.Clip;
-                    speaker.Play();
-                    if (mv.Config.GetVoiceSubtitlesEnabled() && part.IsFirst && part.Line.TextTranslationKey != null)
+                    foreach (var speaker in speakers)
                     {
-                        CreateSubtitle(part.Line.TextTranslationKey);
+                        if (!speaker.enabled)
+                            continue;
+                        speaker.volume = part.Volume * mv!.Config.GetVoiceSoundVolume() * SoundSystem.GetVoiceVolume() * SoundSystem.GetMasterVolume();
+                        speaker.clip = part.Clip;
+                        speaker.Play();
                     }
+                }
+                if ((!part.HasClips || mv!.Config.GetVoiceSubtitlesEnabled())
+                    && part.IsFirst && part.Line.TextTranslationKey != null)
+                {
+                    CreateSubtitle(part.Line.TextTranslationKey);
                 }
             }
             else

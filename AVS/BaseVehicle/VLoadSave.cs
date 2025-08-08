@@ -142,6 +142,11 @@ namespace AVS.BaseVehicle
         /// </summary>
         public PrefabIdentifier? PrefabID => GetComponent<PrefabIdentifier>();
 
+        /// <summary>
+        /// True if this vehicle has completed loading
+        /// </summary>
+        public bool VehicleIsReady { get; private set; }
+
         private void SaveSimpleData()
         {
             PrefabID.WriteData(BasicSaveFileNamePrefix, GetOrCreateData(), this.Log);
@@ -279,6 +284,7 @@ namespace AVS.BaseVehicle
             if (lateControl)
                 BeginHelmControl(GetLoadedHelm());
 
+            VehicleIsReady = true;
 
 
 

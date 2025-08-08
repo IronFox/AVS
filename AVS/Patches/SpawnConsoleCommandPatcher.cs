@@ -32,7 +32,7 @@ namespace AVS.Patches
                 mv.GetComponentInChildren<VFXConstructing>(true).constructed = 90f;
                 mv.GetComponentInChildren<VFXConstructing>(true).delay = 0f;
             }
-            VehicleManager.VehiclesInPlay
+            AvsVehicleManager.VehiclesInPlay
                 .Where(x => x != null && x.GetComponentInChildren<VFXConstructing>(true) != null && x.GetComponentInChildren<VFXConstructing>(true).constructed < 100f)
                 .ForEach(x => FinishHim(x));
         }

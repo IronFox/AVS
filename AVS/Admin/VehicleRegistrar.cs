@@ -87,7 +87,7 @@ namespace AVS
         public static IEnumerator RegisterVehicle(AvsVehicle mv, bool verbose = false)
         {
             mv.OnAwakeOrPrefabricate();
-            if (VehicleManager.VehicleTypes.Where(x => x.name == mv.gameObject.name).Any())
+            if (AvsVehicleManager.VehicleTypes.Where(x => x.name == mv.gameObject.name).Any())
             {
                 VerboseLog(LogType.Warn, verbose, $"{mv.gameObject.name} was already registered.");
                 yield break;
@@ -105,7 +105,7 @@ namespace AVS
             {
                 VerboseLog(LogType.Log, verbose, $"Enqueueing the {mv.gameObject.name} for Registration.");
                 RegistrationQueue.Enqueue(() => UWE.CoroutineHost.StartCoroutine(InternalRegisterVehicle(mv, verbose)));
-                yield return new WaitUntil(() => VehicleManager.VehicleTypes.Select(x => x.mv).Contains(mv));
+                yield return new WaitUntil(() => AvsVehicleManager.VehicleTypes.Select(x => x.mv).Contains(mv));
             }
             else
             {
@@ -124,7 +124,7 @@ namespace AVS
         {
             RegistrySemaphore = true;
             VerboseLog(LogType.Log, verbose, $"The {mv.gameObject.name} is beginning Registration.");
-            PingType registeredPingType = VehicleManager.RegisterPingType((PingType)121, verbose);
+            PingType registeredPingType = AvsVehicleManager.RegisterPingType((PingType)121, verbose);
             yield return UWE.CoroutineHost.StartCoroutine(AvsVehicleBuilder.Prefabricate(mv, registeredPingType, verbose));
             RegistrySemaphore = false;
             Logger.Log($"Finished {mv.gameObject.name} registration.");

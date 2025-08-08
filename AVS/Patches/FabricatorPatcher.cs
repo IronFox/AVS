@@ -47,7 +47,7 @@ namespace AVS.Patches
                 // (it was never assigned because PowerRelay.Start is skipped for ModVehicles)
                 // so let's check for one
                 AvsVehicle? mv = null;
-                foreach (AvsVehicle tempMV in VehicleManager.VehiclesInPlay)
+                foreach (AvsVehicle tempMV in AvsVehicleManager.VehiclesInPlay)
                 {
                     if (tempMV.IsBoarded)
                     {
