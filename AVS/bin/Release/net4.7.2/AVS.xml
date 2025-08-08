@@ -1538,7 +1538,7 @@
         </member>
         <member name="P:AVS.BaseVehicle.AvsVehicle.Autopilot">
             <summary>
-            Gets the AutoPilot system associated with the current instance.
+            Gets the Autopilot system associated with the current instance.
             Set by <see cref="M:AVS.BaseVehicle.AvsVehicle.Awake"/>.
             </summary>
         </member>
@@ -2037,6 +2037,9 @@
             The headlights controller for this vehicle.
             Set during Awake().
             </summary>
+            <remarks>
+            Auto-destroyed/nulled if no headlights were declared.
+            </remarks>
         </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.CreateDataBlocks(System.Action{AVS.SaveLoad.DataBlock})">
             <summary>
@@ -2272,7 +2275,7 @@
             The pilot seats of the vehicle.
             </summary>
         </member>
-        <member name="M:AVS.Composition.SkimmerComposition.#ctor(UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.Helm},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleSpotLightDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject)">
+        <member name="M:AVS.Composition.SkimmerComposition.#ctor(UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.Helm},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBatteryDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleSpotLightDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBatteryDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject)">
             <summary>
             Initializes a new instance of the <see cref="T:AVS.Composition.SkimmerComposition"/> class, representing the composition of a
             skimmer vehicle with its associated components and configuration.
@@ -2289,7 +2292,7 @@
             be null.</param>
             <param name="engine">The engine (<see cref="T:AVS.Engines.AbstractEngine"/>) that powers the vehicle. Must not be null</param>
             <param name="collisionModel"><see cref="T:UnityEngine.GameObject"/> representing the collision model of the vehicle. Must not be null</param>
-            <param name="batteries">An optional collection of batteries (<see cref="T:AVS.VehicleParts.VehiclePowerCellDefinition"/>) used to power the vehicle.
+            <param name="batteries">An optional collection of batteries (<see cref="T:AVS.VehicleParts.VehicleBatteryDefinition"/>) used to power the vehicle.
             Can be null.</param>
             <param name="upgrades">An optional collection of upgrades (<see cref="T:AVS.VehicleParts.VehicleUpgrades"/>) installed on the vehicle.
             Can be null.</param>
@@ -2299,11 +2302,11 @@
             the vehicle. Can be null.</param>
             <param name="modularStorages">An optional collection of modular storage components (<see cref="T:AVS.VehicleParts.VehicleStorage"/>) that can be
             added to the vehicle. Can be null.</param>
-            <param name="headLights">An optional collection of floodlights (<see cref="T:AVS.VehicleParts.VehicleSpotLightDefinition"/>) used as headlights for
+            <param name="headlights">An optional collection of floodlights (<see cref="T:AVS.VehicleParts.VehicleSpotLightDefinition"/>) used as headlights for
             the vehicle. Can be null.</param>
             <param name="canopyWindows">An optional collection of <see cref="T:UnityEngine.GameObject"/> instances representing the canopy windows of the vehicle.
             Can be null.</param>
-            <param name="backupBatteries">An optional collection of backup batteries (<see cref="T:AVS.VehicleParts.VehiclePowerCellDefinition"/>) for the vehicle. Can
+            <param name="backupBatteries">An optional collection of backup batteries (<see cref="T:AVS.VehicleParts.VehicleBatteryDefinition"/>) for the vehicle. Can
             be null.</param>
             <param name="denyBuildingColliders">An optional collection of <see cref="T:UnityEngine.Collider"/> instances that prevent building in certain areas. Can be
             null.</param>
@@ -2336,7 +2339,7 @@
             Must not be empty.
             </summary>
         </member>
-        <member name="P:AVS.Composition.SubmarineComposition.FloodLights">
+        <member name="P:AVS.Composition.SubmarineComposition.Floodlights">
             <summary>
             Optional flood light definitions.
             If non-empty, these lights will be controlled using the control panel, if installed.
@@ -2395,7 +2398,7 @@
             If null, a respawn point will automatically be created in the vehicle's root object.
             </summary>
         </member>
-        <member name="M:AVS.Composition.SubmarineComposition.#ctor(UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.Helm},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleSpotLightDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Light},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},UnityEngine.GameObject,UnityEngine.GameObject,UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleSpotLightDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.MobileWaterPark})">
+        <member name="M:AVS.Composition.SubmarineComposition.#ctor(UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.Helm},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleSpotLightDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Light},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},UnityEngine.GameObject,UnityEngine.GameObject,UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBatteryDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleSpotLightDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBatteryDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.MobileWaterPark})">
             <summary>
             Initializes a new instance of the <see cref="T:AVS.Composition.SubmarineComposition"/> class with the specified components and configuration.
             </summary>
@@ -2404,7 +2407,7 @@
             <param name="tetherSources">The list of active tethers in the submarine. Must not be null or empty.</param>
             <param name="helms">The list of helm stations in the submarine. Must not be null or empty.</param>
             <param name="hatches">Entry/exit hatches for the submarine. Must not be null or empty.</param>
-            <param name="floodLights">Optional flood light definitions. If non-empty, these lights will be controlled using the control panel, if installed.</param>
+            <param name="floodlights">Optional flood light definitions. If non-empty, these lights will be controlled using the control panel, if installed.</param>
             <param name="interiorLights">Optional interior light definitions. If non-empty, these lights will be controlled using the control panel, if installed.</param>
             <param name="navigationPortLights">External navigation lights located on the port side of the submarine.</param>
             <param name="navigationStarboardLights">External navigation lights located on the starboard side of the submarine.</param>
@@ -2416,13 +2419,13 @@
             <param name="colorPicker">Optional color picker console game object to construct necessary components in.</param>
             <param name="respawnPoint">Optional respawn point in case the character dies. If null, a respawn point will automatically be created in the vehicle's root object.</param>
             <param name="collisionModel">Object containing all colliders. Must not be null. Should not be the same as the vehicle object.</param>
-            <param name="powerCells">Power cell definitions. Optional.</param>
+            <param name="batteries">Power cell definitions. Optional.</param>
             <param name="upgrades">Upgrade module definitions. Optional.</param>
             <param name="boundingBoxCollider">Single box collider for the vehicle. Can be null.</param>
             <param name="waterClipProxies">Water clip proxies. Optional.</param>
             <param name="innateStorages">Innate storages. Optional.</param>
             <param name="modularStorages">Modular storages. Optional.</param>
-            <param name="headLights">Headlights. Optional.</param>
+            <param name="headlights">Headlights. Optional.</param>
             <param name="canopyWindows">Canopy windows. Optional.</param>
             <param name="backupBatteries">Backup batteries. Optional.</param>
             <param name="denyBuildingColliders">Deny building colliders. Optional.</param>
@@ -2444,7 +2447,7 @@
             Must not be null.
             </summary>
         </member>
-        <member name="M:AVS.Composition.SubmersibleComposition.#ctor(AVS.VehicleParts.Helm,UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleSpotLightDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject)">
+        <member name="M:AVS.Composition.SubmersibleComposition.#ctor(AVS.VehicleParts.Helm,UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBatteryDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleSpotLightDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBatteryDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject)">
             <summary>
             Represents the composition of a submersible vehicle, including all required and optional parts.
             Inherits from <see cref="T:AVS.Composition.VehicleComposition"/> and adds a required pilot seat.
@@ -2464,7 +2467,7 @@
             <param name="collisionModel">
             Object containing all colliders. Must not be null. Should not be the same as the vehicle object.
             </param>
-            <param name="powerCells">
+            <param name="batteries">
             Power cell definitions. Optional. Can be null or empty.
             </param>
             <param name="upgrades">
@@ -2482,7 +2485,7 @@
             <param name="modularStorages">
             Storages that can be added to the vehicle by the player. Optional. Can be null or empty.
             </param>
-            <param name="headLights">
+            <param name="headlights">
             Collection and configuration of headlights. Optional. Can be null or empty.
             </param>
             <param name="canopyWindows">
@@ -2541,7 +2544,7 @@
             Required not empty
             </summary>
         </member>
-        <member name="P:AVS.Composition.VehicleComposition.PowerCells">
+        <member name="P:AVS.Composition.VehicleComposition.Batteries">
             <summary>
             Power cell definitions. Can be empty which disallows any batteries.
             </summary>
@@ -2579,7 +2582,7 @@
             Storages that can be added to the vehicle by the player.
             </summary>
         </member>
-        <member name="P:AVS.Composition.VehicleComposition.HeadLights">
+        <member name="P:AVS.Composition.VehicleComposition.Headlights">
             <summary>
             Collection and configuration of headlights, to be rendered volumetrically while the player is outside the vehicle.
             </summary>
@@ -2629,7 +2632,7 @@
             by the client vehicle.
             </remarks>
         </member>
-        <member name="M:AVS.Composition.VehicleComposition.#ctor(UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleSpotLightDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehiclePowerCellDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.MobileWaterPark})">
+        <member name="M:AVS.Composition.VehicleComposition.#ctor(UnityEngine.GameObject,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleHatchDefinition},AVS.Engines.AbstractEngine,UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBatteryDefinition},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleUpgrades},UnityEngine.BoxCollider,System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleStorage},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleSpotLightDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.GameObject},System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.VehicleBatteryDefinition},System.Collections.Generic.IReadOnlyList{UnityEngine.Collider},System.Collections.Generic.IReadOnlyList{TMPro.TextMeshProUGUI},System.Collections.Generic.IReadOnlyList{UnityEngine.Transform},UnityEngine.GameObject,System.Collections.Generic.IReadOnlyList{AVS.VehicleParts.MobileWaterPark})">
             <summary>
             Constructs a VehicleComposition with required and optional parts.
             </summary>
@@ -2637,13 +2640,13 @@
             <param name="modulesRootObject">The parent object for all modules. Must not be null and not the same as vehicle object.</param>
             <param name="collisionModel">Base object containing all colliders. Can be null.</param>
             <param name="hatches">Entry/exit hatches. Must not be null or empty.</param>
-            <param name="powerCells">Power cell definitions. Optional.</param>
+            <param name="batteries">Power cell definitions. Optional.</param>
             <param name="upgrades">Upgrade module definitions. Optional.</param>
             <param name="boundingBoxCollider">Single box collider for the vehicle. Can be null.</param>
             <param name="waterClipProxies">Water clip proxies. Optional.</param>
             <param name="innateStorages">Innate storages. Optional.</param>
             <param name="modularStorages">Modular storages. Optional.</param>
-            <param name="headLights">Headlights. Optional.</param>
+            <param name="headlights">Headlights. Optional.</param>
             <param name="canopyWindows">Canopy windows. Optional.</param>
             <param name="backupBatteries">Backup batteries. Optional.</param>
             <param name="denyBuildingColliders">Deny building colliders. Optional.</param>
@@ -3195,17 +3198,17 @@
             Click handler for the headlights button, toggles the headlights.
             </summary>
         </member>
-        <member name="M:AVS.ControlPanel.HeadLightsHover">
+        <member name="M:AVS.ControlPanel.HeadlightsHover">
             <summary>
             Hover handler for the headlights button, sets the hand reticle text and icon.
             </summary>
         </member>
-        <member name="M:AVS.ControlPanel.FloodLightsClick">
+        <member name="M:AVS.ControlPanel.FloodlightsClick">
             <summary>
             Click handler for the floodlights button, toggles the floodlights.
             </summary>
         </member>
-        <member name="M:AVS.ControlPanel.FloodLightsHover">
+        <member name="M:AVS.ControlPanel.FloodlightsHover">
             <summary>
             Hover handler for the floodlights button, sets the hand reticle text and icon.
             </summary>
@@ -3250,12 +3253,12 @@
             Hover handler for the power button, sets the hand reticle text and icon.
             </summary>
         </member>
-        <member name="M:AVS.ControlPanel.AutoPilotClick">
+        <member name="M:AVS.ControlPanel.AutopilotClick">
             <summary>
             Click handler for the autopilot button. (Not implemented.)
             </summary>
         </member>
-        <member name="M:AVS.ControlPanel.AutoPilotHover">
+        <member name="M:AVS.ControlPanel.AutopilotHover">
             <summary>
             Hover handler for the autopilot button, sets the hand reticle text and icon.
             </summary>
@@ -3267,10 +3270,10 @@
             <param name="button">The button GameObject.</param>
             <param name="active">True to enable lighting, false to disable.</param>
         </member>
-        <member name="M:AVS.ControlPanel.AVS#ILightsStatusListener#OnHeadLightsOn">
+        <member name="M:AVS.ControlPanel.AVS#ILightsStatusListener#OnHeadlightsOn">
             <inheritdoc />
         </member>
-        <member name="M:AVS.ControlPanel.AVS#ILightsStatusListener#OnHeadLightsOff">
+        <member name="M:AVS.ControlPanel.AVS#ILightsStatusListener#OnHeadlightsOff">
             <inheritdoc />
         </member>
         <member name="M:AVS.ControlPanel.AVS#ILightsStatusListener#OnInteriorLightsOn">
@@ -3282,10 +3285,10 @@
         <member name="M:AVS.ControlPanel.AVS#IVehicleStatusListener#OnTakeDamage">
             <inheritdoc />
         </member>
-        <member name="M:AVS.ControlPanel.AVS#ILightsStatusListener#OnFloodLightsOn">
+        <member name="M:AVS.ControlPanel.AVS#ILightsStatusListener#OnFloodlightsOn">
             <inheritdoc />
         </member>
-        <member name="M:AVS.ControlPanel.AVS#ILightsStatusListener#OnFloodLightsOff">
+        <member name="M:AVS.ControlPanel.AVS#ILightsStatusListener#OnFloodlightsOff">
             <inheritdoc />
         </member>
         <member name="M:AVS.ControlPanel.AVS#ILightsStatusListener#OnNavLightsOn">
@@ -4099,6 +4102,59 @@
             Notifies the listener that the vessel has been undocked.
             </summary>
         </member>
+        <member name="T:AVS.ILightsStatusListener">
+            <summary>
+            Listener for changes in vehicle lights status.
+            </summary>
+        </member>
+        <member name="M:AVS.ILightsStatusListener.OnHeadlightsOn">
+            <summary>
+            Triggered when the AVS controlled headlights are turned on.
+            Called only if the vehicle has AVS controlled, declared headlights.
+            </summary>
+        </member>
+        <member name="M:AVS.ILightsStatusListener.OnHeadlightsOff">
+            <summary>
+            Triggered when the AVS controlled headlights are turned off.
+            Called only if the vehicle has AVS controlled, declared headlights.
+            </summary>
+        </member>
+        <member name="M:AVS.ILightsStatusListener.OnInteriorLightsOn">
+            <summary>
+            Triggered when the AVS controlled interior lights are turned on.
+            Called only if the vehicle has AVS controlled, declared interior lights.
+            </summary>
+        </member>
+        <member name="M:AVS.ILightsStatusListener.OnInteriorLightsOff">
+            <summary>
+            Triggered when the AVS controlled interior lights are turned off.
+            Called only if the vehicle has AVS controlled, declared interior lights.
+            </summary>
+        </member>
+        <member name="M:AVS.ILightsStatusListener.OnNavLightsOn">
+            <summary>
+            Triggered when the AVS controlled navigation lights are turned on.
+            Called only if the vehicle has AVS controlled, declared navigation lights.
+            </summary>
+        </member>
+        <member name="M:AVS.ILightsStatusListener.OnNavLightsOff">
+            <summary>
+            Triggered when the AVS controlled navigation lights are turned off.
+            Called only if the vehicle has AVS controlled, declared navigation lights.
+            </summary>
+        </member>
+        <member name="M:AVS.ILightsStatusListener.OnFloodlightsOn">
+            <summary>
+            Triggered when the AVS controlled floodlights are turned on.
+            Called only if the vehicle has AVS controlled, declared floodlights.
+            </summary>
+        </member>
+        <member name="M:AVS.ILightsStatusListener.OnFloodlightsOff">
+            <summary>
+            Triggered when the AVS controlled floodlights are turned off.
+            Called only if the vehicle has AVS controlled, declared floodlights.
+            </summary>
+        </member>
         <member name="T:AVS.IScuttleListener">
             <summary>
             Listeners for scuttling events.
@@ -4113,6 +4169,71 @@
             <summary>
             Executed when the unscuttle action is triggered.
             </summary>
+        </member>
+        <member name="T:AVS.BaseLightController">
+            <summary>
+            Base class for light controllers in AVS vehicles.
+            </summary>
+        </member>
+        <member name="P:AVS.BaseLightController.IsLightsOn">
+            <summary>
+            The current state of the lights managed by this controller.
+            </summary>
+        </member>
+        <member name="M:AVS.BaseLightController.HandleLighting(System.Boolean)">
+            <summary>
+            Called when the light enabled status has changed.
+            Intended to switch lights on or off in the vehicle.
+            </summary>
+            <param name="lightsAreNowEnabled">True if the lights have been switched on</param>
+        </member>
+        <member name="M:AVS.BaseLightController.HandleSound(System.Boolean)">
+            <summary>
+            Called when the light enabled status has changed.
+            Intended to play a sound when the lights are toggled on or off.
+            </summary>
+            <param name="lightsAreNowEnabled">True if the lights have been switched on</param>
+        </member>
+        <member name="M:AVS.BaseLightController.Toggle">
+            <summary>
+            Toggles the lights on &lt;-&gt; off.
+            </summary>
+        </member>
+        <member name="T:AVS.FloodlightsController">
+            <summary>
+            Controller for the floodlights on a submarine.
+            </summary>
+        </member>
+        <member name="M:AVS.FloodlightsController.HandleLighting(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.FloodlightsController.HandleSound(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.FloodlightsController.Awake">
+            <inheritdoc/>
+        </member>
+        <member name="T:AVS.InteriorLightsController">
+            <summary>
+            The controller for the interior lights of a submarine.
+            </summary>
+        </member>
+        <member name="T:AVS.NavigationLightsController">
+            <summary>
+            The controller for the navigation lights of a submarine.
+            </summary>
+        </member>
+        <member name="M:AVS.NavigationLightsController.HandleLighting(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.NavigationLightsController.HandleSound(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.NavigationLightsController.Awake">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.NavigationLightsController.Start">
+            <inheritdoc/>
         </member>
         <member name="T:AVS.Localization.DefaultTranslator">
             <summary>
@@ -4246,12 +4367,47 @@
             The localized default name of the vehicle created by AVS.
             </summary>
         </member>
-        <member name="F:AVS.Localization.TranslationKey.Reactor_BatteryCharge">
+        <member name="F:AVS.Localization.TranslationKey.Reactor_DedicatedBattery_ChargeValueText">
             <summary>
-            Produces the current charge status.
-            The first argument is the current charge fraction.
+            Produces the current charge status of a dedicated reactor battery.
+            The first argument is the current charge percent as a string.
             The second is the absolute charge value.
             The third is the maximum charge value.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.Fabricator_Node_DepthModules">
+            <summary>
+            Title of the depth node fabricator node.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.Fabricator_DisplayName">
+            <summary>
+            Display name of the fabricator.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.Fabricator_Description">
+            <summary>
+            Description of the fabricator.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.ColorPicker_Tab_Exterior">
+            <summary>
+            Tab text for the exterior color tab of the color picker.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.ColorPicker_Tab_Accent">
+            <summary>
+            Tab text for the primary accent color tab of the color picker.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.ColorPicker_Tab_Interior">
+            <summary>
+            Tab text for the interior color tab of the color picker.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.ColorPicker_Tab_Name">
+            <summary>
+            Tab text for the name color tab of the color picker.
             </summary>
         </member>
         <member name="F:AVS.Localization.TranslationKey.Reactor_WhitelistWithPowerValue">
@@ -4287,6 +4443,18 @@
             The first argument is the given display name of the storage component (which may also be localized).
             </summary>
         </member>
+        <member name="F:AVS.Localization.TranslationKey.HandHover_Vehicle_Enter">
+            <summary>
+            Text shown when the player hovers over a vehicle's entry hatch.
+            The first argument is the vehicle's name.
+            </summary>
+        </member>
+        <member name="F:AVS.Localization.TranslationKey.HandHover_Vehicle_Exit">
+            <summary>
+            Text shown when the player hovers over a vehicle's exit hatch.
+            The first argument is the vehicle's name.
+            </summary>
+        </member>
         <member name="F:AVS.Localization.TranslationKey.HandHover_Vehicle_StartHelmControl">
             <summary>
             Displayed over a vehicle's helm control
@@ -4305,27 +4473,29 @@
             The translation key that hints that the user can show the reactor's item-whitelist by right-clicking.
             </summary>
         </member>
-        <member name="F:AVS.Localization.TranslationKey.HandHover_Vehicle_DesconstructionPercent">
+        <member name="F:AVS.Localization.TranslationKey.HandHover_Vehicle_DeconstructionPercent">
             <summary>
             The vehicle status when the vehicle is scuttled, showing the percentage of its deconstruction.
+            The first argument is the dconstruction fraction as a percent string.
             </summary>
         </member>
         <member name="F:AVS.Localization.TranslationKey.HandHover_Docked_StatusCharged">
             <summary>
             The vehicle status when hovering while docked and the vehicle is fully charged.
-            The first argument is the vehicle health fraction.
+            The first argument is the vehicle health percentage.
             </summary>
         </member>
         <member name="F:AVS.Localization.TranslationKey.HandHover_Docked_StatusCharging">
             <summary>
             Represents the status of a hand hover event when the device is docked and charging.
-            The first argument is the vehicle health fraction.
-            The second argument is the current charge level fraction.
+            The first argument is the vehicle health percentage.
+            The second argument is the current charge percentage.
             </summary>
         </member>
         <member name="F:AVS.Localization.TranslationKey.Report_AddedToStorage">
             <summary>
             An item was added to the storage.
+            The first argument is the item's name.
             </summary>
         </member>
         <member name="F:AVS.Localization.TranslationKey.Error_UpgradeNotRemovable_StorageNotEmpty">
@@ -4343,9 +4513,9 @@
             Then trying to add an item to a storage that is full.
             </summary>
         </member>
-        <member name="F:AVS.Localization.TranslationKey.Error_CannotExitVehicle">
+        <member name="F:AVS.Localization.TranslationKey.Error_CannotExitHelmControl">
             <summary>
-            Exiting the vehicle is not allowed at the moment.
+            Exiting the vehicle's helm control is not allowed at the moment.
             </summary>
         </member>
         <member name="F:AVS.Localization.TranslationKey.Error_CannotRemoveMaterialsFromReactor">
@@ -4357,19 +4527,22 @@
         <member name="F:AVS.Localization.TranslationKey.Error_MobileWaterPark_CannotAdd_FishIsDead">
             <summary>
             If the player tries to add a dead fish to the mobile water park.
-            The first parameter is the tech type name of the fish.
+            The first parameter is the localized tech type name of the fish.
+            The second the label of the water park.
             </summary>
         </member>
         <member name="F:AVS.Localization.TranslationKey.Error_MobileWaterPark_CannotAdd_EggIsHatched">
             <summary>
             If the player tries to add a hatched egg to the mobile water park.
-            The first parameter is the tech type name of the egg.
+            The first parameter is the localized tech type name of the fish.
+            The second the label of the water park.
             </summary>
         </member>
         <member name="F:AVS.Localization.TranslationKey.Error_MobileWaterPark_CannotAdd_Incompatible">
             <summary>
             If the player tries to add something that is not a fish or an egg to the mobile water park.
-            The first parameter is the tech type name of the item.
+            The first parameter is the localized tech type name of the fish.
+            The second the label of the water park.
             </summary>
         </member>
         <member name="F:AVS.Localization.TranslationKey.Error_MobileWaterPark_CannotRemove_HatchingEgg">
@@ -6486,6 +6659,27 @@
             <param name="f">Resulting float</param>
             <returns>True on success</returns>
         </member>
+        <member name="M:AVS.Util.CommonExtensions.Percentage(System.Single,System.Single)">
+            <summary>
+            Produces a percentage string from a float value.
+            If the max value is zero, it returns "-%".
+            Rounds the percentage to two decimal places.
+            </summary>
+            <param name="x"></param>
+            <param name="max"></param>
+            <returns>String in the form "[v]%" where [v] is either 1.23 or - </returns>
+        </member>
+        <member name="M:AVS.Util.CommonExtensions.Percentage(LiveMixin)">
+            <summary>
+            Produces a percentage string from a LiveMixin's current health status.
+            </summary>
+            <remarks>
+            If the <paramref name="live"/> is null, has no max health or is invincible,
+            it returns "-%".
+            </remarks>
+            <param name="live">Live mixin to produce the health percent of</param>
+            <returns>String in the form "[v]%" where [v] is either 1.23 or - </returns>
+        </member>
         <member name="T:AVS.Util.GameObjectHelper">
             <summary>
             Various utility extensions and methods for querying or manipulating GameObjects and Components.
@@ -7083,31 +7277,31 @@
             If null, no model will be provided for installed modules.
             </summary>
         </member>
-        <member name="T:AVS.VehicleParts.VehiclePowerCellDefinition">
+        <member name="T:AVS.VehicleParts.VehicleBatteryDefinition">
             <summary>
             Represents a vehicle power cell definition, including the battery slot, proxy, and display name.
             </summary>
         </member>
-        <member name="P:AVS.VehicleParts.VehiclePowerCellDefinition.Root">
+        <member name="P:AVS.VehicleParts.VehicleBatteryDefinition.Root">
             <summary>
             Primary access point for the battery slot.
             </summary>
         </member>
-        <member name="P:AVS.VehicleParts.VehiclePowerCellDefinition.BatteryProxy">
+        <member name="P:AVS.VehicleParts.VehicleBatteryDefinition.BatteryProxy">
             <summary>
             Parent to place the respective power cell model in.
             Any other contained children are purged on prefabrication.
             If null, the power cell model will not be placed.
             </summary>
         </member>
-        <member name="P:AVS.VehicleParts.VehiclePowerCellDefinition.DisplayName">
+        <member name="P:AVS.VehicleParts.VehicleBatteryDefinition.DisplayName">
             <summary>
             Name to display for the battery slot, which can be localized.
             </summary>
         </member>
-        <member name="M:AVS.VehicleParts.VehiclePowerCellDefinition.#ctor(UnityEngine.GameObject,UnityEngine.Transform,System.Nullable{AVS.Localization.MaybeTranslate})">
+        <member name="M:AVS.VehicleParts.VehicleBatteryDefinition.#ctor(UnityEngine.GameObject,UnityEngine.Transform,System.Nullable{AVS.Localization.MaybeTranslate})">
             <summary>
-            Constructs a new instance of <see cref="T:AVS.VehicleParts.VehiclePowerCellDefinition"/>.
+            Constructs a new instance of <see cref="T:AVS.VehicleParts.VehicleBatteryDefinition"/>.
             </summary>
             <param name="root">The game object representing the battery slot. Cannot be null.</param>
             <param name="batteryProxy">The transform where the battery model will be placed. Can be null if no model is needed.</param>
@@ -7483,6 +7677,11 @@
         <member name="M:AVS.VehicleTypes.Skimmer.DoExitRoutines">
             <inheritdoc/>
         </member>
+        <member name="T:AVS.VehicleTypes.Submarine">
+            <summary>
+            Submarine is the class of self-leveling, walkable vehicle
+            </summary>
+        </member>
         <member name="P:AVS.VehicleTypes.Submarine.ThetherChecksSuspended">
             <summary>
             Tether checks are suspended until the next time the player enters or exits helm/the vehicle.
@@ -7512,16 +7711,25 @@
             <summary>
             Flood light controller created during Awake.
             </summary>
+            <remarks>
+            Auto-destroyed/nulled if no floodlights were declared.
+            </remarks>
         </member>
         <member name="P:AVS.VehicleTypes.Submarine.Interiorlights">
             <summary>
             Interior light controller created during Awake.
             </summary>
+            <remarks>
+            Auto-destroyed/nulled if no interior lights were declared.
+            </remarks>
         </member>
-        <member name="P:AVS.VehicleTypes.Submarine.Navlights">
+        <member name="P:AVS.VehicleTypes.Submarine.NavLights">
             <summary>
             Nav light controller created during Awake.
             </summary>
+            <remarks>
+            Auto-destroyed/nulled if no navigation lights were declared.
+            </remarks>
         </member>
         <member name="M:AVS.VehicleTypes.Submarine.CreateDataBlocks(System.Action{AVS.SaveLoad.DataBlock})">
             <inheritdoc />

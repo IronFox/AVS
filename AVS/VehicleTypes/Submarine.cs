@@ -17,9 +17,9 @@ using UnityEngine.UI;
 
 namespace AVS.VehicleTypes
 {
-    /*
-     * Submarine is the class of self-leveling, walkable submarines
-     */
+    /// <summary>
+    /// Submarine is the class of self-leveling, walkable vehicle
+    /// </summary>
     public abstract class Submarine : AvsVehicle
     {
 
@@ -57,7 +57,8 @@ namespace AVS.VehicleTypes
             ?? throw new InvalidOperationException("This vehicle's composition has not yet been initialized. Please wait until Submarine.Awake() has been called");
 
 
-        public ControlPanel? controlPanelLogic; //must remain public field
+        [SerializeField]
+        internal ControlPanel? controlPanelLogic; //must remain field
 
         private bool isAtHelm = false;
         private bool isPlayerInside = false; // You can be inside a scuttled submarine yet not dry.
@@ -65,17 +66,27 @@ namespace AVS.VehicleTypes
         /// <summary>
         /// Flood light controller created during Awake.
         /// </summary>
-        public FloodLightsController? Floodlights { get; private set; }
+        /// <remarks>
+        /// Auto-destroyed/nulled if no floodlights were declared.
+        /// </remarks>
+        public FloodlightsController? Floodlights { get; private set; }
         /// <summary>
         /// Interior light controller created during Awake.
         /// </summary>
+        /// <remarks>
+        /// Auto-destroyed/nulled if no interior lights were declared.
+        /// </remarks>
         public InteriorLightsController? Interiorlights { get; private set; }
         /// <summary>
         /// Nav light controller created during Awake.
         /// </summary>
-        public NavigationLightsController? Navlights { get; private set; }
+        /// <remarks>
+        /// Auto-destroyed/nulled if no navigation lights were declared.
+        /// </remarks>
+        public NavigationLightsController? NavLights { get; private set; }
 
-        public GameObject? fabricator = null; //fabricator. Must remain public field
+        [SerializeField]
+        internal GameObject? fabricator = null; //fabricator. must remain field
 
         /// <inheritdoc />
         protected override void CreateDataBlocks(Action<DataBlock> addBlock)
@@ -112,9 +123,9 @@ namespace AVS.VehicleTypes
         public override void Awake()
         {
             base.Awake();
-            Floodlights = gameObject.AddComponent<FloodLightsController>();
+            Floodlights = gameObject.AddComponent<FloodlightsController>();
             Interiorlights = gameObject.AddComponent<InteriorLightsController>();
-            Navlights = gameObject.AddComponent<NavigationLightsController>();
+            NavLights = gameObject.AddComponent<NavigationLightsController>();
             gameObject.EnsureComponent<TetherSource>().mv = this;
             controlPanelLogic.SafeDo(x => x.Init());
         }
@@ -524,12 +535,12 @@ namespace AVS.VehicleTypes
 
             but = ActualEditScreen.transform.Find("Active/NameTab");
             but.name = "PrimaryAccent";
-            but.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = Translator.Get(TranslationKey.ColorPicker_Tab_PrimaryAccent);
+            but.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = Translator.Get(TranslationKey.ColorPicker_Tab_Accent);
             but.gameObject.EnsureComponent<Button>().onClick.AddListener(CreateAction("PrimaryAccent"));
 
             but = ActualEditScreen.transform.Find("Active/InteriorTab");
             but.name = "SecondaryAccent";
-            but.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = Translator.Get(TranslationKey.ColorPicker_Tab_SecondaryAccent);
+            but.GetComponentInChildren<TMPro.TextMeshProUGUI>().text = Translator.Get(TranslationKey.ColorPicker_Tab_Interior);
             but.gameObject.EnsureComponent<Button>().onClick.AddListener(CreateAction("SecondaryAccent"));
 
             but = ActualEditScreen.transform.Find("Active/Stripe1Tab");
@@ -632,7 +643,7 @@ namespace AVS.VehicleTypes
             float pitchDelta = pitch >= 180 ? 360 - pitch : pitch;
             if (!PlayerCanExitHelmControl(rollDelta, pitchDelta, useRigidbody.velocity.magnitude))
             {
-                Logger.PDANote($"{Translator.Get(TranslationKey.Error_CannotExitVehicle)} ({GameInput.Button.Exit})");
+                Logger.PDANote($"{Translator.Get(TranslationKey.Error_CannotExitHelmControl)}");
                 return;
             }
 

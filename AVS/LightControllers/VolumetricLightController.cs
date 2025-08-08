@@ -39,7 +39,7 @@ namespace AVS
             SetVolumetricLights(true);
         }
 
-        void ILightsStatusListener.OnHeadLightsOn()
+        void ILightsStatusListener.OnHeadlightsOn()
         {
             if (MV.IsBoarded)
             {
@@ -47,7 +47,7 @@ namespace AVS
             }
         }
 
-        void ILightsStatusListener.OnHeadLightsOff()
+        void ILightsStatusListener.OnHeadlightsOff()
         {
         }
 
@@ -67,7 +67,7 @@ namespace AVS
         {
         }
 
-        void ILightsStatusListener.OnFloodLightsOn()
+        void ILightsStatusListener.OnFloodlightsOn()
         {
             if (MV.IsBoarded)
             {
@@ -75,7 +75,7 @@ namespace AVS
             }
         }
 
-        void ILightsStatusListener.OnFloodLightsOff()
+        void ILightsStatusListener.OnFloodlightsOff()
         {
         }
     }

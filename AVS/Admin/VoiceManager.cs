@@ -33,10 +33,10 @@
 //    {
 //        #region public_api
 //        // voice that are in-play
-//        public static List<AutoPilotVoice> voices = new List<AutoPilotVoice>();
+//        public static List<AutopilotVoice> voices = new List<AutopilotVoice>();
 //        public static AudioClip silence;
 //        public static VehicleVoice silentVoice = new VehicleVoice();
-//        public const string DefaultVoicePath = "AutoPilotVoices";
+//        public const string DefaultVoicePath = "AutopilotVoices";
 
 //        public static VehicleVoice GetVoice(string name)
 //        {
@@ -90,8 +90,8 @@
 //                Logger.Error(
 //                    "Voice Registration Error: " +
 //                    "Couldn't find voice files at this path: " + folderWithVoiceFiles + "\n"
-//                    + "This method takes the absolute path to the folder containing the AutoPilotVoices folder.\n"
-//                    + "This AutoPilotVoices folder should contain a folder named " + name + " that contains the voice files.\n"
+//                    + "This method takes the absolute path to the folder containing the AutopilotVoices folder.\n"
+//                    + "This AutopilotVoices folder should contain a folder named " + name + " that contains the voice files.\n"
 //                    + "You can use RegisterVoiceWithRelativePath or RegisterVoiceAbsolute to avoid this old naming convention."
 //                    );
 //                yield break;
@@ -252,8 +252,8 @@
 //        internal static IEnumerator GetSilence()
 //        {
 //            string modPath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-//            string autoPilotVoicesFolder = Path.Combine(modPath, DefaultVoicePath);
-//            UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + autoPilotVoicesFolder + "/Silence.ogg", AudioType.OGGVORBIS);
+//            string autopilotVoicesFolder = Path.Combine(modPath, DefaultVoicePath);
+//            UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip("file://" + autopilotVoicesFolder + "/Silence.ogg", AudioType.OGGVORBIS);
 //            yield return www.SendWebRequest();
 //            if (www.isHttpError || www.isNetworkError)
 //            {
@@ -285,16 +285,16 @@
 
 //            yield break;
 //        }
-//        private static IEnumerator LoadVoiceClips(Action<VehicleVoice> onComplete, string autoPilotVoicesFolder)
+//        private static IEnumerator LoadVoiceClips(Action<VehicleVoice> onComplete, string autopilotVoicesFolder)
 //        {
-//            string autoPilotVoicePath = autoPilotVoicesFolder + "/";
-//            yield return LoadVoiceClips(onComplete, autoPilotVoicePath, false);
+//            string autopilotVoicePath = autopilotVoicesFolder + "/";
+//            yield return LoadVoiceClips(onComplete, autopilotVoicePath, false);
 //        }
 //        // Method signature with a callback to return the VehicleVoice instance
 //        private static IEnumerator LoadVoiceClips(Action<VehicleVoice> onComplete, string inputPath, bool verbose)
 //        {
 //            VehicleVoice returnVoice = new VehicleVoice();
-//            VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, "AutoPilot Voice Path is : " + inputPath);
+//            VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, "Autopilot Voice Path is : " + inputPath);
 //            foreach (string clipName in clipNames)
 //            {
 //                string path = "file://" + inputPath + clipName + ".ogg";

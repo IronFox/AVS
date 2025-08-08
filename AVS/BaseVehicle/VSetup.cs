@@ -30,10 +30,10 @@ namespace AVS.BaseVehicle
             Transform seamothVL = SeamothHelper.Seamoth.transform.Find("lights_parent/light_left/x_FakeVolumletricLight"); // sic
             MeshFilter seamothVLMF = seamothVL.GetComponent<MeshFilter>();
             MeshRenderer seamothVLMR = seamothVL.GetComponent<MeshRenderer>();
-            List<VehicleSpotLightDefinition> theseLights = Com.HeadLights.ToList();
+            List<VehicleSpotLightDefinition> theseLights = Com.Headlights.ToList();
             if (this is VehicleTypes.Submarine subma)
             {
-                theseLights.AddRange(subma.Com.FloodLights);
+                theseLights.AddRange(subma.Com.Floodlights);
             }
             foreach (VehicleSpotLightDefinition pc in theseLights)
             {
@@ -126,13 +126,13 @@ namespace AVS.BaseVehicle
                     GameObject newPowerCell = result.Get();
                     newPowerCell.GetComponent<Battery>().charge = 200;
                     newPowerCell.transform.SetParent(Com.StorageRootObject.transform);
-                    var mixin = Com.PowerCells[0].Root.gameObject.GetComponent<EnergyMixin>();
+                    var mixin = Com.Batteries[0].Root.gameObject.GetComponent<EnergyMixin>();
                     mixin.battery = newPowerCell.GetComponent<Battery>();
                     mixin.batterySlot.AddItem(newPowerCell.GetComponent<Pickupable>());
                     newPowerCell.SetActive(false);
                 }
             }
-            if (Com.PowerCells != null && Com.PowerCells.Count() > 0)
+            if (Com.Batteries != null && Com.Batteries.Count() > 0)
             {
                 UWE.CoroutineHost.StartCoroutine(GiveUsABatteryOrGiveUsDeath());
             }
@@ -142,13 +142,13 @@ namespace AVS.BaseVehicle
         {
 
             Log.Debug(this, $"{nameof(AvsVehicle)}.{nameof(CheckEnergyInterface)}");
-            if (energyInterface.sources.Length < Com.PowerCells.Count)
+            if (energyInterface.sources.Length < Com.Batteries.Count)
             {
                 Log.Error($"EnergyInterface for {this.NiceName()} has less sources than batteries. " +
-                          $"Expected {Com.PowerCells.Count}, got {energyInterface.sources.Length}. " +
+                          $"Expected {Com.Batteries.Count}, got {energyInterface.sources.Length}. " +
                           $"This is a bug, please report it.");
                 List<EnergyMixin> energyMixins = new List<EnergyMixin>();
-                foreach (VehicleParts.VehiclePowerCellDefinition vb in Com.PowerCells)
+                foreach (VehicleParts.VehicleBatteryDefinition vb in Com.Batteries)
                 {
                     energyMixins.Add(vb.Root.GetComponent<EnergyMixin>());
 
@@ -167,7 +167,7 @@ namespace AVS.BaseVehicle
             Log.Debug(this, $"{nameof(AvsVehicle)}.{nameof(SetupPowerCells)}");
             var seamothEnergyMixin = SeamothHelper.RequireSeamoth.GetComponent<EnergyMixin>();
             List<EnergyMixin> energyMixins = new List<EnergyMixin>();
-            if (Com.PowerCells.Count == 0)
+            if (Com.Batteries.Count == 0)
             {
                 // Configure energy mixin for this battery slot
                 var energyMixin = gameObject.EnsureComponent<VehicleComponents.ForeverBattery>();
@@ -182,7 +182,7 @@ namespace AVS.BaseVehicle
                 energyMixin.controlledObjects = new GameObject[] { };
                 energyMixins.Add(energyMixin);
             }
-            foreach (VehicleParts.VehiclePowerCellDefinition vb in Com.PowerCells)
+            foreach (VehicleParts.VehicleBatteryDefinition vb in Com.Batteries)
             {
                 Log.Debug(this, $"Setting up Vehicle Power Cell {vb.DisplayName?.Text ?? vb.Root.name} for {this.NiceName()}");
                 // Configure energy mixin for this battery slot
@@ -395,7 +395,7 @@ namespace AVS.BaseVehicle
             }
             var seamothEnergyMixin = seamoth.GetComponent<EnergyMixin>();
             List<EnergyMixin> energyMixins = new List<EnergyMixin>();
-            foreach (VehiclePowerCellDefinition vb in Com.BackupBatteries)
+            foreach (VehicleBatteryDefinition vb in Com.BackupBatteries)
             {
                 // Configure energy mixin for this battery slot
                 vb.Root.GetComponents<EnergyMixin>().ForEach(em => GameObject.Destroy(em)); // remove old energy mixins
@@ -415,7 +415,7 @@ namespace AVS.BaseVehicle
                 var tmp = vb.Root.EnsureComponent<VehicleBatteryInput>();
                 tmp.powerCellObject = vb.Root;
                 tmp.mixin = em;
-                tmp.translationKey = TranslationKey.HandOver_AutoPilotBatterySlot;
+                tmp.translationKey = TranslationKey.HandOver_AutopilotBatterySlot;
                 tmp.displayName = vb.DisplayName?.Text;
                 tmp.displayNameLocalized = vb.DisplayName?.Localize ?? false;
                 tmp.vehicle = this;

@@ -401,7 +401,7 @@ namespace AVS.VehicleParts
     /// <summary>
     /// Represents a vehicle power cell definition, including the battery slot, proxy, and display name.
     /// </summary>
-    public readonly struct VehiclePowerCellDefinition
+    public readonly struct VehicleBatteryDefinition
     {
         /// <summary>
         /// Primary access point for the battery slot.
@@ -420,12 +420,12 @@ namespace AVS.VehicleParts
         public MaybeTranslate? DisplayName { get; }
 
         /// <summary>
-        /// Constructs a new instance of <see cref="VehiclePowerCellDefinition"/>.
+        /// Constructs a new instance of <see cref="VehicleBatteryDefinition"/>.
         /// </summary>
         /// <param name="root">The game object representing the battery slot. Cannot be null.</param>
         /// <param name="batteryProxy">The transform where the battery model will be placed. Can be null if no model is needed.</param>
         /// <param name="displayName">The display name for the battery slot, which can be localized. Can be null if no display name is needed.</param>
-        public VehiclePowerCellDefinition(GameObject root, Transform batteryProxy, MaybeTranslate? displayName = null)
+        public VehicleBatteryDefinition(GameObject root, Transform batteryProxy, MaybeTranslate? displayName = null)
         {
             if (root == null)
                 throw new ArgumentNullException(nameof(root), "Vehicle battery slot cannot be null.");

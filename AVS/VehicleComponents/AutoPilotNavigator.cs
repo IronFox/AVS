@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace AVS.VehicleComponents
 {
-    public class AutoPilotNavigator : MonoBehaviour
+    public class AutopilotNavigator : MonoBehaviour
     {
         public void Update()
         {

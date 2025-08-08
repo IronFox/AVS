@@ -222,7 +222,7 @@ namespace AVS
             //mv.voice = apVoice = mv.gameObject.EnsureComponent<VoiceQueue>();
             //mv.voice = apVoice = mv.gameObject.EnsureComponent<VoiceQueue>();
             //mv.voice.voice = VoiceManager.GetDefaultVoice(mv);
-            mv.gameObject.EnsureComponent<AutoPilotNavigator>();
+            mv.gameObject.EnsureComponent<AutopilotNavigator>();
             DangerStatus = AutopilotStatus.LeviathanSafe;
         }
         public void Start()
@@ -369,14 +369,14 @@ namespace AVS
             }
         }
 
-        void ILightsStatusListener.OnHeadLightsOn()
+        void ILightsStatusListener.OnHeadlightsOn()
         {
-            Log.Debug("OnHeadLightsOn");
+            Log.Debug("OnHeadlightsOn");
         }
 
-        void ILightsStatusListener.OnHeadLightsOff()
+        void ILightsStatusListener.OnHeadlightsOff()
         {
-            Log.Debug("OnHeadLightsOff");
+            Log.Debug("OnHeadlightsOff");
         }
 
         void ILightsStatusListener.OnInteriorLightsOn()
@@ -399,14 +399,14 @@ namespace AVS
             Log.Debug("OnNavLightsOff");
         }
 
-        void ILightsStatusListener.OnFloodLightsOn()
+        void ILightsStatusListener.OnFloodlightsOn()
         {
-            Log.Debug("OnFloodLightsOn");
+            Log.Debug("OnFloodlightsOn");
         }
 
-        void ILightsStatusListener.OnFloodLightsOff()
+        void ILightsStatusListener.OnFloodlightsOff()
         {
-            Log.Debug("OnFloodLightsOff");
+            Log.Debug("OnFloodlightsOff");
         }
 
         void IVehicleStatusListener.OnTakeDamage()

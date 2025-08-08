@@ -35,7 +35,7 @@ namespace AVS
         private bool isNavLightsOn = false;
         private bool isInteriorLightsOn = false;
         private bool isAutoLeveling = false;
-        private bool isAutoPiloting = false;
+        private bool isAutopiloting = false;
         private AvsVehicle mv => GetComponent<AvsVehicle>();
         private EnergyInterface ei => GetComponent<EnergyInterface>();
 
@@ -108,7 +108,7 @@ namespace AVS
                 float upgradeModifier = Mathf.Pow(0.85f, mv.NumEfficiencyModules);
                 TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.deltaTime);
             }
-            if (isAutoPiloting)
+            if (isAutopiloting)
             {
                 float scalarFactor = 1.0f;
                 float basePowerConsumptionPerSecond = 3f;
@@ -201,22 +201,22 @@ namespace AVS
             }
         }
 
-        void ILightsStatusListener.OnFloodLightsOff()
+        void ILightsStatusListener.OnFloodlightsOff()
         {
             isFloodlightsOn = false;
         }
 
-        void ILightsStatusListener.OnFloodLightsOn()
+        void ILightsStatusListener.OnFloodlightsOn()
         {
             isFloodlightsOn = true;
         }
 
-        void ILightsStatusListener.OnHeadLightsOff()
+        void ILightsStatusListener.OnHeadlightsOff()
         {
             isHeadlightsOn = false;
         }
 
-        void ILightsStatusListener.OnHeadLightsOn()
+        void ILightsStatusListener.OnHeadlightsOn()
         {
             isHeadlightsOn = true;
         }

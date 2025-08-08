@@ -224,12 +224,12 @@ namespace AVS
             FMOD_StudioEventEmitter[] fmods = SeamothHelper.RequireSeamoth.GetComponents<FMOD_StudioEventEmitter>();
             mv.SetupLightSounds(fmods);
         }
-        private static void SetupHeadLights(AvsVehicle mv)
+        private static void SetupHeadlights(AvsVehicle mv)
         {
             GameObject seamothHeadLight = SeamothHelper.RequireSeamoth.transform.Find("lights_parent/light_left").gameObject;
-            if (mv.Com.HeadLights != null)
+            if (mv.Com.Headlights != null)
             {
-                foreach (VehicleParts.VehicleSpotLightDefinition pc in mv.Com.HeadLights)
+                foreach (VehicleParts.VehicleSpotLightDefinition pc in mv.Com.Headlights)
                 {
                     seamothHeadLight.GetComponent<LightShadowQuality>().CopyComponentWithFieldsTo(pc.Light);
                     var thisLight = pc.Light.EnsureComponent<Light>();
@@ -247,12 +247,12 @@ namespace AVS
                 }
             }
         }
-        private static void SetupFloodLights(Submarine mv, GameObject seamoth)
+        private static void SetupFloodlights(Submarine mv, GameObject seamoth)
         {
             GameObject seamothHeadLight = seamoth.transform.Find("lights_parent/light_left").gameObject;
-            if (mv.Com.FloodLights != null)
+            if (mv.Com.Floodlights != null)
             {
-                foreach (VehicleParts.VehicleSpotLightDefinition pc in mv.Com.FloodLights)
+                foreach (VehicleParts.VehicleSpotLightDefinition pc in mv.Com.Floodlights)
                 {
                     seamothHeadLight
                         .GetComponent<LightShadowQuality>()
@@ -561,7 +561,7 @@ namespace AVS
             SetupEnergyInterface(mv);
             SetupAIEnergyInterface(mv, seamoth);
             mv.enabled = true;
-            SetupHeadLights(mv);
+            SetupHeadlights(mv);
             SetupLightSounds(mv);
             SetupLiveMixin(mv);
             SetupRigidbody(mv);
@@ -583,7 +583,7 @@ namespace AVS
 
             if (mv is Submarine sub3)
             {
-                SetupFloodLights(sub3, seamoth);
+                SetupFloodlights(sub3, seamoth);
                 PowerRelay powerRelay = mv.gameObject.AddComponent<PowerRelay>(); // See PowerRelayPatcher. Allows Submarines to recharge batteries.
                 SetupSubRoot(sub3, powerRelay); // depends on SetupWorldForces
             }

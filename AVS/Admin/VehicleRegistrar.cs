@@ -237,7 +237,7 @@ namespace AVS
                 {
                     Logger.Warn(thisName + $"No {nameof(AvsVehicle)}.Upgrades were provided. These specify interfaces the player can click to insert and remove upgrades.");
                 }
-                if (mv.Com.PowerCells.Count == 0)
+                if (mv.Com.Batteries.Count == 0)
                 {
                     Logger.Warn(thisName + $"No {nameof(AvsVehicle)}.Batteries were provided. These are necessary to power the engines. This vehicle will be always powered.");
                 }
@@ -245,9 +245,9 @@ namespace AVS
                 {
                     VerboseLog(LogType.Log, verbose, thisName + $"No {nameof(AvsVehicle)}.BackupBatteries were provided. This collection of batteries belong to the AI and will be used exclusively for life support, auto-leveling, and other AI tasks. The AI will use the main batteries instead.");
                 }
-                if (mv.Com.HeadLights.Count == 0)
+                if (mv.Com.Headlights.Count == 0)
                 {
-                    VerboseLog(LogType.Warn, verbose, thisName + $"No {nameof(AvsVehicle)}.HeadLights were provided. These lights would be activated when the player right clicks while piloting.");
+                    VerboseLog(LogType.Warn, verbose, thisName + $"No {nameof(AvsVehicle)}.Headlights were provided. These lights would be activated when the player right clicks while piloting.");
                 }
                 if (mv.Com.WaterClipProxies.Count == 0)
                 {
@@ -279,14 +279,14 @@ namespace AVS
                         return false;
                     }
                 }
-                foreach (VehicleParts.VehiclePowerCellDefinition vb in mv.Com.PowerCells.Concat(mv.Com.BackupBatteries))
+                foreach (VehicleParts.VehicleBatteryDefinition vb in mv.Com.Batteries.Concat(mv.Com.BackupBatteries))
                 {
                     if (!vb.CheckValidity(thisName, verbose))
                     {
                         return false;
                     }
                 }
-                foreach (VehicleParts.VehicleSpotLightDefinition vfl in mv.Com.HeadLights)
+                foreach (VehicleParts.VehicleSpotLightDefinition vfl in mv.Com.Headlights)
                 {
                     if (!vfl.CheckValidity(thisName))
                     {
@@ -362,9 +362,9 @@ namespace AVS
                     return false;
                 }
 
-                if (mv.Com.FloodLights.Count == 0)
+                if (mv.Com.Floodlights.Count == 0)
                 {
-                    VerboseLog(LogType.Warn, verbose, thisName + $"No {nameof(AvsVehicle)}.Com.FloodLights were provided. These lights would be activated on the control panel.");
+                    VerboseLog(LogType.Warn, verbose, thisName + $"No {nameof(AvsVehicle)}.Com.Floodlights were provided. These lights would be activated on the control panel.");
                 }
                 if (mv.Com.NavigationPortLights.Count == 0)
                 {
@@ -419,7 +419,7 @@ namespace AVS
                     if (!vs.CheckValidity(thisName))
                         return false;
                 }
-                foreach (VehicleParts.VehicleSpotLightDefinition vfl in mv.Com.FloodLights)
+                foreach (VehicleParts.VehicleSpotLightDefinition vfl in mv.Com.Floodlights)
                 {
                     if (!vfl.CheckValidity(thisName))
                         return false;

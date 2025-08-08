@@ -68,13 +68,13 @@ namespace AVS.Patches
                 float energyFraction = energyActual / energyMax;
                 if (energyFraction == 1)
                 {
-                    string format2 = Translator.GetFormatted(TranslationKey.HandHover_Docked_StatusCharged, mv.liveMixin.GetHealthFraction());
+                    string format2 = Translator.GetFormatted(TranslationKey.HandHover_Docked_StatusCharged, mv.liveMixin.Percentage());
                     HandReticle.main.SetText(HandReticle.TextType.Hand, text, true, GameInput.Button.LeftHand);
                     HandReticle.main.SetText(HandReticle.TextType.HandSubscript, format2, false, GameInput.Button.None);
                 }
                 else
                 {
-                    string format2 = Translator.GetFormatted(TranslationKey.HandHover_Docked_StatusCharging, mv.liveMixin.GetHealthFraction(), energyFraction);
+                    string format2 = Translator.GetFormatted(TranslationKey.HandHover_Docked_StatusCharging, mv.liveMixin.Percentage(), energyActual.Percentage(energyMax));
                     HandReticle.main.SetText(HandReticle.TextType.Hand, text, true, GameInput.Button.LeftHand);
                     HandReticle.main.SetText(HandReticle.TextType.HandSubscript, format2, false, GameInput.Button.None);
                 }

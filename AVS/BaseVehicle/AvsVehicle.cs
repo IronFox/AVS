@@ -169,7 +169,7 @@ namespace AVS.BaseVehicle
         private Autopilot? autopilot;
 
         /// <summary>
-        /// Gets the AutoPilot system associated with the current instance.
+        /// Gets the Autopilot system associated with the current instance.
         /// Set by <see cref="Awake()"/>.
         /// </summary>
         public Autopilot Autopilot => autopilot.OrThrow(
@@ -194,7 +194,7 @@ namespace AVS.BaseVehicle
             UpgradeOnAddedActions.Add(PowerUpgradeModuleAction);
 
             SetupVolumetricLights();
-            HeadlightsController = gameObject.EnsureComponent<HeadLightsController>();
+            HeadlightsController = gameObject.EnsureComponent<HeadlightsController>();
             gameObject.AddComponent<VolumetricLightController>();
 
             autopilot = gameObject.EnsureComponent<Autopilot>();

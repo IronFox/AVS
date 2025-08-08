@@ -5,34 +5,21 @@ using UnityEngine;
 
 namespace AVS
 {
-    public class HeadLightsController : BaseLightController
+    public class HeadlightsController : BaseLightController
     {
-        private bool hasWarned = false;
-        public bool isHeadlightsOn // this is just here because the Beluga was using it
-        {
-            get
-            {
-                if (!hasWarned)
-                {
-                    Logger.Warn("Getting HeadLightsController.isHeadlightsOn (deprecated). Please instead Get HeadLightsController.IsLightsOn!");
-                    hasWarned = true;
-                }
-                return IsLightsOn;
-            }
-        }
         private AvsVehicle MV => GetComponent<AvsVehicle>();
         protected override void HandleLighting(bool active)
         {
-            MV.Com.HeadLights.ForEach(x => x.Light.SetActive(active));
+            MV.Com.Headlights.ForEach(x => x.Light.SetActive(active));
             foreach (var component in GetComponentsInChildren<ILightsStatusListener>())
             {
                 if (active)
                 {
-                    component.OnHeadLightsOn();
+                    component.OnHeadlightsOn();
                 }
                 else
                 {
-                    component.OnHeadLightsOff();
+                    component.OnHeadlightsOff();
                 }
             }
         }
@@ -53,8 +40,8 @@ namespace AVS
 
         protected virtual void Awake()
         {
-            LogWriter.Default.Debug($"Awake {this.NiceName()} for {MV.NiceName()}: {MV.Com.HeadLights.Count} head light(s)");
-            if (MV.Com.HeadLights.Count == 0)
+            LogWriter.Default.Debug($"Awake {this.NiceName()} for {MV.NiceName()}: {MV.Com.Headlights.Count} head light(s)");
+            if (MV.Com.Headlights.Count == 0)
             {
                 LogWriter.Default.Write($"Destroying headlights controller because there are no lights to control");
                 Component.DestroyImmediate(this);

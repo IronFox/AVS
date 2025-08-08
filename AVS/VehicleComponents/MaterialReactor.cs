@@ -70,8 +70,8 @@ namespace AVS.VehicleComponents
         float IBattery.capacity => totalCapacity;
         string IBattery.GetChargeValueText()
         {
-            float arg = currentCharge / totalCapacity;
-            return Translator.GetFormatted(TranslationKey.Reactor_BatteryCharge, arg, Mathf.RoundToInt(currentCharge), totalCapacity);
+            var percent = currentCharge.Percentage(totalCapacity);
+            return Translator.GetFormatted(TranslationKey.Reactor_DedicatedBattery_ChargeValueText, percent, Mathf.RoundToInt(currentCharge), totalCapacity);
         }
         internal void SetCapacity(float capacity)
         {
@@ -317,13 +317,25 @@ namespace AVS.VehicleComponents
                 eatable.decomposes = false;
             }
         }
+
+        private Dictionary<int, float> LastFishTankWarning { get; } = new Dictionary<int, float>();
+        private bool CanWarnAbout(Pickupable pickupable)
+        {
+            if (!LastFishTankWarning.TryGetValue(pickupable.GetInstanceID(), out var lastWarning) || Time.time - lastWarning > 30f)
+            {
+                LastFishTankWarning[pickupable.GetInstanceID()] = Time.time;
+                return true;
+            }
+            return false;
+        }
+
         private bool IsAllowedToRemove(Pickupable pickupable, bool verbose)
         {
             if (spentMaterialIndex.Values.ToList().Contains(pickupable.inventoryItem.techType))
             {
                 return true;
             }
-            if (verbose)
+            if (verbose || CanWarnAbout(pickupable))
             {
                 ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_CannotRemoveMaterialsFromReactor, label.Rendered));
             }

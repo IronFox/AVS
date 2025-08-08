@@ -13,8 +13,8 @@ namespace AVS
         private bool isLive = true;
         public AvsVehicle? mv;
         public int hatchIndex = 0; // Index of the hatch in the vehicle's list of hatches
-        public string EnterHint => Translator.Get(TranslationKey.HandHover_Vehicle_Enter);
-        public string ExitHint = Translator.Get(TranslationKey.HandHover_Vehicle_Exit);
+        public string EnterHint => Translator.GetFormatted(TranslationKey.HandHover_Vehicle_Enter, mv.GetVehicleName());
+        public string ExitHint => Translator.GetFormatted(TranslationKey.HandHover_Vehicle_Exit, mv.GetVehicleName());
 
         public void OnHandHover(GUIHand hand)
         {

@@ -77,12 +77,15 @@ namespace AVS.StorageComponents
             }
             var creature = pickupable.GetComponent<WaterParkCreature>();
             var live = pickupable.GetComponent<LiveMixin>();
+            var localizedName = Language.main.Get(pickupable.GetTechName());
             if (creature != null)
             {
                 if (live != null && live.IsAlive())
                     return true;
-                if (verbose && CanWarnAbout(pickupable))
-                    ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotAdd_FishIsDead, pickupable.GetTechName()));
+                if (CanWarnAbout(pickupable))
+                {
+                    ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotAdd_FishIsDead, localizedName, DisplayName.Rendered));
+                }
                 return false;
             }
             var egg = pickupable.GetComponent<CreatureEgg>();
@@ -91,12 +94,12 @@ namespace AVS.StorageComponents
                 if (live != null && live.IsAlive())
                     return true;
                 //as it turns out, eggs die when hatched
-                if (verbose && CanWarnAbout(pickupable))
-                    ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotAdd_EggIsHatched, pickupable.GetTechName()));
+                if (CanWarnAbout(pickupable))
+                    ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotAdd_EggIsHatched, localizedName, DisplayName.Rendered));
                 return false;
             }
-            if (verbose && CanWarnAbout(pickupable))
-                ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotAdd_Incompatible, pickupable.GetTechName()));
+            if (CanWarnAbout(pickupable))
+                ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotAdd_Incompatible, localizedName, DisplayName.Rendered));
             return false;
         }
 
@@ -234,7 +237,7 @@ namespace AVS.StorageComponents
             //        if (canHatchEggs && egg.creaturePrefab != null && egg.creaturePrefab.RuntimeKeyIsValid())
             //        {
             //            if (CanWarnAbout(pickupable))
-            //                ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotRemove_HatchingEgg, pickupable.GetTechName()));
+            //                ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotRemove_HatchingEgg, pickupable.GetTechName())); afskdldf add name and localize tech name
             //            return false;
             //        }
             //        return true;

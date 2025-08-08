@@ -3,6 +3,9 @@ using UnityEngine;
 
 namespace AVS
 {
+    /// <summary>
+    /// The controller for the interior lights of a submarine.
+    /// </summary>
     public class InteriorLightsController : BaseLightController, IPlayerListener
     {
         private Submarine MV => GetComponent<Submarine>();

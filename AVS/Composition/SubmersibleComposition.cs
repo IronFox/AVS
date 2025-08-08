@@ -36,7 +36,7 @@ namespace AVS.Composition
         /// <param name="collisionModel">
         /// Object containing all colliders. Must not be null. Should not be the same as the vehicle object.
         /// </param>
-        /// <param name="powerCells">
+        /// <param name="batteries">
         /// Power cell definitions. Optional. Can be null or empty.
         /// </param>
         /// <param name="upgrades">
@@ -54,7 +54,7 @@ namespace AVS.Composition
         /// <param name="modularStorages">
         /// Storages that can be added to the vehicle by the player. Optional. Can be null or empty.
         /// </param>
-        /// <param name="headLights">
+        /// <param name="headlights">
         /// Collection and configuration of headlights. Optional. Can be null or empty.
         /// </param>
         /// <param name="canopyWindows">
@@ -86,15 +86,15 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             AbstractEngine engine,
             GameObject collisionModel,
-            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? powerCells = null,
+            IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? batteries = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,
             IReadOnlyList<GameObject>? waterClipProxies = null,
             IReadOnlyList<VehicleParts.VehicleStorage>? innateStorages = null,
             IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
-            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? headLights = null,
+            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? headlights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
-            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? backupBatteries = null,
+            IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? backupBatteries = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
@@ -105,13 +105,13 @@ namespace AVS.Composition
             modulesRootObject: modulesRootObject,
             hatches: hatches,
             collisionModel: collisionModel,
-            powerCells: powerCells,
+            batteries: batteries,
             upgrades: upgrades,
             boundingBoxCollider: boundingBoxCollider,
             waterClipProxies: waterClipProxies,
             innateStorages: innateStorages,
             modularStorages: modularStorages,
-            headLights: headLights,
+            headlights: headlights,
             canopyWindows: canopyWindows,
             backupBatteries: backupBatteries,
             denyBuildingColliders: denyBuildingColliders,

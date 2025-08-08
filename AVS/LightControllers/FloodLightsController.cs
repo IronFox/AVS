@@ -5,15 +5,19 @@ using UnityEngine;
 
 namespace AVS
 {
-    public class FloodLightsController : BaseLightController
+    /// <summary>
+    /// Controller for the floodlights on a submarine.
+    /// </summary>
+    public class FloodlightsController : BaseLightController
     {
         private Submarine MV => GetComponent<Submarine>();
+        /// <inheritdoc/>
         protected override void HandleLighting(bool active)
         {
-            MV.Com.FloodLights.ForEach(x => x.Light.SetActive(active));
+            MV.Com.Floodlights.ForEach(x => x.Light.SetActive(active));
             if (active)
             {
-                MV.Com.FloodLights
+                MV.Com.Floodlights
                     .Select(x => x.Light.GetComponent<MeshRenderer>())
                     .Where(x => x != null)
                     .SelectMany(x => x.materials)
@@ -21,7 +25,7 @@ namespace AVS
             }
             else
             {
-                MV.Com.FloodLights
+                MV.Com.Floodlights
                     .Select(x => x.Light.GetComponent<MeshRenderer>())
                     .Where(x => x != null)
                     .SelectMany(x => x.materials)
@@ -31,14 +35,15 @@ namespace AVS
             {
                 if (active)
                 {
-                    component.OnFloodLightsOn();
+                    component.OnFloodlightsOn();
                 }
                 else
                 {
-                    component.OnFloodLightsOff();
+                    component.OnFloodlightsOff();
                 }
             }
         }
+        /// <inheritdoc/>
         protected override void HandleSound(bool playSound)
         {
             if (playSound)
@@ -52,9 +57,10 @@ namespace AVS
                 MV.LightsOffSound.Play();
             }
         }
+        /// <inheritdoc/>
         protected virtual void Awake()
         {
-            if (MV.Com.FloodLights.Count == 0)
+            if (MV.Com.Floodlights.Count == 0)
             {
                 Component.DestroyImmediate(this);
             }

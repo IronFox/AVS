@@ -7,9 +7,13 @@ using UnityEngine;
 
 namespace AVS
 {
+    /// <summary>
+    /// The controller for the navigation lights of a submarine.
+    /// </summary>
     public class NavigationLightsController : BaseLightController
     {
         VehicleTypes.Submarine MV => GetComponent<VehicleTypes.Submarine>();
+        /// <inheritdoc/>
         protected override void HandleLighting(bool active)
         {
             if (active)
@@ -38,11 +42,13 @@ namespace AVS
             }
         }
 
+        /// <inheritdoc/>
         protected override void HandleSound(bool playSound)
         {
             return;
         }
 
+        /// <inheritdoc/>
         protected virtual void Awake()
         {
             bool noPort = MV.Com.NavigationPortLights.Count == 0;
@@ -55,6 +61,7 @@ namespace AVS
                 Component.DestroyImmediate(this);
             }
         }
+        /// <inheritdoc/>
         protected void Start()
         {
             rb = GetComponent<Rigidbody>();
@@ -107,8 +114,8 @@ namespace AVS
         Coroutine? red = null;
         Coroutine? port = null;
         Coroutine? starboard = null;
-        public const float lightBrightness = 1f;
-        public const float strobeBrightness = 30f;
+        internal const float lightBrightness = 1f;
+        internal const float strobeBrightness = 30f;
         private List<Material> positionMats = new List<Material>();
         private List<Material> portMats = new List<Material>();
         private List<Material> starboardMats = new List<Material>();

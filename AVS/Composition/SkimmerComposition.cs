@@ -31,7 +31,7 @@ namespace AVS.Composition
         /// be null.</param>
         /// <param name="engine">The engine (<see cref="AbstractEngine"/>) that powers the vehicle. Must not be null</param>
         /// <param name="collisionModel"><see cref="GameObject"/> representing the collision model of the vehicle. Must not be null</param>
-        /// <param name="batteries">An optional collection of batteries (<see cref="VehicleParts.VehiclePowerCellDefinition"/>) used to power the vehicle.
+        /// <param name="batteries">An optional collection of batteries (<see cref="VehicleParts.VehicleBatteryDefinition"/>) used to power the vehicle.
         /// Can be null.</param>
         /// <param name="upgrades">An optional collection of upgrades (<see cref="VehicleParts.VehicleUpgrades"/>) installed on the vehicle.
         /// Can be null.</param>
@@ -41,11 +41,11 @@ namespace AVS.Composition
         /// the vehicle. Can be null.</param>
         /// <param name="modularStorages">An optional collection of modular storage components (<see cref="VehicleParts.VehicleStorage"/>) that can be
         /// added to the vehicle. Can be null.</param>
-        /// <param name="headLights">An optional collection of floodlights (<see cref="VehicleParts.VehicleSpotLightDefinition"/>) used as headlights for
+        /// <param name="headlights">An optional collection of floodlights (<see cref="VehicleParts.VehicleSpotLightDefinition"/>) used as headlights for
         /// the vehicle. Can be null.</param>
         /// <param name="canopyWindows">An optional collection of <see cref="GameObject"/> instances representing the canopy windows of the vehicle.
         /// Can be null.</param>
-        /// <param name="backupBatteries">An optional collection of backup batteries (<see cref="VehicleParts.VehiclePowerCellDefinition"/>) for the vehicle. Can
+        /// <param name="backupBatteries">An optional collection of backup batteries (<see cref="VehicleParts.VehicleBatteryDefinition"/>) for the vehicle. Can
         /// be null.</param>
         /// <param name="denyBuildingColliders">An optional collection of <see cref="Collider"/> instances that prevent building in certain areas. Can be
         /// null.</param>
@@ -60,15 +60,15 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.Helm> pilotSeats,
             AbstractEngine engine,
             GameObject collisionModel,
-            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? batteries = null,
+            IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? batteries = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,
             IReadOnlyList<GameObject>? waterClipProxies = null,
             IReadOnlyList<VehicleParts.VehicleStorage>? innateStorages = null,
             IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
-            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? headLights = null,
+            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? headlights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
-            IReadOnlyList<VehicleParts.VehiclePowerCellDefinition>? backupBatteries = null,
+            IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? backupBatteries = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
@@ -79,13 +79,13 @@ namespace AVS.Composition
             modulesRootObject: modulesRootObject,
             hatches: hatches,
             collisionModel: collisionModel,
-            powerCells: batteries,
+            batteries: batteries,
             upgrades: upgrades,
             boundingBoxCollider: boundingBoxCollider,
             waterClipProxies: waterClipProxies,
             innateStorages: innateStorages,
             modularStorages: modularStorages,
-            headLights: headLights,
+            headlights: headlights,
             canopyWindows: canopyWindows,
             backupBatteries: backupBatteries,
             denyBuildingColliders: denyBuildingColliders,

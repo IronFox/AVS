@@ -17,13 +17,13 @@ namespace AVS
         /// </summary>
         public Submarine? mv;
 
-        private GameObject? buttonHeadLights;
+        private GameObject? buttonHeadlights;
         private GameObject? buttonNavLights;
-        private GameObject? buttonAutoPilot;
+        private GameObject? buttonAutopilot;
         private GameObject? buttonInteriorLights;
         private GameObject? button5;
         private GameObject? buttonDefaultColor;
-        private GameObject? buttonFloodLights;
+        private GameObject? buttonFloodlights;
         private GameObject? button8;
         private GameObject? buttonPower;
 
@@ -33,35 +33,35 @@ namespace AVS
         public void Init()
         {
             // find buttons
-            buttonHeadLights = transform.Find("1").gameObject;
+            buttonHeadlights = transform.Find("1").gameObject;
             buttonNavLights = transform.Find("2").gameObject;
-            buttonAutoPilot = transform.Find("3").gameObject;
+            buttonAutopilot = transform.Find("3").gameObject;
             buttonInteriorLights = transform.Find("4").gameObject;
             button5 = transform.Find("5").gameObject;
             buttonDefaultColor = transform.Find("6").gameObject;
-            buttonFloodLights = transform.Find("7").gameObject;
+            buttonFloodlights = transform.Find("7").gameObject;
             button8 = transform.Find("8").gameObject;
             buttonPower = transform.Find("9").gameObject;
 
             // give buttons their colliders, for touching
-            buttonHeadLights.EnsureComponent<BoxCollider>();
+            buttonHeadlights.EnsureComponent<BoxCollider>();
             buttonNavLights.EnsureComponent<BoxCollider>();
-            buttonAutoPilot.EnsureComponent<BoxCollider>();
+            buttonAutopilot.EnsureComponent<BoxCollider>();
             buttonInteriorLights.EnsureComponent<BoxCollider>();
             button5.EnsureComponent<BoxCollider>();
             buttonDefaultColor.EnsureComponent<BoxCollider>();
-            buttonFloodLights.EnsureComponent<BoxCollider>();
+            buttonFloodlights.EnsureComponent<BoxCollider>();
             button8.EnsureComponent<BoxCollider>();
             buttonPower.EnsureComponent<BoxCollider>();
 
             // give buttons their logic, for executing
-            buttonHeadLights.EnsureComponent<ControlPanelButton>().Init(HeadlightsClick, HeadLightsHover);
+            buttonHeadlights.EnsureComponent<ControlPanelButton>().Init(HeadlightsClick, HeadlightsHover);
             buttonNavLights.EnsureComponent<ControlPanelButton>().Init(NavLightsClick, NavLightsHover);
-            buttonAutoPilot.EnsureComponent<ControlPanelButton>().Init(AutoPilotClick, AutoPilotHover);
+            buttonAutopilot.EnsureComponent<ControlPanelButton>().Init(AutopilotClick, AutopilotHover);
             buttonInteriorLights.EnsureComponent<ControlPanelButton>().Init(InteriorLightsClick, InteriorLightsHover);
             button5.EnsureComponent<ControlPanelButton>().Init(EmptyClick, EmptyHover);
             buttonDefaultColor.EnsureComponent<ControlPanelButton>().Init(DefaultColorClick, DefaultColorHover);
-            buttonFloodLights.EnsureComponent<ControlPanelButton>().Init(FloodLightsClick, FloodLightsHover);
+            buttonFloodlights.EnsureComponent<ControlPanelButton>().Init(FloodlightsClick, FloodlightsHover);
             button8.EnsureComponent<ControlPanelButton>().Init(EmptyClick, EmptyHover);
             buttonPower.EnsureComponent<ControlPanelButton>().Init(PowerClick, PowerHover);
 
@@ -73,13 +73,13 @@ namespace AVS
         /// </summary>
         private void ResetAllButtonLighting()
         {
-            SetButtonLightingActive(buttonHeadLights, false);
+            SetButtonLightingActive(buttonHeadlights, false);
             SetButtonLightingActive(buttonNavLights, false);
-            SetButtonLightingActive(buttonAutoPilot, false);
+            SetButtonLightingActive(buttonAutopilot, false);
             SetButtonLightingActive(buttonInteriorLights, true);
             SetButtonLightingActive(button5, false);
             SetButtonLightingActive(buttonDefaultColor, false);
-            SetButtonLightingActive(buttonFloodLights, false);
+            SetButtonLightingActive(buttonFloodlights, false);
             SetButtonLightingActive(button8, false);
             SetButtonLightingActive(buttonPower, true);
         }
@@ -89,13 +89,13 @@ namespace AVS
         /// </summary>
         private void AdjustButtonLightingForPowerDown()
         {
-            SetButtonLightingActive(buttonHeadLights, false);
+            SetButtonLightingActive(buttonHeadlights, false);
             SetButtonLightingActive(buttonNavLights, false);
-            SetButtonLightingActive(buttonAutoPilot, false);
+            SetButtonLightingActive(buttonAutopilot, false);
             SetButtonLightingActive(buttonInteriorLights, false);
             SetButtonLightingActive(button5, false);
             SetButtonLightingActive(buttonDefaultColor, false);
-            SetButtonLightingActive(buttonFloodLights, false);
+            SetButtonLightingActive(buttonFloodlights, false);
             SetButtonLightingActive(button8, false);
             SetButtonLightingActive(buttonPower, false);
         }
@@ -130,16 +130,16 @@ namespace AVS
         /// <summary>
         /// Hover handler for the headlights button, sets the hand reticle text and icon.
         /// </summary>
-        public void HeadLightsHover()
+        public void HeadlightsHover()
         {
-            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_HeadLights));
+            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_Headlights));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
 
         /// <summary>
         /// Click handler for the floodlights button, toggles the floodlights.
         /// </summary>
-        public void FloodLightsClick()
+        public void FloodlightsClick()
         {
             if (mv != null && mv.Floodlights != null)
             {
@@ -150,9 +150,9 @@ namespace AVS
         /// <summary>
         /// Hover handler for the floodlights button, sets the hand reticle text and icon.
         /// </summary>
-        public void FloodLightsHover()
+        public void FloodlightsHover()
         {
-            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_FloodLights));
+            HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_Floodlights));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
         }
 
@@ -161,9 +161,9 @@ namespace AVS
         /// </summary>
         public void NavLightsClick()
         {
-            if (mv != null && mv.Navlights != null)
+            if (mv != null && mv.NavLights != null)
             {
-                mv.Navlights.Toggle();
+                mv.NavLights.Toggle();
             }
         }
 
@@ -241,7 +241,7 @@ namespace AVS
         /// <summary>
         /// Click handler for the autopilot button. (Not implemented.)
         /// </summary>
-        public void AutoPilotClick()
+        public void AutopilotClick()
         {
             // TODO
         }
@@ -249,7 +249,7 @@ namespace AVS
         /// <summary>
         /// Hover handler for the autopilot button, sets the hand reticle text and icon.
         /// </summary>
-        public void AutoPilotHover()
+        public void AutopilotHover()
         {
             HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, Translator.Get(TranslationKey.HandHover_ControlPanel_Autopilot));
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);
@@ -299,15 +299,15 @@ namespace AVS
         // ILightsStatusListener implementation
 
         /// <inheritdoc />
-        void ILightsStatusListener.OnHeadLightsOn()
+        void ILightsStatusListener.OnHeadlightsOn()
         {
-            SetButtonLightingActive(buttonHeadLights, true);
+            SetButtonLightingActive(buttonHeadlights, true);
         }
 
         /// <inheritdoc />
-        void ILightsStatusListener.OnHeadLightsOff()
+        void ILightsStatusListener.OnHeadlightsOff()
         {
-            SetButtonLightingActive(buttonHeadLights, false);
+            SetButtonLightingActive(buttonHeadlights, false);
         }
 
         /// <inheritdoc />
@@ -329,22 +329,22 @@ namespace AVS
         {
         }
 
-        // IAutoPilotListener implementation
+        // IAutopilotListener implementation
 
 
 
         // ILightsStatusListener continued
 
         /// <inheritdoc />
-        void ILightsStatusListener.OnFloodLightsOn()
+        void ILightsStatusListener.OnFloodlightsOn()
         {
-            SetButtonLightingActive(buttonFloodLights, true);
+            SetButtonLightingActive(buttonFloodlights, true);
         }
 
         /// <inheritdoc />
-        void ILightsStatusListener.OnFloodLightsOff()
+        void ILightsStatusListener.OnFloodlightsOff()
         {
-            SetButtonLightingActive(buttonFloodLights, false);
+            SetButtonLightingActive(buttonFloodlights, false);
         }
 
         /// <inheritdoc />
@@ -411,8 +411,8 @@ namespace AVS
         /// <inheritdoc />
         void IVehicleStatusListener.OnNearbyLeviathan()
         {
-            SetButtonLightingActive(buttonHeadLights, false);
-            SetButtonLightingActive(buttonFloodLights, false);
+            SetButtonLightingActive(buttonHeadlights, false);
+            SetButtonLightingActive(buttonFloodlights, false);
             SetButtonLightingActive(buttonInteriorLights, false);
             SetButtonLightingActive(buttonNavLights, false);
         }

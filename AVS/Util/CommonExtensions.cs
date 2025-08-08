@@ -29,5 +29,45 @@ namespace AVS.Util
         {
             return float.Parse(s, NumberStyles.Any, CultureInfo.InvariantCulture);
         }
+
+        /// <summary>
+        /// Produces a percentage string from a float value.
+        /// If the max value is zero, it returns "-%".
+        /// Rounds the percentage to two decimal places.
+        /// </summary>
+        /// <param name="x"></param>
+        /// <param name="max"></param>
+        /// <returns>String in the form "[v]%" where [v] is either 1.23 or - </returns>
+        public static string Percentage(this float x, float max)
+        {
+            if (max == 0f)
+            {
+                return "-%";
+            }
+
+            return (x / max).ToString("#.##%", CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Produces a percentage string from a LiveMixin's current health status.
+        /// </summary>
+        /// <remarks>
+        /// If the <paramref name="live"/> is null, has no max health or is invincible,
+        /// it returns "-%".
+        /// </remarks>
+        /// <param name="live">Live mixin to produce the health percent of</param>
+        /// <returns>String in the form "[v]%" where [v] is either 1.23 or - </returns>
+        public static string Percentage(this LiveMixin? live)
+        {
+            if (live == null)
+            {
+                return "-%";
+            }
+            if (live.maxHealth <= 0 || live.invincible)
+            {
+                return "-%";
+            }
+            return (live.health / live.maxHealth).ToString("#.##%", CultureInfo.InvariantCulture);
+        }
     }
 }

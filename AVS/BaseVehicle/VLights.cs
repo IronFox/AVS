@@ -58,7 +58,10 @@ namespace AVS.BaseVehicle
         /// The headlights controller for this vehicle.
         /// Set during Awake().
         /// </summary>
-        public HeadLightsController? HeadlightsController { get; private set; }  //set during awake()
+        /// <remarks>
+        /// Auto-destroyed/nulled if no headlights were declared.
+        /// </remarks>
+        public HeadlightsController? HeadlightsController { get; private set; }  //set during awake()
 
     }
 }

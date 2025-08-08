@@ -39,8 +39,8 @@ namespace AVS
                 {
                     float now = mv.GetComponent<Sealed>().openedAmount;
                     float max = mv.GetComponent<Sealed>().maxOpenedAmount;
-                    var percent = Mathf.CeilToInt(now * 100f / max);
-                    HandReticle.main.SetText(HandReticle.TextType.Hand, Translator.GetFormatted(TranslationKey.HandHover_Vehicle_DesconstructionPercent, percent), true, GameInput.Button.None);
+                    var percent = now.Percentage(max);
+                    HandReticle.main.SetText(HandReticle.TextType.Hand, Translator.GetFormatted(TranslationKey.HandHover_Vehicle_DeconstructionPercent, percent), true, GameInput.Button.None);
                 }
                 else if (mv.IsBoarded)
                 {
