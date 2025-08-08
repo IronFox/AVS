@@ -105,7 +105,8 @@ namespace AVS
             }
             else
             {
-                partQueue.Enqueue(new Queued(this, null, true, 0));
+                if (!string.IsNullOrEmpty(TextTranslationKey))
+                    partQueue.Enqueue(new Queued(this, null, true, 0));
             }
         }
     }
