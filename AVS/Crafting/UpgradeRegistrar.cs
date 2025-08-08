@@ -486,13 +486,17 @@ namespace AVS.Crafting
                         UntoggleAndSignal();
                         yield break;
                     }
+                    var start = Time.time;
+                    yield return new WaitForSeconds(Module.RepeatDelay);
+                    var elapsed = Time.time - start;
+                    var energy = Module.EnergyCostPerSecond * elapsed;
                     float availablePower = Vehicle.energyInterface.TotalCanProvide(out _);
-                    if (availablePower < Module.EnergyCostPerActivation)
+                    if (availablePower < energy)
                     {
                         UntoggleAndSignal();
                         yield break;
                     }
-                    yield return new WaitForSeconds(Module.RepeatDelay);
+                    Vehicle.energyInterface.ConsumeEnergy(energy);
                 }
             }
         }

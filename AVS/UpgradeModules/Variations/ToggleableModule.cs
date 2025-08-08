@@ -60,18 +60,19 @@ namespace AVS.UpgradeModules.Variations
         /// <summary>
         /// Time in seconds between calls to <see cref="OnRepeat"/>
         /// while the module is active.
+        /// Should not be 0 or the module will repeat once per frame.
         /// </summary>
-        public virtual float RepeatDelay => 0;
+        public virtual float RepeatDelay => 0.1f;
         /// <summary>
         /// The time in seconds before the first call to <see cref="OnRepeat"/>
         /// after the module is activated.
         /// </summary>
         public virtual float DelayUntilFirstOnRepeat => 0;
         /// <summary>
-        /// The energy cost per <see cref="OnRepeat"/> call.
+        /// The energy cost per second while the module is active.
         /// If the vehicle does not have enough energy, the module will auto-toggle off.
         /// </summary>
-        public virtual float EnergyCostPerActivation => 0;
+        public virtual float EnergyCostPerSecond => 0;
         /// <summary>
         /// Executed once every <see cref="RepeatDelay"/> seconds while the module is active.
         /// </summary>

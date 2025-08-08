@@ -307,6 +307,11 @@ namespace AVS
         {
             try
             {
+                if (liveMixin.maxHealth <= 0)
+                {
+                    Log.Error("LiveMixin max health is zero, cannot update health state.");
+                    return;
+                }
                 Emit(listeners, HealthTracker.Update(liveMixin.health, liveMixin.maxHealth * 0.1f, liveMixin.maxHealth * 0.4f));
             }
             catch (System.Exception e)
@@ -337,6 +342,11 @@ namespace AVS
             try
             {
                 float crushDepth = GetComponent<CrushDamage>().crushDepth;
+                if (crushDepth <= 0)
+                {
+                    Log.Error("Crush depth is zero or negative, cannot update depth state.");
+                    return;
+                }
                 float perilousDepth = crushDepth * 0.9f;
                 float depth = transform.position.y;
 

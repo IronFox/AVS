@@ -6478,7 +6478,7 @@
         <member name="T:AVS.UpgradeModules.Variations.ToggleableModule">
             <summary>
             Abstract base class for toggleable upgrade modules on AVS vehicles.
-            A module of this type will consume <see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.EnergyCostPerActivation"/> energy
+            A module of this type will consume <see cref="!:EnergyCostPerActivation"/> energy
             every <see cref="P:AVS.UpgradeModules.Variations.ToggleableModule.RepeatDelay"/> seconds and call <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.IToggleState)"/>
             while active.
             </summary>
@@ -6490,6 +6490,7 @@
             <summary>
             Time in seconds between calls to <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.IToggleState)"/>
             while the module is active.
+            Should not be 0 or the module will repeat once per frame.
             </summary>
         </member>
         <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.DelayUntilFirstOnRepeat">
@@ -6498,9 +6499,9 @@
             after the module is activated.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.EnergyCostPerActivation">
+        <member name="P:AVS.UpgradeModules.Variations.ToggleableModule.EnergyCostPerSecond">
             <summary>
-            The energy cost per <see cref="M:AVS.UpgradeModules.Variations.ToggleableModule.OnRepeat(AVS.UpgradeModules.Variations.IToggleState)"/> call.
+            The energy cost per second while the module is active.
             If the vehicle does not have enough energy, the module will auto-toggle off.
             </summary>
         </member>
