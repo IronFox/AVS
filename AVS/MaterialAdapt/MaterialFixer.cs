@@ -1,4 +1,5 @@
-﻿using AVS.BaseVehicle;
+﻿#define PLAIN_COPY_GLASS
+using AVS.BaseVehicle;
 using AVS.Log;
 using AVS.Util;
 using System;
@@ -103,7 +104,21 @@ namespace AVS.MaterialAdapt
         }
 
         private SubnauticaMaterialPrototype? HullPrototype { get; set; }
+#if PLAIN_COPY_GLASS
+        /// <summary>
+        /// There is something odd with the glass material in Subnautica.
+        /// Even if we copy everything, the glass material is oddly opaque.
+        /// If, instead, we use the material directly, it looks way more
+        /// convincing. My best guess is, the material is not completely
+        /// loaded when we copy it, and some part of Subnautica changes it
+        /// at a later point.
+        /// </summary>
+        private bool HaveGlassMaterial { get; set; }
+        private Material? glassMaterial;
+#else
         private SubnauticaMaterialPrototype? GlassPrototype { get; set; }
+        private bool HaveGlassMaterial => GlassPrototype != null;
+#endif
 
         /// <summary>
         /// Fixes materials if necessary/possible.
@@ -118,10 +133,14 @@ namespace AVS.MaterialAdapt
             if (!materialsFixed)
             {
                 HullPrototype = HullPrototype ?? SubnauticaMaterialPrototype.FromSeamoth(Logging);
-                GlassPrototype = GlassPrototype ?? SubnauticaMaterialPrototype.GlassFromAquarium(Logging);
-                //GlassPrototype = GlassPrototype ?? MaterialPrototype.GlassFromExosuit(Logging.Verbose);
+#if PLAIN_COPY_GLASS
+                if (!HaveGlassMaterial)
+                    HaveGlassMaterial = SubnauticaMaterialPrototype.GlassMaterialFromSeamoth(out glassMaterial, Logging);
+#else
+                GlassPrototype = GlassPrototype ?? SubnauticaMaterialPrototype.GlassFromSeamoth(Logging);
+#endif
 
-                if (HullPrototype != null && GlassPrototype != null)
+                if (HullPrototype != null && HaveGlassMaterial)
                 {
                     materialsFixed = true;
                     uniformShininess = UniformShininess;
@@ -153,8 +172,18 @@ namespace AVS.MaterialAdapt
                                         materialAdaptation = new MaterialAdaptation(HullPrototype, data, shader);
                                         break;
                                     case MaterialType.Glass:
+#if PLAIN_COPY_GLASS
+                                        if (glassMaterial == null)
+                                        {
+                                            Logging.Error($"Glass material is null. Cannot adapt glass material {data}");
+                                            continue;
+                                        }
+                                        data.Source.Renderer.ReplaceMaterial(data.Source.MaterialIndex, glassMaterial);
+                                        continue;
+#else
                                         materialAdaptation = new MaterialAdaptation(GlassPrototype, data, shader);
                                         break;
+#endif
                                     default:
                                         Logging.Warn($"Unknown material type for material {data}. Skipping adaptation");
                                         continue;

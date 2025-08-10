@@ -559,5 +559,28 @@ namespace AVS.Util
             }
             return vehicle.subName != null ? vehicle.subName.GetName() : vehicle.vehicleName;
         }
+
+        /// <summary>
+        /// Sets a material on a specific slot of a renderer.
+        /// </summary>
+        /// <param name="renderer">The renderer to set the material of</param>
+        /// <param name="index">The index of the material on the renderer</param>
+        /// <param name="material">The material to set</param>
+        public static void ReplaceMaterial(this Renderer? renderer, int index, Material material)
+        {
+            if (renderer == null)
+            {
+                Logger.Error("Renderer is null, cannot set material.");
+                return;
+            }
+            if (index < 0 || index >= renderer.materials.Length)
+            {
+                Logger.Error($"Invalid material slot {index} for renderer {renderer.NiceName()}");
+                return;
+            }
+            Material[] materials = renderer.materials;
+            materials[index] = material;
+            renderer.materials = materials;
+        }
     }
 }

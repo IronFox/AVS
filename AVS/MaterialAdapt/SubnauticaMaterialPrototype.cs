@@ -286,8 +286,8 @@ namespace AVS.MaterialAdapt
                     case ShaderPropertyType.Texture:
                         if (loadTextures)
                         {
-                            if (n != "_MainTex" && n != "_BumpMap" && n != "_SpecTex" && n != "_Illum")
-                                textureVariables.Add(new TextureVariable(source, n));
+                            //if (n != "_MainTex" && n != "_BumpMap" && n != "_SpecTex" && n != "_Illum")
+                            textureVariables.Add(new TextureVariable(source, n));
                         }
                         break;
                 }
@@ -304,17 +304,22 @@ namespace AVS.MaterialAdapt
         /// Creates a material prototype for the glass material of the Seamoth.
         /// </summary>
         /// <param name="logConfig">Logging configuration</param>
-        /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
-        /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
+        /// <returns>False if the seamoth is not (yet) available. Keep trying if false.
+        /// Ttrue if the seamoth is loaded, but <paramref name="result"/> can still be null
         /// if the respective material is not found</returns>
-        public static SubnauticaMaterialPrototype? GlassFromSeamoth(MaterialLog logConfig = default)
+        public static bool GlassMaterialFromSeamoth(out Material? result, MaterialLog logConfig = default)
         {
             var sm = SeamothHelper.Seamoth;
             if (sm == null)
-                return null;
+            {
+                result = null;
+                return false;
+            }
             logConfig.LogExtraStep($"Found Seamoth");
             var glassMaterial = sm.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/Submersible_SeaMoth_glass_interior_geo").GetComponent<SkinnedMeshRenderer>().material;
-            return new SubnauticaMaterialPrototype(glassMaterial, loadTextures: true);
+            result = glassMaterial;
+            return true;
+
         }
 
         /// <summary>
@@ -324,11 +329,29 @@ namespace AVS.MaterialAdapt
         /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
         /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
         /// if the respective material is not found</returns>
-        public static SubnauticaMaterialPrototype? GlassFromAquarium(MaterialLog logConfig = default)
+        public static SubnauticaMaterialPrototype? GlassFromSeamoth(MaterialLog logConfig = default)
+        {
+            if (!GlassMaterialFromSeamoth(out var glassMaterial, logConfig))
+                return null;
+            return new SubnauticaMaterialPrototype(glassMaterial, loadTextures: true);
+        }
+
+        /// <summary>
+        /// Retrieves the entire glass material of the aquarium.
+        /// </summary>
+        /// <param name="logConfig">Logging configuration</param>
+        /// <param name="result">The material prototype to fill with the aquarium glass material.</param>
+        /// <returns>False if the aquarium is not (yet) available. Keep trying if false.
+        /// Ttrue if the aquarium is loaded, but <paramref name="result"/> can still be null
+        /// if the respective material is not found</returns>
+        public static bool GlassMaterialFromAquarium(out Material? result, MaterialLog logConfig = default)
         {
             var sm = PrefabLoader.Request(TechType.Aquarium);
             if (sm.Instance == null)
-                return null;
+            {
+                result = null;
+                return false;
+            }
 
             logConfig.LogExtraStep($"Found Aquarium");
 
@@ -351,10 +374,22 @@ namespace AVS.MaterialAdapt
                 if (glassMaterial != null)
                     break;
             }
+            result = glassMaterial;
+            return true;
+        }
+
+        /// <summary>
+        /// Creates a material prototype for the glass material of the Seamoth.
+        /// </summary>
+        /// <param name="logConfig">Logging configuration</param>
+        /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
+        /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
+        /// if the respective material is not found</returns>
+        public static SubnauticaMaterialPrototype? GlassFromAquarium(MaterialLog logConfig = default)
+        {
+            if (!GlassMaterialFromAquarium(out var glassMaterial, logConfig))
+                return null;
             return new SubnauticaMaterialPrototype(glassMaterial);
-            //logConfig.LogExtraStep($"Found Seamoth");
-            //var glassMaterial = sm.Instance.transform.Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/Submersible_SeaMoth_glass_interior_geo").GetComponent<SkinnedMeshRenderer>().material;
-            //return new SubnauticaMaterialPrototype(glassMaterial, loadTextures: true);
         }
 
         /// <summary>

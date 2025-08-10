@@ -5192,6 +5192,16 @@
             Normally not necessary
             </summary>
         </member>
+        <member name="P:AVS.MaterialAdapt.MaterialFixer.HaveGlassMaterial">
+            <summary>
+            There is something odd with the glass material in Subnautica.
+            Even if we copy everything, the glass material is oddly opaque.
+            If, instead, we use the material directly, it looks way more
+            convincing. My best guess is, the material is not completely
+            loaded when we copy it, and some part of Subnautica changes it
+            at a later point.
+            </summary>
+        </member>
         <member name="M:AVS.MaterialAdapt.MaterialFixer.OnUpdate">
             <summary>
             Fixes materials if necessary/possible.
@@ -5246,6 +5256,15 @@
             <param name="source">Material to read. Can be null, causing <see cref="P:AVS.MaterialAdapt.SubnauticaMaterialPrototype.IsEmpty"/> to be set true</param>
             <param name="loadTextures">If true also load texture property values</param>
         </member>
+        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassMaterialFromSeamoth(UnityEngine.Material@,AVS.Log.MaterialLog)">
+            <summary>
+            Creates a material prototype for the glass material of the Seamoth.
+            </summary>
+            <param name="logConfig">Logging configuration</param>
+            <returns>False if the seamoth is not (yet) available. Keep trying if false.
+            Ttrue if the seamoth is loaded, but <paramref name="result"/> can still be null
+            if the respective material is not found</returns>
+        </member>
         <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassFromSeamoth(AVS.Log.MaterialLog)">
             <summary>
             Creates a material prototype for the glass material of the Seamoth.
@@ -5253,6 +5272,16 @@
             <param name="logConfig">Logging configuration</param>
             <returns>Null if the seamoth is not (yet) available. Keep trying if null.
             Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
+            if the respective material is not found</returns>
+        </member>
+        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassMaterialFromAquarium(UnityEngine.Material@,AVS.Log.MaterialLog)">
+            <summary>
+            Retrieves the entire glass material of the aquarium.
+            </summary>
+            <param name="logConfig">Logging configuration</param>
+            <param name="result">The material prototype to fill with the aquarium glass material.</param>
+            <returns>False if the aquarium is not (yet) available. Keep trying if false.
+            Ttrue if the aquarium is loaded, but <paramref name="result"/> can still be null
             if the respective material is not found</returns>
         </member>
         <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassFromAquarium(AVS.Log.MaterialLog)">
@@ -6923,6 +6952,14 @@
             </summary>
             <param name="vehicle">Vehicle to get the name of</param>
             <returns>Vehicle name or "&lt;null&gt;"</returns>
+        </member>
+        <member name="M:AVS.Util.GameObjectHelper.ReplaceMaterial(UnityEngine.Renderer,System.Int32,UnityEngine.Material)">
+            <summary>
+            Sets a material on a specific slot of a renderer.
+            </summary>
+            <param name="renderer">The renderer to set the material of</param>
+            <param name="index">The index of the material on the renderer</param>
+            <param name="material">The material to set</param>
         </member>
         <member name="T:AVS.Util.Shaders">
             <summary>
