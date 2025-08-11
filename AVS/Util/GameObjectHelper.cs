@@ -496,6 +496,22 @@ namespace AVS.Util
         }
 
         /// <summary>
+        /// Safely retrieves a value from an object using a getter function, returning a fallback value if the object is null.
+        /// </summary>
+        /// <typeparam name="ObjectType">Object type</typeparam>
+        /// <typeparam name="ValueType">Value type</typeparam>
+        /// <param name="item">Item to get a value of</param>
+        /// <param name="getter">Getter function</param>
+        /// <param name="fallback">Fallback value if <paramref name="item"/> is null</param>
+        /// <returns>Result of <paramref name="getter"/> if <paramref name="item"/> is not null, <paramref name="fallback"/> otherwise</returns>
+        public static ValueType SafeGet<ObjectType, ValueType>(this ObjectType? item, Func<ObjectType, ValueType> getter, ValueType fallback) where ObjectType : UnityEngine.Object
+        {
+            if (item == null)
+                return fallback;
+            return getter(item);
+        }
+
+        /// <summary>
         /// Retrieves the <see cref="PrefabIdentifier"/> component attached to the specified component.
         /// </summary>
         /// <param name="c">The component from which to retrieve the <see cref="PrefabIdentifier"/>. Can be <see langword="null"/>.</param>

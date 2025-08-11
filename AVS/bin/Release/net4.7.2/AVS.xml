@@ -6913,6 +6913,17 @@
             <param name="item">The object to check for null before executing the action.</param>
             <param name="action">The action to execute if <paramref name="item"/> is not null.</param>
         </member>
+        <member name="M:AVS.Util.GameObjectHelper.SafeGet``2(``0,System.Func{``0,``1},``1)">
+            <summary>
+            Safely retrieves a value from an object using a getter function, returning a fallback value if the object is null.
+            </summary>
+            <typeparam name="ObjectType">Object type</typeparam>
+            <typeparam name="ValueType">Value type</typeparam>
+            <param name="item">Item to get a value of</param>
+            <param name="getter">Getter function</param>
+            <param name="fallback">Fallback value if <paramref name="item"/> is null</param>
+            <returns>Result of <paramref name="getter"/> if <paramref name="item"/> is not null, <paramref name="fallback"/> otherwise</returns>
+        </member>
         <member name="M:AVS.Util.GameObjectHelper.PrefabId(UnityEngine.Component)">
             <summary>
             Retrieves the <see cref="T:PrefabIdentifier"/> component attached to the specified component.
@@ -7063,6 +7074,31 @@
             <param name="mat">The material for which emission will be enabled. Cannot be <see langword="null"/>.</param>
             <param name="dayAmount">The emission intensity to apply during the day. The default value is 1.0.</param>
             <param name="nightAmount">The emission intensity to apply during the night. The default value is 1.0.</param>
+        </member>
+        <member name="T:AVS.Util.WaterClipUtil">
+            <summary>
+            Utility class for binding a WaterClipProxy to a target GameObject.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.WaterClipUtil.BindProxy(AVS.Log.LogWriter,UnityEngine.GameObject,UnityEngine.Texture3D,UnityEngine.Bounds)">
+            <summary>
+            Binds a WaterClipProxy to the specified target GameObject using the provided distance map and bounds.
+            </summary>
+            <remarks>
+            The Seamoth has to be loaded before this method is called.
+            </remarks>
+            <param name="log">Out logger</param>
+            <param name="target">Target object that should contain the WaterClipProxy and its renderers. Should not contain any components</param>
+            <param name="distanceMap">3D distance map to use</param>
+            <param name="localBounds">Bounding box of the 3D Distance map in a vehicle located in the point of origin with no rotation</param>
+            <exception cref="T:System.InvalidOperationException">The Seamoth helper was not loaded before this method is called</exception>
+        </member>
+        <member name="M:AVS.Util.WaterClipUtil.UnbindProxy(AVS.Log.LogWriter,UnityEngine.GameObject)">
+            <summary>
+            Unbinds the WaterClipProxy from the specified target GameObject.
+            </summary>
+            <param name="log">Out logger</param>
+            <param name="target">Target object that may contain the WaterClipProxy and its renderers</param>
         </member>
         <member name="P:AVS.VehicleParts.Helm.IsSeated">
             <summary>
