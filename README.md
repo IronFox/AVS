@@ -31,7 +31,7 @@ If you just want the dll and not compile anything, you can just copy the dll fro
 	The voice queue, while based on the VF voice queue, now uses a hard priority, single-batch system.
 	No more than one batch can be enqueued at once.
 	A batch is a string of sounds to be played one after the other with configurable gaps inbetween.
-	If more than one batch is enqueued before the previous is done, depending in priorities,
+	If more than one batch is enqueued before the previous is done, depending on priorities,
 	either the previous one is interrupted or the new one is discarded.
 	This prevents endless strings of voice lines that are no longer relevant when they finally play.
 9) The drive system is simplified and now enforced. AVS does not instantiate a drive on its own and requires the client vehicle to consider this.
