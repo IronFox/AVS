@@ -24,7 +24,7 @@ If you just want the dll and not compile anything, you can just copy the dll fro
 	that Unity objects are never truly null but may behave as though they were (?., ??, 'is null' are particularly dangerous constructs).
 7) AVS has the Echelon's material adaptation built-in with major improvements and fixes.
 	Materials can be flagged with tags like [Keep] to preserve their original Unity shaders and [Glass] to be replaced by glass.
-	Additionally, you can specify your own adaptation on top of AVS' adaptation to fully customize the appearance of your materials.
+	Additionally, you can specify your own adaptation on top of AVS' to fully customize the appearance of your materials.
 8) AVS does not load or produce sounds on its own. Engines are silent on their own.
 	The autopilot voice has been replaced with an event system.
 	The client vehicle can listen to these events and use a pre-configured voice queue to play batches of sounds.
