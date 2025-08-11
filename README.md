@@ -37,7 +37,9 @@ If you just want the dll and not compile anything, you can just copy the dll fro
 11) AVS provides code-documentation along side the exported dll. It aspires to document as much as possible in code.
 	Much of the added documentation of original VF code comes from Github Copilot, however, and may not be accurate.
 	Added functionality has manually written documentation and should be accurate.
-
+12) AVS used an interfaced translator (AVS.Localization.Translator.Implementation) to localize all AVS-used keys.
+	You can override this to provide your own localization. If you don't, you need to provide all 'AVS.[key]' translation keys yourself where [key] is any enumeration value in AVS.Localization.TranslationKey.
+	All localizable keys that AVS uses are declared and documented in this enumeration.
 
 
 ## Setup
