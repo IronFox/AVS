@@ -6972,6 +6972,29 @@
             <param name="index">The index of the material on the renderer</param>
             <param name="material">The material to set</param>
         </member>
+        <member name="T:AVS.Util.HierarchyAnalyzer">
+            <summary>
+            Game object/component hierarchy analyzer
+            </summary>
+        </member>
+        <member name="M:AVS.Util.HierarchyAnalyzer.LogToJson(UnityEngine.Component,System.String)">
+            <summary>
+            Logs a component and its children as JSON to the specified file.
+            If the file already exists, it is overwritten.
+            If the directory does not exist, an attempt is made to create it
+            </summary>
+            <param name="c">Component to log</param>
+            <param name="filename">Filename to write to</param>
+        </member>
+        <member name="M:AVS.Util.HierarchyAnalyzer.LogToJson(UnityEngine.Transform,System.String)">
+            <summary>
+            Logs a transform and its children as JSON to the specified file.
+            If the file already exists, it is overwritten.
+            If the directory does not exist, an attempt is made to create it
+            </summary>
+            <param name="t">Transform to log</param>
+            <param name="filename">Filename to write to</param>
+        </member>
         <member name="T:AVS.Util.Shaders">
             <summary>
             Constants and helper methods related to shaders.
