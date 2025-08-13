@@ -91,7 +91,7 @@ namespace AVS.VehicleTypes
         //    }
         //    else
         //    {
-        //        UWE.CoroutineHost.StartCoroutine(EventuallyStandUp());
+        //        MainPatcher.Instance.StartCoroutine(EventuallyStandUp());
         //    }
         //    Log.Debug(this, "end submersible player exit");
         //}

@@ -92,7 +92,7 @@ namespace AVS.Util
                     1f / localBounds.size.y,
                     1f / localBounds.size.z);
                 if (existed == null)
-                    UWE.CoroutineHost.StartCoroutine(LateReconfigure(log, nCutout, localBounds, distanceMap));
+                    MainPatcher.Instance.StartCoroutine(LateReconfigure(log, nCutout, localBounds, distanceMap));
             }
             else
                 log.Error("SDFCutout not found on Seamoth. Cannot set up");

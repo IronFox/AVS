@@ -61,7 +61,7 @@ namespace AVS.Patches
                     }
                 }
 
-                UWE.CoroutineHost.StartCoroutine(EnsureSubRootSet());
+                MainPatcher.Instance.StartCoroutine(EnsureSubRootSet());
             }
         }
         [HarmonyPostfix]

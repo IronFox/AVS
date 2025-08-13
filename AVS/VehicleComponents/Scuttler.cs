@@ -12,20 +12,20 @@ namespace AVS
         private Coroutine? check;
         public void Scuttle()
         {
-            scuttleCor = UWE.CoroutineHost.StartCoroutine(DoScuttle());
+            scuttleCor = MainPatcher.Instance.StartCoroutine(DoScuttle());
         }
         public void Unscuttle()
         {
-            UWE.CoroutineHost.StopCoroutine(scuttleCor);
-            UWE.CoroutineHost.StopCoroutine(establish);
-            UWE.CoroutineHost.StopCoroutine(check);
+            MainPatcher.Instance.StopCoroutine(scuttleCor);
+            MainPatcher.Instance.StopCoroutine(establish);
+            MainPatcher.Instance.StopCoroutine(check);
             gameObject.GetComponent<Rigidbody>().isKinematic = false;
         }
         public IEnumerator DoScuttle()
         {
-            establish = UWE.CoroutineHost.StartCoroutine(EstablishScuttlePosition());
+            establish = MainPatcher.Instance.StartCoroutine(EstablishScuttlePosition());
             yield return establish;
-            check = UWE.CoroutineHost.StartCoroutine(CheckScuttlePosition());
+            check = MainPatcher.Instance.StartCoroutine(CheckScuttlePosition());
             yield return check;
         }
         public IEnumerator EstablishScuttlePosition()

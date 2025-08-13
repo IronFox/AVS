@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using AVS.BaseVehicle;
+﻿using AVS.BaseVehicle;
 using HarmonyLib;
+using System.Collections;
 using UnityEngine;
 
 // PURPOSE: Resolve an out-of-time error
@@ -15,14 +15,15 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(CellManager.RegisterGlobalEntity))]
         public static bool RegisterGlobalEntityPostfix(CellManager __instance, GameObject ent)
         {
-            if (ent.GetComponent<AvsVehicle>() == null) return true;
-            
+            var v = ent.GetComponent<AvsVehicle>();
+            if (v == null) return true;
+
             if (__instance.streamer == null || __instance.streamer.globalRoot == null)
             {
                 // Sometimes this function is called when streamer.globalRoot is null.
                 // Not sure why or by whom.
                 // All it does is set the parent, so we'll do that as soon as we possibly can.
-                UWE.CoroutineHost.StartCoroutine(SetParentEventually(__instance, ent));
+                MainPatcher.Instance.StartCoroutine(SetParentEventually(__instance, ent));
                 return false;
             }
             return true;

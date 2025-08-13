@@ -272,7 +272,7 @@ namespace AVS.VehicleComponents
                             TechType toAdd = spentMaterialIndex[reactantPair.Key.techType];
                             if (toAdd != TechType.None)
                             {
-                                UWE.CoroutineHost.StartCoroutine(AddMaterial(toAdd));
+                                MainPatcher.Instance.StartCoroutine(AddMaterial(toAdd));
                             }
                         }
                         reactantPair.Key.container = null;
@@ -373,7 +373,7 @@ namespace AVS.VehicleComponents
                     main.SetText(HandReticle.TextType.HandSubscript, Translator.Get(TranslationKey.HandHoverSub_Reactor_ShowWhitelist), false, GameInput.Button.RightHand);
                     if (GameInput.GetButtonDown(GameInput.Button.RightHand) && outputReactorDataCoroutine == null)
                     {
-                        outputReactorDataCoroutine = UWE.CoroutineHost.StartCoroutine(OutputReactorData());
+                        outputReactorDataCoroutine = MainPatcher.Instance.StartCoroutine(OutputReactorData());
                     }
                 }
                 else
@@ -482,7 +482,7 @@ namespace AVS.VehicleComponents
                 Logger.Warn("MaterialReactor: No saved data found, skipping load.");
                 return;
             }
-            UWE.CoroutineHost.StartCoroutine(LoadSaveDict(saveDict));
+            MainPatcher.Instance.StartCoroutine(LoadSaveDict(saveDict));
         }
         private List<Tuple<TechType, float>> GetSaveDict()
         {
@@ -533,7 +533,7 @@ namespace AVS.VehicleComponents
                     reactorBattery.SetCharge(reactant.Item2);
                     continue;
                 }
-                yield return UWE.CoroutineHost.StartCoroutine(AddMaterial(reactant.Item1));
+                yield return MainPatcher.Instance.StartCoroutine(AddMaterial(reactant.Item1));
             }
             Dictionary<InventoryItem, float> changesPending = new Dictionary<InventoryItem, float>();
             foreach (var reactant in currentEnergies)

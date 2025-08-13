@@ -49,7 +49,7 @@ namespace AVS.Patches
                     added: true
                 );
                 UpgradeRegistrar.OnAddActions.ForEach(x => x(addedParams));
-                UWE.CoroutineHost.StartCoroutine(BroadcastMessageSoon());
+                MainPatcher.Instance.StartCoroutine(BroadcastMessageSoon());
             }
         }
         public void OnSlotUnequipped(string slot, InventoryItem item)
@@ -69,7 +69,7 @@ namespace AVS.Patches
                     added: false
                 );
                 UpgradeRegistrar.OnAddActions.ForEach(x => x(addedParams));
-                UWE.CoroutineHost.StartCoroutine(BroadcastMessageSoon());
+                MainPatcher.Instance.StartCoroutine(BroadcastMessageSoon());
             }
         }
         internal void BumpUpgrade(KeyValuePair<string, InventoryItem> upgrade)

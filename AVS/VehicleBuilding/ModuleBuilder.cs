@@ -84,7 +84,7 @@ namespace AVS
 
         public void BuildAllSlots()
         {
-            UWE.CoroutineHost.StartCoroutine(BuildAllSlotsInternal());
+            MainPatcher.Instance.StartCoroutine(BuildAllSlotsInternal());
         }
         public IEnumerator BuildAllSlotsInternal()
         {
@@ -155,7 +155,7 @@ namespace AVS
         }
         public void GrabComponents()
         {
-            UWE.CoroutineHost.StartCoroutine(BuildGenericModulesASAP());
+            MainPatcher.Instance.StartCoroutine(BuildGenericModulesASAP());
         }
         private IEnumerator BuildGenericModulesASAP()
         {

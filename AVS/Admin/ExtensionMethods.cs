@@ -95,12 +95,12 @@ namespace AVS
                 return;
             }
             VehicleDockingBay thisBay = theseBays.First();
-            UWE.CoroutineHost.StartCoroutine(thisBay.MaybeToggleCyclopsCollision());
+            vehicle.StartCoroutine(thisBay.MaybeToggleCyclopsCollision());
             thisBay.vehicle_docked_param = false;
             var toUndock = vehicle.liveMixin.IsAlive() && !Admin.ConsoleCommands.isUndockConsoleCommand
                 ? Player.main
                 : null;
-            UWE.CoroutineHost.StartCoroutine(vehicle.Undock(toUndock, thisBay.transform.position.y));
+            vehicle.StartCoroutine(vehicle.Undock(toUndock, thisBay.transform.position.y));
             SkyEnvironmentChanged.Broadcast(vehicle.gameObject, (GameObject?)null);
             thisBay.dockedVehicle = null;
             UndockAvsVehicle(vehicle);

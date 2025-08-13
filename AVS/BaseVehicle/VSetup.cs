@@ -134,7 +134,7 @@ namespace AVS.BaseVehicle
             }
             if (Com.Batteries != null && Com.Batteries.Count() > 0)
             {
-                UWE.CoroutineHost.StartCoroutine(GiveUsABatteryOrGiveUsDeath());
+                StartCoroutine(GiveUsABatteryOrGiveUsDeath());
             }
         }
 

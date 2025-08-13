@@ -17,7 +17,7 @@ namespace AVS.Assets
         private PrefabLoader(TechType techtype)
         {
             Techtype = techtype;
-            Coroutine = UWE.CoroutineHost.StartCoroutine(LoadResource());
+            Coroutine = MainPatcher.Instance.StartCoroutine(LoadResource());
         }
 
         internal static void SignalCanLoad()
@@ -88,7 +88,7 @@ namespace AVS.Assets
                 }
                 else if (cor == null) // if we need to get instance
                 {
-                    cor = UWE.CoroutineHost.StartCoroutine(CraftData.InstantiateFromPrefabAsync(Techtype, RequestResult, false));
+                    cor = MainPatcher.Instance.StartCoroutine(CraftData.InstantiateFromPrefabAsync(Techtype, RequestResult, false));
                     yield return cor;
                     cor = null;
                 }

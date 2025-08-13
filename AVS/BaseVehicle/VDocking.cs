@@ -160,7 +160,7 @@ namespace AVS.BaseVehicle
                     yield return new WaitForSeconds(5f);
                     useRigidbody.detectCollisions = true;
                 }
-                UWE.CoroutineHost.StartCoroutine(EnsureCollisionsEnabledEventually());
+                MainPatcher.Instance.StartCoroutine(EnsureCollisionsEnabledEventually());
             }
             SafeSignal(OnVehicleUndocked, nameof(OnVehicleUndocked));
         }

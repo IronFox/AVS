@@ -87,9 +87,9 @@ namespace AVS
             //NautilusConfig = Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions<AVSNautilusConfig>();
             PrePatch();
             PrefabLoader.SignalCanLoad();
-            PrefabLoader.Request(TechType.Exosuit);
+            PrefabLoader.Request(CoroutineHost.From(this), TechType.Exosuit);
             _ = SeamothHelper.Coroutine;
-            PrefabLoader.Request(TechType.Aquarium);
+            PrefabLoader.Request(CoroutineHost.From(this), TechType.Aquarium);
         }
         /// <inheritdoc/>
         public virtual void Start()
@@ -97,7 +97,7 @@ namespace AVS
             Patch();
             PostPatch();
             CompatChecker.CheckAll();
-            UWE.CoroutineHost.StartCoroutine(AVS.Logger.MakeAlerts());
+            StartCoroutine(AVS.Logger.MakeAlerts());
 
         }
 
@@ -115,7 +115,7 @@ namespace AVS
                 yield break;
             }
             LogWriter.Default.Write("CollectPrefabsForBuilderReference started.");
-            UWE.CoroutineHost.StartCoroutine(CollectPrefabsForBuilderReference());
+            StartCoroutine(CollectPrefabsForBuilderReference());
             //LogWriter.Default.Write("Assets.StaticAssets.GetSprites()");
             //Assets.StaticAssets.GetSprites();
             LogWriter.Default.Write("Assets.AVSFabricator.CreateAndRegister()");
@@ -125,10 +125,10 @@ namespace AVS
 
             LogWriter.Default.Write("Admin.Utils.RegisterDepthModules()");
             Admin.Utils.RegisterDepthModules();
-            //AVS.Logger.Log("UWE.CoroutineHost.StartCoroutine(VoiceManager.LoadAllVoices())");
-            //GetVoices = UWE.CoroutineHost.StartCoroutine(VoiceManager.LoadAllVoices());
-            //AVS.Logger.Log("UWE.CoroutineHost.StartCoroutine(EngineSoundsManager.LoadAllVoices())");
-            //GetEngineSounds = UWE.CoroutineHost.StartCoroutine(DynamicClipLoader.LoadAllVoices());
+            //AVS.Logger.Log("MainPatcher.Instance.StartCoroutine(VoiceManager.LoadAllVoices())");
+            //GetVoices = MainPatcher.Instance.StartCoroutine(VoiceManager.LoadAllVoices());
+            //AVS.Logger.Log("MainPatcher.Instance.StartCoroutine(EngineSoundsManager.LoadAllVoices())");
+            //GetEngineSounds = MainPatcher.Instance.StartCoroutine(DynamicClipLoader.LoadAllVoices());
             LogWriter.Default.Write("PrePatch finished.");
         }
         /// <summary>

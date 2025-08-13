@@ -11,7 +11,7 @@ namespace AVS.StorageComponents
 
         public void Awake()
         {
-            UWE.CoroutineHost.StartCoroutine(GetSeamothBitsASAP());
+            MainPatcher.Instance.StartCoroutine(GetSeamothBitsASAP());
         }
         public IEnumerator GetSeamothBitsASAP()
         {

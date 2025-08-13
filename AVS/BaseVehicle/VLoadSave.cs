@@ -171,7 +171,7 @@ namespace AVS.BaseVehicle
             if (PrefabID.ReadData(BasicSaveFileNamePrefix, GetOrCreateData(), Log))
                 OnDataLoaded();
 
-            UWE.CoroutineHost.StartCoroutine(SaveLoad.AvsModularStorageSaveLoad.DeserializeAllModularStorage(this));
+            StartCoroutine(SaveLoad.AvsModularStorageSaveLoad.DeserializeAllModularStorage(this));
         }
 
         /// <summary>

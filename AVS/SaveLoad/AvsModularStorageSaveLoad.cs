@@ -67,7 +67,7 @@ namespace AVS.SaveLoad
                     var container = result?.item?.GetComponent<SeamothStorageContainer>();
                     if (container != null && container.container != null)
                     {
-                        UWE.CoroutineHost.StartCoroutine(LoadThisModularStorage(mv, container.container, i));
+                        MainPatcher.Instance.StartCoroutine(LoadThisModularStorage(mv, container.container, i));
                     }
                 }
             }
@@ -102,7 +102,7 @@ namespace AVS.SaveLoad
                         // then we have a battery xor we are a battery
                         try
                         {
-                            UWE.CoroutineHost.StartCoroutine(SaveLoadUtils.ReloadBatteryPower(thisItem, item.Item2, item.Item3));
+                            MainPatcher.Instance.StartCoroutine(SaveLoadUtils.ReloadBatteryPower(thisItem, item.Item2, item.Item3));
                         }
                         catch (Exception e)
                         {

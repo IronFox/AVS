@@ -77,10 +77,10 @@ namespace AVS.Admin
         //{
         //	VoiceManager.LogAllAvailableVoices();
         //}
-        public void OnConsoleCommand_vfspawncodes(NotificationCenter.Notification _)
-        {
-            UWE.CoroutineHost.StartCoroutine(ListSpawnCodes());
-        }
+        //public void OnConsoleCommand_vfspawncodes(NotificationCenter.Notification _)
+        //{
+        //    MainPatcher.Instance.StartCoroutine(ListSpawnCodes());
+        //}
         private static IEnumerator ListSpawnCodes()
         {
             List<string> allCodes = new List<string>();

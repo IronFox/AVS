@@ -140,7 +140,7 @@ namespace AVS.VehicleTypes
             {
                 if (Com.ColorPicker.transform.Find("EditScreen") == null)
                 {
-                    UWE.CoroutineHost.StartCoroutine(SetupColorPicker(Com.ColorPicker));
+                    MainPatcher.Instance.StartCoroutine(SetupColorPicker(Com.ColorPicker));
                 }
                 else
                 {
@@ -321,7 +321,7 @@ namespace AVS.VehicleTypes
                     active.transform.Find("InputField").GetComponent<uGUI_InputField>().text = GetName();
                     active.transform.Find("InputField/Text").GetComponent<TMPro.TextMeshProUGUI>().text = GetName();
                 }
-                UWE.CoroutineHost.StartCoroutine(TrySpawnFabricator());
+                MainPatcher.Instance.StartCoroutine(TrySpawnFabricator());
             }
             base.SubConstructionComplete();
             PaintNameDefaultStyle(GetName());
@@ -358,7 +358,7 @@ namespace AVS.VehicleTypes
         IEnumerator SpawnFabricator(Transform location)
         {
             TaskResult<GameObject> result = new TaskResult<GameObject>();
-            yield return UWE.CoroutineHost.StartCoroutine(CraftData.InstantiateFromPrefabAsync(TechType.Fabricator, result, false));
+            yield return MainPatcher.Instance.StartCoroutine(CraftData.InstantiateFromPrefabAsync(TechType.Fabricator, result, false));
             fabricator = result.Get();
             fabricator.GetComponent<SkyApplier>().enabled = true;
             fabricator.transform.SetParent(transform);
@@ -509,7 +509,7 @@ namespace AVS.VehicleTypes
 
             if (console == null)
             {
-                yield return UWE.CoroutineHost.StartCoroutine(Builder.BeginAsync(TechType.BaseUpgradeConsole));
+                yield return MainPatcher.Instance.StartCoroutine(Builder.BeginAsync(TechType.BaseUpgradeConsole));
                 Builder.ghostModel.GetComponentInChildren<BaseGhost>().OnPlace();
                 console = Resources.FindObjectsOfTypeAll<BaseUpgradeConsoleGeometry>().ToList().Find(x => x.gameObject.name.Contains("Short")).gameObject;
                 Builder.End();

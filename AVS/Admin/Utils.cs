@@ -171,7 +171,7 @@ namespace AVS.Admin
                     PDAEncyclopedia.mapping.Add(data.key, data);
                 }
             }
-            UWE.CoroutineHost.StartCoroutine(AddEncyclopediaEntryInternal());
+            MainPatcher.Instance.StartCoroutine(AddEncyclopediaEntryInternal());
         }
     }
 }
