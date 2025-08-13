@@ -39,7 +39,8 @@ namespace AVS
             var instList = instructions.ToList();
 
             int index = instList.FindIndexOf(i => i.opcode == OpCodes.Callvirt && i.operand.ToString().Contains("Void SetIcon(Sprite)"));
-
+            if (index < 0)
+                index = instList.FindIndexOf(i => i.opcode == OpCodes.Callvirt && i.operand.ToString().Contains("Void SetIcon(UnityEngine.Sprite)"));
             if (index < 0)
             {
                 LogWriter.Default.Error("[uGUI_PingsPatcher] Failed to find SetIcon method in uGUI_Pings.OnAdd.");
