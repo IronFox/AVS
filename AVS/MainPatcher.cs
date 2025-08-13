@@ -87,9 +87,9 @@ namespace AVS
             //NautilusConfig = Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions<AVSNautilusConfig>();
             PrePatch();
             PrefabLoader.SignalCanLoad();
-            PrefabLoader.Request(CoroutineHost.From(this), TechType.Exosuit);
+            PrefabLoader.Request(TechType.Exosuit);
             _ = SeamothHelper.Coroutine;
-            PrefabLoader.Request(CoroutineHost.From(this), TechType.Aquarium);
+            PrefabLoader.Request(TechType.Aquarium);
         }
         /// <inheritdoc/>
         public virtual void Start()
