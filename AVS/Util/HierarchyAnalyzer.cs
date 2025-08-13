@@ -145,7 +145,7 @@ namespace AVS.Util
 
         internal static string C2S(Component c)
         {
-            return $"{c.GetType().Name} '{c.name}' ids=[{c.GetInstanceID()},{c.gameObject.GetInstanceID()}]";
+            return $"{c.GetType().Name} '{c.name}' ids={{iid:{c.GetInstanceID()},oiid:{c.gameObject.GetInstanceID()}}}";
         }
 
     }
@@ -232,7 +232,12 @@ namespace AVS.Util
         internal void SetComponentProperties(Component c)
         {
             SetObjectProperties(c);
-            Add("GameObject.InstanceId", new JsonValue(c.gameObject.GetInstanceID(), Guard));
+            if (c is Transform)
+            {
+                Add("GameObject.InstanceId", new JsonValue(c.gameObject.GetInstanceID(), Guard));
+                Add("GameObject.layer", new JsonValue(c.gameObject.layer, Guard));
+                Add("GameObject.activeSelf", new JsonValue(c.gameObject.activeSelf, Guard));
+            }
         }
         internal void SetObjectProperties(UnityEngine.Object o)
         {
