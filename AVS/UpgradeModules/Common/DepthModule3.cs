@@ -1,5 +1,6 @@
 ﻿using AVS.Configuration;
 using AVS.Localization;
+using UnityEngine;
 //using AVS.Localization;
 
 namespace AVS.UpgradeModules.Common
@@ -24,7 +25,7 @@ namespace AVS.UpgradeModules.Common
                 .Done();
         /// <inheritdoc/>
 
-        public override Atlas.Sprite Icon => MainPatcher.Instance.DepthModule3Icon;
+        public override Sprite Icon => MainPatcher.Instance.DepthModule3Icon;
         /// <inheritdoc/>
         public override void OnAdded(AddActionParams param)
         {

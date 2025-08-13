@@ -34,7 +34,7 @@ namespace AVS.Composition
         /// Entry/exit hatches for the submarine. Must not be null or empty.
         /// </param>
         /// <param name="collisionModel">
-        /// Object containing all colliders. Must not be null. Should not be the same as the vehicle object.
+        /// Object containing all colliders. Must not be null. Must not contain the vehicle object.
         /// </param>
         /// <param name="batteries">
         /// Power cell definitions. Optional. Can be null or empty.
@@ -85,7 +85,7 @@ namespace AVS.Composition
             GameObject modulesRootObject,
             IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             AbstractEngine engine,
-            GameObject collisionModel,
+            GameObject[] collisionModel,
             IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? batteries = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,

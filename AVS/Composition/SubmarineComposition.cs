@@ -107,7 +107,7 @@ namespace AVS.Composition
         /// <param name="fabricator">Optional pre-install fabricator parent game object. If not null, a fabricator will be automatically created as child of this game object.</param>
         /// <param name="colorPicker">Optional color picker console game object to construct necessary components in.</param>
         /// <param name="respawnPoint">Optional respawn point in case the character dies. If null, a respawn point will automatically be created in the vehicle's root object.</param>
-        /// <param name="collisionModel">Object containing all colliders. Must not be null. Should not be the same as the vehicle object.</param>
+        /// <param name="collisionModel">Objects containing all colliders. Must not be null. Must not contain the vehicle object.</param>
         /// <param name="batteries">Power cell definitions. Optional.</param>
         /// <param name="upgrades">Upgrade module definitions. Optional.</param>
         /// <param name="boundingBoxCollider">Single box collider for the vehicle. Can be null.</param>
@@ -131,7 +131,7 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.Helm> helms,
             IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             AbstractEngine engine,
-            GameObject collisionModel,
+            GameObject[] collisionModel,
             IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? floodlights = null,
             IReadOnlyList<Light>? interiorLights = null,
             IReadOnlyList<GameObject>? navigationPortLights = null,

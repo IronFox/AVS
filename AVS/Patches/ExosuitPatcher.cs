@@ -94,7 +94,7 @@ namespace AVS.Patches
                 return;
             }
             int slotIDToTest = isJank ? slotID - 2 : slotID;
-            if (!Player.main.GetQuickSlotKeyDown(slotIDToTest) && !Player.main.GetLeftHandDown())
+            if (!Player.main.GetQuickSlotKeyDown(slotIDToTest) && !GameInput.GetButtonHeld(GameInput.Button.LeftHand))
             {
                 // we didn't actually hit the slot button!
                 // (or hit the left mouse button!)

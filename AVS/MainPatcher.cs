@@ -1,8 +1,8 @@
 ﻿using AVS.Assets;
-using AVS.Crafting;
 using AVS.Log;
 using BepInEx;
 using HarmonyLib;
+using Nautilus.Handlers;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -36,19 +36,19 @@ namespace AVS
         /// <summary>
         /// The icon for the Depth Module 1 upgrade.
         /// </summary>
-        public Atlas.Sprite DepthModule1Icon => Images.DepthModule1Icon.AtlasSprite;
+        public Sprite DepthModule1Icon => Images.DepthModule1Icon.Sprite;
         /// <summary>
         /// The icon for the Depth Module 2 upgrade.
         /// </summary>
-        public Atlas.Sprite DepthModule2Icon => Images.DepthModule2Icon.AtlasSprite;
+        public Sprite DepthModule2Icon => Images.DepthModule2Icon.Sprite;
         /// <summary>
         /// The icon for the Depth Module 3 upgrade.
         /// </summary>
-        public Atlas.Sprite DepthModule3Icon => Images.DepthModule3Icon.AtlasSprite;
+        public Sprite DepthModule3Icon => Images.DepthModule3Icon.Sprite;
         /// <summary>
         /// The icon to use for the parent node of all depth modules in the crafting tree.
         /// </summary>
-        public Atlas.Sprite DepthModuleNodeIcon => Images.DepthModuleNodeIcon.AtlasSprite;
+        public Sprite DepthModuleNodeIcon => Images.DepthModuleNodeIcon.Sprite;
 
         /// <summary>
         /// Queries the main singleton instance of <see cref="MainPatcher"/>.
@@ -119,9 +119,9 @@ namespace AVS
             //LogWriter.Default.Write("Assets.StaticAssets.GetSprites()");
             //Assets.StaticAssets.GetSprites();
             LogWriter.Default.Write("Assets.AVSFabricator.CreateAndRegister()");
-            Assets.AvsFabricator.CreateAndRegister(Images.FabricatorIcon.AtlasSprite);
-            LogWriter.Default.Write("Admin.CraftTreeHandler.AddFabricatorMenus()");
-            CraftTreeHandler.AddFabricatorMenus();
+            Assets.AvsFabricator.CreateAndRegister(Images.FabricatorIcon.Sprite);
+            //LogWriter.Default.Write("Admin.CraftTreeHandler.AddFabricatorMenus()");
+            //CraftTreeHandler.AddFabricatorMenus();
 
             LogWriter.Default.Write("Admin.Utils.RegisterDepthModules()");
             Admin.Utils.RegisterDepthModules();
@@ -194,7 +194,8 @@ namespace AVS
             }
             LogWriter.Default.Write("Registering SaveUtils events.");
             Nautilus.Utility.SaveUtils.RegisterOnQuitEvent(SetWorldNotLoaded);
-            Nautilus.Utility.SaveUtils.RegisterOnFinishLoadingEvent(SetWorldLoaded);
+            WaitScreenHandler.RegisterLateLoadTask(nameof(SetWorldLoaded), t => SetWorldLoaded());
+            //Nautilus.Utility.SaveUtils.RegisterOnFinishLoadingEvent(SetWorldLoaded);
             Nautilus.Utility.SaveUtils.RegisterOneTimeUseOnLoadEvent(OnLoadOnce);
 
             LogWriter.Default.Write("Patching...");

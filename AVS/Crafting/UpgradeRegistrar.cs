@@ -554,7 +554,7 @@ namespace AVS.Crafting
                 if (node.Children.Count > 0)
                     throw new InvalidOperationException($"CraftTreeHandler: Cannot add an upgrade to a folder that already contains folders. Folder: {node.GetPath()}");
 
-                var icon = SpriteHelper.CreateSpriteFromAtlasSprite(upgrade.Icon);
+                var icon = upgrade.Icon;
                 if (icon != null)
                     UpgradeIcons.Add(upgrade.ClassId, icon);
                 else

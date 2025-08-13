@@ -34,14 +34,7 @@ namespace AVS.Configuration
                 throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be a positive integer.");
             }
         }
-        /// <summary>
-        /// Converts this ingredient to a <see cref="CraftData.Ingredient"/>.
-        /// </summary>
-        /// <returns>Converted ingredient</returns>
-        public CraftData.Ingredient ToIngredient()
-        {
-            return new CraftData.Ingredient(Type, Amount);
-        }
+
     }
 
     /// <summary>
@@ -347,7 +340,7 @@ namespace AVS.Configuration
             var recipeData = new RecipeData();
             foreach (var ingredient in IngredientsDictionary)
             {
-                recipeData.Ingredients.Add(new CraftData.Ingredient(ingredient.Key, ingredient.Value));
+                recipeData.Ingredients.Add(new Ingredient(ingredient.Key, ingredient.Value));
             }
             return recipeData;
         }

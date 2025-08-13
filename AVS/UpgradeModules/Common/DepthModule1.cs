@@ -1,5 +1,6 @@
 ﻿using AVS.Configuration;
 using AVS.Localization;
+using UnityEngine;
 //using AVS.Localization;
 
 namespace AVS.UpgradeModules.Common
@@ -26,7 +27,7 @@ namespace AVS.UpgradeModules.Common
                 .Add(TechType.AluminumOxide, 3)
                 .Done();
         /// <inheritdoc/>
-        public override Atlas.Sprite Icon => MainPatcher.Instance.DepthModule1Icon;
+        public override Sprite Icon => MainPatcher.Instance.DepthModule1Icon;
 
         /// <inheritdoc/>
         public override void OnAdded(AddActionParams param)

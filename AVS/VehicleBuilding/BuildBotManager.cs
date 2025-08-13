@@ -19,10 +19,12 @@ namespace AVS
             AvsVehicle modVehicle = mv.GetComponent<AvsVehicle>();
             if (modVehicle != null)
             {
-                foreach (Transform child in modVehicle.collisionModel.transform.GetComponentsInChildren<Transform>())
-                {
-                    bbbpList.Add(child);
-                }
+                if (modVehicle.collisionModel != null)
+                    foreach (var go in modVehicle.collisionModel)
+                        foreach (Transform child in go.transform.GetComponentsInChildren<Transform>())
+                        {
+                            bbbpList.Add(child);
+                        }
             }
             else
             {
