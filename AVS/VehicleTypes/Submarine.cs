@@ -629,8 +629,6 @@ namespace AVS.VehicleTypes
             BeginHelmControl(Com.Helms[helmIndex]);
         }
 
-
-
         /// <inheritdoc/>
         internal protected override void DoExitRoutines()
         {

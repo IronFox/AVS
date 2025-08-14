@@ -170,6 +170,11 @@ namespace AVS.BaseVehicle
         }
 
         /// <summary>
+        /// Begins helm control at the main helm of the vehicle.
+        /// </summary>
+        public void BeginMainHelmControl() => BeginHelmControl(GetMainHelm());
+
+        /// <summary>
         /// Enters the player into the sub, updates the quickbar and notifies the player of the piloting status.
         /// </summary>
         public void BeginHelmControl(

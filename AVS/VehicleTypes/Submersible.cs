@@ -52,7 +52,6 @@ namespace AVS.VehicleTypes
         }
 
 
-
         /// <inheritdoc/>
         public override Helm GetMainHelm()
             => Com.PilotSeat;
