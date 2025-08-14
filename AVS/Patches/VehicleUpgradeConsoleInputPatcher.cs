@@ -46,7 +46,8 @@ namespace AVS.Patches
             {
                 if (mv.upgradesInput == __instance)
                 {
-                    ModuleBuilder.Main.BackgroundSprite = mv.Config.ModuleBackgroundImage;
+                    ModuleBuilder.Main.SignalOpened(__instance, mv);
+
                     break;
                 }
             }

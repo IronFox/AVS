@@ -27,6 +27,11 @@
         public Image FabricatorIcon { get; }
 
         /// <summary>
+        /// Background image for the updates module panel.
+        /// </summary>
+        public Image ModulesBackground { get; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="PatcherImages"/> class with specified images for depth module
         /// icons.
         /// </summary>
@@ -34,7 +39,8 @@
                              Image depthModule2Icon,
                              Image depthModule3Icon,
                              Image depthModuleNodeIcon,
-                             Image fabricatorIcon
+                             Image fabricatorIcon,
+                             Image modulesBackground
                              )
         {
             FabricatorIcon = fabricatorIcon;
@@ -42,6 +48,7 @@
             DepthModule2Icon = depthModule2Icon;
             DepthModule3Icon = depthModule3Icon;
             DepthModuleNodeIcon = depthModuleNodeIcon;
+            ModulesBackground = modulesBackground;
         }
     }
 }

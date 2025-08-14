@@ -1,5 +1,4 @@
-﻿using AVS.Assets;
-using AVS.BaseVehicle;
+﻿using AVS.BaseVehicle;
 using AVS.MaterialAdapt;
 using AVS.VehicleComponents;
 using System;
@@ -55,7 +54,7 @@ namespace AVS.Configuration
         /// <summary>
         /// The image to show in the background of the vehicle's module menu.
         /// </summary>
-        public Sprite? ModuleBackgroundImage { get; } = SpriteHelper.GetSpriteRaw("Sprites/VFModuleBackground.png");
+        public Sprite? ModuleBackgroundImage { get; }
         /// <summary>
         /// Type that, if unlocked, also automatically unlocks this vehicle for crafting.
         /// </summary>
@@ -327,7 +326,7 @@ namespace AVS.Configuration
             EncyclopediaEntry = encyclopediaEntry;
             EncyclopediaImage = encyclopediaImage;
             CraftingSprite = craftingSprite;
-            ModuleBackgroundImage = moduleBackgroundImage ?? SpriteHelper.GetSpriteRaw("Sprites/VFModuleBackground.png");
+            ModuleBackgroundImage = moduleBackgroundImage;
             UnlockedWith = unlockedWith;
             MaxHealth = maxHealth;
             CrushDamage = crushDamage ?? (maxHealth / 15);
