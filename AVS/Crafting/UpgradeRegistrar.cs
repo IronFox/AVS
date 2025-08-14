@@ -344,6 +344,15 @@ namespace AVS.Crafting
     /// </summary>
     public static class UpgradeRegistrar
     {
+        private static Dictionary<TechType, AvsVehicleModule> upgradeTechTypeMap = new Dictionary<TechType, AvsVehicleModule>();
+        private static Dictionary<string, AvsVehicleModule> upgradeClassIdMap = new Dictionary<string, AvsVehicleModule>();
+        /// <summary>
+        /// Queries a map TechType -> AvsVehicleModule for all registered upgrades.
+        /// </summary>
+        public static IReadOnlyDictionary<TechType, AvsVehicleModule> UpgradeTechTypeMap => upgradeTechTypeMap;
+        public static IReadOnlyDictionary<string, AvsVehicleModule> UpgradeClassIdMap => upgradeClassIdMap;
+
+
         /// <summary>
         /// Dictionary of upgrade icons, indexed by upgrade ClassId.
         /// </summary>
@@ -553,6 +562,11 @@ namespace AVS.Crafting
             {
                 if (node.Children.Count > 0)
                     throw new InvalidOperationException($"CraftTreeHandler: Cannot add an upgrade to a folder that already contains folders. Folder: {node.GetPath()}");
+                if (upgradeClassIdMap.ContainsKey(upgrade.ClassId))
+                {
+                    LogWriter.Default.Error($"UpgradeRegistrar Error: {nameof(AvsVehicleModule)} {upgrade.ClassId} is already registered! Please use a unique ClassId for each upgrade.");
+                    return default;
+                }
 
                 var icon = upgrade.Icon;
                 if (icon != null)
@@ -570,6 +584,9 @@ namespace AVS.Crafting
                 }
                 RegisterUpgradeMethods(upgrade, compat, ref utt, isPdaRegistered);
                 upgrade.TechTypes = utt;
+                foreach (var t in utt.AllNotNone)
+                    upgradeTechTypeMap[t] = upgrade;
+                upgradeClassIdMap[upgrade.ClassId] = upgrade;
                 node.Modules.Add(upgrade);
                 return utt;
             }
