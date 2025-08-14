@@ -332,7 +332,7 @@ namespace AVS.Configuration
         /// </summary>
         /// <remarks>The method creates a new <see cref="RecipeData"/> object and populates its
         /// ingredients list based on the current object's <c>IngredientsDictionary</c>. Each entry in the dictionary is
-        /// transformed into a <see cref="CraftData.Ingredient"/> and added to the resulting recipe.</remarks>
+        /// transformed into a <see cref="Ingredient"/> and added to the resulting recipe.</remarks>
         /// <returns>A <see cref="RecipeData"/> instance containing the ingredients from the current object's
         /// <c>IngredientsDictionary</c>.</returns>
         public RecipeData ToRecipeData()

@@ -1,16 +1,14 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("AVS")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Aquatic Vehicle System")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("https://www.nexusmods.com/subnautica/mods/859")]
 [assembly: AssemblyProduct("AVS")]
-[assembly: AssemblyCopyright("Copyright ©  2021")]
+[assembly: AssemblyCopyright("Copyright ©  2025")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

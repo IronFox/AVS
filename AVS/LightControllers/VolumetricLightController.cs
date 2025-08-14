@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace AVS
 {
-    public class VolumetricLightController : MonoBehaviour, IPlayerListener, ILightsStatusListener
+    internal class VolumetricLightController : MonoBehaviour, IPlayerListener, ILightsStatusListener
     {
         private AvsVehicle MV => GetComponent<AvsVehicle>();
         protected virtual void Awake()

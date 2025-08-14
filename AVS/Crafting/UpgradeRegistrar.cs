@@ -347,9 +347,12 @@ namespace AVS.Crafting
         private static Dictionary<TechType, AvsVehicleModule> upgradeTechTypeMap = new Dictionary<TechType, AvsVehicleModule>();
         private static Dictionary<string, AvsVehicleModule> upgradeClassIdMap = new Dictionary<string, AvsVehicleModule>();
         /// <summary>
-        /// Queries a map TechType -> AvsVehicleModule for all registered upgrades.
+        /// Global map TechType -> AvsVehicleModule for all registered upgrades.
         /// </summary>
         public static IReadOnlyDictionary<TechType, AvsVehicleModule> UpgradeTechTypeMap => upgradeTechTypeMap;
+        /// <summary>
+        /// Global map ClassId -> AvsVehicleModule for all registered upgrades.
+        /// </summary>
         public static IReadOnlyDictionary<string, AvsVehicleModule> UpgradeClassIdMap => upgradeClassIdMap;
 
 

@@ -536,7 +536,7 @@ namespace AVS.BaseVehicle
         /// Broadcasts a new player status to all components that implement <see cref="IPlayerListener" />.
         /// </summary>
         /// <param name="newStatus">New status to broadcast</param>
-        public void NotifyStatus(PlayerStatus newStatus)
+        internal void NotifyStatus(PlayerStatus newStatus)
         {
             foreach (var component in GetComponentsInChildren<IPlayerListener>())
             {

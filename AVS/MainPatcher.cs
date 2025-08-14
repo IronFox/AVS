@@ -61,7 +61,17 @@ namespace AVS
         /// <returns></returns>
         protected abstract PatcherImages LoadImages();
 
+        /// <summary>
+        /// Unique identifier for the plugin.
+        /// </summary>
         public abstract string PluginId { get; }
+
+        /// <summary>
+        /// Prefix used for registered identifiers so to not collide with other mods.
+        /// </summary>
+        public abstract string ClassPrefix { get; }
+
+
         //internal static VFConfig VFConfig { get; private set; }
         //internal static AVSNautilusConfig NautilusConfig { get; private set; }
 

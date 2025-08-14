@@ -1,11 +1,8 @@
-﻿using AVS.BaseVehicle;
-using AVS.Crafting;
+﻿using AVS.Crafting;
 using AVS.Localization;
 using AVS.Log;
 using AVS.UpgradeModules;
 using AVS.UpgradeModules.Common;
-using AVS.Util;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,7 +52,7 @@ namespace AVS.Admin
             LogWriter.Default.Write(
                 "Registering depth modules");
             var folder = Node.Create(
-                "DepthModules",
+                MainPatcher.Instance.ClassPrefix + "DepthModules",
                 Translator.Get(TranslationKey.Fabricator_Node_DepthModules),
                 MainPatcher.Instance.DepthModuleNodeIcon);
 
@@ -80,49 +77,6 @@ namespace AVS.Admin
                 string.Join(", ", DepthModuleBase.AllDepthModuleTypes.Select(x => x.ToString())));
         }
 
-
-        /// <summary>
-        /// Evaluates the depth upgrade modules installed on the specified vehicle and adjusts its crush depth
-        /// accordingly.
-        /// </summary>
-        /// <remarks>This method checks the installed depth upgrade modules on the provided vehicle and
-        /// determines the highest level of depth module present. Based on the detected module level, it calculates the
-        /// additional crush depth and applies it to the vehicle. If the vehicle is not compatible with depth upgrades,
-        /// a message is displayed to the user.</remarks>
-        /// <param name="param">The parameters containing the vehicle to evaluate and its associated data.</param>
-        public static void EvaluateDepthModules(AddActionParams param)
-        {
-            var mv = param.Vehicle.SafeGetComponent<AvsVehicle>();
-            if (mv == null)
-            {
-                Subtitles.Add(Translator.Get(TranslationKey.Error_UpgradeNotAddable_Incompatible));
-                return;
-            }
-            // Iterate over all upgrade modules,
-            // in order to determine our max depth module level
-            int maxDepthModuleLevel = 0;
-            List<string> upgrades = mv.GetCurrentUpgradeNames();
-            foreach (var upgrade in upgrades)
-            {
-                if (string.Equals(upgrade, "AvsDepthModule1(Clone)", StringComparison.OrdinalIgnoreCase))
-                {
-                    maxDepthModuleLevel = maxDepthModuleLevel < 1 ? 1 : maxDepthModuleLevel;
-                }
-                else if (string.Equals(upgrade, "AvsDepthModule2(Clone)", StringComparison.OrdinalIgnoreCase))
-                {
-                    maxDepthModuleLevel = maxDepthModuleLevel < 2 ? 2 : maxDepthModuleLevel;
-                }
-                else if (string.Equals(upgrade, "AvsDepthModule3(Clone)", StringComparison.OrdinalIgnoreCase))
-                {
-                    maxDepthModuleLevel = maxDepthModuleLevel < 3 ? 3 : maxDepthModuleLevel;
-                }
-            }
-            int extraDepthToAdd = 0;
-            extraDepthToAdd = maxDepthModuleLevel > 0 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade1 : extraDepthToAdd;
-            extraDepthToAdd = maxDepthModuleLevel > 1 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade2 : extraDepthToAdd;
-            extraDepthToAdd = maxDepthModuleLevel > 2 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade3 : extraDepthToAdd;
-            mv.GetComponent<CrushDamage>().SetExtraCrushDepth(extraDepthToAdd);
-        }
 
 
         /// <summary>

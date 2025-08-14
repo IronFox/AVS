@@ -18,7 +18,7 @@ namespace AVS
         public static bool haveWeCalledBuildAllSlots = false;
         public static bool slotExtenderIsPatched = false;
         public static bool slotExtenderHasGreenLight = false;
-        internal const string ModulePrefix = "AvsVehicleModule";
+        internal static string ModulePrefix => "AvsVehicleModule";
 
         public static bool IsModuleName(string name)
         {

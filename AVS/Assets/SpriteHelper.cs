@@ -88,7 +88,7 @@ namespace AVS.Assets
         /// </summary>
         /// <param name="name">The name of the ping sprite.</param>
         /// <param name="pt">The ping type.</param>
-        /// <param name="pingSprite">The <see cref="Atlas.Sprite"/> to register.</param>
+        /// <param name="pingSprite">The <see cref="Sprite"/> to register.</param>
         public static void RegisterPingSprite(string name, PingType pt, Sprite pingSprite)
         {
             PingSprites.Add((name, pt, pingSprite));
