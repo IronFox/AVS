@@ -45,10 +45,8 @@ namespace AVS.Util
             waterClip.clipMaterial = seamothWCP.clipMaterial;
             waterClip.gameObject.layer = seamothWCP.gameObject.layer;
 
-            var scale = 1f;// 1.12f;
-            log.Write($"Setting up WaterClipProxy with scale {scale}");
+            log.Write($"Setting up WaterClipProxy");
             localBounds.center -= target.transform.localPosition;
-            localBounds.size *= scale;
             waterClip.distanceFieldMin = localBounds.min;
             waterClip.distanceFieldMax = localBounds.max;
             waterClip.distanceFieldSize = localBounds.size;
@@ -60,7 +58,7 @@ namespace AVS.Util
 
             float originalScale = seamothWCP.transform.lossyScale.x;
 
-            float foam = waterClip.waterSurface.SafeGet(x => x.foamDistance, 5f);
+            float foam = seamothWCP.waterSurface.SafeGet(x => x.foamDistance, 5f);
             borderSizeScaled.x = foam / target.transform.lossyScale.x;
             borderSizeScaled.y = foam / target.transform.lossyScale.y;
             borderSizeScaled.z = foam / target.transform.lossyScale.z;
