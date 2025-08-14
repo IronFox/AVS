@@ -10,11 +10,21 @@ namespace AVS.SaveLoad
 {
     internal static class AvsModularStorageSaveLoad
     {
+        private class StorageItem
+        {
+            public string? techTypeAsString;
+            public float batteryCharge;
+            public string? innerBatteryTechTypeAsString;
+        }
+
+
         const string SaveFileNamePrefix = "ModSto";
         internal static string GetSaveFileName(int idx)
         {
             return $"{SaveFileNamePrefix}{idx}";
         }
+
+
         internal static void SerializeAllModularStorage(AvsVehicle mv)
         {
             for (int i = 0; i < mv.slotIDs.Length; i++)
@@ -32,7 +42,8 @@ namespace AVS.SaveLoad
         }
         public static void SaveThisModularStorage(AvsVehicle mv, ItemsContainer container, int slotID)
         {
-            List<Tuple<TechType, float, TechType>> result = new List<Tuple<TechType, float, TechType>>();
+            var log = mv.Log.Tag("ModularStorage");
+            var result = new List<StorageItem>();
             foreach (var item in container.ToList())
             {
                 TechType thisItemType = item.item.GetTechType();
@@ -44,12 +55,17 @@ namespace AVS.SaveLoad
                     batteryChargeIfApplicable = bat.charge;
                     innerBatteryTT = bat.gameObject.GetComponent<TechTag>().type;
                 }
-                result.Add(new Tuple<TechType, float, TechType>(thisItemType, batteryChargeIfApplicable, innerBatteryTT));
+                result.Add(new StorageItem
+                {
+                    techTypeAsString = thisItemType.AsString(),
+                    batteryCharge = batteryChargeIfApplicable,
+                    innerBatteryTechTypeAsString = innerBatteryTT.AsString()
+                });
             }
             mv.PrefabID.WriteReflected(
                 GetSaveFileName(slotID),
                 result,
-                mv.Log);
+                log);
         }
         internal static IEnumerator DeserializeAllModularStorage(AvsVehicle mv)
         {
@@ -75,16 +91,22 @@ namespace AVS.SaveLoad
         }
         private static IEnumerator LoadThisModularStorage(AvsVehicle mv, ItemsContainer container, int slotID)
         {
-            List<Tuple<TechType, float, TechType>>? thisStorage = null;
+            var log = mv.Log.Tag("ModularStorage");
+            List<StorageItem>? thisStorage = null;
             if (mv.PrefabID.ReadReflected(
                 GetSaveFileName(slotID),
                 out thisStorage,
-                mv.Log))
+                log))
             {
                 TaskResult<GameObject> result = new TaskResult<GameObject>();
                 foreach (var item in thisStorage)
                 {
-                    yield return CraftData.InstantiateFromPrefabAsync(item.Item1, result, false);
+                    if (!TechTypeExtensions.FromString(item.techTypeAsString, out var tt, true))
+                    {
+                        log.Error($"Failed to parse TechType '{item.techTypeAsString}' for modular storage item in slot {slotID} for {mv.NiceName()} : {mv.VehicleName}");
+                        continue;
+                    }
+                    yield return CraftData.InstantiateFromPrefabAsync(tt, result, false);
                     GameObject thisItem = result.Get();
 
                     thisItem.transform.SetParent(mv.Com.StorageRootObject.transform);
@@ -94,19 +116,22 @@ namespace AVS.SaveLoad
                     }
                     catch (Exception e)
                     {
-                        Logger.LogException($"Failed to add storage item {thisItem.name} to modular storage in slot {slotID} for {mv.name} : {mv.subName.hullName.text}", e);
+                        log.Error($"Failed to add storage item {thisItem.NiceName()} to modular storage in slot {slotID} for {mv.NiceName()} : {mv.VehicleName}", e);
                     }
                     thisItem.SetActive(false);
-                    if (item.Item2 >= 0)
+                    if (item.batteryCharge >= 0)
                     {
                         // then we have a battery xor we are a battery
                         try
                         {
-                            MainPatcher.Instance.StartCoroutine(SaveLoadUtils.ReloadBatteryPower(thisItem, item.Item2, item.Item3));
+                            if (TechTypeExtensions.FromString(item.innerBatteryTechTypeAsString, out var btt, true))
+                                MainPatcher.Instance.StartCoroutine(SaveLoadUtils.ReloadBatteryPower(thisItem, item.batteryCharge, btt));
+                            else
+                                log.Error($"Failed to parse inner battery TechType '{item.innerBatteryTechTypeAsString}' for item {thisItem.NiceName()} in modular storage slot {slotID} for {mv.NiceName()} : {mv.VehicleName}");
                         }
                         catch (Exception e)
                         {
-                            Logger.LogException($"Failed to load reload battery power for modular storage item {thisItem.name} to modular storage in slot {slotID} for {mv.name} : {mv.subName.hullName.text}", e);
+                            log.Error($"Failed to load reload battery power for modular storage item {thisItem.NiceName()} to modular storage in slot {slotID} for {mv.NiceName()} : {mv.VehicleName}", e);
                         }
                     }
                 }
