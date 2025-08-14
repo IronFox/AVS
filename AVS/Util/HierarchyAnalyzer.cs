@@ -499,8 +499,10 @@ namespace AVS.Util
                             rs.Add("row3", ToJsonNode(mat.GetRow(3), v));
                             return rs;
                         }
+                    case RectTransform t:
+                        return ToJson(t, Inspection.ExtendedNoChildren);
                     case Transform t:
-                        return ToJson(t, true);
+                        return ToJson(t, Inspection.NameOnly);
                     case Texture t:
                         return ObjectToJson(t, !typeof(Texture).IsAssignableFrom(owner.GetType()));
 
@@ -548,7 +550,12 @@ namespace AVS.Util
         /// <param name="filename">Filename to write to</param>
         public void LogToJson(Component c, string filename)
         {
-            ComponentToJson(c).SaveTo(filename);
+            try
+            {
+                ComponentToJson(c).SaveTo(filename);
+            }
+            catch { }
+
         }
         /// <summary>
         /// Logs a transform and its children as JSON to the specified file.
@@ -559,9 +566,22 @@ namespace AVS.Util
         /// <param name="filename">Filename to write to</param>
         public void LogToJson(Transform t, string filename)
         {
-            ToJson(t, false).SaveTo(filename);
+            try
+            {
+                ToJson(t, Inspection.ExtendedWithChildren).SaveTo(filename);
+            }
+            catch { }
         }
-        private JsonNode ToJson(Transform t, bool nameOnly)
+
+        private enum Inspection
+        {
+            NameOnly,
+            ExtendedNoChildren,
+            ExtendedWithChildren
+
+        }
+
+        private JsonNode ToJson(Transform t, Inspection insp)
         {
             try
             {
@@ -570,7 +590,7 @@ namespace AVS.Util
                 if (!t)
                     return new SoftNull(t.GetType(), Guard);
 
-                if (nameOnly || VisitedBefore(t))
+                if (insp == Inspection.NameOnly || VisitedBefore(t))
                     return new JsonReference(t, Guard);
 
 
@@ -585,11 +605,11 @@ namespace AVS.Util
                 {
                     components.Add(ComponentToJson(c));
                 }
-                if (t.childCount > 0)
+                if (insp == Inspection.ExtendedWithChildren && t.childCount > 0)
                 {
                     var children = o.AddArray("Children");
                     for (int i = 0; i < t.childCount; i++)
-                        children.Add(ToJson(t.GetChild(i), false));
+                        children.Add(ToJson(t.GetChild(i), Inspection.ExtendedWithChildren));
                 }
                 return o;
             }
