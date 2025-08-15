@@ -34,14 +34,7 @@ namespace AVS.Configuration
                 throw new ArgumentOutOfRangeException(nameof(amount), "Amount must be a positive integer.");
             }
         }
-        /// <summary>
-        /// Converts this ingredient to a <see cref="CraftData.Ingredient"/>.
-        /// </summary>
-        /// <returns>Converted ingredient</returns>
-        public CraftData.Ingredient ToIngredient()
-        {
-            return new CraftData.Ingredient(Type, Amount);
-        }
+
     }
 
     /// <summary>
@@ -339,7 +332,7 @@ namespace AVS.Configuration
         /// </summary>
         /// <remarks>The method creates a new <see cref="RecipeData"/> object and populates its
         /// ingredients list based on the current object's <c>IngredientsDictionary</c>. Each entry in the dictionary is
-        /// transformed into a <see cref="CraftData.Ingredient"/> and added to the resulting recipe.</remarks>
+        /// transformed into a <see cref="Ingredient"/> and added to the resulting recipe.</remarks>
         /// <returns>A <see cref="RecipeData"/> instance containing the ingredients from the current object's
         /// <c>IngredientsDictionary</c>.</returns>
         public RecipeData ToRecipeData()
@@ -347,7 +340,7 @@ namespace AVS.Configuration
             var recipeData = new RecipeData();
             foreach (var ingredient in IngredientsDictionary)
             {
-                recipeData.Ingredients.Add(new CraftData.Ingredient(ingredient.Key, ingredient.Value));
+                recipeData.Ingredients.Add(new Ingredient(ingredient.Key, ingredient.Value));
             }
             return recipeData;
         }

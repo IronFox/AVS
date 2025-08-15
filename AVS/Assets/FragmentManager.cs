@@ -250,7 +250,7 @@ namespace AVS.Assets
                 }
                 Component.Destroy(this);
             }
-            UWE.CoroutineHost.StartCoroutine(DestroyPickupable());
+            StartCoroutine(DestroyPickupable());
         }
 
         internal static void SetupScannable(GameObject obj, TechType tt)

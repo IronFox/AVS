@@ -75,7 +75,7 @@ namespace AVS
                 Logger.Log("Enrolled the " + mv.name + " : " + mv.GetName() + " : " + mv.subName);
                 if (!mv.GetComponent<VFXConstructing>() || mv.GetComponent<VFXConstructing>().constructed > 3f)
                 {
-                    UWE.CoroutineHost.StartCoroutine(LoadVehicle(mv)); // I wish I knew a good way to optionally NOT do this if this sub is being constructed rn
+                    MainPatcher.Instance.StartCoroutine(LoadVehicle(mv)); // I wish I knew a good way to optionally NOT do this if this sub is being constructed rn
                 }
             }
         }

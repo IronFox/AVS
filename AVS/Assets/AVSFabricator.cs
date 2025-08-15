@@ -7,12 +7,13 @@ namespace AVS.Assets
 {
     internal static class AvsFabricator
     {
-        private const string ClassID = "AvsFabricatorClassID";
+        private static string ClassID => MainPatcher.Instance.ClassPrefix + "FabricatorClassID";
         private static string DisplayName { get; } = Translator.Get(TranslationKey.Fabricator_DisplayName);
         private static string Description { get; } = Translator.Get(TranslationKey.Fabricator_Description);
         internal static CraftTree.Type TreeType { get; set; } = default;
-        internal static void CreateAndRegister(Atlas.Sprite icon)
+        internal static void CreateAndRegister(Sprite icon)
         {
+
             var Info = Nautilus.Assets.PrefabInfo.WithTechType(ClassID, DisplayName, Description)
                 .WithIcon(icon ?? SpriteManager.Get(TechType.Fabricator));
 
@@ -47,9 +48,9 @@ namespace AVS.Assets
                 craftAmount = 1,
                 Ingredients =
                 {
-                    new CraftData.Ingredient(TechType.Titanium, 1),
-                    new CraftData.Ingredient(TechType.ComputerChip, 1),
-                    new CraftData.Ingredient(TechType.Diamond, 1),
+                    new Ingredient(TechType.Titanium, 1),
+                    new Ingredient(TechType.ComputerChip, 1),
+                    new Ingredient(TechType.Diamond, 1),
                 }
             };
         }

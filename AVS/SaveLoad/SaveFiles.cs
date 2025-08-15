@@ -12,7 +12,7 @@ namespace AVS.SaveLoad
     /// <summary>
     /// Files of one save slot.
     /// </summary>
-    public class SaveFiles
+    internal class SaveFiles
     {
 
         private SaveFiles(string slot)
@@ -25,6 +25,7 @@ namespace AVS.SaveLoad
         /// Accesses the current save slot files.
         /// </summary>
         public static SaveFiles Current => OfSlot(SaveLoadManager.main.GetCurrentSlot());
+
         /// <summary>
         /// Accesses the save files of a specific slot.
         /// </summary>
@@ -33,6 +34,10 @@ namespace AVS.SaveLoad
 
 
         public static string SaveFolderName { get; } = "AVS";
+
+        /// <summary>
+        /// Save game slot identifier.
+        /// </summary>
         public string Slot { get; }
 
 
@@ -44,10 +49,10 @@ namespace AVS.SaveLoad
         /// <summary>
         /// Writes data associated with a prefab identifier to a JSON file.
         /// </summary>
-        /// <typeparam name="T"></typeparam>
-        /// <param name="prefabID"></param>
+        /// <typeparam name="T">Type of the data to write</typeparam>
+        /// <param name="prefabID">Prefab identifier to write to</param>
         /// <param name="prefix">File prefix</param>
-        /// <param name="data"></param>
+        /// <param name="data">Data to write</param>
         /// <param name="writer">Log writer for logging errors and debug information</param>
         public bool WritePrefabReflected<T>(PrefabIdentifier? prefabID, string prefix, T data, LogWriter writer)
         {
@@ -77,10 +82,11 @@ namespace AVS.SaveLoad
         /// <summary>
         /// Writes data associated with a prefab identifier to a JSON file.
         /// </summary>
-        /// <param name="prefabID"></param>
+        /// <param name="prefabID">Prefab identifier to write to</param>
         /// <param name="prefix">File prefix</param>
-        /// <param name="data"></param>
+        /// <param name="data">Data to write</param>
         /// <param name="writer">Log writer for logging errors and debug information</param>
+        /// <returns>True if the data was successfully written, false otherwise.</returns>
         public bool WritePrefabData(PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer)
         {
             var subWriter = writer.Tag($"IO");
@@ -106,7 +112,19 @@ namespace AVS.SaveLoad
             return WriteJson(fname, json, writer);
         }
 
-        internal bool WriteReflected<T>(string filename, T data, LogWriter writer)
+        /// <summary>
+        /// Serializes the specified data to JSON and writes it to a file.
+        /// </summary>
+        /// <remarks>If serialization fails, an error is logged using the provided <paramref
+        /// name="writer"/>, and the method returns <see langword="false"/>. If the file writing operation fails, the
+        /// method also returns <see langword="false"/>.</remarks>
+        /// <typeparam name="T">The type of the data to be serialized.</typeparam>
+        /// <param name="innerName">Inner file name without folder or trailing extension</param>
+        /// <param name="data">The object to serialize into JSON. Cannot be null.</param>
+        /// <param name="writer">The <see cref="LogWriter"/> instance used to log errors or other information. Cannot be null.</param>
+        /// <returns><see langword="true"/> if the JSON data was successfully written to the file; otherwise, <see
+        /// langword="false"/>.</returns>
+        internal bool WriteReflected<T>(string innerName, T data, LogWriter writer)
         {
             string json;
             try
@@ -115,16 +133,23 @@ namespace AVS.SaveLoad
             }
             catch (Exception e)
             {
-                writer.Error($"Failed to serialize json data for file {filename}", e);
+                writer.Error($"Failed to serialize json data for file {innerName}", e);
                 return false;
             }
-            return WriteJson(filename, json, writer);
+            return WriteJson(innerName, json, writer);
         }
 
-
-        internal bool ReadReflected<T>(string filename, out T? data, LogWriter writer) where T : class
+        /// <summary>
+        /// Reads JSON data from files and deserializes it into an object of type <typeparamref name="T"/>.
+        /// </summary>
+        /// <typeparam name="T">Type to deserialize from JSON</typeparam>
+        /// <param name="innerName">Inner file name without folder or trailing extension</param>
+        /// <param name="data">Deserialized data. Null if loading has failed</param>
+        /// <param name="writer">Log writer for events</param>
+        /// <returns>True if loading has succeeded and produced non-null data</returns>
+        internal bool ReadReflected<T>(string innerName, out T? data, LogWriter writer) where T : class
         {
-            data = ReadJson<T>(filename, writer);
+            data = ReadJson<T>(innerName, writer);
             return data != null;
         }
 
@@ -186,34 +211,23 @@ namespace AVS.SaveLoad
             }
         }
 
-
-        //public static T? Read<T>(Component comp, string fileTitle) where T : class
-        //    => Read(typeof(T), comp, fileTitle) as T;
-        //public static object? Read(Type type, Component comp, string fileTitle)
-        //{
-        //    if (comp == null)
-        //    {
-        //        Logger.Error($"Could not perform JsonInterface.Read because comp was null: {fileTitle}");
-        //        return default;
-        //    }
-        //    PrefabIdentifier prefabID = comp.GetComponent<PrefabIdentifier>();
-        //    if (prefabID == null)
-        //    {
-        //        Logger.Error($"Could not perform JsonInterface.Read because comp had no PrefabIdentifier: {fileTitle}");
-        //        return default;
-        //    }
-        //    return Read(type, $"{fileTitle}-{prefabID.Id}");
-        //}
-        private bool WriteJson(string filename, string json, LogWriter writer)
+        /// <summary>
+        /// Writes JSON data to files based on the provided filename.
+        /// </summary>
+        /// <param name="innerName">Inner file name without folder or trailing extension</param>
+        /// <param name="json">Serialized JSON</param>
+        /// <param name="writer">Logger to write errors to</param>
+        /// <returns>True if the file was successfully written</returns>
+        private bool WriteJson(string innerName, string json, LogWriter writer)
         {
             List<FilePath> files = new List<FilePath>();
             try
             {
-                files.AddRange(GetFiles(filename));
+                files.AddRange(GetFiles(innerName));
             }
             catch (Exception e)
             {
-                writer.Error($"Failed to convert filename '{filename}' to files", e);
+                writer.Error($"Failed to convert filename '{innerName}' to files", e);
                 return false;
             }
             string base64Hash;
@@ -262,16 +276,16 @@ namespace AVS.SaveLoad
         }
 
 
-        private T? ReadJson<T>(string filename, LogWriter writer) where T : class
+        private T? ReadJson<T>(string innerName, LogWriter writer) where T : class
         {
             List<FilePath> files = new List<FilePath>();
             try
             {
-                files.AddRange(GetFiles(filename));
+                files.AddRange(GetFiles(innerName));
             }
             catch (Exception e)
             {
-                writer.Error($"Failed to convert filename '{filename}' to files in slot {Slot}", e);
+                writer.Error($"Failed to convert filename '{innerName}' to files in slot {Slot}", e);
                 return null;
             }
 
@@ -327,7 +341,7 @@ namespace AVS.SaveLoad
                     if (base64Hash == hashToken)
                     {
                         // Parse dataJson as JToken
-                        var rs = JsonConvert.DeserializeObject<T>(dataJson) ?? throw new JsonSerializationException($"Failed to deserialize data for {filename}");
+                        var rs = JsonConvert.DeserializeObject<T>(dataJson) ?? throw new JsonSerializationException($"Failed to deserialize data for {innerName}");
                         writer.Debug($"Successfully read file {file.FullName} with length {dataJson.Length}");
                         return rs;
                     }
@@ -341,15 +355,14 @@ namespace AVS.SaveLoad
                     writer.Error($"Failed to read or parse file {file.FullName}", e);
                 }
             }
-            writer.Error($"No valid JSON data found in files for {filename} in slot {Slot}");
+            writer.Error($"No valid JSON data found in files for {innerName} in slot {Slot}");
             return null;
         }
 
 
         private IEnumerable<FilePath> GetFiles(string innerName)
         {
-            string directoryPath = Path.Combine(PlatformServicesNull.DefaultSavePath, Slot);
-            string configFolderPath = Path.Combine(directoryPath, SaveFolderName);
+            string configFolderPath = Path.Combine(PlatformServicesNull.DefaultSavePath, Slot, SaveFolderName);
             if (!Directory.Exists(configFolderPath))
             {
                 Directory.CreateDirectory(configFolderPath);
@@ -358,16 +371,6 @@ namespace AVS.SaveLoad
             yield return new FilePath(configFolderPath, $"{innerName}-fb.json");
         }
 
-        private FileInfo ToFile(string innerName)
-        {
-            string directoryPath = Path.Combine(PlatformServicesNull.DefaultSavePath, Slot);
-            string configFolderPath = Path.Combine(directoryPath, SaveFolderName);
-            if (!Directory.Exists(configFolderPath))
-            {
-                Directory.CreateDirectory(configFolderPath);
-            }
-            return new FileInfo(Path.Combine(configFolderPath, $"{innerName}.json"));
-        }
 
     }
 }

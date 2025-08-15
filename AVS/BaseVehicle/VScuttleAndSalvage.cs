@@ -106,7 +106,7 @@ namespace AVS.BaseVehicle
                     yield return null;
                 }
             }
-            UWE.CoroutineHost.StartCoroutine(DropLoot(transform.position, gameObject));
+            StartCoroutine(DropLoot(transform.position, gameObject));
         }
     }
 }

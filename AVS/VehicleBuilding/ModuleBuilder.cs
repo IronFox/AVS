@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.BaseVehicle;
+using AVS.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -17,7 +18,7 @@ namespace AVS
         public static bool haveWeCalledBuildAllSlots = false;
         public static bool slotExtenderIsPatched = false;
         public static bool slotExtenderHasGreenLight = false;
-        internal const string ModulePrefix = "AvsVehicleModule";
+        internal static string ModulePrefix => "AvsVehicleModule";
 
         public static bool IsModuleName(string name)
         {
@@ -41,32 +42,7 @@ namespace AVS
         public GameObject? genericModuleHint;
 
         public GameObject? modulesBackground; // background image parent object
-        public Sprite? BackgroundSprite
-        {
-            set
-            {
-                Sprite? setSprite;
-                if (value == null)
-                {
-                    setSprite = Assets.SpriteHelper
-                        .GetSpriteRaw("Sprites/VFModuleBackground.png");
-                }
-                else
-                {
-                    setSprite = value;
-                }
-                if (equipment != null)
-                {
-                    var img = equipment.transform
-                        .Find(ModuleBuilder.ModuleName(0) + "/VehicleModuleBackground(Clone)")
-                        .SafeGetComponent<UnityEngine.UI.Image>();
-                    if (img != null)
-                        img.sprite = setSprite;
-                    else
-                        Logger.Error("Failed to set background sprite, Image component not found.");
-                }
-            }
-        }
+
 
         public Sprite? genericModuleSlotSprite;
         public Sprite? leftArmModuleSlotSprite;
@@ -84,7 +60,7 @@ namespace AVS
 
         public void BuildAllSlots()
         {
-            UWE.CoroutineHost.StartCoroutine(BuildAllSlotsInternal());
+            MainPatcher.Instance.StartCoroutine(BuildAllSlotsInternal());
         }
         public IEnumerator BuildAllSlotsInternal()
         {
@@ -155,7 +131,7 @@ namespace AVS
         }
         public void GrabComponents()
         {
-            UWE.CoroutineHost.StartCoroutine(BuildGenericModulesASAP());
+            MainPatcher.Instance.StartCoroutine(BuildGenericModulesASAP());
         }
         private IEnumerator BuildGenericModulesASAP()
         {
@@ -369,7 +345,7 @@ namespace AVS
             thisBackground.transform.localRotation = Quaternion.identity;
             thisBackground.transform.localPosition = new Vector3(250, 250, 0);
             thisBackground.transform.localScale = 5 * Vector3.one;
-            thisBackground.EnsureComponent<UnityEngine.UI.Image>().sprite = Assets.SpriteHelper.GetSpriteRaw("Sprites/VFModuleBackground.png");
+            thisBackground.EnsureComponent<UnityEngine.UI.Image>().sprite = MainPatcher.Instance.Images.ModulesBackground.Sprite;
         }
 
         public GameObject? GetGenericModuleSlot()
@@ -382,5 +358,55 @@ namespace AVS
             return GameObject.Instantiate(genericModuleObject);
         }
 
+        private bool haveFixed = false;
+
+        internal void SignalOpened(VehicleUpgradeConsoleInput instance, AvsVehicle mv)
+        {
+            Sprite? setSprite;
+            if (mv.Config.ModuleBackgroundImage == null)
+            {
+                setSprite = MainPatcher.Instance.Images.ModulesBackground.Sprite;
+            }
+            else
+            {
+                setSprite = mv.Config.ModuleBackgroundImage;
+            }
+            if (equipment != null)
+            {
+                var img = equipment.transform
+                    .Find(ModuleBuilder.ModuleName(0) + "/VehicleModuleBackground(Clone)")
+                    .SafeGetComponent<UnityEngine.UI.Image>();
+                if (img != null)
+                {
+                    img.sprite = setSprite;
+                    mv.Log.Tag("ModuleBuilder").Write($"Background set to {setSprite.NiceName()}");
+                }
+                else
+                    mv.Log.Tag("ModuleBuilder").Error("Failed to set background sprite, Image component not found.");
+            }
+            else
+                mv.Log.Tag("ModuleBuilder").Error("Equipment is null, cannot set background sprite.");
+            if (!haveFixed)
+            {
+                mv.StartCoroutine(FixModules(instance, mv));
+            }
+        }
+
+        private IEnumerator FixModules(VehicleUpgradeConsoleInput instance, AvsVehicle mv)
+        {
+            var pda = Player.main.GetPDA();
+            mv.Log.Tag("ModuleBuilder").Write("Fixing modules...");
+            yield return new WaitForSeconds(1);
+            {
+                mv.Log.Tag("ModuleBuilder").Write("PDA still open. Closing, reopening");
+                pda.Close();
+                pda.isInUse = false;
+                //yield return new WaitForEndOfFrame();
+                instance.OpenPDA();
+                haveFixed = true;
+            }
+            //else
+            //    mv.Log.Tag("ModuleBuilder").Write("PDA is not open, no need to close and reopen.");
+        }
     }
 }

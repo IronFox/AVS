@@ -3,10 +3,10 @@ using AVS.Localization;
 using AVS.Log;
 using AVS.Util;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using UWE;
 
 namespace AVS.StorageComponents
 {
@@ -53,6 +53,8 @@ namespace AVS.StorageComponents
         [SerializeField]
         private Transform? waterPark;
 
+
+        private LogWriter Log => (vehicle?.Log ?? LogWriter.Default).Tag($"WP");
         public void Awake()
         {
             Init();
@@ -110,7 +112,7 @@ namespace AVS.StorageComponents
             {
                 return;
             }
-            LogWriter.Default.Debug($"Initializing {this.NiceName()} for {DisplayName.Rendered} ({DisplayName.Localize}) with width {width} and height {height}");
+            Log.Write($"Initializing {this.NiceName()} for {DisplayName.Rendered} ({DisplayName.Localize}) with width {width} and height {height}");
             _container = new ItemsContainer(width, height,
                 waterPark, DisplayName.Rendered, null);
             _container.SetAllowedTechTypes(Array.Empty<TechType>());
@@ -195,6 +197,7 @@ namespace AVS.StorageComponents
             {
                 item.item.gameObject.SetActive(false); //disable the item so it doesn't cause issues
             };
+            Log.Write($"Initialized");
         }
 
         private Vector3 RandomLocation(bool dropToFloor)
@@ -291,10 +294,31 @@ namespace AVS.StorageComponents
             Reinit();
         }
 
+        private class Inhabitant
+        {
+            public string? techTypeAsString;
+            public float enzymeAmount;
+            public float infectedAmount;
+            public float incubationProgress;
+            public float timeStartHatching;
+            public float health;
+        }
+
+        private class LoadingInhabitant
+        {
+            public Inhabitant Inhabitant { get; }
+            public CoroutineTask<GameObject> LoadTask { get; }
+
+            public LoadingInhabitant(Inhabitant inhabitant, CoroutineTask<GameObject> loadTask)
+            {
+                Inhabitant = inhabitant;
+                LoadTask = loadTask;
+            }
+        }
+
         private class Serialized
         {
-            public List<string>? items;
-            public List<TechType>? techTypes;
+            public List<Inhabitant>? inhabitants;
             public int width;
             public int height;
             public bool canHatchEggs;
@@ -304,38 +328,48 @@ namespace AVS.StorageComponents
         {
             if (_container == null)
             {
-                LogWriter.Default.Error($"MobileWaterPark.OnProtoSerializeObjectTree called without a valid container.");
+                Log.Error($"MobileWaterPark.OnProtoSerializeObjectTree called without a valid container.");
                 return;
             }
             if (vehicle == null)
             {
-                LogWriter.Default.Error($"MobileWaterPark.OnProtoSerializeObjectTree called without a valid vehicle or storageRoot.");
+                Log.Error($"MobileWaterPark.OnProtoSerializeObjectTree called without a valid vehicle or storageRoot.");
                 return;
             }
             if (index <= 0)
             {
-                LogWriter.Default.Error($"MobileWaterPark.OnProtoSerializeObjectTree called with invalid index {index}.");
+                Log.Error($"MobileWaterPark.OnProtoSerializeObjectTree called with invalid index {index}.");
                 return;
             }
             vehicle.Log.Write($"Saving water park to file");
-            var result = new List<(PrefabIdentifier, TechType)>();
+            var result = new List<(PrefabIdentifier, Inhabitant)>();
             foreach (var item in _container.ToList())
             {
                 var prefabId = item.item.GetComponent<PrefabIdentifier>();
                 var tt = item.item.GetTechType();
                 if (prefabId == null)
                 {
-                    vehicle.Log.Error($"Item {item.item.NiceName()} does not have a valid PrefabIdentifier, skipping.");
+                    Log.Error($"Item {item.item.NiceName()} does not have a valid PrefabIdentifier, skipping.");
                     continue;
                 }
-                result.Add((prefabId, tt));
+
+                var inhab = new Inhabitant
+                {
+                    infectedAmount = item.item.GetComponent<InfectedMixin>().SafeGet(x => x.infectedAmount, 0),
+                    enzymeAmount = item.item.GetComponent<Peeper>().SafeGet(x => x.enzymeAmount, 0),
+                    health = item.item.GetComponent<LiveMixin>().SafeGet(x => x.health, 0),
+                    incubationProgress = item.item.GetComponent<CreatureEgg>().SafeGet(x => x.progress, 0),
+                    timeStartHatching = item.item.GetComponent<CreatureEgg>().SafeGet(x => x.timeStartHatching, 0),
+                    techTypeAsString = tt.AsString()
+                };
+
+                result.Add((prefabId, inhab));
             }
             vehicle.PrefabID.WriteReflected(
                 $"WP{index}",
                 new Serialized
                 {
-                    items = result.Select(x => x.Item1.Id).ToList(),
-                    techTypes = result.Select(x => x.Item2).ToList(),
+                    inhabitants = result.Select(x => x.Item2).ToList(),
                     width = width,
                     height = height,
                     canHatchEggs = canHatchEggs
@@ -343,21 +377,22 @@ namespace AVS.StorageComponents
                 vehicle.Log);
 
         }
-        private List<(string, TechType, CoroutineTask<GameObject>?)> ReAddWhenDone { get; }
-            = new List<(string, TechType, CoroutineTask<GameObject>?)>();
+        private List<LoadingInhabitant> ReAddWhenDone { get; }
+            = new List<LoadingInhabitant>();
         public void OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
         {
+            Log.Write($"OnProtoDeserializeObjectTree called for water park {index} with vehicle {vehicle?.NiceName()}");
             if (vehicle == null)
             {
-                LogWriter.Default.Error($"MobileWaterPark.OnProtoDeserializeObjectTree called without a valid vehicle.");
+                Log.Error($"MobileWaterPark.OnProtoDeserializeObjectTree called without a valid vehicle.");
                 return;
             }
             if (index <= 0)
             {
-                LogWriter.Default.Error($"MobileWaterPark.OnProtoDeserializeObjectTree called with invalid index {index}.");
+                Log.Error($"MobileWaterPark.OnProtoDeserializeObjectTree called with invalid index {index}.");
                 return;
             }
-            vehicle.Log.Write($"Loading water park from file");
+            Log.Write($"Loading water park from file");
             if (vehicle.PrefabID.ReadReflected($"WP{index}", out Serialized? data, vehicle.Log))
             {
                 height = data.height;
@@ -365,92 +400,111 @@ namespace AVS.StorageComponents
                 canHatchEggs = data.canHatchEggs;
                 Reinit();
 
-                var itemsToAdd = new List<(string, TechType, CoroutineTask<GameObject>?)>();
-                if (data.items != null && data.techTypes != null && data.items.Count == data.techTypes.Count)
+                var itemsToAdd = new List<LoadingInhabitant>();
+                if (data.inhabitants != null)
                 {
-                    for (int i = 0; i < data.items.Count; i++)
+                    Log.Write($"Found {data.inhabitants.Count} inhabitants in water park {index}");
+                    foreach (var inhabitant in data.inhabitants)
                     {
-                        var load = CraftData.GetPrefabForTechTypeAsync(data.techTypes[i]);
-                        CoroutineHost.StartCoroutine(load);
-                        itemsToAdd.Add((data.items[i], data.techTypes[i], load));
+                        if (TechTypeExtensions.FromString(inhabitant.techTypeAsString, out var tt, true))
+                        {
+                            Log.Write($"Loading inhabitant {tt} for water park {index}");
+                            var load = CraftData.GetPrefabForTechTypeAsync(tt);
+                            MainPatcher.Instance.StartCoroutine(load);
+
+                            itemsToAdd.Add(new LoadingInhabitant
+                            (
+                                inhabitant,
+                                load
+                            ));
+                        }
+                        else
+                        {
+                            Log.Error($"Failed to parse tech type {inhabitant.techTypeAsString} for water park {index}, skipping.");
+                        }
                     }
                 }
-                else if (data.items != null && data.techTypes == null)
-                {
-                    foreach (var item in data.items)
-                    {
-                        itemsToAdd.Add((item, TechType.None, null));
-                    }
-                }
-                else
-                {
-                    LogWriter.Default.Error($"Water park data for {index} is invalid, items or techTypes are null or have different counts.");
-                }
+                Log.Write($"Loaded {itemsToAdd.Count} items for water park {index}. Adding them when done");
 
                 ReAddWhenDone.AddRange(itemsToAdd);
             }
             else
             {
-                LogWriter.Default.Error($"Failed to read water park data for {index}");
+                Log.Error($"Failed to read water park data for {index}");
             }
         }
 
         public void OnVehicleLoaded()
         {
+            Log.Write($"OnVehicleLoaded called for water park {index} with vehicle {vehicle?.NiceName()}");
             if (_container == null)
             {
-                LogWriter.Default.Error($"MobileWaterPark.OnVehicleLoaded called without a valid container.");
+                Log.Error($"MobileWaterPark.OnVehicleLoaded called without a valid container.");
                 return;
             }
 
             if (vehicle == null)
             {
-                LogWriter.Default.Error($"MobileWaterPark.OnVehicleLoaded called without a valid vehicle.");
+                Log.Error($"MobileWaterPark.OnVehicleLoaded called without a valid vehicle.");
                 return;
             }
 
             if (waterPark == null)
             {
-                LogWriter.Default.Error($"MobileWaterPark.OnVehicleLoaded called without a valid water park transform.");
+                Log.Error($"MobileWaterPark.OnVehicleLoaded called without a valid water park transform.");
                 return;
             }
+            vehicle.StartCoroutine(LoadInhabitants(vehicle));
 
-            vehicle.Log.Write($"Re-adding {ReAddWhenDone.Count} items to the water park");
+        }
+
+        private IEnumerator LoadInhabitants(AvsVehicle vehicle)
+        {
+
+            Log.Write($"Re-adding {ReAddWhenDone.Count} items to the water park");
             foreach (var item in ReAddWhenDone)
             {
-                var thisItem = waterPark.Find(item.Item1);
-                if (thisItem == null)
-                    thisItem = waterPark.GetComponentsInChildren<PrefabIdentifier>()
-                        .FirstOrDefault(x => x.Id == item.Item1).SafeGetTransform();
-                if (thisItem == null)
+                //try to load the item
+                yield return item.LoadTask;
+                var prefab = item.LoadTask.GetResult();
+                if (prefab == null)
                 {
-                    if (item.Item3 != null)
-                    {
-                        //try to load the item
-                        var prefab = item.Item3.GetResult();
-                        if (prefab == null)
-                        {
-                            vehicle.Log.Error($"Failed to load item {item.Item1} for water park {index}, skipping.");
-                            continue;
-                        }
-                        vehicle.Log.Error($"Could not find real instance of {item.Item2}. Instantiating");
-                        thisItem = (Utils.SpawnFromPrefab(prefab, null)).transform;
-                    }
-                    else
-                    {
-                        vehicle.Log.Error($"Failed to find item with ID {item} in the water park storage, no tech type registered, skipping.");
-                        continue;
-                    }
+                    Log.Error($"Failed to load item {item.Inhabitant.techTypeAsString} for water park {index}, skipping.");
+                    continue;
                 }
+                var thisItem = (Utils.SpawnFromPrefab(prefab, null)).transform;
+
                 var pickupable = thisItem.GetComponent<Pickupable>();
                 if (pickupable == null)
                 {
-                    vehicle.Log.Error($"Item {thisItem.NiceName()} does not have a Pickupable component, skipping.");
+                    Log.Error($"Item {thisItem.NiceName()} does not have a Pickupable component, skipping.");
                     continue;
                 }
 
-                _container.AddItem(pickupable);
-                vehicle.Log.Write($"Added item {thisItem.NiceName()} to the water park.");
+                var liveMixin = thisItem.GetComponent<LiveMixin>();
+                if (liveMixin != null)
+                {
+                    liveMixin.health = item.Inhabitant.health;
+                }
+                var infectedMixin = thisItem.GetComponent<InfectedMixin>();
+                if (infectedMixin != null)
+                {
+                    infectedMixin.infectedAmount = item.Inhabitant.infectedAmount;
+                }
+                var peeper = thisItem.GetComponent<Peeper>();
+                if (peeper != null)
+                {
+                    peeper.enzymeAmount = item.Inhabitant.enzymeAmount;
+                }
+                var egg = thisItem.GetComponent<CreatureEgg>();
+                if (egg != null)
+                {
+                    egg.progress = item.Inhabitant.incubationProgress;
+                    egg.timeStartHatching = item.Inhabitant.timeStartHatching;
+                }
+
+                _container!.AddItem(pickupable);
+                Log.Write($"Added item {thisItem.NiceName()} to the water park.");
             }
             ReAddWhenDone.Clear();
         }

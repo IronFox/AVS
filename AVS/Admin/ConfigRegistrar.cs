@@ -152,7 +152,7 @@ namespace AVS.Admin
         /// It does not block the calling thread and relies on the game's coroutine system to execute.</remarks>
         public static void LogAllVehicleNames()
         {
-            UWE.CoroutineHost.StartCoroutine(LogAllVehicleNamesInternal());
+            MainPatcher.Instance.StartCoroutine(LogAllVehicleNamesInternal());
         }
         private static IEnumerator LogAllVehicleNamesInternal()
         {
@@ -180,7 +180,7 @@ namespace AVS.Admin
         /// <param name="configFile">An optional configuration file to store the setting. If not provided, a default configuration file is used.</param>
         public static void RegisterForAllAvsVehicles<T>(string name, ConfigDescription description, T defaultValue, Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
         {
-            UWE.CoroutineHost.StartCoroutine(RegisterForAllInternal<T>(name, description, defaultValue, OnChange, configFile));
+            MainPatcher.Instance.StartCoroutine(RegisterForAllInternal<T>(name, description, defaultValue, OnChange, configFile));
         }
         /// <summary>
         /// Registers a configuration option for a specific modded vehicle.
@@ -199,7 +199,7 @@ namespace AVS.Admin
         /// default configuration file is used.</param>
         public static void RegisterForAvsVehicle<T>(string vehicleName, string name, ConfigDescription description, T defaultValue, Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
         {
-            UWE.CoroutineHost.StartCoroutine(RegisterForVehicleInternal<T>(vehicleName, name, description, defaultValue, OnChange, configFile));
+            MainPatcher.Instance.StartCoroutine(RegisterForVehicleInternal<T>(vehicleName, name, description, defaultValue, OnChange, configFile));
         }
         /// <summary>
         /// Registers a configuration option for the Seamoth vehicle.
@@ -216,7 +216,7 @@ namespace AVS.Admin
         /// <param name="configFile">An optional configuration file to store the setting. If not provided, a default configuration file is used.</param>
         public static void RegisterForSeamoth<T>(string name, ConfigDescription description, T defaultValue, Action<T>? onChange = null, ConfigFile? configFile = null)
         {
-            UWE.CoroutineHost.StartCoroutine(RegisterForSeamothInternal<T>(name, description, defaultValue, onChange, configFile));
+            MainPatcher.Instance.StartCoroutine(RegisterForSeamothInternal<T>(name, description, defaultValue, onChange, configFile));
         }
         /// <summary>
         /// Registers a configuration option for the Prawn with the specified name, description, and default
@@ -235,7 +235,7 @@ namespace AVS.Admin
         /// default configuration file is used.</param>
         public static void RegisterForPrawn<T>(string name, ConfigDescription description, T defaultValue, Action<T>? onChange = null, ConfigFile? configFile = null)
         {
-            UWE.CoroutineHost.StartCoroutine(RegisterForPrawnInternal<T>(name, description, defaultValue, onChange, configFile));
+            MainPatcher.Instance.StartCoroutine(RegisterForPrawnInternal<T>(name, description, defaultValue, onChange, configFile));
         }
         /// <summary>
         /// Registers a configuration option for the Cyclops submarine with the specified name, description, and default
@@ -253,7 +253,7 @@ namespace AVS.Admin
         /// file is used.</param>
         public static void RegisterForCyclops<T>(string name, ConfigDescription description, T defaultValue, Action<T>? OnChange = null, ConfigFile? configFile = null)
         {
-            UWE.CoroutineHost.StartCoroutine(RegisterForCyclopsInternal<T>(name, description, defaultValue, OnChange, configFile));
+            MainPatcher.Instance.StartCoroutine(RegisterForCyclopsInternal<T>(name, description, defaultValue, OnChange, configFile));
         }
         private static IEnumerator RegisterForAllInternal<T>(string name, ConfigDescription description, T defaultValue, Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
         {

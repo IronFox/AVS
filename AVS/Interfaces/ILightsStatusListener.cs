@@ -1,16 +1,6 @@
 ﻿namespace AVS
 {
-    public enum LightsStatus
-    {
-        OnHeadlightsOn,
-        OnHeadlightsOff,
-        OnInteriorLightsOn,
-        OnInteriorLightsOff,
-        OnFloodlightsOn,
-        OnFloodlightsOff,
-        OnNavLightsOn,
-        OnNavLightsOff,
-    }
+
     /// <summary>
     /// Listener for changes in vehicle lights status.
     /// </summary>

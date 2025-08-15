@@ -446,7 +446,7 @@ namespace AVS
                     yield return new WaitForSeconds(4.6f);
                     MainCameraControl.main.ShakeCamera(1f, 0.5f, MainCameraControl.ShakeMode.Linear, 1f);
                 }
-                UWE.CoroutineHost.StartCoroutine(ShakeCamera());
+                MainPatcher.Instance.StartCoroutine(ShakeCamera());
                 MainCameraControl.main.ShakeCamera(0.15f, 4.5f, MainCameraControl.ShakeMode.Linear, 1f);
             }
         }
@@ -535,7 +535,7 @@ namespace AVS
             }
             StopAllCoroutines();
             timeWeStartedWaiting = Time.time;
-            UWE.CoroutineHost.StartCoroutine(ResetDangerStatusEventually());
+            MainPatcher.Instance.StartCoroutine(ResetDangerStatusEventually());
             if (DangerStatus == AutopilotStatus.LeviathanSafe)
             {
                 var was = DangerStatus;

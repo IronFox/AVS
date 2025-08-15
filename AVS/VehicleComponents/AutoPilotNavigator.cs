@@ -18,7 +18,7 @@ namespace AVS.VehicleComponents
         }
         public void NaiveGo(Vector3 destination)
         {
-            UWE.CoroutineHost.StartCoroutine(GoStraightToDestination(destination));
+            MainPatcher.Instance.StartCoroutine(GoStraightToDestination(destination));
         }
 
         public void FaceDestinationFrame(Vector3 dest)
@@ -83,7 +83,7 @@ namespace AVS.VehicleComponents
                 }
                 if (CheckClose(dest, 25f))
                 {
-                    yield return UWE.CoroutineHost.StartCoroutine(BreakLoop());
+                    yield return MainPatcher.Instance.StartCoroutine(BreakLoop());
                     if (gameObject.GetComponent<Rigidbody>().velocity.magnitude < 0.1f)
                     {
                         Logger.PDANote(Language.main.Get("VFAutopilotHint1"));
@@ -92,15 +92,15 @@ namespace AVS.VehicleComponents
                 }
                 else if (CheckClose(dest, 50f))
                 {
-                    yield return UWE.CoroutineHost.StartCoroutine(ForwardLoop(0.25f));
+                    yield return MainPatcher.Instance.StartCoroutine(ForwardLoop(0.25f));
                 }
                 else if (CheckClose(dest, 75f))
                 {
-                    yield return UWE.CoroutineHost.StartCoroutine(ForwardLoop(0.5f));
+                    yield return MainPatcher.Instance.StartCoroutine(ForwardLoop(0.5f));
                 }
                 else
                 {
-                    yield return UWE.CoroutineHost.StartCoroutine(ForwardLoop(1f));
+                    yield return MainPatcher.Instance.StartCoroutine(ForwardLoop(1f));
                 }
             }
         }

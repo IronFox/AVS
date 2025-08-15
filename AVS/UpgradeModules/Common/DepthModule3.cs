@@ -1,5 +1,6 @@
 ﻿using AVS.Configuration;
 using AVS.Localization;
+using UnityEngine;
 //using AVS.Localization;
 
 namespace AVS.UpgradeModules.Common
@@ -10,7 +11,7 @@ namespace AVS.UpgradeModules.Common
     internal class DepthModule3 : DepthModuleBase<DepthModule3>
     {
         /// <inheritdoc/>
-        public override string ClassId => "AvsDepthModule3";
+        public override string ClassId => MainPatcher.Instance.ClassPrefix + "DepthModule3";
         /// <inheritdoc/>
         public override string DisplayName => Translator.Get(TranslationKey.Module_Depth3_DisplayName);
         /// <inheritdoc/>
@@ -24,7 +25,7 @@ namespace AVS.UpgradeModules.Common
                 .Done();
         /// <inheritdoc/>
 
-        public override Atlas.Sprite Icon => MainPatcher.Instance.DepthModule3Icon;
+        public override Sprite Icon => MainPatcher.Instance.DepthModule3Icon;
         /// <inheritdoc/>
         public override void OnAdded(AddActionParams param)
         {

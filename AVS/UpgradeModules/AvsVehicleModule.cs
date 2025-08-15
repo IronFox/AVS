@@ -121,7 +121,7 @@ namespace AVS.UpgradeModules
         /// <summary>
         /// The icon for this upgrade.
         /// </summary>
-        public abstract Atlas.Sprite Icon { get; }
+        public abstract Sprite Icon { get; }
 
         /// <summary>
         /// The TechType that this module unlocks together with.

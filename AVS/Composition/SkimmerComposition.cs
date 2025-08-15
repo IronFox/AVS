@@ -30,7 +30,7 @@ namespace AVS.Composition
         /// <param name="pilotSeats">A collection of pilot seats (<see cref="VehicleParts.Helm"/>) available in the vehicle. Cannot
         /// be null.</param>
         /// <param name="engine">The engine (<see cref="AbstractEngine"/>) that powers the vehicle. Must not be null</param>
-        /// <param name="collisionModel"><see cref="GameObject"/> representing the collision model of the vehicle. Must not be null</param>
+        /// <param name="collisionModel"><see cref="GameObject"/> representing the collision model of the vehicle. Must not be null. Must not be empty</param>
         /// <param name="batteries">An optional collection of batteries (<see cref="VehicleParts.VehicleBatteryDefinition"/>) used to power the vehicle.
         /// Can be null.</param>
         /// <param name="upgrades">An optional collection of upgrades (<see cref="VehicleParts.VehicleUpgrades"/>) installed on the vehicle.
@@ -59,7 +59,7 @@ namespace AVS.Composition
             IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             IReadOnlyList<VehicleParts.Helm> pilotSeats,
             AbstractEngine engine,
-            GameObject collisionModel,
+            GameObject[] collisionModel,
             IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? batteries = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,

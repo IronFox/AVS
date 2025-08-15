@@ -304,6 +304,7 @@ namespace AVS.MaterialAdapt
         /// Creates a material prototype for the glass material of the Seamoth.
         /// </summary>
         /// <param name="logConfig">Logging configuration</param>
+        /// <param name="result">The retrieved aquarium glass material, if any.</param>
         /// <returns>False if the seamoth is not (yet) available. Keep trying if false.
         /// Ttrue if the seamoth is loaded, but <paramref name="result"/> can still be null
         /// if the respective material is not found</returns>

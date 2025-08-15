@@ -9,6 +9,7 @@ namespace AVS
     public class InteriorLightsController : BaseLightController, IPlayerListener
     {
         private Submarine MV => GetComponent<Submarine>();
+        /// <inheritdoc/>
         protected override void HandleLighting(bool active)
         {
             MV.Com.InteriorLights.ForEach(x => x.enabled = active);
@@ -25,10 +26,12 @@ namespace AVS
             }
         }
 
+        /// <inheritdoc/>
         protected override void HandleSound(bool playSound)
         {
             return;
         }
+        /// <inheritdoc/>
         protected virtual void Awake()
         {
             if (MV.Com.InteriorLights.Count == 0)

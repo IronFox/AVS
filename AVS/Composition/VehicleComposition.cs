@@ -25,12 +25,12 @@ namespace AVS.Composition
         public GameObject ModulesRootObject { get; }
 
         /// <summary>
-        /// Base object containing colliders (and nothing else).
-        /// AVS can do without but the Subnautica system uses this object to switch off colliders while docked.
-        /// Therefore, this value must be set, even if the referenced game object contains nothing.
-        /// Should not be the vehicle root as this would disable everything.
+        /// Base objects containing colliders (and nothing else).
+        /// AVS can do without but the Subnautica system uses these object to switch off colliders while docked.
+        /// Therefore, this value must be set, even if the referenced game objects contain nothing.
+        /// Should not contain the vehicle root as this would disable everything.
         /// </summary>
-        public GameObject CollisionModel { get; }
+        public GameObject[] CollisionModel { get; }
 
         /// <summary>
         /// Entry/exit hatches for the submarine.
@@ -131,7 +131,7 @@ namespace AVS.Composition
         /// </summary>
         /// <param name="storageRootObject">The parent object for all storage objects. Must not be null and not the same as vehicle object.</param>
         /// <param name="modulesRootObject">The parent object for all modules. Must not be null and not the same as vehicle object.</param>
-        /// <param name="collisionModel">Base object containing all colliders. Can be null.</param>
+        /// <param name="collisionModel">Base objects containing all colliders. Must not be null. Should contain at least one object. Must not contain the submarine root. Expect these to be disabled</param>
         /// <param name="hatches">Entry/exit hatches. Must not be null or empty.</param>
         /// <param name="batteries">Power cell definitions. Optional.</param>
         /// <param name="upgrades">Upgrade module definitions. Optional.</param>
@@ -153,7 +153,7 @@ namespace AVS.Composition
             GameObject modulesRootObject,
             IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
             AbstractEngine engine,
-            GameObject collisionModel,
+            GameObject[] collisionModel,
             IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? batteries = null,
             IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,

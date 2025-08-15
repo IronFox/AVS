@@ -75,7 +75,7 @@ namespace AVS.Audio
                 return existingPromise;
             }
             AsyncPromise<AudioClip> promise = new AsyncPromise<AudioClip>();
-            UWE.CoroutineHost.StartCoroutine(LoadAudioClip(filePath, promise.Resolve, promise.Reject));
+            MainPatcher.Instance.StartCoroutine(LoadAudioClip(filePath, promise.Resolve, promise.Reject));
             AudioClipPromises[filePath] = promise;
             return promise;
         }

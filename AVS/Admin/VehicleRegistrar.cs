@@ -75,7 +75,7 @@ namespace AVS
         /// <param name="verbose">Whether to enable verbose logging.</param>
         public static void RegisterVehicleLater(AvsVehicle mv, bool verbose = false)
         {
-            UWE.CoroutineHost.StartCoroutine(RegisterVehicle(mv, verbose));
+            MainPatcher.Instance.StartCoroutine(RegisterVehicle(mv, verbose));
         }
 
         /// <summary>
@@ -104,12 +104,12 @@ namespace AVS
             if (RegistrySemaphore)
             {
                 VerboseLog(LogType.Log, verbose, $"Enqueueing the {mv.gameObject.name} for Registration.");
-                RegistrationQueue.Enqueue(() => UWE.CoroutineHost.StartCoroutine(InternalRegisterVehicle(mv, verbose)));
+                RegistrationQueue.Enqueue(() => MainPatcher.Instance.StartCoroutine(InternalRegisterVehicle(mv, verbose)));
                 yield return new WaitUntil(() => AvsVehicleManager.VehicleTypes.Select(x => x.mv).Contains(mv));
             }
             else
             {
-                yield return UWE.CoroutineHost.StartCoroutine(InternalRegisterVehicle(mv, verbose));
+                yield return MainPatcher.Instance.StartCoroutine(InternalRegisterVehicle(mv, verbose));
             }
         }
 
@@ -125,7 +125,7 @@ namespace AVS
             RegistrySemaphore = true;
             VerboseLog(LogType.Log, verbose, $"The {mv.gameObject.name} is beginning Registration.");
             PingType registeredPingType = AvsVehicleManager.RegisterPingType((PingType)121, verbose);
-            yield return UWE.CoroutineHost.StartCoroutine(AvsVehicleBuilder.Prefabricate(mv, registeredPingType, verbose));
+            yield return MainPatcher.Instance.StartCoroutine(AvsVehicleBuilder.Prefabricate(mv, registeredPingType, verbose));
             RegistrySemaphore = false;
             Logger.Log($"Finished {mv.gameObject.name} registration.");
             VehiclesRegistered++;
@@ -197,7 +197,7 @@ namespace AVS
                         " This would lead to null reference exceptions in the Subnautica vehicle system");
                     return false;
                 }
-                if (mv.Com.CollisionModel == mv.gameObject)
+                if (mv.Com.CollisionModel.Contains(mv.gameObject))
                 {
                     Logger.Error(thisName + "Collision model must not be same as the vehicle root." +
                         " Subnautica would disable the entire vehicle on dock.");
@@ -261,9 +261,10 @@ namespace AVS
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + "No BoundingBox BoxCollider was provided. If a BoundingBox GameObject was provided, it did not have a BoxCollider. Tether range is 10 meters. This vehicle will not be able to dock in the Moonpool. The build bots will assume this vehicle is 6m x 8m x 12m.");
                 }
-                if (!mv.Com.CollisionModel)
+                if (mv.Com.CollisionModel == null || mv.Com.CollisionModel.Length == 0)
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + $"A null {nameof(AvsVehicle)}.CollisionModel was provided. This is necessary for leviathans to grab the vehicle.");
+                    return false;
                 }
                 foreach (VehicleParts.VehicleStorage vs in mv.Com.InnateStorages.Concat(mv.Com.ModularStorages))
                 {

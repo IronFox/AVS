@@ -1,8 +1,8 @@
 ﻿using AVS.Assets;
-using AVS.Crafting;
 using AVS.Log;
 using BepInEx;
 using HarmonyLib;
+using Nautilus.Handlers;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -36,19 +36,19 @@ namespace AVS
         /// <summary>
         /// The icon for the Depth Module 1 upgrade.
         /// </summary>
-        public Atlas.Sprite DepthModule1Icon => Images.DepthModule1Icon.AtlasSprite;
+        public Sprite DepthModule1Icon => Images.DepthModule1Icon.Sprite;
         /// <summary>
         /// The icon for the Depth Module 2 upgrade.
         /// </summary>
-        public Atlas.Sprite DepthModule2Icon => Images.DepthModule2Icon.AtlasSprite;
+        public Sprite DepthModule2Icon => Images.DepthModule2Icon.Sprite;
         /// <summary>
         /// The icon for the Depth Module 3 upgrade.
         /// </summary>
-        public Atlas.Sprite DepthModule3Icon => Images.DepthModule3Icon.AtlasSprite;
+        public Sprite DepthModule3Icon => Images.DepthModule3Icon.Sprite;
         /// <summary>
         /// The icon to use for the parent node of all depth modules in the crafting tree.
         /// </summary>
-        public Atlas.Sprite DepthModuleNodeIcon => Images.DepthModuleNodeIcon.AtlasSprite;
+        public Sprite DepthModuleNodeIcon => Images.DepthModuleNodeIcon.Sprite;
 
         /// <summary>
         /// Queries the main singleton instance of <see cref="MainPatcher"/>.
@@ -61,7 +61,17 @@ namespace AVS
         /// <returns></returns>
         protected abstract PatcherImages LoadImages();
 
+        /// <summary>
+        /// Unique identifier for the plugin.
+        /// </summary>
         public abstract string PluginId { get; }
+
+        /// <summary>
+        /// Prefix used for registered identifiers so to not collide with other mods.
+        /// </summary>
+        public abstract string ClassPrefix { get; }
+
+
         //internal static VFConfig VFConfig { get; private set; }
         //internal static AVSNautilusConfig NautilusConfig { get; private set; }
 
@@ -75,6 +85,10 @@ namespace AVS
         public virtual void Awake()
         {
             AVS.Logger.Init(Logger);
+            var assembly = typeof(MainPatcher).Assembly;
+            var name = assembly.GetName();
+            //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+            LogWriter.Default.Write($"Booting AVS {name.Version} from {assembly.Location} for {PluginId}.");
             LogWriter.Default.Write("AVS MainPatcher Awake started.");
 
             Nautilus.Handlers.LanguageHandler.RegisterLocalizationFolder();
@@ -97,7 +111,7 @@ namespace AVS
             Patch();
             PostPatch();
             CompatChecker.CheckAll();
-            UWE.CoroutineHost.StartCoroutine(AVS.Logger.MakeAlerts());
+            StartCoroutine(AVS.Logger.MakeAlerts());
 
         }
 
@@ -115,20 +129,20 @@ namespace AVS
                 yield break;
             }
             LogWriter.Default.Write("CollectPrefabsForBuilderReference started.");
-            UWE.CoroutineHost.StartCoroutine(CollectPrefabsForBuilderReference());
+            StartCoroutine(CollectPrefabsForBuilderReference());
             //LogWriter.Default.Write("Assets.StaticAssets.GetSprites()");
             //Assets.StaticAssets.GetSprites();
-            LogWriter.Default.Write("Assets.AVSFabricator.CreateAndRegister()");
-            Assets.AvsFabricator.CreateAndRegister(Images.FabricatorIcon.AtlasSprite);
-            LogWriter.Default.Write("Admin.CraftTreeHandler.AddFabricatorMenus()");
-            CraftTreeHandler.AddFabricatorMenus();
+            LogWriter.Default.Write("Assets.AvsFabricator.CreateAndRegister()");
+            Assets.AvsFabricator.CreateAndRegister(Images.FabricatorIcon.Sprite);
+            //LogWriter.Default.Write("Admin.CraftTreeHandler.AddFabricatorMenus()");
+            //CraftTreeHandler.AddFabricatorMenus();
 
             LogWriter.Default.Write("Admin.Utils.RegisterDepthModules()");
             Admin.Utils.RegisterDepthModules();
-            //AVS.Logger.Log("UWE.CoroutineHost.StartCoroutine(VoiceManager.LoadAllVoices())");
-            //GetVoices = UWE.CoroutineHost.StartCoroutine(VoiceManager.LoadAllVoices());
-            //AVS.Logger.Log("UWE.CoroutineHost.StartCoroutine(EngineSoundsManager.LoadAllVoices())");
-            //GetEngineSounds = UWE.CoroutineHost.StartCoroutine(DynamicClipLoader.LoadAllVoices());
+            //AVS.Logger.Log("MainPatcher.Instance.StartCoroutine(VoiceManager.LoadAllVoices())");
+            //GetVoices = MainPatcher.Instance.StartCoroutine(VoiceManager.LoadAllVoices());
+            //AVS.Logger.Log("MainPatcher.Instance.StartCoroutine(EngineSoundsManager.LoadAllVoices())");
+            //GetEngineSounds = MainPatcher.Instance.StartCoroutine(DynamicClipLoader.LoadAllVoices());
             LogWriter.Default.Write("PrePatch finished.");
         }
         /// <summary>
@@ -194,7 +208,8 @@ namespace AVS
             }
             LogWriter.Default.Write("Registering SaveUtils events.");
             Nautilus.Utility.SaveUtils.RegisterOnQuitEvent(SetWorldNotLoaded);
-            Nautilus.Utility.SaveUtils.RegisterOnFinishLoadingEvent(SetWorldLoaded);
+            WaitScreenHandler.RegisterLateLoadTask(nameof(SetWorldLoaded), t => SetWorldLoaded());
+            //Nautilus.Utility.SaveUtils.RegisterOnFinishLoadingEvent(SetWorldLoaded);
             Nautilus.Utility.SaveUtils.RegisterOneTimeUseOnLoadEvent(OnLoadOnce);
 
             LogWriter.Default.Write("Patching...");

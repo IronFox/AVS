@@ -68,20 +68,54 @@ namespace AVS.Engines
         #endregion
 
         #region protected_fields
-        protected virtual float FORWARD_TOP_SPEED => 1000;
-        protected virtual float REVERSE_TOP_SPEED => 1000;
-        protected virtual float STRAFE_MAX_SPEED => 1000;
-        protected virtual float VERT_MAX_SPEED => 1000;
-        protected virtual float FORWARD_ACCEL => FORWARD_TOP_SPEED / 10f;
-        protected virtual float REVERSE_ACCEL => REVERSE_TOP_SPEED / 10f;
-        protected virtual float STRAFE_ACCEL => STRAFE_MAX_SPEED / 10f;
-        protected virtual float VERT_ACCEL => VERT_MAX_SPEED / 10f;
-
-        protected virtual float waterDragDecay => 4.5f;
-        protected virtual float airDragDecay => 1.5f;
 
         /// <summary>
-        /// Gets the drag decay value depending on whether the vehicle is underwater.
+        /// The forward top speed of the vehicle when using this engine.
+        /// </summary>
+        protected virtual float ForwardTopSpeed => 1000;
+        /// <summary>
+        /// The reverse top speed of the vehicle when using this engine.
+        /// </summary>
+        protected virtual float ReverseTopSpeed => 1000;
+        /// <summary>
+        /// Gets the maximum speed allowed for non-vertical strafing movements when using this engine.
+        /// </summary>
+        protected virtual float StrafeMaxSpeed => 1000;
+        /// <summary>
+        /// Gets the maximum vertical speed allowed when using this engine.
+        /// </summary>
+        protected virtual float VerticalMaxSpeed => 1000;
+        /// <summary>
+        /// Forward acceleration rate of the vehicle when using this engine.
+        /// </summary>
+        protected virtual float ForwardAcceleration => ForwardTopSpeed / 10f;
+        /// <summary>
+        /// Reverse acceleration rate of the vehicle when using this engine.
+        /// </summary>
+        protected virtual float ReverseAcceleration => ReverseTopSpeed / 10f;
+        /// <summary>
+        /// Strafe acceleration rate of the vehicle when using this engine.
+        /// </summary>
+        protected virtual float StrafeAcceleration => StrafeMaxSpeed / 10f;
+        /// <summary>
+        /// Vertical acceleration rate of the vehicle when using this engine.
+        /// </summary>
+        protected virtual float VerticalAcceleration => VerticalMaxSpeed / 10f;
+
+        /// <summary>
+        /// Fraction of the current velocity that is reduced per second due to drag
+        /// while under water.
+        /// </summary>
+        protected virtual float WaterDragDecay => 4.5f;
+        /// <summary>
+        /// Fraction of the current velocity that is reduced per second due to drag
+        /// while airborne.
+        /// </summary>
+        protected virtual float AirDragDecay => 1.5f;
+
+        /// <summary>
+        /// Gets the drag decay fraction of the current velocity (per second)
+        /// depending on the environment (water or air).
         /// </summary>
         protected virtual float DragDecay
         {
@@ -89,11 +123,11 @@ namespace AVS.Engines
             {
                 if (MV.GetIsUnderwater())
                 {
-                    return waterDragDecay;
+                    return WaterDragDecay;
                 }
                 else
                 {
-                    return airDragDecay;
+                    return AirDragDecay;
                 }
             }
         }
@@ -111,13 +145,13 @@ namespace AVS.Engines
             }
             set
             {
-                if (value < -REVERSE_TOP_SPEED)
+                if (value < -ReverseTopSpeed)
                 {
-                    _forwardMomentum = -REVERSE_TOP_SPEED;
+                    _forwardMomentum = -ReverseTopSpeed;
                 }
-                else if (FORWARD_TOP_SPEED < value)
+                else if (ForwardTopSpeed < value)
                 {
-                    _forwardMomentum = FORWARD_TOP_SPEED;
+                    _forwardMomentum = ForwardTopSpeed;
                 }
                 else
                 {
@@ -134,14 +168,17 @@ namespace AVS.Engines
         {
             if (0 < inputMagnitude)
             {
-                ForwardMomentum = ForwardMomentum + inputMagnitude * FORWARD_ACCEL * Time.fixedDeltaTime;
+                ForwardMomentum = ForwardMomentum + inputMagnitude * ForwardAcceleration * Time.fixedDeltaTime;
             }
             else
             {
-                ForwardMomentum = ForwardMomentum + inputMagnitude * REVERSE_ACCEL * Time.fixedDeltaTime;
+                ForwardMomentum = ForwardMomentum + inputMagnitude * ReverseAcceleration * Time.fixedDeltaTime;
             }
         }
 
+        /// <summary>
+        /// Current right (strafe) momentum of the vehicle.
+        /// </summary>
         protected float _rightMomentum = 0;
 
         /// <summary>
@@ -155,13 +192,13 @@ namespace AVS.Engines
             }
             set
             {
-                if (value < -STRAFE_MAX_SPEED)
+                if (value < -StrafeMaxSpeed)
                 {
-                    _rightMomentum = -STRAFE_MAX_SPEED;
+                    _rightMomentum = -StrafeMaxSpeed;
                 }
-                else if (STRAFE_MAX_SPEED < value)
+                else if (StrafeMaxSpeed < value)
                 {
-                    _rightMomentum = STRAFE_MAX_SPEED;
+                    _rightMomentum = StrafeMaxSpeed;
                 }
                 else
                 {
@@ -178,7 +215,7 @@ namespace AVS.Engines
         {
             if (inputMagnitude != 0)
             {
-                RightMomentum += inputMagnitude * STRAFE_ACCEL * Time.fixedDeltaTime;
+                RightMomentum += inputMagnitude * StrafeAcceleration * Time.fixedDeltaTime;
             }
         }
 
@@ -195,13 +232,13 @@ namespace AVS.Engines
             }
             set
             {
-                if (value < -VERT_MAX_SPEED)
+                if (value < -VerticalMaxSpeed)
                 {
-                    _upMomentum = -VERT_MAX_SPEED;
+                    _upMomentum = -VerticalMaxSpeed;
                 }
-                else if (VERT_MAX_SPEED < value)
+                else if (VerticalMaxSpeed < value)
                 {
-                    _upMomentum = VERT_MAX_SPEED;
+                    _upMomentum = VerticalMaxSpeed;
                 }
                 else
                 {
@@ -216,7 +253,7 @@ namespace AVS.Engines
         /// <param name="inputMagnitude">Input value for upward movement.</param>
         protected virtual void UpdateUpMomentum(float inputMagnitude)
         {
-            UpMomentum += inputMagnitude * VERT_ACCEL * Time.fixedDeltaTime;
+            UpMomentum += inputMagnitude * VerticalAcceleration * Time.fixedDeltaTime;
         }
 
 
@@ -479,9 +516,9 @@ namespace AVS.Engines
         /// <returns>Maximum time to stop among all axes.</returns>
         public float GetTimeToStop()
         {
-            float timeToXStop = Mathf.Log(0.05f * STRAFE_MAX_SPEED / RightMomentum) / (Mathf.Log(.25f));
-            float timeToYStop = Mathf.Log(0.05f * VERT_MAX_SPEED / UpMomentum) / (Mathf.Log(.25f));
-            float timeToZStop = Mathf.Log(0.05f * FORWARD_TOP_SPEED / ForwardMomentum) / (Mathf.Log(.25f));
+            float timeToXStop = Mathf.Log(0.05f * StrafeMaxSpeed / RightMomentum) / (Mathf.Log(.25f));
+            float timeToYStop = Mathf.Log(0.05f * VerticalMaxSpeed / UpMomentum) / (Mathf.Log(.25f));
+            float timeToZStop = Mathf.Log(0.05f * ForwardTopSpeed / ForwardMomentum) / (Mathf.Log(.25f));
             return Mathf.Max(timeToXStop, timeToYStop, timeToZStop);
         }
         #endregion

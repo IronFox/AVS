@@ -5,9 +5,15 @@ using UnityEngine;
 
 namespace AVS
 {
+    /// <summary>
+    /// Controller for the headlights of a vehicle.
+    /// </summary>
     public class HeadlightsController : BaseLightController
     {
+
         private AvsVehicle MV => GetComponent<AvsVehicle>();
+
+        /// <inheritdoc/>
         protected override void HandleLighting(bool active)
         {
             MV.Com.Headlights.ForEach(x => x.Light.SetActive(active));
@@ -24,6 +30,7 @@ namespace AVS
             }
         }
 
+        /// <inheritdoc/>
         protected override void HandleSound(bool turnOn)
         {
             if (turnOn)
@@ -38,6 +45,7 @@ namespace AVS
             }
         }
 
+        /// <inheritdoc/>
         protected virtual void Awake()
         {
             LogWriter.Default.Debug($"Awake {this.NiceName()} for {MV.NiceName()}: {MV.Com.Headlights.Count} head light(s)");
@@ -48,6 +56,7 @@ namespace AVS
             }
         }
 
+        /// <inheritdoc/>
         protected virtual void Update()
         {
             var isHeadlightsButtonPressed = GameInput.GetButtonDown(GameInput.Button.RightHand);

@@ -1,5 +1,4 @@
-﻿using AVS.Assets;
-using AVS.BaseVehicle;
+﻿using AVS.BaseVehicle;
 using AVS.MaterialAdapt;
 using AVS.VehicleComponents;
 using System;
@@ -17,7 +16,7 @@ namespace AVS.Configuration
         /// Sprite to show when the camera is sufficiently far away while the vehicle is not boarded.
         /// Also used on the map, if used.
         /// </summary>
-        public Atlas.Sprite PingSprite { get; }
+        public Sprite PingSprite { get; }
         /// <summary>
         /// Sprite to attach to the save file in the preview.
         /// Should be very abstract, ideally just an outline.
@@ -51,11 +50,11 @@ namespace AVS.Configuration
         /// <summary>
         /// The sprite to show in the crafting menu of the mobile vehicle bay.
         /// </summary>
-        public Atlas.Sprite CraftingSprite { get; }
+        public Sprite CraftingSprite { get; }
         /// <summary>
         /// The image to show in the background of the vehicle's module menu.
         /// </summary>
-        public Sprite? ModuleBackgroundImage { get; } = SpriteHelper.GetSpriteRaw("Sprites/VFModuleBackground.png");
+        public Sprite? ModuleBackgroundImage { get; }
         /// <summary>
         /// Type that, if unlocked, also automatically unlocks this vehicle for crafting.
         /// </summary>
@@ -260,11 +259,11 @@ namespace AVS.Configuration
         /// <param name="canEnterHelmWithoutPower">True if the player can enter the helm of the vehicle even if the vehicle has no power.</param>
         public VehicleConfiguration(
 
-            Atlas.Sprite pingSprite,
+            Sprite pingSprite,
             Sprite saveFileSprite,
             Sprite unlockedSprite,
             Sprite moduleBackgroundImage,
-            Atlas.Sprite craftingSprite,
+            Sprite craftingSprite,
             VehicleColor? initialBaseColor = null,
             VehicleColor? initialStripeColor = null,
             VehicleColor? initialInteriorColor = null,
@@ -327,7 +326,7 @@ namespace AVS.Configuration
             EncyclopediaEntry = encyclopediaEntry;
             EncyclopediaImage = encyclopediaImage;
             CraftingSprite = craftingSprite;
-            ModuleBackgroundImage = moduleBackgroundImage ?? SpriteHelper.GetSpriteRaw("Sprites/VFModuleBackground.png");
+            ModuleBackgroundImage = moduleBackgroundImage;
             UnlockedWith = unlockedWith;
             MaxHealth = maxHealth;
             CrushDamage = crushDamage ?? (maxHealth / 15);

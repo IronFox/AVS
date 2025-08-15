@@ -125,7 +125,6 @@ namespace AVS.MaterialAdapt
         /// Also fixes undock material changes if <see cref="OnVehicleUndocked"/> was called before
         /// </summary>
         /// <remarks>Should be called from your vehicle Update() method</remarks>
-        /// <param name="subTransform">Root transform of your sub</param>
         public bool OnUpdate()
         {
             bool anyChanged = false;

@@ -29,7 +29,7 @@ namespace AVS
         /// <inheritdoc />
         public void Awake()
         {
-            UWE.CoroutineHost.StartCoroutine(GetSeamothBitsASAP());
+            MainPatcher.Instance.StartCoroutine(GetSeamothBitsASAP());
         }
 
         /// <summary>

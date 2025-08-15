@@ -49,7 +49,7 @@ namespace AVS.Util
                 yield return null;
                 UWE.Utils.ExitPhysicsSyncSection();
             }
-            UWE.CoroutineHost.StartCoroutine(waitForTeleport());
+            MainPatcher.Instance.StartCoroutine(waitForTeleport());
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace AVS.Util
         /// <param name="time">Time in seconds to become invincible</param>
         public static void GrantInvincibility(float time)
         {
-            UWE.CoroutineHost.StartCoroutine(IntlGrantPlayerInvincibility(3f));
+            MainPatcher.Instance.StartCoroutine(IntlGrantPlayerInvincibility(3f));
         }
         private static IEnumerator IntlGrantPlayerInvincibility(float time)
         {
@@ -73,7 +73,7 @@ namespace AVS.Util
         public static void SitDown()
         {
             Player.main.EnterSittingMode();
-            UWE.CoroutineHost.StartCoroutine(SitDownInChair());
+            MainPatcher.Instance.StartCoroutine(SitDownInChair());
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace AVS.Util
 
         public static void StandUp()
         {
-            UWE.CoroutineHost.StartCoroutine(StandUpFromChair());
+            MainPatcher.Instance.StartCoroutine(StandUpFromChair());
         }
 
         public static void ExitToSurface(Transform surfaceExitLocation)

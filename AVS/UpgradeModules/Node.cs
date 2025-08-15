@@ -1,6 +1,7 @@
 ﻿using AVS.Crafting;
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace AVS.UpgradeModules
 {
@@ -28,7 +29,7 @@ namespace AVS.UpgradeModules
         /// Gets the icon associated with this folder.
         /// Should not be null but loading may have failed, so it is nullable.
         /// </summary>
-        public Atlas.Sprite? Icon { get; }
+        public Sprite? Icon { get; }
 
         internal Dictionary<string, Node> Children { get; } = new Dictionary<string, Node>();
         internal List<AvsVehicleModule> Modules { get; } = new List<AvsVehicleModule>();
@@ -37,7 +38,7 @@ namespace AVS.UpgradeModules
         private Node(
             string identifier,
             string displayName,
-            Atlas.Sprite? icon,
+            Sprite? icon,
             Node? parent = null)
         {
             Identifier = identifier;
@@ -63,7 +64,7 @@ namespace AVS.UpgradeModules
         public static Node Create(
             string name,
             string displayName,
-            Atlas.Sprite? icon,
+            Sprite? icon,
             Node? parent = null)
         {
             name = CraftPath.Sanitize(name);
