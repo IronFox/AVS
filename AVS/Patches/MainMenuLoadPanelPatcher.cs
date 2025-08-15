@@ -52,9 +52,8 @@ namespace AVS.Patches
             // A SaveIcon should be square
             AddLoadButtonSprites(lb);
 
-            if (SaveLoadManagerPatcher.hasTechTypeGameInfo.ContainsKey(lb.saveGame))
+            if (SaveLoadManagerPatcher.HasTechTypeGameInfo.TryGetValue(lb.saveGame, out var hasTechTypes))
             {
-                List<string> hasTechTypes = SaveLoadManagerPatcher.hasTechTypeGameInfo[lb.saveGame];
                 hasTechTypes.ForEach(x => lb.saveIcons.FindChild(x).SafeSetActive(true));
             }
 

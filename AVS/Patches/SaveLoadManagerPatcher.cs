@@ -8,12 +8,20 @@ using System.Collections.Generic;
 
 namespace AVS.Patches
 {
-    // See also: MainMenuLoadPanelPatcher
+    /// <summary>
+    /// Patcher to load the ping tech types from a save file.
+    /// </summary>
     [HarmonyPatch(typeof(SaveLoadManager))]
     public class SaveLoadManagerPatcher
     {
-        public const string SaveFileSpritesFileName = "SaveFileSprites";
-        public static Dictionary<string, List<string>> hasTechTypeGameInfo = new Dictionary<string, List<string>>();
+        internal static string SaveFileSpritesFileName => MainPatcher.Instance.ClassPrefix + "SaveFileSprites";
+
+        private static readonly Dictionary<string, IReadOnlyList<string>> hasTechTypeGameInfo = new Dictionary<string, IReadOnlyList<string>>();
+
+        /// <summary>
+        /// The AVS tech types registered per save slot
+        /// </summary>
+        public static IReadOnlyDictionary<string, IReadOnlyList<string>> HasTechTypeGameInfo => hasTechTypeGameInfo;
 
         // This patch collects hasTechTypeGameInfo, in order to have save file sprites displayed on the save cards
         [HarmonyPostfix]
