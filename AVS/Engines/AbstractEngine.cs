@@ -35,7 +35,7 @@ namespace AVS.Engines
                     return mv;
                 mv = GetComponentInParent<AvsVehicle>();
                 if (mv == null)
-                    throw new System.Exception($"ModVehicle component not found on {gameObject.name}. Please ensure this engine is attached to a ModVehicle or its parent.");
+                    throw new System.Exception($"AvsVehicle component not found on {gameObject.name}. Please ensure this engine is attached to a AvsVehicle or its parent.");
                 return mv;
             }
         }

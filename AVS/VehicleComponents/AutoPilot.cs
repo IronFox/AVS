@@ -251,7 +251,7 @@ namespace AVS
             UpdatePowerState(listeners);
             UpdateDepthState(listeners);
 
-            //if (mv is Submarine s && s.DoesAutolevel && mv.VFEngine is Engines.ModVehicleEngine)
+            //if (mv is Submarine s && s.DoesAutolevel && mv.VFEngine is Engines.AvsVehicleEngine)
             //{
             //    MaybeAutoLevel(s);
             //    CheckForDoubleTap(s);
@@ -294,7 +294,7 @@ namespace AVS
         //            autoLeveling = true;
         //            var smoothTime1 = 5f * PitchDelta / 90f;
         //            var smoothTime2 = 5f * RollDelta / 90f;
-        //            var smoothTime3 = mv.GetComponent<AVS.Engines.ModVehicleEngine>().GetTimeToStop();
+        //            var smoothTime3 = mv.GetComponent<AVS.Engines.AvsVehicleEngine>().GetTimeToStop();
         //            smoothTime = Mathf.Max(smoothTime1, smoothTime2, smoothTime3);
         //        }
         //        else

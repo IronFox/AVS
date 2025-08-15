@@ -16,7 +16,7 @@ namespace AVS.Patches
      * The PowerRelay acts as an interface to EnergyInterface.
      * These patches ensure the PowerRelay does not Start.
      * 
-         * Why doesn't ModVehicle set its powerRelay?
+         * Why doesn't AvsVehicle set its powerRelay?
          * We don't set powerRelay because we need CurrentSub.
          * And CurrentSub calls OnPlayerEntered.
          * And OnPlayerEntered plays a voice notification we don't set up,
@@ -99,7 +99,7 @@ namespace AVS.Patches
 
         /* This transpiler simply replaces one method call with another.
          * It calls the method above, which is generic over the replaced method.
-         * It allows special handling in the case of a ModVehicle (which does not have a good PowerRelay, see top of file)
+         * It allows special handling in the case of a AvsVehicle (which does not have a good PowerRelay, see top of file)
          */
         [HarmonyPatch(nameof(Charger.Update))]
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

@@ -14,7 +14,7 @@ namespace AVS.Patches
     [HarmonyPatch(typeof(SaveLoadManager))]
     public class SaveLoadManagerPatcher
     {
-        internal static string SaveFileSpritesFileName => MainPatcher.Instance.ClassPrefix + "SaveFileSprites";
+        internal static string SaveFileSpritesFileName => MainPatcher.Instance.ModName + "SaveFileSprites";
 
         private static readonly Dictionary<string, IReadOnlyList<string>> hasTechTypeGameInfo = new Dictionary<string, IReadOnlyList<string>>();
 

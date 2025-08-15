@@ -8,7 +8,7 @@ using System.Linq;
 using System.Reflection.Emit;
 using UnityEngine;
 
-// PURPOSE: generally ensures ModVehicles behave like normal Vehicles
+// PURPOSE: generally ensures AvsVehicles behave like normal Vehicles
 // VALUE: Very high.
 
 namespace AVS
@@ -17,7 +17,7 @@ namespace AVS
     public class VehiclePatcher
     {
         /*
-         * This collection of patches generally ensures our ModVehicles behave like normal Vehicles.
+         * This collection of patches generally ensures our AvsVehicles behave like normal Vehicles.
          * Each will be commented if necessary
          */
 
@@ -124,7 +124,7 @@ namespace AVS
              * That is, it will be skipped if any other Prefix returns false.
              * This is desirable to be as "alike" normal Vehicles as possible;
              * in particular, this ensures compatibility with FreeLook
-             * We must control our ModVehicle rotation within the core Vehicle.Update code.
+             * We must control our AvsVehicle rotation within the core Vehicle.Update code.
              */
             List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
             List<CodeInstruction> newCodes = new List<CodeInstruction>(codes.Count + 2);
@@ -134,7 +134,7 @@ namespace AVS
                 newCodes.Add(myNOP);
             }
             // push reference to vehicle
-            // Call a static function which takes a vehicle and ControlsRotation if it's a ModVehicle
+            // Call a static function which takes a vehicle and ControlsRotation if it's a AvsVehicle
             newCodes[0] = new CodeInstruction(OpCodes.Ldarg_0);
             newCodes[1] = CodeInstruction.Call(typeof(AvsVehicle), nameof(AvsVehicle.MaybeControlRotation));
             for (int i = 0; i < codes.Count; i++)
@@ -187,7 +187,7 @@ namespace AVS
         /* This transpiler makes one part of UpdateEnergyRecharge more generic
          * Optionally change GetComponentInParent to GetComponentInParentButNotInMe
          * Simple as.
-         * The purpose is to ensure ModVehicles are recharged while docked.
+         * The purpose is to ensure AvsVehicles are recharged while docked.
          */
         [HarmonyPatch(nameof(Vehicle.UpdateEnergyRecharge))]
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)

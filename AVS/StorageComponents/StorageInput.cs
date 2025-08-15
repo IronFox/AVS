@@ -32,7 +32,7 @@ namespace AVS
             this.tr = GetComponent<Transform>();
             this.UpdateColliderState();
 
-            // go up in the transform heirarchy until we find the ModVehicle
+            // go up in the transform heirarchy until we find the AvsVehicle
             Transform modVe = transform;
             while (modVe.gameObject.GetComponent<AvsVehicle>() == null)
             {

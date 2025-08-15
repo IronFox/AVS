@@ -1,7 +1,7 @@
 ﻿using HarmonyLib;
 
 // PURPOSE: Force a fix on PingInstances that have a null origin.
-// VALUE: High, unfortunately. If GetPosition has an error, it causes subsequent ping instances to not be displayed, which looks like a Vehicle Framework bug. See uGUI_Pings.UpdatePings for more.
+// VALUE: High, unfortunately. If GetPosition has an error, it causes subsequent ping instances to not be displayed, which looks like a AVS bug. See uGUI_Pings.UpdatePings for more.
 
 namespace AVS.Patches
 {

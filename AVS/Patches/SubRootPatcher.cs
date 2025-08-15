@@ -273,7 +273,7 @@ namespace AVS.Patches
         {
             if (__instance.GetComponent<AvsVehicle>())
             {
-                __result = "ModVehicle";
+                __result = "AvsVehicle";
                 return false;
             }
             return true;

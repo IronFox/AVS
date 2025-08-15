@@ -206,7 +206,7 @@ namespace AVS
             Transform H = GetCornerCube(pointsRoot, localSize, localCenter, CornerValue.rightbotback);
             BuildPathsUsingCorners(go, pointsRoot, A, B, C, D, E, F, G, H);
         }
-        public static void BuildPathsForModVehicle(AvsVehicle mv, GameObject pointsRoot)
+        public static void BuildPathsForAvsVehicle(AvsVehicle mv, GameObject pointsRoot)
         {
             var box = mv.Com.BoundingBoxCollider;
             if (box != null)
@@ -234,7 +234,7 @@ namespace AVS
             if (mv != null && mv.Com.BoundingBoxCollider != null)
             {
                 bbPointsRoot.transform.localPosition = go.transform.InverseTransformPoint(mv.Com.BoundingBoxCollider.transform.position);
-                BuildPathsForModVehicle(mv, bbPointsRoot);
+                BuildPathsForAvsVehicle(mv, bbPointsRoot);
             }
             else
             {

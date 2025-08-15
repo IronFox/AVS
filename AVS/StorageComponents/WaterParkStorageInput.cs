@@ -8,7 +8,7 @@ namespace AVS.StorageComponents
         {
             if (mv == null)
             {
-                LogWriter.Default.Error("ModVehicle is null in WaterParkStorageInput.OpenFromExternal");
+                LogWriter.Default.Error("AvsVehicle is null in WaterParkStorageInput.OpenFromExternal");
                 return;
             }
             if (slotID >= mv.Com.WaterParks.Count)
@@ -34,7 +34,7 @@ namespace AVS.StorageComponents
         {
             if (mv == null)
             {
-                LogWriter.Default.Error("ModVehicle is null in WaterParkStorageInput.OpenPDA");
+                LogWriter.Default.Error("AvsVehicle is null in WaterParkStorageInput.OpenPDA");
                 return;
             }
             if (slotID >= mv.Com.WaterParks.Count)

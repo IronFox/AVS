@@ -5,7 +5,7 @@ using System.Collections;
 using UnityEngine;
 
 // PURPOSE: configure timeToConstruct. Broadcasts the SubConstructionBeginning signal. Manages the building fx colors.
-// VALUE: Very high. Important ModVehicle and developer utilities.
+// VALUE: Very high. Important AvsVehicle and developer utilities.
 
 namespace AVS.Patches
 {

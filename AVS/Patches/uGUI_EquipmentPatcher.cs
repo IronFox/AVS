@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-// PURPOSE: PDA displays ModVehicle upgrades correctly
+// PURPOSE: PDA displays AvsVehicle upgrades correctly
 // VALUE: Very high.
 
 namespace AVS
@@ -13,7 +13,7 @@ namespace AVS
         /*
          * This collection of patches ensures our upgrade slots mesh well
          * with the base-game uGUI_Equipment system.
-         * That is, we ensure here that our PDA displays ModVehicle upgrades correctly
+         * That is, we ensure here that our PDA displays AvsVehicle upgrades correctly
          */
         [HarmonyPostfix]
         [HarmonyPatch(nameof(uGUI_Equipment.Awake))]

@@ -7,7 +7,7 @@ namespace AVS.Assets
 {
     internal static class AvsFabricator
     {
-        private static string ClassID => MainPatcher.Instance.ClassPrefix + "FabricatorClassID";
+        private static string ClassID => MainPatcher.Instance.ModName + "FabricatorClassID";
         private static string DisplayName { get; } = Translator.Get(TranslationKey.Fabricator_DisplayName);
         private static string Description { get; } = Translator.Get(TranslationKey.Fabricator_Description);
         internal static CraftTree.Type TreeType { get; set; } = default;

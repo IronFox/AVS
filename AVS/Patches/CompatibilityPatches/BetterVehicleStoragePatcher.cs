@@ -11,7 +11,7 @@ namespace AVS.Patches.CompatibilityPatches
     {
         /*
          * This patch is specifically for the Better Vehicle Storage Mod.
-         * It allows the storage containers to be added to ModVehicles.
+         * It allows the storage containers to be added to AvsVehicles.
          */
         [HarmonyPrefix]
         public static bool Prefix(object __instance, Equipment equipment, ref bool __result)

@@ -1,7 +1,4 @@
 ﻿using BepInEx.Bootstrap;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 using System;
 
 namespace AVS
@@ -18,7 +15,7 @@ namespace AVS
                 CheckForBuildingTweaks();
                 CheckForVanillaExpanded();
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Logger.LogException("Failed to check compatibility notes.", e);
                 ShowError("Failed to check for compatibility notes. Something went wrong!");
@@ -28,11 +25,11 @@ namespace AVS
         #region private_utilities
         private static void ShowError(string message)
         {
-            Logger.LoopMainMenuError(message, "Vehicle Framework");
+            Logger.LoopMainMenuError(message, MainPatcher.Instance.ModName);
         }
         private static void ShowWarning(string message)
         {
-            Logger.LoopMainMenuWarning(message, "Vehicle Framework");
+            Logger.LoopMainMenuWarning(message, MainPatcher.Instance.ModName);
         }
         #endregion
 
@@ -76,7 +73,7 @@ namespace AVS
             const string buildingTweaksGUID = "BuildingTweaks";
             if (Chainloader.PluginInfos.ContainsKey(buildingTweaksGUID))
             {
-                ShowWarning("Do not use BuildingTweaks to build things inside/on Vehicle Framework submarines!");
+                ShowWarning("Do not use BuildingTweaks to build things inside/on AVS submarines!");
                 Logger.Log("Using some BuildingTweaks options to build things inside submarines can prevent those buildables from correctly anchoring to the submarine. Be careful.");
             }
         }
@@ -86,7 +83,7 @@ namespace AVS
             if (Chainloader.PluginInfos.ContainsKey(vanillaExpandedGUID))
             {
                 ShowError("Some vehicles not compatible with Vanilla Expanded!");
-                Logger.Log("Vanilla Expanded has a patch on UniqueIdentifier.Awake that throws an error (dereferences null) during many Vehicle Framework setup methods. If you choose to continue, some vehicles, buildables, and fragments may simply not appear.");
+                Logger.Log("Vanilla Expanded has a patch on UniqueIdentifier.Awake that throws an error (dereferences null) during many AVS setup methods. If you choose to continue, some vehicles, buildables, and fragments may simply not appear.");
             }
         }
         #endregion

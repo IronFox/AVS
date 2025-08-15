@@ -52,7 +52,7 @@ namespace AVS.Admin
             LogWriter.Default.Write(
                 "Registering depth modules");
             var folder = Node.Create(
-                MainPatcher.Instance.ClassPrefix + "DepthModules",
+                MainPatcher.Instance.ModName + "DepthModules",
                 Translator.Get(TranslationKey.Fabricator_Node_DepthModules),
                 MainPatcher.Instance.DepthModuleNodeIcon);
 

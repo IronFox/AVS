@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 
-// PURPOSE: ensures ModVehicles are built normally despite the presence of the Chameleon sub
+// PURPOSE: ensures AvsVehicles are built normally despite the presence of the Chameleon sub
 // VALUE: High, unfortunately. As you can see, the prefix is empty. Odd!
 
 namespace AVS.Patches.CompatibilityPatches

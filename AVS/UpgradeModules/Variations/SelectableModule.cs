@@ -47,7 +47,7 @@
         public virtual float EnergyCost => 0;
         public virtual void OnSelected(Params param)
         {
-            Logger.DebugLog(this, "Selecting " + ClassId + " on ModVehicle: " + param.Vehicle.subName.name + " in slotID: " + param.SlotID.ToString());
+            Logger.DebugLog(this, "Selecting " + ClassId + " on AvsVehicle: " + param.Vehicle.subName.name + " in slotID: " + param.SlotID.ToString());
         }
 
     }

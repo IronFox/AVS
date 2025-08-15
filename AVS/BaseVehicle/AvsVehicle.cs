@@ -12,8 +12,8 @@ using UnityEngine;
 namespace AVS.BaseVehicle
 {
     /// <summary>
-    /// ModVehicle is the primary abstract class provided by Vehicle Framework. 
-    /// All VF vehicles inherit from ModVehicle.
+    /// AvsVehicle is the primary abstract class provided by AVS. 
+    /// All AVS vehicles inherit from this class.
     /// </summary>
     public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEventListener, ILogFilter
     {
@@ -188,7 +188,7 @@ namespace AVS.BaseVehicle
 
             base.Awake();
 
-            AvsVehicleManager.EnrollVehicle(this); // Register our new vehicle with Vehicle Framework
+            AvsVehicleManager.EnrollVehicle(this); // Register our new vehicle with AVS
             UpgradeOnAddedActions.Add(StorageModuleAction);
             UpgradeOnAddedActions.Add(ArmorPlatingModuleAction);
             UpgradeOnAddedActions.Add(PowerUpgradeModuleAction);

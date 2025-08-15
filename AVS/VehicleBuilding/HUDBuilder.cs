@@ -103,7 +103,7 @@ namespace AVS
             // copy the seamoth hud for now
             GameObject seamothHUDElementsRoot = uGUI.main.transform.Find("ScreenCanvas/HUD/Content/Seamoth").gameObject;
             GameObject mvHUDElementsRoot = GameObject.Instantiate(seamothHUDElementsRoot, uGUI.main.transform.Find("ScreenCanvas/HUD/Content"));
-            mvHUDElementsRoot.name = "ModVehicleStorage";
+            mvHUDElementsRoot.name = "AvsVehicleStorage";
             Vector3 offset = mvHUDElementsRoot.transform.localPosition;
             mvHUDElementsRoot.transform.localPosition = Vector3.zero;
 
@@ -140,7 +140,7 @@ namespace AVS
 
         public static void BuildVRHUD(GameObject VRVehicleCanvas)
         {
-            // Now we want to add our ModVehicle HUD to the standard HUD.
+            // Now we want to add our AvsVehicle HUD to the standard HUD.
             // We don't want to use the actual "vr vehicle hud"
             // but we're going to grab the copy of the seamoth HUD from the "vr vehicle hud"
             GameObject seamothHUDElementsRoot = VRVehicleCanvas.transform.Find("Seamoth").gameObject;

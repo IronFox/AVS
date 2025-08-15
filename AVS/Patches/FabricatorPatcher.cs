@@ -43,8 +43,8 @@ namespace AVS.Patches
             }
             if (powerRelay.powerPreview == null)
             {
-                // if powerRelay.powerPreview was null, we must be talking about a ModVehicle
-                // (it was never assigned because PowerRelay.Start is skipped for ModVehicles)
+                // if powerRelay.powerPreview was null, we must be talking about a AvsVehicle
+                // (it was never assigned because PowerRelay.Start is skipped for AvsVehicles)
                 // so let's check for one
                 AvsVehicle? mv = null;
                 foreach (AvsVehicle tempMV in AvsVehicleManager.VehiclesInPlay)

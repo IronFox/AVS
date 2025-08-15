@@ -290,7 +290,7 @@ namespace AVS.BaseVehicle
             }
             catch (Exception e)
             {
-                LogWriter.Default.Error("There was a problem setting up the Modular Storage. Check VehicleStorage.Container and ModVehicle.StorageRootObject", e);
+                LogWriter.Default.Error("There was a problem setting up the Modular Storage. Check VehicleStorage.Container and AvsVehicle.StorageRootObject", e);
                 return false;
             }
         }
@@ -331,7 +331,7 @@ namespace AVS.BaseVehicle
             }
             catch (Exception e)
             {
-                LogWriter.Default.Error("There was a problem setting up the Innate Storage. Check VehicleStorage.Container and ModVehicle.StorageRootObject", e);
+                LogWriter.Default.Error("There was a problem setting up the Innate Storage. Check VehicleStorage.Container and AvsVehicle.StorageRootObject", e);
                 return false;
             }
         }
@@ -381,7 +381,7 @@ namespace AVS.BaseVehicle
             }
             catch (Exception e)
             {
-                LogWriter.Default.Error("There was a problem setting up the Innate Storage. Check VehicleStorage.Container and ModVehicle.StorageRootObject", e);
+                LogWriter.Default.Error("There was a problem setting up the Innate Storage. Check VehicleStorage.Container and AvsVehicle.StorageRootObject", e);
                 return false;
             }
         }

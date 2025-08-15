@@ -170,7 +170,7 @@ namespace AVS
             }
             catch (Exception e)
             {
-                LogWriter.Default.Error("There was a problem setting up the Control Panel. Check ModVehicle.ControlPanel and ensure \"Control-Panel-Location\" exists at the top level of your model. While you're at it, check that \"Fabricator-Location\" is at the top level of your model too.", e);
+                LogWriter.Default.Error("There was a problem setting up the Control Panel. Check AvsVehicle.ControlPanel and ensure \"Control-Panel-Location\" exists at the top level of your model. While you're at it, check that \"Fabricator-Location\" is at the top level of your model too.", e);
                 return false;
             }
             return true;
@@ -369,7 +369,7 @@ namespace AVS
              * Prawn dies from max health in 3:00 minutes.
              * Seamoth in 0:30
              * Cyclops in 3:45
-             * So ModVehicles can die in 3:00 as well
+             * So AvsVehicles can die in 3:00 as well
              */
             mv.crushDamageEmitter = container;
             mv.crushDamage = mv.gameObject.EnsureComponent<CrushDamage>();
@@ -544,7 +544,7 @@ namespace AVS
 
             if (!SetupObjects(mv as AvsVehicle))
             {
-                LogWriter.Default.Error("Failed to SetupObjects for ModVehicle.");
+                LogWriter.Default.Error("Failed to SetupObjects for AvsVehicle.");
                 return false;
             }
             if ((mv is Submarine sub) && !SetupObjects(sub))
@@ -609,7 +609,7 @@ namespace AVS
                 }
             }
         }
-        //public static void ApplyShaders(ModVehicle mv, Shader shader)
+        //public static void ApplyShaders(AvsVehicle mv, Shader shader)
         //{
         //    if (mv.Config.AutoFixMaterials)
         //    {

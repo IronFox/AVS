@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 
-// PURPOSE: Allow ModVehicles to use (and have displayed) custom ping sprites.
+// PURPOSE: Allow AvsVehicles to use (and have displayed) custom ping sprites.
 // VALUE: Very high.
 
 namespace AVS
@@ -43,7 +43,7 @@ namespace AVS
             return newCodes.AsEnumerable();
         }
 
-        // This prefix ensures ModVehicles have their names displayed correctly in the ping tab.
+        // This prefix ensures AvsVehicles have their names displayed correctly in the ping tab.
         [HarmonyPrefix]
         [HarmonyPatch(nameof(uGUI_PingEntry.UpdateLabel))]
         public static bool uGUI_PingEntryUpdateLabelPrefix(uGUI_PingEntry __instance, PingType type, string name)

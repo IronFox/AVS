@@ -8,7 +8,7 @@ namespace AVS
         {
             if (mv == null)
             {
-                Debug.LogError("ModVehicle is null in InnateStorageInput.OpenFromExternal");
+                Debug.LogError("AvsVehicle is null in InnateStorageInput.OpenFromExternal");
                 return;
             }
             var storageInSlot = mv.ModGetStorageInSlot(slotID, AvsVehicleBuilder.InnateStorage);
@@ -23,7 +23,7 @@ namespace AVS
         {
             if (mv == null)
             {
-                Debug.LogError("ModVehicle is null in InnateStorageInput.OpenPDA");
+                Debug.LogError("AvsVehicle is null in InnateStorageInput.OpenPDA");
                 return;
             }
             var storageInSlot = mv.ModGetStorageInSlot(slotID, AvsVehicleBuilder.InnateStorage);

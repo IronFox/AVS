@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 
-// PURPOSE: Allow ModVehicles to use (and have displayed) custom ping sprites.
+// PURPOSE: Allow AvsVehicles to use (and have displayed) custom ping sprites.
 // VALUE: Very high.
 
 namespace AVS

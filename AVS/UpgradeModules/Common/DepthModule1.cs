@@ -14,7 +14,7 @@ namespace AVS.UpgradeModules.Common
     internal class DepthModule1 : DepthModuleBase<DepthModule1>
     {
         /// <inheritdoc/>
-        public override string ClassId => MainPatcher.Instance.ClassPrefix + "DepthModule1";
+        public override string ClassId => MainPatcher.Instance.ModName + "DepthModule1";
         /// <inheritdoc/>
         public override string DisplayName => Translator.Get(TranslationKey.Module_Depth1_DisplayName);
         /// <inheritdoc/>

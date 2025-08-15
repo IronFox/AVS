@@ -31,7 +31,7 @@ namespace AVS.SaveLoad
         {
             return new List<Tuple<Vector3, Dictionary<string, techtype>>>();
         }
-        //internal static IEnumerator DeserializeUpgrades(SaveData data, ModVehicle mv)
+        //internal static IEnumerator DeserializeUpgrades(SaveData data, AvsVehicle mv)
         //{
         //    if (data == null || mv == null || data.UpgradeLists == null)
         //    {
@@ -73,7 +73,7 @@ namespace AVS.SaveLoad
         {
             return new List<Tuple<Vector3, List<Tuple<int, batteries>>>>();
         }
-        //internal static IEnumerator DeserializeModularStorage(SaveData data, ModVehicle mv)
+        //internal static IEnumerator DeserializeModularStorage(SaveData data, AvsVehicle mv)
         //{
         //    if (data == null || mv == null || data.ModularStorages == null)
         //    {
@@ -154,7 +154,7 @@ namespace AVS.SaveLoad
         {
             return new List<Tuple<Vector3, List<Tuple<Vector3, batteries>>>>();
         }
-        //internal static IEnumerator DeserializeInnateStorage(SaveData data, ModVehicle mv)
+        //internal static IEnumerator DeserializeInnateStorage(SaveData data, AvsVehicle mv)
         //{
         //    if (data == null || mv == null || data.InnateStorages == null)
         //    {
@@ -215,7 +215,7 @@ namespace AVS.SaveLoad
         {
             return new List<Tuple<Vector3, batteries>>();
         }
-        //internal static IEnumerator DeserializeBatteries(SaveData data, ModVehicle mv)
+        //internal static IEnumerator DeserializeBatteries(SaveData data, AvsVehicle mv)
         //{
         //    if (data == null || mv == null || data.Batteries == null)
         //    {
@@ -303,7 +303,7 @@ namespace AVS.SaveLoad
         {
             return new List<Tuple<Vector3, bool>>();
         }
-        //internal static IEnumerator DeserializePlayerInside(SaveData data, ModVehicle mv)
+        //internal static IEnumerator DeserializePlayerInside(SaveData data, AvsVehicle mv)
         //{
         //    if (data == null || mv == null || data.IsPlayerInside == null)
         //    {
@@ -329,7 +329,7 @@ namespace AVS.SaveLoad
         {
             return new List<Tuple<Vector3, string, color, color, color, color, bool>>();
         }
-        //internal static IEnumerator DeserializeAesthetics(SaveData data, ModVehicle mv)
+        //internal static IEnumerator DeserializeAesthetics(SaveData data, AvsVehicle mv)
         //{
         //    if (data == null || mv == null || data.AllVehiclesAesthetics == null)
         //    {
@@ -404,7 +404,7 @@ namespace AVS.SaveLoad
         {
             return new List<Tuple<Vector3, bool>>();
         }
-        //internal static IEnumerator DeserializePlayerControlling(SaveData data, ModVehicle mv)
+        //internal static IEnumerator DeserializePlayerControlling(SaveData data, AvsVehicle mv)
         //{
         //    if (data == null || mv == null || data.IsPlayerControlling == null)
         //    {
@@ -430,7 +430,7 @@ namespace AVS.SaveLoad
         {
             return new List<Tuple<Vector3, string>>();
         }
-        //internal static IEnumerator DeserializeSubName(SaveData data, ModVehicle mv)
+        //internal static IEnumerator DeserializeSubName(SaveData data, AvsVehicle mv)
         //{
         //    if (data == null || mv == null || data.SubNames == null)
         //    {

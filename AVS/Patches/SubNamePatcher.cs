@@ -2,7 +2,7 @@
 using HarmonyLib;
 using UnityEngine;
 
-// PURPOSE: Create ModVehicle API for changing colors via normal routines (eg MoonPool terminal)
+// PURPOSE: Create AvsVehicle API for changing colors via normal routines (eg MoonPool terminal)
 // VALUE: High.
 
 namespace AVS.Patches

@@ -67,9 +67,11 @@ namespace AVS
         public abstract string PluginId { get; }
 
         /// <summary>
+        /// Simple name of the plugin, used for logging and identification.
+        /// Should be a short, human-readable name without spaces or special characters.
         /// Prefix used for registered identifiers so to not collide with other mods.
         /// </summary>
-        public abstract string ClassPrefix { get; }
+        public abstract string ModName { get; }
 
 
         //internal static VFConfig VFConfig { get; private set; }
@@ -238,7 +240,7 @@ namespace AVS
                 harmony.Patch(awakePostOriginal, awakePostfix);
             }
 
-            // Patch BetterVehicleStorage to add ModVehicle compat
+            // Patch BetterVehicleStorage to add AvsVehicle compat
             var type3 = Type.GetType("BetterVehicleStorage.Managers.StorageModuleMgr, BetterVehicleStorage", false, false);
             if (type3 != null)
             {

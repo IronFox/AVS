@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using System.Reflection.Emit;
 using UnityEngine;
 
-// PURPOSE: allow ModVehicles to use in-game docking bays
+// PURPOSE: allow AvsVehicles to use in-game docking bays
 // VALUE: High.
 
 namespace AVS.Patches
 {
     // This set of patches modulates the moonpool docking bay behavior
     // It governs:
-    // - accepting a ModVehicle for docking
+    // - accepting a AvsVehicle for docking
     // - animating the docking bay arms
     // - alerting the vehicle it has been docked
     // See DockedVehicleHandTargetPatcher for undocking actions
@@ -135,7 +135,7 @@ namespace AVS.Patches
                 }
                 else
                 {
-                    mv.Log.Warn("Vehicle Framework is not aware of this dock. The player is probably in a weird position now.");
+                    mv.Log.Warn(MainPatcher.Instance.ModName + " AVS is not aware of this dock. The player is probably in a weird position now.");
                     mv.DockVehicle();
                 }
             }
@@ -171,7 +171,7 @@ namespace AVS.Patches
 
         [HarmonyPrefix]
         [HarmonyPatch(nameof(VehicleDockingBay.OnTriggerEnter))]
-        // This patch controls whether to dock a ModVehicle. Only small ModVehicles are accepted.
+        // This patch controls whether to dock a AvsVehicle. Only small AvsVehicles are accepted.
         public static bool OnTriggerEnterPrefix(VehicleDockingBay __instance, Collider other)
         {
             return IsThisDockable(__instance, other.gameObject);

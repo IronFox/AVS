@@ -129,7 +129,7 @@ namespace AVS.Assets
             return entryData;
         }
         /// <summary>
-        /// Registers a fragment using a FragmentData struct as input. For a ModVehicle, you can access its techtype AFTER registration like this:
+        /// Registers a fragment using a FragmentData struct as input. For an AvsVehicle, you can access its techtype AFTER registration like this:
         /// vehicle.GetComponent&lt;TechTag&gt;().type
         /// </summary>
         /// <returns>The TechType of the new fragment.</returns>
