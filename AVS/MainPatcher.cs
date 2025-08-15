@@ -85,6 +85,10 @@ namespace AVS
         public virtual void Awake()
         {
             AVS.Logger.Init(Logger);
+            var assembly = typeof(MainPatcher).Assembly;
+            var name = assembly.GetName();
+            //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
+            LogWriter.Default.Write($"Booting AVS {name.Version} from {assembly.Location} for {PluginId}.");
             LogWriter.Default.Write("AVS MainPatcher Awake started.");
 
             Nautilus.Handlers.LanguageHandler.RegisterLocalizationFolder();
@@ -128,7 +132,7 @@ namespace AVS
             StartCoroutine(CollectPrefabsForBuilderReference());
             //LogWriter.Default.Write("Assets.StaticAssets.GetSprites()");
             //Assets.StaticAssets.GetSprites();
-            LogWriter.Default.Write("Assets.AVSFabricator.CreateAndRegister()");
+            LogWriter.Default.Write("Assets.AvsFabricator.CreateAndRegister()");
             Assets.AvsFabricator.CreateAndRegister(Images.FabricatorIcon.Sprite);
             //LogWriter.Default.Write("Admin.CraftTreeHandler.AddFabricatorMenus()");
             //CraftTreeHandler.AddFabricatorMenus();
