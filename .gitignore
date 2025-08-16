@@ -53,3 +53,4 @@ TestResult.xml
 nunit-*.xml
 /.vs/
 /Deploy/
+/AVS.sln.DotSettings.user
