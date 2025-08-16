@@ -7,6 +7,17 @@ using UnityEngine;
 
 namespace AVS.Patches
 {
+    /// <summary>
+    /// The WaterClipProxyPatcher class is designed to apply patches to the
+    /// WaterClipProxy class, enabling improved handling for instances
+    /// with negative scaling. This patch ensures the behavior of
+    /// WaterClipProxy objects is more intuitive and consistent in such scenarios.
+    /// </summary>
+    /// <remarks>
+    /// This patch introduces moderate value for specific use cases where
+    /// negative scaling of WaterClipProxy objects might cause unintended
+    /// or non-intuitive behavior, ensuring smoother and more predictable outcomes.
+    /// </remarks>
     [HarmonyPatch(typeof(WaterClipProxy))]
     class WaterClipProxyPatcher
     {

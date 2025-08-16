@@ -6,7 +6,7 @@ namespace AVS.VehicleComponents
 {
 	// damage from anywhere can wreck certain subsystems
 	// then they must be repaired on-site.
-	public static class VehicleDamageTrackerExtensions
+	internal static class VehicleDamageTrackerExtensions
 	{
 		public static VehicleDamageTracker WithSubsystem(this VehicleDamageTracker vdt, Subsystem sys)
 		{
@@ -17,7 +17,7 @@ namespace AVS.VehicleComponents
 			return vdt;
 		}
 	}
-    public class VehicleDamageTracker : MonoBehaviour, IOnTakeDamage
+	internal class VehicleDamageTracker : MonoBehaviour, IOnTakeDamage
     {
 		internal readonly List<Subsystem> subsystems = new List<Subsystem>();
         void IOnTakeDamage.OnTakeDamage(DamageInfo damageInfo)

@@ -6,9 +6,20 @@ using UnityEngine;
 
 namespace AVS.Patches
 {
+    /// <summary>
+    /// The PlaceToolPatcher class applies patches to the PlaceTool methods using Harmony.
+    /// It ensures that objects placed in the game maintain proper hierarchies and are correctly parented,
+    /// especially when working with submarine-type vehicles.
+    /// </summary>
     [HarmonyPatch(typeof(PlaceTool))]
     public class PlaceToolPatcher
     {
+        /// <summary>
+        /// Postfix method that modifies the behavior of the PlaceTool's OnPlace method.
+        /// Ensures that objects placed in the game, particularly within submarine-type
+        /// vehicles, are properly parented to maintain correct hierarchies.
+        /// </summary>
+        /// <param name="__instance">The instance of the PlaceTool being patched.</param>
         [HarmonyPostfix]
         [HarmonyPatch(nameof(PlaceTool.OnPlace))]
         public static void OnPlacePostfix(PlaceTool __instance)
@@ -38,6 +49,13 @@ namespace AVS.Patches
                 }
             }
         }
+
+        /// <summary>
+        /// Prefix method that modifies the behavior of the PlaceTool's LateUpdate method.
+        /// Ensures proper parenting and hierarchy adjustments for objects interacting with
+        /// submarine-type vehicles when the player is present.
+        /// </summary>
+        /// <param name="__instance">The instance of the PlaceTool being patched.</param>
         [HarmonyPrefix]
         [HarmonyPatch(nameof(PlaceTool.LateUpdate))]
         public static void LateUpdatePrefix(PlaceTool __instance)

@@ -1,11 +1,12 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Localization;
 using UnityEngine;
+
 //using AVS.Localization;
 
-namespace AVS
+namespace AVS.StorageComponents
 {
-    public abstract class StorageInput : HandTarget, IHandTarget
+    internal abstract class StorageInput : HandTarget, IHandTarget
     {
         public AvsVehicle? mv;
         public int slotID = -1;

@@ -1,6 +1,7 @@
 ﻿using AVS.Engines;
 using System;
 using System.Collections.Generic;
+using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS.Composition
@@ -36,17 +37,17 @@ namespace AVS.Composition
         /// Entry/exit hatches for the submarine.
         /// Required not empty
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleHatchDefinition> Hatches { get; } = Array.Empty<VehicleParts.VehicleHatchDefinition>();
+        public IReadOnlyList<VehicleHatchDefinition> Hatches { get; } = Array.Empty<VehicleHatchDefinition>();
 
         /// <summary>
         /// Power cell definitions. Can be empty which disallows any batteries.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleBatteryDefinition> Batteries { get; } = Array.Empty<VehicleParts.VehicleBatteryDefinition>();
+        public IReadOnlyList<VehicleBatteryDefinition> Batteries { get; } = Array.Empty<VehicleBatteryDefinition>();
 
         /// <summary>
         /// Upgrade module definitions. Can be empty which disallows any upgrades.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleUpgrades> Upgrades { get; } = Array.Empty<VehicleParts.VehicleUpgrades>();
+        public IReadOnlyList<VehicleUpgrades> Upgrades { get; } = Array.Empty<VehicleUpgrades>();
 
         /// <summary>
         /// Single box collider that contains the entire vehicle.
@@ -65,21 +66,21 @@ namespace AVS.Composition
         /// <summary>
         /// Mobile water parks in the vehicle.
         /// </summary>
-        public IReadOnlyList<VehicleParts.MobileWaterPark> WaterParks { get; }
+        public IReadOnlyList<MobileWaterPark> WaterParks { get; }
 
         /// <summary>
         /// Storages that the vehicle always has.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleStorage> InnateStorages { get; }
+        public IReadOnlyList<VehicleStorage> InnateStorages { get; }
         /// <summary>
         /// Storages that can be added to the vehicle by the player.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleStorage> ModularStorages { get; }
+        public IReadOnlyList<VehicleStorage> ModularStorages { get; }
 
         /// <summary>
         /// Collection and configuration of headlights, to be rendered volumetrically while the player is outside the vehicle.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleSpotLightDefinition> Headlights { get; } = Array.Empty<VehicleParts.VehicleSpotLightDefinition>();
+        public IReadOnlyList<VehicleSpotLightDefinition> Headlights { get; } = Array.Empty<VehicleSpotLightDefinition>();
 
         /// <summary>
         /// Window objects automatically hidden when the vehicle is being piloted as to avoid reflections.
@@ -89,7 +90,7 @@ namespace AVS.Composition
         /// <summary>
         /// Batteries exclusively used for the AI. Not sure anyone uses these.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleBatteryDefinition> BackupBatteries { get; } = Array.Empty<VehicleParts.VehicleBatteryDefinition>();
+        public IReadOnlyList<VehicleBatteryDefinition> BackupBatteries { get; } = Array.Empty<VehicleBatteryDefinition>();
 
 
         /// <summary>
@@ -151,23 +152,23 @@ namespace AVS.Composition
         public VehicleComposition(
             GameObject storageRootObject,
             GameObject modulesRootObject,
-            IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
+            IReadOnlyList<VehicleHatchDefinition> hatches,
             AbstractEngine engine,
             GameObject[] collisionModel,
-            IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? batteries = null,
-            IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
+            IReadOnlyList<VehicleBatteryDefinition>? batteries = null,
+            IReadOnlyList<VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,
             IReadOnlyList<GameObject>? waterClipProxies = null,
-            IReadOnlyList<VehicleParts.VehicleStorage>? innateStorages = null,
-            IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
-            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? headlights = null,
+            IReadOnlyList<VehicleStorage>? innateStorages = null,
+            IReadOnlyList<VehicleStorage>? modularStorages = null,
+            IReadOnlyList<VehicleSpotLightDefinition>? headlights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
-            IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? backupBatteries = null,
+            IReadOnlyList<VehicleBatteryDefinition>? backupBatteries = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
             GameObject? leviathanGrabPoint = null,
-            IReadOnlyList<VehicleParts.MobileWaterPark>? waterParks = null
+            IReadOnlyList<MobileWaterPark>? waterParks = null
         )
         {
             if (!storageRootObject)
@@ -184,19 +185,19 @@ namespace AVS.Composition
             ModulesRootObject = modulesRootObject;
             CollisionModel = collisionModel;
             Hatches = hatches;
-            Batteries = batteries ?? Array.Empty<VehicleParts.VehicleBatteryDefinition>();
-            Upgrades = upgrades ?? Array.Empty<VehicleParts.VehicleUpgrades>();
+            Batteries = batteries ?? Array.Empty<VehicleBatteryDefinition>();
+            Upgrades = upgrades ?? Array.Empty<VehicleUpgrades>();
             BoundingBoxCollider = boundingBoxCollider;
             WaterClipProxies = waterClipProxies ?? Array.Empty<GameObject>();
-            InnateStorages = innateStorages ?? Array.Empty<VehicleParts.VehicleStorage>();
-            ModularStorages = modularStorages ?? Array.Empty<VehicleParts.VehicleStorage>();
-            Headlights = headlights ?? Array.Empty<VehicleParts.VehicleSpotLightDefinition>();
+            InnateStorages = innateStorages ?? Array.Empty<VehicleStorage>();
+            ModularStorages = modularStorages ?? Array.Empty<VehicleStorage>();
+            Headlights = headlights ?? Array.Empty<VehicleSpotLightDefinition>();
             CanopyWindows = canopyWindows ?? Array.Empty<GameObject>();
-            BackupBatteries = backupBatteries ?? Array.Empty<VehicleParts.VehicleBatteryDefinition>();
+            BackupBatteries = backupBatteries ?? Array.Empty<VehicleBatteryDefinition>();
             DenyBuildingColliders = denyBuildingColliders ?? Array.Empty<Collider>();
             SubNameDecals = subNameDecals ?? Array.Empty<TMPro.TextMeshProUGUI>();
             LavaLarvaAttachPoints = lavaLarvaAttachPoints ?? Array.Empty<Transform>();
-            WaterParks = waterParks ?? Array.Empty<VehicleParts.MobileWaterPark>();
+            WaterParks = waterParks ?? Array.Empty<MobileWaterPark>();
 
             if (Upgrades == null)
                 throw new InvalidOperationException($"Something went wrong. Upgrades should not be null at this point. {upgrades}");

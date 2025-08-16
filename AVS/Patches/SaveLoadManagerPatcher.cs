@@ -24,6 +24,11 @@ namespace AVS.Patches
         public static IReadOnlyDictionary<string, IReadOnlyList<string>> HasTechTypeGameInfo => hasTechTypeGameInfo;
 
         // This patch collects hasTechTypeGameInfo, in order to have save file sprites displayed on the save cards
+        /// <summary>
+        /// Postfix method for the SaveLoadManager.RegisterSaveGame method, enabling the collection and management
+        /// of custom save file sprites associated with save slots.
+        /// </summary>
+        /// <param name="slotName">The name of the save slot being registered.</param>
         [HarmonyPostfix]
         [HarmonyPatch(nameof(SaveLoadManager.RegisterSaveGame))]
         public static void SaveLoadManagerRegisterSaveGamePostfix(string slotName)

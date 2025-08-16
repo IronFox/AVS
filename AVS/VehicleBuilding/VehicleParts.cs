@@ -1,10 +1,15 @@
-﻿using AVS.Localization;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using AVS.Localization;
 using UnityEngine;
 
-namespace AVS.VehicleParts
+namespace AVS.VehicleBuilding
 {
+    /// <summary>
+    /// Represents the control interface for a vehicle, typically used for piloting.
+    /// The helm defines the positions and orientations of the pilot seat,
+    /// controls, and exit points, as well as whether helm requires a seated position.
+    /// </summary>
     public readonly struct Helm
     {
         /// <summary>
@@ -114,20 +119,39 @@ namespace AVS.VehicleParts
             return true;
         }
     }
+
+
+    /// <summary>
+    /// Defines the attributes and locations associated with a vehicle hatch.
+    /// A vehicle hatch includes the hatch object itself and specified transform locations
+    /// for entry, exit, and surface exit points. These attributes are crucial for
+    /// handling the entry and exit mechanics of a vehicle.
+    /// </summary>
     public readonly struct VehicleHatchDefinition
     {
-        public GameObject Hatch { get; }
-        public Transform EntryLocation { get; }
+        /// <summary>
+        /// The root object of the hatch itself. Should contain a collider so that a hand target can be assigned
+        /// </summary>
+        public GameObject Hatch { get; init; }
+        /// <summary>
+        /// The entry location when entering the vehicle through this hatch.
+        /// Currently the rotation is ignored.
+        /// </summary>
+        public Transform EntryLocation { get; init; }
         /// <summary>
         /// The exit transform when exiting the vehicle through this hatch.
-        /// Currently, the rotation is ignored.
+        /// Currently the rotation is ignored.
         /// </summary>
-        public Transform ExitLocation { get; }
+        public Transform ExitLocation { get; init; }
         /// <summary>
-        /// The exit transform to use instead of <see cref="ExitLocation"/> when the submarine
+        /// The exit-transform to use instead of <see cref="ExitLocation"/> when the submarine
         /// is close to the water surface while exiting.
         /// </summary>
-        public Transform SurfaceExitLocation { get; }
+        public Transform SurfaceExitLocation { get; init; }
+
+        /// <summary>
+        /// Represents the definition of a vehicle hatch, including its transform locations for entry, exit, and surface exit.
+        /// </summary>
         public VehicleHatchDefinition(GameObject hatch, Transform entry, Transform exit, Transform surfaceExit)
         {
             if (exit == null)
@@ -365,7 +389,13 @@ namespace AVS.VehicleParts
         /// If null, no model will be provided for installed modules.
         /// </summary>
         public IReadOnlyList<Transform>? ModuleProxies { get; }
-        public VehicleUpgrades(GameObject @interface, GameObject flap, Vector3 openAngles, Vector3 closedAngles, IReadOnlyList<Transform>? moduleProxies = null)
+
+        /// <summary>
+        /// Represents the configuration and attributes of vehicle upgrades, including interface objects, flap components,
+        /// positional angles, and module proxies used in the upgrade system.
+        /// </summary>
+        public VehicleUpgrades(GameObject @interface, GameObject flap, Vector3 openAngles, Vector3 closedAngles,
+            IReadOnlyList<Transform>? moduleProxies = null)
         {
             if (@interface == null)
                 throw new ArgumentNullException(nameof(@interface), "Vehicle upgrades interface cannot be null.");

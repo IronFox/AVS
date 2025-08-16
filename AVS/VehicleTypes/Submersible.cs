@@ -1,8 +1,8 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Composition;
 using AVS.Configuration;
-using AVS.VehicleParts;
 using System;
+using AVS.VehicleBuilding;
 
 namespace AVS.VehicleTypes
 {

@@ -8,7 +8,7 @@ using UnityEngine;
 namespace AVS
 {
     //SetupBuildBotPaths is invoked by Player.Start
-    public static class BuildBotManager
+    internal static class BuildBotManager
     {
         private static Color OriginalConstructingGhostColor = ((Material)Resources.Load("Materials/constructingGhost")).color;
 

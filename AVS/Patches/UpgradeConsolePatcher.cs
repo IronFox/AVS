@@ -87,30 +87,59 @@ namespace AVS.Patches
     [HarmonyPatch(typeof(UpgradeConsole))]
     public class UpgradeConsolePatcher
     {
+        /// <summary>
+        /// Postfix method invoked after the `Awake` method of the UpgradeConsole has been executed.
+        /// Ensures that the UpgradeConsole is properly configured to support AVS upgrades.
+        /// </summary>
+        /// <param name="__instance">The instance of the UpgradeConsole that has been initialized.</param>
         [HarmonyPostfix]
         [HarmonyPatch(nameof(UpgradeConsole.Awake))]
         public static void UpgradeConsoleAwakeHarmonyPostfix(UpgradeConsole __instance)
         {
             UpdateSignals(__instance);
         }
+
+        /// <summary>
+        /// Postfix method invoked after the `InitializeModules` method of the UpgradeConsole has been executed.
+        /// Ensures that the UpgradeConsole is properly configured to process modules and support AVS upgrades.
+        /// </summary>
+        /// <param name="__instance">The instance of the UpgradeConsole that has been initialized.</param>
         [HarmonyPostfix]
         [HarmonyPatch(nameof(UpgradeConsole.InitializeModules))]
         public static void UpgradeConsoleInitializeModulesHarmonyPostfix(UpgradeConsole __instance)
         {
             UpdateSignals(__instance);
         }
+
+        /// <summary>
+        /// Prefix method invoked before the `OnProtoDeserialize` method of the UpgradeConsole is executed.
+        /// Ensures that the UpgradeConsole's state is correctly updated to support AVS upgrades during deserialization.
+        /// </summary>
+        /// <param name="__instance">The instance of the UpgradeConsole being deserialized.</param>
         [HarmonyPrefix]
         [HarmonyPatch(nameof(UpgradeConsole.OnProtoDeserialize))]
         public static void UpgradeConsoleOnProtoDeserializePrefix(UpgradeConsole __instance)
         {
             UpdateSignals(__instance);
         }
+
+        /// <summary>
+        /// Prefix method invoked before the `OnProtoDeserializeObjectTree` method of the UpgradeConsole is executed.
+        /// Ensures that the UpgradeConsole is correctly initialized to handle AVS upgrades by updating its signals.
+        /// </summary>
+        /// <param name="__instance">The instance of the UpgradeConsole that is being deserialized.</param>
         [HarmonyPrefix]
         [HarmonyPatch(nameof(UpgradeConsole.OnProtoDeserializeObjectTree))]
         public static void UpgradeConsoleOnProtoDeserializeObjectTreePrefix(UpgradeConsole __instance)
         {
             UpdateSignals(__instance);
         }
+
+        /// <summary>
+        /// Updates signals for the UpgradeConsole to ensure compatibility with AVS upgrades.
+        /// Configures the equipment module event listeners and processes all existing upgrades.
+        /// </summary>
+        /// <param name="console">The instance of the UpgradeConsole to update signals for.</param>
         private static void UpdateSignals(UpgradeConsole console)
         {
             SubRoot thisSubRoot = console.GetComponentInParent<SubRoot>();

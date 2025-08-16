@@ -4,6 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
+using AVS.StorageComponents;
 
 // PURPOSE: allow the Cyclops dock terminal to display AvsVehicle data. 
 // VALUE: High.

@@ -1,7 +1,7 @@
 ﻿using AVS.Configuration;
 using AVS.Util;
-using AVS.VehicleParts;
 using System;
+using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS.BaseVehicle

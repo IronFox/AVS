@@ -11,31 +11,51 @@ namespace AVS
      * This is trivial for lights,
      * but a bit more difficult for driving
      */
+    /// <summary>
+    /// The PowerManager class is responsible for managing all power-related functionalities for the AvsVehicle.
+    /// </summary>
+    /// <remarks>
+    /// This class handles power consumption and evaluates the power status of the vehicle. It monitors various power drains,
+    /// including lights and driving mechanics, and consolidates these drains into a unified management system.
+    /// Additionally, it broadcasts notifications related to power changes and offers methods to check and spend energy.
+    /// </remarks>
     public class PowerManager : MonoBehaviour, ILightsStatusListener
     {
-        public struct PowerStatus
+        /// <summary>
+        /// The PowerStatus structure represents the binary power state of an entity,
+        /// encapsulating whether it has sufficient charge and is operationally powered.
+        /// </summary>
+        /// <remarks>
+        /// This structure is used to define and evaluate power conditions within the AvsVehicle's power management system.
+        /// It provides predefined status states, including ChargedAndPowered, and allows for quick evaluation of combined charge and power states.
+        /// </remarks>
+        /// <param name="HasCharge">The vehicle has charge in its batteries</param>
+        /// <param name="IsPowered">The vehicle is powered on</param>
+        public readonly record struct PowerStatus(bool HasCharge, bool IsPowered)
         {
-            public PowerStatus(bool fuel, bool power)
-            {
-                hasFuel = fuel;
-                isPowered = power;
-            }
-            public bool hasFuel;
-            public bool isPowered;
-            public override bool Equals(object obj) => obj is PowerStatus other && this.Equals(other);
-            public bool Equals(PowerStatus p) => hasFuel == p.hasFuel && isPowered == p.isPowered;
-            public override int GetHashCode() => (hasFuel, isPowered).GetHashCode();
-            public static bool operator ==(PowerStatus lhs, PowerStatus rhs) => lhs.Equals(rhs);
-            public static bool operator !=(PowerStatus lhs, PowerStatus rhs) => !(lhs == rhs);
+            /// <summary>
+            /// Represents a static predefined power status indicating that the vehicle
+            /// is both fully charged and has active power.
+            /// </summary>
+            public static PowerStatus ChargedAndPowered { get; } = new PowerStatus(true, true);
+
+            /// <summary>
+            /// Indicates whether the entity has sufficient charge and is operationally powered.
+            /// </summary>
+            /// <remarks>
+            /// Combines the charge and power state to provide a single true/false evaluation
+            /// of whether the entity is both charged and powered. This is typically used
+            /// within the power management system for decision-making processes.
+            /// </remarks>
+            public bool IsChargedAndPowered => HasCharge && IsPowered;
         }
-        private PowerStatus lastStatus = new PowerStatus { hasFuel = false, isPowered = false };
+
+        private PowerStatus lastStatus = new PowerStatus (false,false);
         private PowerEvent latestPowerEvent = PowerEvent.OnBatterySafe;
         private bool isHeadlightsOn = false;
         private bool isFloodlightsOn = false;
         private bool isNavLightsOn = false;
         private bool isInteriorLightsOn = false;
-        private bool isAutoLeveling = false;
-        private bool isAutopiloting = false;
         private AvsVehicle mv => GetComponent<AvsVehicle>();
         private EnergyInterface ei => GetComponent<EnergyInterface>();
 
@@ -59,15 +79,30 @@ namespace AVS
                 return PowerEvent.OnBatterySafe;
             }
         }
+
+        /// <summary>
+        /// Evaluates and determines the current power status of the AvsVehicle.
+        /// It checks whether the vehicle has remaining charge and whether it is powered on.
+        /// </summary>
+        /// <returns>A <see cref="PowerManager.PowerStatus"/> indicating the vehicle's power state,
+        /// including whether it has charge and whether it is powered on.</returns>
         public PowerStatus EvaluatePowerStatus()
         {
             mv.energyInterface.GetValues(out float charge, out _);
             return new PowerStatus
-            {
-                isPowered = mv.IsPoweredOn,
-                hasFuel = charge > 0
-            };
+            (
+                IsPowered: mv.IsPoweredOn,
+                HasCharge: charge > 0
+            );
         }
+
+        /// <summary>
+        /// Attempts to spend the specified amount of energy from the energy source.
+        /// The method will consume as much energy as possible up to the requested amount,
+        /// depending on the available energy.
+        /// </summary>
+        /// <param name="val">The amount of energy requested to be spent.</param>
+        /// <returns>The actual amount of energy that was successfully consumed.</returns>
         public float TrySpendEnergy(float val)
         {
             float desired = val;
@@ -78,7 +113,8 @@ namespace AVS
             }
             return ei.ConsumeEnergy(desired);
         }
-        public void AccountForTheTypicalDrains()
+        
+        private void AccountForTheTypicalDrains()
         {
             /*
              * research suggests engines should be between 10 and 100x more draining than the lights
@@ -101,21 +137,22 @@ namespace AVS
             {
                 TrySpendEnergy(0.001f * Time.deltaTime);
             }
-            if (isAutoLeveling)
-            {
-                float scalarFactor = 1.0f;
-                float basePowerConsumptionPerSecond = .15f;
-                float upgradeModifier = Mathf.Pow(0.85f, mv.NumEfficiencyModules);
-                TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.deltaTime);
-            }
-            if (isAutopiloting)
-            {
-                float scalarFactor = 1.0f;
-                float basePowerConsumptionPerSecond = 3f;
-                float upgradeModifier = Mathf.Pow(0.85f, mv.NumEfficiencyModules);
-                TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.deltaTime);
-            }
+            // if (isAutoLeveling)
+            // {
+            //     float scalarFactor = 1.0f;
+            //     float basePowerConsumptionPerSecond = .15f;
+            //     float upgradeModifier = Mathf.Pow(0.85f, mv.NumEfficiencyModules);
+            //     TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.deltaTime);
+            // }
+            // if (isAutopiloting)
+            // {
+            //     float scalarFactor = 1.0f;
+            //     float basePowerConsumptionPerSecond = 3f;
+            //     float upgradeModifier = Mathf.Pow(0.85f, mv.NumEfficiencyModules);
+            //     TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.deltaTime);
+            // }
         }
+        /// <inheritdoc />
         public void Update()
         {
             AccountForTheTypicalDrains();
@@ -125,14 +162,14 @@ namespace AVS
 
             if (currentPowerStatus != lastStatus)
             {
-                NotifyPowerChanged(currentPowerStatus.hasFuel, currentPowerStatus.isPowered);
+                NotifyPowerChanged(currentPowerStatus.HasCharge, currentPowerStatus.IsPowered);
                 NotifyBatteryChanged(currentPowerStatus, lastStatus);
                 lastStatus = currentPowerStatus;
                 latestPowerEvent = currentPowerEvent;
                 return;
             }
 
-            if (currentPowerStatus.hasFuel && currentPowerStatus.isPowered)
+            if (currentPowerStatus.IsChargedAndPowered)
             {
                 if (currentPowerEvent != latestPowerEvent)
                 {
@@ -145,7 +182,7 @@ namespace AVS
         {
             foreach (var component in GetComponentsInChildren<IPowerChanged>())
             {
-                (component as IPowerChanged).OnPowerChanged(isBatteryCharged, isSwitchedOn);
+                (component as IPowerChanged).OnPowerChanged(hasBatteryPower: isBatteryCharged, isSwitchedOn:isSwitchedOn);
             }
         }
         private void NotifyPowerStatus(PowerEvent newEvent)
@@ -176,26 +213,26 @@ namespace AVS
         {
             foreach (var component in GetComponentsInChildren<IPowerListener>())
             {
-                if (oldPS.isPowered != newPS.isPowered)
+                if (oldPS.IsPowered != newPS.IsPowered)
                 {
-                    if (newPS.isPowered)
+                    if (newPS.IsPowered)
                     {
-                        (component as IPowerListener).OnPowerUp();
+                        component.OnPowerUp();
                     }
                     else
                     {
-                        (component as IPowerListener).OnPowerDown();
+                        component.OnPowerDown();
                     }
                 }
-                if (oldPS.hasFuel != newPS.hasFuel)
+                if (oldPS.HasCharge != newPS.HasCharge)
                 {
-                    if (newPS.hasFuel)
+                    if (newPS.HasCharge)
                     {
-                        (component as IPowerListener).OnBatteryRevive();
+                        component.OnBatteryRevive();
                     }
                     else
                     {
-                        (component as IPowerListener).OnBatteryDead();
+                        component.OnBatteryDead();
                     }
                 }
             }

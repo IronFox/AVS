@@ -33,6 +33,7 @@ namespace AVS
             _container ?? throw new InvalidOperationException(
                     "Trying to access InnateStorageContainer.Container before either Awake() or OnCraftEnd() were called");
 
+        /// <inheritdoc />
         public void Awake()
         {
             this.Init();
@@ -109,14 +110,14 @@ namespace AVS
         /// Tech that may be stored in this container.
         /// If empty, all tech is allowed.
         /// </summary>
-        public TechType[] allowedTech = Array.Empty<TechType>();
+        public TechType[] allowedTech = [];
 
         [AssertNotNull]
-        public ChildObjectIdentifier? storageRoot;
+        [SerializeField]
+        internal ChildObjectIdentifier? storageRoot;
 
-        public int version = 3;
+        [SerializeField]
+        internal int version = 3;
 
-        [NonSerialized]
-        public byte[]? serializedStorage;
     }
 }

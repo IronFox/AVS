@@ -112,7 +112,7 @@ namespace AVS.Admin
 
             float distanceToPlayer = float.PositiveInfinity;
             VehicleDockingBay? closestBay = null;
-            foreach (var marty in Patches.VehicleDockingBayPatch.dockingBays.Where(x => x != null))
+            foreach (var marty in Patches.VehicleDockingBayPatch.DockingBays.Where(x => x != null))
             {
                 float thisDistance = Vector3.Distance(Player.main.transform.position, marty.transform.position);
                 if (thisDistance < distanceToPlayer)

@@ -1,4 +1,5 @@
-﻿using AVS.BaseVehicle;
+﻿#if false
+using AVS.BaseVehicle;
 using AVS.Engines;
 using System.Collections;
 using System.Linq;
@@ -106,3 +107,5 @@ namespace AVS.VehicleComponents
         }
     }
 }
+
+#endif

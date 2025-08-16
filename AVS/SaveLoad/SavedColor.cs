@@ -31,6 +31,10 @@ namespace AVS.SaveLoad
             };
         }
 
+        /// <summary>
+        /// Writes the current saved color data into the specified <see cref="VehicleColor"/> reference.
+        /// </summary>
+        /// <param name="color">The reference to the <see cref="VehicleColor"/> instance to update.</param>
         public void WriteTo(ref VehicleColor color)
         {
             var c = ToColor();

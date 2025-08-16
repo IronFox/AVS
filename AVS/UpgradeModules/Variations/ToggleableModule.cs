@@ -44,8 +44,8 @@ namespace AVS.UpgradeModules.Variations
 
     /// <summary>
     /// Abstract base class for toggleable upgrade modules on AVS vehicles.
-    /// A module of this type will consume <see cref="EnergyCostPerActivation"/> energy
-    /// every <see cref="RepeatDelay"/> seconds and call <see cref="OnRepeat"/>
+    /// A module of this type will consume <see cref="EnergyCostPerSecond"/> energy
+    /// every second and call <see cref="OnRepeat"/>
     /// while active.
     /// </summary>
     public abstract class ToggleableModule : AvsVehicleModule

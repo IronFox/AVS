@@ -1,6 +1,7 @@
 ﻿using AVS.Engines;
 using System;
 using System.Collections.Generic;
+using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS.Composition
@@ -14,7 +15,7 @@ namespace AVS.Composition
         /// The pilot seat of the vehicle.
         /// Must not be null.
         /// </summary>
-        public VehicleParts.Helm PilotSeat { get; }
+        public Helm PilotSeat { get; }
 
 
         /// <summary>
@@ -80,21 +81,21 @@ namespace AVS.Composition
         /// Thrown if <paramref name="pilotSeat"/> is null or if <c>PilotSeat.Seat</c> is null.
         /// </exception>
         public SubmersibleComposition(
-            VehicleParts.Helm pilotSeat,
+            Helm pilotSeat,
             GameObject storageRootObject,
             GameObject modulesRootObject,
-            IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
+            IReadOnlyList<VehicleHatchDefinition> hatches,
             AbstractEngine engine,
             GameObject[] collisionModel,
-            IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? batteries = null,
-            IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
+            IReadOnlyList<VehicleBatteryDefinition>? batteries = null,
+            IReadOnlyList<VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,
             IReadOnlyList<GameObject>? waterClipProxies = null,
-            IReadOnlyList<VehicleParts.VehicleStorage>? innateStorages = null,
-            IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
-            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? headlights = null,
+            IReadOnlyList<VehicleStorage>? innateStorages = null,
+            IReadOnlyList<VehicleStorage>? modularStorages = null,
+            IReadOnlyList<VehicleSpotLightDefinition>? headlights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
-            IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? backupBatteries = null,
+            IReadOnlyList<VehicleBatteryDefinition>? backupBatteries = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,

@@ -116,11 +116,25 @@ namespace AVS.Util
             Player.main.transform.SetParent(null);
         }
 
+        /// <summary>
+        /// Makes the player stand up from a seated position.
+        /// </summary>
+        /// <remarks>
+        /// This method initiates an animation sequence to transition the player character from sitting to standing.
+        /// The process is managed asynchronously and may involve resetting player animator states.
+        /// </remarks>
         public static void StandUp()
         {
             MainPatcher.Instance.StartCoroutine(StandUpFromChair());
         }
 
+        /// <summary>
+        /// Exits the player to the surface at a specified surface exit location.
+        /// </summary>
+        /// <remarks>
+        /// Used when the player exits a vehicle underwater but needs to resurface.
+        /// </remarks>
+        /// <param name="surfaceExitLocation">The location to exit to the surface.</param>
         public static void ExitToSurface(Transform surfaceExitLocation)
         {
             Player.main.StartCoroutine(ExitToSurfaceRoutine(surfaceExitLocation));

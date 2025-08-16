@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using AVS.VehicleBuilding;
+using HarmonyLib;
 
 // PURPOSE: Ensure AVS is compatible with Slot Extender (both can be used to full effect)
 // VALUE: Very high. Excellent mod!

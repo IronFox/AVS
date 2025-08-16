@@ -2,10 +2,9 @@
 using TMPro;
 using UnityEngine;
 
-
-namespace AVS
+namespace AVS.StorageComponents
 {
-    public class uGUI_VehicleHUD : MonoBehaviour
+    internal class uGUI_VehicleHUD : MonoBehaviour
     {
         public enum HUDChoice
         {

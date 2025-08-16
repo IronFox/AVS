@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS
@@ -266,28 +267,28 @@ namespace AVS
                     VerboseLog(LogType.Warn, verbose, thisName + $"A null {nameof(AvsVehicle)}.CollisionModel was provided. This is necessary for leviathans to grab the vehicle.");
                     return false;
                 }
-                foreach (VehicleParts.VehicleStorage vs in mv.Com.InnateStorages.Concat(mv.Com.ModularStorages))
+                foreach (VehicleStorage vs in mv.Com.InnateStorages.Concat(mv.Com.ModularStorages))
                 {
                     if (!vs.CheckValidity(thisName))
                     {
                         return false;
                     }
                 }
-                foreach (VehicleParts.VehicleUpgrades vu in mv.Com.Upgrades)
+                foreach (VehicleUpgrades vu in mv.Com.Upgrades)
                 {
                     if (!vu.CheckValidity(thisName, verbose))
                     {
                         return false;
                     }
                 }
-                foreach (VehicleParts.VehicleBatteryDefinition vb in mv.Com.Batteries.Concat(mv.Com.BackupBatteries))
+                foreach (VehicleBatteryDefinition vb in mv.Com.Batteries.Concat(mv.Com.BackupBatteries))
                 {
                     if (!vb.CheckValidity(thisName, verbose))
                     {
                         return false;
                     }
                 }
-                foreach (VehicleParts.VehicleSpotLightDefinition vfl in mv.Com.Headlights)
+                foreach (VehicleSpotLightDefinition vfl in mv.Com.Headlights)
                 {
                     if (!vfl.CheckValidity(thisName))
                     {
@@ -404,23 +405,23 @@ namespace AVS
                 {
                     VerboseLog(LogType.Warn, verbose, thisName + $"A null {nameof(Submarine)}.Com.ControlPanel was provided. This is necessary to toggle floodlights.");
                 }
-                foreach (VehicleParts.Helm ps in mv.Com.Helms)
+                foreach (Helm ps in mv.Com.Helms)
                 {
                     if (!ps.CheckValidity(thisName, verbose))
                         return false;
                 }
-                foreach (VehicleParts.VehicleHatchDefinition vhs in mv.Com.Hatches)
+                foreach (VehicleHatchDefinition vhs in mv.Com.Hatches)
                 {
                     if (!vhs.CheckValidity(thisName, verbose))
                         return false;
 
                 }
-                foreach (VehicleParts.VehicleStorage vs in mv.Com.ModularStorages)
+                foreach (VehicleStorage vs in mv.Com.ModularStorages)
                 {
                     if (!vs.CheckValidity(thisName))
                         return false;
                 }
-                foreach (VehicleParts.VehicleSpotLightDefinition vfl in mv.Com.Floodlights)
+                foreach (VehicleSpotLightDefinition vfl in mv.Com.Floodlights)
                 {
                     if (!vfl.CheckValidity(thisName))
                         return false;
@@ -460,12 +461,12 @@ namespace AVS
                 }
                 if (!mv.Com.PilotSeat.CheckValidity(thisName, verbose))
                     return false;
-                foreach (VehicleParts.VehicleHatchDefinition vhs in mv.Com.Hatches)
+                foreach (VehicleHatchDefinition vhs in mv.Com.Hatches)
                 {
                     if (!vhs.CheckValidity(thisName, verbose))
                         return false;
                 }
-                foreach (VehicleParts.VehicleStorage vs in mv.Com.ModularStorages)
+                foreach (VehicleStorage vs in mv.Com.ModularStorages)
                 {
                     if (!vs.CheckValidity(thisName))
                         return false;

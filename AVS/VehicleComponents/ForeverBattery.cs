@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace AVS.VehicleComponents
 {
-    public class ForeverBattery : EnergyMixin
+    
+    /// <summary>
+    /// Energy mixin for a power cell that never depletes
+    /// </summary>
+    internal class ForeverBattery : EnergyMixin
     {
         // use fixed update because EnergyMixin has none
         public void FixedUpdate()

@@ -9,7 +9,7 @@ namespace AVS.UpgradeModules.Variations
     public abstract class ChargeableModule : AvsVehicleModule
     {
         /// <summary>
-        /// Parameters passed to <see cref="SelectableChargeableModule.OnActivate(Params)"/>.
+        /// Parameters passed to <see cref="SelectableChargeableModule.OnActivate"/>.
         /// </summary>
         public readonly struct Params
         {

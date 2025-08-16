@@ -1,4 +1,5 @@
-﻿using AVS.BaseVehicle;
+﻿#if false
+using AVS.BaseVehicle;
 using System;
 
 namespace AVS.VehicleComponents
@@ -42,3 +43,5 @@ namespace AVS.VehicleComponents
         }
     }
 }
+
+#endif

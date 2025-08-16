@@ -1,4 +1,5 @@
-﻿using AVS.BaseVehicle;
+﻿#if false
+using AVS.BaseVehicle;
 using AVS.Util;
 using System.Collections;
 using UnityEngine;
@@ -298,3 +299,5 @@ namespace AVS.VehicleComponents
         }
     }
 }
+
+#endif

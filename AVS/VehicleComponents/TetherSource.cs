@@ -1,10 +1,10 @@
-﻿using AVS.Util;
-using AVS.VehicleTypes;
-using System.Collections;
+﻿using System.Collections;
 using System.Linq;
+using AVS.Util;
+using AVS.VehicleTypes;
 using UnityEngine;
 
-namespace AVS
+namespace AVS.VehicleComponents
 {
     /*
      * Tether Sources are meant to be placed throughout the Submarine.
@@ -13,7 +13,16 @@ namespace AVS
      * A player will "leash" to them when close enough,
      * which ensures the player's entry is recognized no matter what (warp in).
      */
-    public class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
+    /// <summary>
+    /// Represents a tether point within a Submarine, which manages player interactions
+    /// and ensures proper recognition of player proximity and entry events.
+    /// </summary>
+    /// <remarks>
+    /// Tether sources are designed to purely exist within the bounds of a submarine
+    /// and are integral for the functionality of player leashing.
+    /// This ensures smooth player recognition regardless of warp or entry conditions.
+    /// </remarks>
+    internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
     {
         public Submarine? mv = null;
         private bool isLive = true;

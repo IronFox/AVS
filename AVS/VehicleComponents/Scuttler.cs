@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace AVS
 {
-    public class Scuttler : MonoBehaviour
+    internal class Scuttler : MonoBehaviour
     {
         private Vector3 scuttlePosition = Vector3.zero;
         private Vector3 initialLandRayCast = Vector3.zero;

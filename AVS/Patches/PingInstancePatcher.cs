@@ -5,9 +5,22 @@
 
 namespace AVS.Patches
 {
+    /// <summary>
+    /// A Harmony patch class that modifies the behavior of the PingInstance class.
+    /// Specifically, addresses the issue where PingInstances contain null origins, which can lead to errors
+    /// in the display of ping sprites. This patch ensures that such instances are corrected by defaulting the origin
+    /// to the PingInstance's own transform.
+    /// </summary>
     [HarmonyPatch(typeof(PingInstance))]
     public class PingInstancePatcher
     {
+        /// <summary>
+        /// Harmony prefix method for the <c>PingInstance.GetPosition</c> method. This prefix
+        /// ensures that if the <c>origin</c> property of a PingInstance is <c>null</c>,
+        /// it is set to the PingInstance's own transform. This prevents issues where
+        /// ping sprites fail to display due to a null origin.
+        /// </summary>
+        /// <param name="__instance">The PingInstance being patched.</param>
         [HarmonyPrefix]
         [HarmonyPatch(nameof(PingInstance.GetPosition))]
         public static void PingInstanceGetPositionPrefix(PingInstance __instance)

@@ -229,6 +229,7 @@ namespace AVS.VehicleComponents
             mv.Log.Debug($"MaterialReactor {label} initialized with width {width}, height {height}, and capacity {capacity}.");
         }
 
+        /// <inheritdoc/>
         public void Update()
         {
             if (!isInitialized)

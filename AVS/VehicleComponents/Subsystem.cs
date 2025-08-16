@@ -2,7 +2,7 @@
 
 namespace AVS.VehicleComponents
 {
-    public static class SubsystemExtensions
+    internal static class SubsystemExtensions
     {
         public static Subsystem WithMaxHealth(this Subsystem sys, float health)
         {
@@ -41,7 +41,7 @@ namespace AVS.VehicleComponents
             return sys;
         }
     }
-    public class Subsystem : HandTarget, IHandTarget
+    internal class Subsystem : HandTarget, IHandTarget
     {
         internal LiveMixin? liveMixin;
         internal Action<GUIHand>? OnHandHover;

@@ -174,6 +174,12 @@ namespace AVS
     }
 
 
+    /// <summary>
+    /// The Autopilot class manages various autonomous functionalities for a vehicle,
+    /// including monitoring and responding to power status, health, lights status,
+    /// and surrounding dangers. It interacts with subsystems and implements
+    /// multiple listener interfaces for vehicle, player, power, lights, and scuttle events.
+    /// </summary>
     public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener, IPowerListener, ILightsStatusListener, IScuttleListener
     {
         internal EnergyInterface? aiEI;
@@ -203,28 +209,75 @@ namespace AVS
                 AutopilotStatus.PowerSafe
             );
 
+        /// <summary>
+        /// Gets the current health status of the autopilot system.
+        /// </summary>
+        /// <remarks>
+        /// The health status is determined based on predefined thresholds and can represent
+        /// various states including safe, low, or critical health conditions. This property
+        /// dynamically monitors and updates the health state of the system.
+        /// </remarks>
+        /// <value>
+        /// A value of type <see cref="AutopilotStatus"/> representing the current health status
+        /// of the autopilot system.
+        /// </value>
         public AutopilotStatus HealthStatus => HealthTracker.CurrentStatus;
+
+        /// <summary>
+        /// Gets the current power status of the autopilot system.
+        /// </summary>
+        /// <remarks>
+        /// The power status reflects the energy state of the system, determined by predefined levels.
+        /// It provides insight into whether the system is operating within safe, low, critical, or dead power thresholds.
+        /// The property dynamically tracks and updates the power condition of the system.
+        /// </remarks>
+        /// <value>
+        /// A value of type <see cref="AutopilotStatus"/> representing the current power status of the autopilot system.
+        /// </value>
         public AutopilotStatus PowerStatus => PowerTracker.CurrentStatus;
+
+        /// <summary>
+        /// Gets the current depth status of the vehicle in relation to predefined safety thresholds.
+        /// </summary>
+        /// <remarks>
+        /// The depth status is evaluated based on the vehicle's current depth and thresholds defining safe,
+        /// near-crush, and beyond-crush levels. This property continuously monitors depth levels to provide
+        /// real-time feedback on operational safety related to depth pressure conditions.
+        /// </remarks>
+        /// <value>
+        /// A value of type <see cref="AutopilotStatus"/> indicating the current depth status, such as
+        /// <see cref="AutopilotStatus.DepthSafe"/>, <see cref="AutopilotStatus.DepthNearCrush"/>,
+        /// or <see cref="AutopilotStatus.DepthBeyondCrush"/>.
+        /// </value>
         public AutopilotStatus DepthStatus => DepthTracker.CurrentStatus;
-        public enum DangerState
-        {
-            Safe,
-            LeviathanNearby,
-        }
+
+        /// <summary>
+        /// Gets the current danger status as determined by the proximity of nearby threats or hazardous environmental conditions.
+        /// </summary>
+        /// <remarks>
+        /// The danger status reflects the level of threat in the current environment, and it is dynamically updated
+        /// based on events such as the presence of nearby Leviathans or other critical factors. The status transitions
+        /// between predefined categories to indicate the severity of the danger.
+        /// </remarks>
+        /// <value>
+        /// A value of type <see cref="AutopilotStatus"/> representing the current danger status of the autopilot system.
+        /// </value>
         public AutopilotStatus DangerStatus { get; private set; } = AutopilotStatus.LeviathanSafe;
 
 #pragma warning disable CS0414
         private bool isDead = false;
 #pragma warning restore CS0414
 
+        /// <inheritdoc/>
         public void Awake()
         {
             //mv.voice = apVoice = mv.gameObject.EnsureComponent<VoiceQueue>();
             //mv.voice = apVoice = mv.gameObject.EnsureComponent<VoiceQueue>();
             //mv.voice.voice = VoiceManager.GetDefaultVoice(mv);
-            mv.gameObject.EnsureComponent<AutopilotNavigator>();
+            //mv.gameObject.EnsureComponent<AutopilotNavigator>();
             DangerStatus = AutopilotStatus.LeviathanSafe;
         }
+        /// <inheritdoc/>
         public void Start()
         {
             if (mv.Com.BackupBatteries.Count > 0)
@@ -237,6 +290,7 @@ namespace AVS
             }
         }
 
+        /// <inheritdoc/>
         public void Update()
         {
             MaybeRefillOxygen();

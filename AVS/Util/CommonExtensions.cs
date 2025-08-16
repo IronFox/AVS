@@ -2,6 +2,9 @@
 
 namespace AVS.Util
 {
+    /// <summary>
+    /// Contains extension methods for common operations involving float conversions and percentage calculations.
+    /// </summary>
     public static class CommonExtensions
     {
         /// <summary>
@@ -25,6 +28,11 @@ namespace AVS.Util
             return float.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out f);
         }
 
+        /// <summary>
+        /// Converts a string into a float using the universal decimal sign (.)
+        /// </summary>
+        /// <param name="s">String to parse</param>
+        /// <returns>Converted float</returns>
         public static float ToFloat(this string s)
         {
             return float.Parse(s, NumberStyles.Any, CultureInfo.InvariantCulture);

@@ -36,11 +36,8 @@ namespace AVS.Patches
             {
                 return true;
             }
-            PowerManager.PowerStatus goodPS = new PowerManager.PowerStatus
-            {
-                hasFuel = true,
-                isPowered = true
-            };
+
+            PowerManager.PowerStatus goodPS = PowerManager.PowerStatus.ChargedAndPowered;
             __result = mv.PowerManager.EvaluatePowerStatus() == goodPS;
             return false;
         }
@@ -127,6 +124,15 @@ namespace AVS.Patches
     [HarmonyPatch(typeof(ConstructorInput))]
     public static class ConstructorInputFabricatorPatcher
     {
+        /// <summary>
+        /// Handles the interaction logic when a hand click event is triggered on the ConstructorInput.
+        /// Ensures that the construction process is interrupted if the target build object is an AvsVehicle component.
+        /// </summary>
+        /// <param name="__instance">The instance of the ConstructorInput being evaluated during the hand click.</param>
+        /// <param name="hand">The GUIHand instance representing the hand performing the interaction.</param>
+        /// <returns>
+        /// Returns false to interrupt the hand click event if the target is an AvsVehicle component, or true to allow normal execution.
+        /// </returns>
         [HarmonyPrefix]
         [HarmonyPatch(nameof(ConstructorInput.OnHandClick))]
         public static bool OnHandClickPrefix(ConstructorInput __instance, GUIHand hand)

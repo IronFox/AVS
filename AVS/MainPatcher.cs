@@ -5,6 +5,7 @@ using HarmonyLib;
 using Nautilus.Handlers;
 using System;
 using System.Collections;
+using AVS.VehicleBuilding;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 

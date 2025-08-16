@@ -282,7 +282,7 @@ namespace AVS.StorageComponents
             return child.transform;
         }
 
-        internal void Setup(AvsVehicle vehicle, MaybeTranslate name, VehicleParts.MobileWaterPark vp, int index)
+        internal void Setup(AvsVehicle vehicle, MaybeTranslate name, VehicleBuilding.MobileWaterPark vp, int index)
         {
             waterPark = vp.Container.transform;
             DisplayName = name;

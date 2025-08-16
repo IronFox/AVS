@@ -5,11 +5,11 @@ using AVS.Log;
 using AVS.StorageComponents;
 using AVS.Util;
 using AVS.VehicleComponents;
-using AVS.VehicleParts;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using AVS.VehicleBuilding;
 using UnityEngine;
 using MobileWaterPark = AVS.StorageComponents.MobileWaterPark;
 
@@ -148,7 +148,7 @@ namespace AVS.BaseVehicle
                           $"Expected {Com.Batteries.Count}, got {energyInterface.sources.Length}. " +
                           $"This is a bug, please report it.");
                 List<EnergyMixin> energyMixins = new List<EnergyMixin>();
-                foreach (VehicleParts.VehicleBatteryDefinition vb in Com.Batteries)
+                foreach (VehicleBatteryDefinition vb in Com.Batteries)
                 {
                     energyMixins.Add(vb.Root.GetComponent<EnergyMixin>());
 
@@ -182,7 +182,7 @@ namespace AVS.BaseVehicle
                 energyMixin.controlledObjects = new GameObject[] { };
                 energyMixins.Add(energyMixin);
             }
-            foreach (VehicleParts.VehicleBatteryDefinition vb in Com.Batteries)
+            foreach (VehicleBatteryDefinition vb in Com.Batteries)
             {
                 Log.Debug(this, $"Setting up Vehicle Power Cell {vb.DisplayName?.Text ?? vb.Root.name} for {this.NiceName()}");
                 // Configure energy mixin for this battery slot
@@ -255,7 +255,7 @@ namespace AVS.BaseVehicle
             int iter = 0;
             try
             {
-                foreach (VehicleParts.VehicleStorage vs in Com.ModularStorages)
+                foreach (VehicleStorage vs in Com.ModularStorages)
                 {
                     LogWriter.Default.Debug("Setting up Modular Storage " + vs.Container.NiceName() + " for " + this.NiceName());
                     vs.Container.SetActive(false);
@@ -342,7 +342,7 @@ namespace AVS.BaseVehicle
             int iter = 0;
             try
             {
-                foreach (VehicleParts.VehicleStorage vs in Com.InnateStorages)
+                foreach (VehicleStorage vs in Com.InnateStorages)
                 {
                     vs.Container.SetActive(false);
 

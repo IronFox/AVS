@@ -1,9 +1,9 @@
 ﻿using AVS.SaveLoad;
 using AVS.Util;
-using AVS.VehicleParts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS.BaseVehicle

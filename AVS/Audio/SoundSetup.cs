@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace AVS.Audio
 {
@@ -76,17 +77,10 @@ namespace AVS.Audio
         bool Is3D = true)
     {
         /// <summary>
-        /// Validates the current <see cref="SoundSetup"/> instance to ensure that all properties have valid values.
+        /// Validates the current <see cref="SoundSetup"/> instance to ensure that all required parameters are correctly set.
         /// </summary>
-        /// <exception cref="ArgumentNullException">
-        /// Thrown if <see cref="AudioClip"/> or <see cref="Owner"/> is null.
-        /// </exception>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// Thrown if <see cref="MinDistance"/> is greater than <see cref="MaxDistance"/>,
-        /// <see cref="HalfDistance"/> is greater than the difference between <see cref="MaxDistance"/>
-        /// and <see cref="MinDistance"/>, <see cref="HalfDistance"/> is less than twice the <see cref="MinDistance"/>,
-        /// or if <see cref="MinDistance"/> or <see cref="MaxDistance"/> is negative.
-        /// </exception>
+        /// <exception cref="ArgumentNullException">Thrown when either <see cref="AudioClip"/> or <see cref="Owner"/> is null.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when parameter values do not meet the expected range in a 3D sound configuration.</exception>
         public void Validate()
         {
             if (AudioClip == null)
@@ -94,19 +88,19 @@ namespace AVS.Audio
             if (Is3D)
             {
                 if (MinDistance > MaxDistance)
-                    throw new System.ArgumentOutOfRangeException(nameof(MinDistance));
+                    throw new ArgumentOutOfRangeException(nameof(MinDistance));
                 if (HalfDistance > MaxDistance - MinDistance)
-                    throw new System.ArgumentOutOfRangeException(nameof(HalfDistance));
+                    throw new ArgumentOutOfRangeException(nameof(HalfDistance));
                 if (HalfDistance < MinDistance * 2)
-                    throw new System.ArgumentOutOfRangeException(nameof(HalfDistance));
+                    throw new ArgumentOutOfRangeException(nameof(HalfDistance));
                 if (MinDistance < 0)
-                    throw new System.ArgumentOutOfRangeException(nameof(MinDistance));
+                    throw new ArgumentOutOfRangeException(nameof(MinDistance));
                 if (MaxDistance < 0)
-                    throw new System.ArgumentOutOfRangeException(nameof(MaxDistance));
+                    throw new ArgumentOutOfRangeException(nameof(MaxDistance));
             }
 
             if (Owner == null)
-                throw new System.ArgumentNullException(nameof(Owner));
+                throw new ArgumentNullException(nameof(Owner));
         }
 
         /// <summary>

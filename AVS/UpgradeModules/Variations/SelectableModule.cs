@@ -43,8 +43,18 @@
 
         /// <inheritdoc/>
         public sealed override QuickSlotType QuickSlotType => QuickSlotType.Selectable;
+        /// <summary>
+        /// Time in seconds that the module remains unselectable after last selection
+        /// </summary>
         public virtual float Cooldown => 0;
+        /// <summary>
+        /// Energy cost per selection
+        /// </summary>
         public virtual float EnergyCost => 0;
+        /// <summary>
+        /// Invoked if this module is selected
+        /// </summary>
+        /// <param name="param"></param>
         public virtual void OnSelected(Params param)
         {
             Logger.DebugLog(this, "Selecting " + ClassId + " on AvsVehicle: " + param.Vehicle.subName.name + " in slotID: " + param.SlotID.ToString());

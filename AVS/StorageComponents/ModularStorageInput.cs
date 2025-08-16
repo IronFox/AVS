@@ -1,10 +1,11 @@
 ﻿using AVS.BaseVehicle;
 using System.Collections.Generic;
 using System.Linq;
+using AVS.StorageComponents;
 
 namespace AVS
 {
-    public class ModularStorageInput : StorageInput
+    internal class ModularStorageInput : StorageInput
     {
         public override void OpenFromExternal()
         {

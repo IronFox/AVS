@@ -73,7 +73,7 @@ namespace AVS.Patches
                 string text = mv.subName.hullName.text;
                 if (mv is Submarine sub && sub.Com.Hatches.Count > 0)
                 {
-                    text = sub.GetClosestEntryHatch().Hatch.GetComponent<VehicleHatch>().EnterHint;
+                    text = sub.GetClosestEntryHatch().Hatch.GetComponent<VehicleComponents.VehicleHatch>().EnterHint;
                 }
                 float energyActual = 0;
                 float energyMax = 0;
@@ -100,6 +100,13 @@ namespace AVS.Patches
         }
 
 
+        /// <summary>
+        /// Handles the prefix logic for the OnHandClick method in DockedVehicleHandTarget, allowing for custom behavior during the interaction with a docked vehicle.
+        /// This method ensures undocking clearance, triggers undocking animations, and updates environmental states as necessary.
+        /// </summary>
+        /// <param name="__instance">The instance of the DockedVehicleHandTarget being interacted with.</param>
+        /// <param name="hand">The GUIHand instance interacting with the DockedVehicleHandTarget.</param>
+        /// <returns>A boolean indicating whether to proceed with the original method's execution. Returning <c>false</c> skips the original method.</returns>
         [HarmonyPrefix]
         [HarmonyPatch(nameof(DockedVehicleHandTarget.OnHandClick))]
         public static bool OnHandClickPrefix(DockedVehicleHandTarget __instance, GUIHand hand)

@@ -4,7 +4,10 @@ using UnityEngine;
 
 namespace AVS.SaveLoad
 {
-    public static class SaveLoadUtils
+    /// <summary>
+    /// Provides utility methods for saving and loading operations within the AVS.SaveLoad namespace.
+    /// </summary>
+    internal static class SaveLoadUtils
     {
         internal static bool IsNameUniqueAmongSiblings(Transform tran)
         {
@@ -65,7 +68,7 @@ namespace AVS.SaveLoad
         {
             return $"{GetTransformPath(root, target)}-{fileSuffix}";
         }
-        public static IEnumerator ReloadBatteryPower(GameObject thisItem, float thisCharge, TechType innerBatteryTT)
+        internal static IEnumerator ReloadBatteryPower(GameObject thisItem, float thisCharge, TechType innerBatteryTT)
         {
             // check whether we *are* a battery xor we *have* a battery
             if (thisItem.GetComponent<Battery>() != null)

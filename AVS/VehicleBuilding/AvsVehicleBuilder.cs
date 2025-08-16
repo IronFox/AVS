@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using AVS.VehicleBuilding;
 using UnityEngine;
 //using AVS.Localization;
 
@@ -83,7 +84,7 @@ namespace AVS
 
             try
             {
-                foreach (VehicleParts.VehicleUpgrades vu in mv.Com.Upgrades)
+                foreach (VehicleUpgrades vu in mv.Com.Upgrades)
                 {
                     LogWriter.Default.Write("Setting up upgrade in " + vu.Interface.NiceName());
                     VehicleUpgradeConsoleInput vuci = vu.Interface.EnsureComponent<VehicleUpgradeConsoleInput>();
@@ -128,7 +129,7 @@ namespace AVS
             {
                 for (int i = 0; i < mv.Com.Helms.Count; i++)
                 {
-                    VehicleParts.Helm ps = mv.Com.Helms[i];
+                    Helm ps = mv.Com.Helms[i];
                     var pt = ps.Root.EnsureComponent<PilotingTrigger>();
                     pt.mv = mv;
                     pt.helmIndex = i;
@@ -143,7 +144,7 @@ namespace AVS
             {
                 for (int i = 0; i < mv.Com.Hatches.Count; i++)
                 {
-                    var hatch = mv.Com.Hatches[i].Hatch.EnsureComponent<VehicleHatch>();
+                    var hatch = mv.Com.Hatches[i].Hatch.EnsureComponent<VehicleComponents.VehicleHatch>();
                     hatch.mv = mv;
                     hatch.hatchIndex = i;
                 }
@@ -192,7 +193,7 @@ namespace AVS
             {
                 for (int i = 0; i < mv.Com.Hatches.Count; i++)
                 {
-                    var hatch = mv.Com.Hatches[i].Hatch.EnsureComponent<VehicleHatch>();
+                    var hatch = mv.Com.Hatches[i].Hatch.EnsureComponent<VehicleComponents.VehicleHatch>();
                     hatch.mv = mv;
                     hatch.hatchIndex = i;
                 }
@@ -229,7 +230,7 @@ namespace AVS
             GameObject seamothHeadLight = SeamothHelper.RequireSeamoth.transform.Find("lights_parent/light_left").gameObject;
             if (mv.Com.Headlights != null)
             {
-                foreach (VehicleParts.VehicleSpotLightDefinition pc in mv.Com.Headlights)
+                foreach (VehicleSpotLightDefinition pc in mv.Com.Headlights)
                 {
                     seamothHeadLight.GetComponent<LightShadowQuality>().CopyComponentWithFieldsTo(pc.Light);
                     var thisLight = pc.Light.EnsureComponent<Light>();
@@ -252,7 +253,7 @@ namespace AVS
             GameObject seamothHeadLight = seamoth.transform.Find("lights_parent/light_left").gameObject;
             if (mv.Com.Floodlights != null)
             {
-                foreach (VehicleParts.VehicleSpotLightDefinition pc in mv.Com.Floodlights)
+                foreach (VehicleSpotLightDefinition pc in mv.Com.Floodlights)
                 {
                     seamothHeadLight
                         .GetComponent<LightShadowQuality>()

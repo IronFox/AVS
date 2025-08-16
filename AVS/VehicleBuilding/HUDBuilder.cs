@@ -1,5 +1,6 @@
 ﻿using AVS.BaseVehicle;
 using System.Collections.Generic;
+using AVS.StorageComponents;
 using UnityEngine;
 
 namespace AVS
@@ -8,7 +9,7 @@ namespace AVS
      * This class controls building and configuring the mod vehicle HUD
      * We have to work differently for VR
      */
-    public static class HUDBuilder
+    internal static class HUDBuilder
     {
         public static bool IsVR = false;
         static List<GameObject> GetAllObjectsInScene()

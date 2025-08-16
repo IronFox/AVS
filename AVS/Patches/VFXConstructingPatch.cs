@@ -9,6 +9,15 @@ using UnityEngine;
 
 namespace AVS.Patches
 {
+    /// <summary>
+    /// Contains patch methods aimed at enhancing or modifying the behavior of the <see cref="VFXConstructing"/> class
+    /// related to visual effects during the construction process.
+    /// </summary>
+    /// <remarks>
+    /// This class uses Harmony to intercept and modify the functionality of methods in the <see cref="VFXConstructing"/> class.
+    /// Its primary focus is on handling the application and customization of visual effects such as colors and materials
+    /// during the vehicle construction process.
+    /// </remarks>
     [HarmonyPatch(typeof(VFXConstructing))]
     public static class VFXConstructingPatch
     {

@@ -1,8 +1,9 @@
-﻿using UnityEngine;
+﻿using AVS.StorageComponents;
+using UnityEngine;
 
 namespace AVS
 {
-    public class InnateStorageInput : StorageInput
+    internal class InnateStorageInput : StorageInput
     {
         public override void OpenFromExternal()
         {

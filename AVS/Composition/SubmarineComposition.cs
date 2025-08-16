@@ -1,6 +1,7 @@
 ﻿using AVS.Engines;
 using System;
 using System.Collections.Generic;
+using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS.Composition
@@ -27,13 +28,13 @@ namespace AVS.Composition
         /// Each helm allows a player to pilot the submarine.
         /// Must not be empty.
         /// </summary>
-        public IReadOnlyList<VehicleParts.Helm> Helms { get; } = Array.Empty<VehicleParts.Helm>();
+        public IReadOnlyList<Helm> Helms { get; } = Array.Empty<Helm>();
 
         /// <summary>
         /// Optional flood light definitions.
         /// If non-empty, these lights will be controlled using the control panel, if installed.
         /// </summary>
-        public IReadOnlyList<VehicleParts.VehicleSpotLightDefinition> Floodlights { get; } = Array.Empty<VehicleParts.VehicleSpotLightDefinition>();
+        public IReadOnlyList<VehicleSpotLightDefinition> Floodlights { get; } = Array.Empty<VehicleSpotLightDefinition>();
 
         /// <summary>
         /// Optional interior light definitions.
@@ -128,11 +129,11 @@ namespace AVS.Composition
             GameObject storageRootObject,
             GameObject modulesRootObject,
             IReadOnlyList<GameObject> tetherSources,
-            IReadOnlyList<VehicleParts.Helm> helms,
-            IReadOnlyList<VehicleParts.VehicleHatchDefinition> hatches,
+            IReadOnlyList<Helm> helms,
+            IReadOnlyList<VehicleHatchDefinition> hatches,
             AbstractEngine engine,
             GameObject[] collisionModel,
-            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? floodlights = null,
+            IReadOnlyList<VehicleSpotLightDefinition>? floodlights = null,
             IReadOnlyList<Light>? interiorLights = null,
             IReadOnlyList<GameObject>? navigationPortLights = null,
             IReadOnlyList<GameObject>? navigationStarboardLights = null,
@@ -144,20 +145,20 @@ namespace AVS.Composition
             GameObject? colorPicker = null,
             GameObject? respawnPoint = null,
             // VehicleComposition base parameters
-            IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? batteries = null,
-            IReadOnlyList<VehicleParts.VehicleUpgrades>? upgrades = null,
+            IReadOnlyList<VehicleBatteryDefinition>? batteries = null,
+            IReadOnlyList<VehicleUpgrades>? upgrades = null,
             BoxCollider? boundingBoxCollider = null,
             IReadOnlyList<GameObject>? waterClipProxies = null,
-            IReadOnlyList<VehicleParts.VehicleStorage>? innateStorages = null,
-            IReadOnlyList<VehicleParts.VehicleStorage>? modularStorages = null,
-            IReadOnlyList<VehicleParts.VehicleSpotLightDefinition>? headlights = null,
+            IReadOnlyList<VehicleStorage>? innateStorages = null,
+            IReadOnlyList<VehicleStorage>? modularStorages = null,
+            IReadOnlyList<VehicleSpotLightDefinition>? headlights = null,
             IReadOnlyList<GameObject>? canopyWindows = null,
-            IReadOnlyList<VehicleParts.VehicleBatteryDefinition>? backupBatteries = null,
+            IReadOnlyList<VehicleBatteryDefinition>? backupBatteries = null,
             IReadOnlyList<Collider>? denyBuildingColliders = null,
             IReadOnlyList<TMPro.TextMeshProUGUI>? subNameDecals = null,
             IReadOnlyList<Transform>? lavaLarvaAttachPoints = null,
             GameObject? leviathanGrabPoint = null,
-            IReadOnlyList<VehicleParts.MobileWaterPark>? waterParks = null
+            IReadOnlyList<MobileWaterPark>? waterParks = null
 
         )
         : base(
@@ -189,7 +190,7 @@ namespace AVS.Composition
 
             TetherSources = tetherSources;
             Helms = helms;
-            Floodlights = floodlights ?? Array.Empty<VehicleParts.VehicleSpotLightDefinition>();
+            Floodlights = floodlights ?? Array.Empty<VehicleSpotLightDefinition>();
             InteriorLights = interiorLights ?? Array.Empty<Light>();
             NavigationPortLights = navigationPortLights ?? Array.Empty<GameObject>();
             NavigationStarboardLights = navigationStarboardLights ?? Array.Empty<GameObject>();

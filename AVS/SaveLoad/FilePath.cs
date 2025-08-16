@@ -3,6 +3,14 @@ using System.IO;
 
 namespace AVS.SaveLoad
 {
+    /// <summary>
+    /// Represents a file path and provides utility methods and properties to interact with the file system.
+    /// </summary>
+    /// <remarks>
+    /// This struct encapsulates the functionality for working with file paths, including validation,
+    /// determining the type of path (file or directory), and interacting with files such as reading
+    /// or writing file content. It ensures that paths are handled consistently and safely.
+    /// </remarks>
     public readonly struct FilePath
     {
         /// <summary>

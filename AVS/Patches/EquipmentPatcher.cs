@@ -1,11 +1,12 @@
-﻿using AVS.BaseVehicle;
+﻿using System.Collections.Generic;
+using AVS.BaseVehicle;
+using AVS.VehicleBuilding;
 using HarmonyLib;
-using System.Collections.Generic;
 
 // PURPOSE: allow AvsVehicle upgrade slots to mesh with the game systems
 // VALUE: High
 
-namespace AVS
+namespace AVS.Patches
 {
     /// <summary>
     /// The EquipmentPatcher class is designed to enhance the functionality and compatibility

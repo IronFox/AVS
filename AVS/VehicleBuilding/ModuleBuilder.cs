@@ -1,13 +1,13 @@
-﻿using AVS.BaseVehicle;
-using AVS.Util;
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using AVS.BaseVehicle;
+using AVS.Util;
 using UnityEngine;
 
-namespace AVS
+namespace AVS.VehicleBuilding
 {
-    public class ModuleBuilder : MonoBehaviour
+    internal class ModuleBuilder : MonoBehaviour
     {
         internal static ModuleBuilder? _main;
         public static ModuleBuilder Main => _main ?? throw new NullReferenceException("ModuleBuilder is not initialized. Ensure it is attached to a GameObject in the scene.");
@@ -50,7 +50,6 @@ namespace AVS
 
         // These two materials might be the same
         public Material? genericModuleSlotMaterial;
-        public Material? armModuleSlotMaterial;
 
         public Transform? topLeftSlot = null;
         public Transform? bottomRightSlot = null;
@@ -67,17 +66,17 @@ namespace AVS
             yield return new WaitUntil(() => haveSlotsBeenInited);
             if (!vehicleAllSlots.ContainsKey(ModuleName(0)))
             {
-                var equipment = uGUI_PDA.main.transform
+                var eq = uGUI_PDA.main.transform
                     .Find("Content/InventoryTab/Equipment")
                     .SafeGetComponent<uGUI_Equipment>();
-                if (equipment == null)
+                if (eq == null)
                 {
                     Logger.Error("Failed to find Equipment in PDA. Cannot build vehicle module slots.");
                     yield break;
                 }
                 for (int i = 0; i < MaxNumModules; i++)
                 {
-                    var mod = equipment.transform.Find(ModuleName(i));
+                    var mod = eq.transform.Find(ModuleName(i));
                     if (mod == null)
                     {
                         // If the slot does not exist, create it
@@ -89,17 +88,17 @@ namespace AVS
             }
             else
             {
-                var equipment = uGUI_PDA.main.transform
+                var eq = uGUI_PDA.main.transform
                     .Find("Content/InventoryTab/Equipment")
                     .SafeGetComponent<uGUI_Equipment>();
-                if (equipment == null)
+                if (eq == null)
                 {
                     Logger.Error("Failed to find Equipment in PDA. Cannot build vehicle module slots.");
                     yield break;
                 }
                 for (int i = 0; i < MaxNumModules; i++)
                 {
-                    var slot = equipment.transform
+                    var slot = eq.transform
                         .Find(ModuleName(i))
                         .SafeGetComponent<uGUI_EquipmentSlot>(); ;
                     if (slot == null)
@@ -117,16 +116,16 @@ namespace AVS
             var type2 = Type.GetType("SlotExtender.Patches.uGUI_Equipment_Awake_Patch, SlotExtender", false, false);
             if (type2 != null)
             {
-                var equipment = uGUI_PDA.main.transform
+                var eq = uGUI_PDA.main.transform
                     .Find("Content/InventoryTab/Equipment")
                     .SafeGetComponent<uGUI_Equipment>();
-                if (equipment == null)
+                if (eq == null)
                 {
                     Logger.Error("Failed to find Equipment in PDA. Cannot build vehicle module slots.");
                     yield break;
                 }
                 ModuleBuilder.slotExtenderHasGreenLight = true;
-                equipment.Awake();
+                eq.Awake();
             }
         }
         public void GrabComponents()

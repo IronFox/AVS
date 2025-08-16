@@ -3,6 +3,7 @@ using AVS.Log;
 using AVS.Util;
 using System.Collections;
 using System.Collections.Generic;
+using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS

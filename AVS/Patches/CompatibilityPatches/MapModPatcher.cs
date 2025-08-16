@@ -7,6 +7,11 @@ using UnityEngine;
 
 namespace AVS.Patches.CompatibilityPatches
 {
+    /// <summary>
+    /// The MapModPatcher class provides compatibility patches for the Map Mod,
+    /// ensuring that AvsVehicles are displayed correctly on the map using their corresponding ping sprites.
+    /// This patch prevents the Map Mod from crashing when handling custom AvsVehicle pings.
+    /// </summary>
     public static class MapModPatcher
     {
         /*
@@ -14,6 +19,16 @@ namespace AVS.Patches.CompatibilityPatches
          * It ensures that our AvsVehicles are displayed correctly as their Ping Sprites.
          * Without this patch, the Map Mod dies completely.
          */
+        /// <summary>
+        /// Harmony prefix patch for ensuring AvsVehicles are displayed correctly on the Map Mod,
+        /// using their associated ping sprites. Prevents the Map Mod from crashing when handling
+        /// custom AvsVehicle pings.
+        /// </summary>
+        /// <param name="__instance">The target instance of the Map Mod object being patched.</param>
+        /// <returns>
+        /// A boolean indicating whether the original method should execute. Returns false
+        /// if the prefix processing handles the requirement and the original method should be skipped.
+        /// </returns>
         [HarmonyPrefix]
         public static bool Prefix(object __instance)
         {
