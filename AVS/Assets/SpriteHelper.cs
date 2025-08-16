@@ -95,3 +95,21 @@ public static class SpriteHelper
     {
         PingSprites.Add((name, pt, pingSprite));
     }
+
+    public static Sprite ToSprite(Atlas.Sprite s)
+    {
+        var r = Rect.zero;
+        float minX = float.MaxValue, minY = float.MaxValue;
+        float maxX = float.MinValue, maxY = float.MinValue;
+        foreach (var v in s.uv0)
+        {
+            minX = Mathf.Min(minX, v.x * s.texture.width);
+            minY = Mathf.Min(minY, v.y * s.texture.height);
+            maxX = Mathf.Max(maxX, v.x * s.texture.width);
+            maxY = Mathf.Max(maxY, v.y * s.texture.height);
+        }
+
+        r = new Rect(minX, minY, maxX - minX, maxY - minY);
+        return Sprite.Create(s.texture, r, new Vector2(0.5f, 0.5f), 100.0f);
+    }
+}
