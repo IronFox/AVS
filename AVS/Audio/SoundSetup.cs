@@ -8,11 +8,8 @@ namespace AVS.Audio
     /// </summary>
     /// <param name="Volume">The volume value for the sound. Default is 1.0f.</param>
     /// <param name="Pitch">The pitch value for the sound. Default is 1.0f.</param>
-    /// <param name="MinDistance">The minimum distance at which point the sound will not get any louder. Default is 1 (meter)</param>
-    /// <param name="MaxDistance">The maximum distance at which point the sound can no longer be heard. Default is 500 (meters)</param>
     public readonly record struct SoundSettings(
-        float MinDistance = 1f,
-        float MaxDistance = 500f,
+
         float Volume = 1f,
         float Pitch = 1f
     )
@@ -27,8 +24,9 @@ namespace AVS.Audio
         {
             if (!SigDif(Pitch, other.Pitch)
                 && !SigDif(Volume, other.Volume)
-                && !SigDif(MinDistance, other.MinDistance)
-                && !SigDif(MaxDistance, other.MaxDistance))
+                // && !SigDif(MinDistance, other.MinDistance)
+                // && !SigDif(MaxDistance, other.MaxDistance)
+                )
                 return false;
 
             return true;
@@ -71,6 +69,8 @@ namespace AVS.Audio
         GameObject Owner,
         AudioClip AudioClip,
         SoundSettings Settings = default,
+        float MinDistance = 1f,
+        float MaxDistance = 500f,
         float HalfDistance = 20f,
         bool Loop = false,
         bool Is3D = true)
@@ -91,16 +91,20 @@ namespace AVS.Audio
         {
             if (AudioClip == null)
                 throw new System.ArgumentNullException(nameof(AudioClip));
-            if (Settings.MinDistance > Settings.MaxDistance)
-                throw new System.ArgumentOutOfRangeException(nameof(Settings.MinDistance));
-            if (HalfDistance > Settings.MaxDistance - Settings.MinDistance)
-                throw new System.ArgumentOutOfRangeException(nameof(HalfDistance));
-            if (HalfDistance < Settings.MinDistance * 2)
-                throw new System.ArgumentOutOfRangeException(nameof(HalfDistance));
-            if (Settings.MinDistance < 0)
-                throw new System.ArgumentOutOfRangeException(nameof(Settings.MinDistance));
-            if (Settings.MaxDistance < 0)
-                throw new System.ArgumentOutOfRangeException(nameof(Settings.MaxDistance));
+            if (Is3D)
+            {
+                if (MinDistance > MaxDistance)
+                    throw new System.ArgumentOutOfRangeException(nameof(MinDistance));
+                if (HalfDistance > MaxDistance - MinDistance)
+                    throw new System.ArgumentOutOfRangeException(nameof(HalfDistance));
+                if (HalfDistance < MinDistance * 2)
+                    throw new System.ArgumentOutOfRangeException(nameof(HalfDistance));
+                if (MinDistance < 0)
+                    throw new System.ArgumentOutOfRangeException(nameof(MinDistance));
+                if (MaxDistance < 0)
+                    throw new System.ArgumentOutOfRangeException(nameof(MaxDistance));
+            }
+
             if (Owner == null)
                 throw new System.ArgumentNullException(nameof(Owner));
         }
