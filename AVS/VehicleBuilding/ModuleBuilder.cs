@@ -345,7 +345,7 @@ namespace AVS
             thisBackground.transform.localRotation = Quaternion.identity;
             thisBackground.transform.localPosition = new Vector3(250, 250, 0);
             thisBackground.transform.localScale = 5 * Vector3.one;
-            thisBackground.EnsureComponent<UnityEngine.UI.Image>().sprite = MainPatcher.Instance.Images.ModulesBackground.Sprite;
+            thisBackground.EnsureComponent<UnityEngine.UI.Image>().sprite = MainPatcher.Instance.Images.ModulesBackground;
         }
 
         public GameObject? GetGenericModuleSlot()
@@ -365,7 +365,7 @@ namespace AVS
             Sprite? setSprite;
             if (mv.Config.ModuleBackgroundImage == null)
             {
-                setSprite = MainPatcher.Instance.Images.ModulesBackground.Sprite;
+                setSprite = MainPatcher.Instance.Images.ModulesBackground;
             }
             else
             {

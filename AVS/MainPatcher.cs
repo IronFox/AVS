@@ -36,19 +36,19 @@ namespace AVS
         /// <summary>
         /// The icon for the Depth Module 1 upgrade.
         /// </summary>
-        public Sprite DepthModule1Icon => Images.DepthModule1Icon.Sprite;
+        public Sprite DepthModule1Icon => Images.DepthModule1Icon;
         /// <summary>
         /// The icon for the Depth Module 2 upgrade.
         /// </summary>
-        public Sprite DepthModule2Icon => Images.DepthModule2Icon.Sprite;
+        public Sprite DepthModule2Icon => Images.DepthModule2Icon;
         /// <summary>
         /// The icon for the Depth Module 3 upgrade.
         /// </summary>
-        public Sprite DepthModule3Icon => Images.DepthModule3Icon.Sprite;
+        public Sprite DepthModule3Icon => Images.DepthModule3Icon;
         /// <summary>
         /// The icon to use for the parent node of all depth modules in the crafting tree.
         /// </summary>
-        public Sprite DepthModuleNodeIcon => Images.DepthModuleNodeIcon.Sprite;
+        public Sprite DepthModuleNodeIcon => Images.DepthModuleNodeIcon;
 
         /// <summary>
         /// Queries the main singleton instance of <see cref="MainPatcher"/>.
@@ -135,7 +135,7 @@ namespace AVS
             //LogWriter.Default.Write("Assets.StaticAssets.GetSprites()");
             //Assets.StaticAssets.GetSprites();
             LogWriter.Default.Write("Assets.AvsFabricator.CreateAndRegister()");
-            Assets.AvsFabricator.CreateAndRegister(Images.FabricatorIcon.Sprite);
+            Assets.AvsFabricator.CreateAndRegister(Images.FabricatorIcon);
             //LogWriter.Default.Write("Admin.CraftTreeHandler.AddFabricatorMenus()");
             //CraftTreeHandler.AddFabricatorMenus();
 

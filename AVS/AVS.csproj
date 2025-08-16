@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>net4.7.2</TargetFramework>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>9.0</LangVersion>
     <Nullable>enable</Nullable>
     <RootNamespace>AVS</RootNamespace>
     <AssemblyName>AVS</AssemblyName>
@@ -111,5 +111,9 @@
       <HintPath>$(SUBNAUTICA_PATH)\Subnautica_Data\Managed\UnityEngine.XRModule.dll</HintPath>
     </Reference>
   </ItemGroup>
+
+  <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+    <Exec Command="..\IncrementBuildNumber\bin\Release\net9.0\IncrementBuildNumber.exe" />
+  </Target>
   
 </Project>
