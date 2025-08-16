@@ -184,7 +184,9 @@ namespace AVS.Audio
                  channel.isPlaying(out var isPlaying);
 //                 channel.set3DDistanceFilter()
                  log.Write($"Sound ({channel.handle}) created @{cfg.Owner.transform.position} (isPlaying={isPlaying})");
-                 return new FModSound( channel, sound,component, log) {Settings = cfg.Settings};
+                 var result =  new FModSound( channel, sound,component, log) {Settings = cfg.Settings};
+                 component.sound = result;
+                 return result;
             }
             catch (Exception ex)
             {
@@ -213,7 +215,14 @@ namespace AVS.Audio
 
         public void Update()
         {
-            if (sound == null || !sound.Update(Time.deltaTime))
+            if (sound == null)
+            {
+                Log.Error($"sound is null. Self-destructing");
+                Destroy(this);
+                return;
+            }
+            
+            if (!sound.Update(Time.deltaTime))
             {
                 Log.Error($"FModComponent.sound({sound?.Channel.handle}).Update() returned false. Self-destructing");
                 sound = null;//there is something going on in this case. better just unset and don't touch it
