@@ -118,7 +118,7 @@ namespace AVS.MaterialAdapt
         /// <summary>
         /// Constructs a new instance of <see cref="UnityMaterialData"/>
         /// </summary>
-        private UnityMaterialData(
+        public UnityMaterialData(
             MaterialType type,
             string materialName,
             Color color,
