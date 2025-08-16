@@ -15,7 +15,7 @@ internal static class AvsFabricator
     internal static void CreateAndRegister(Sprite icon)
     {
         var Info = Nautilus.Assets.PrefabInfo.WithTechType(ClassID, DisplayName, Description)
-            .WithIcon(icon ?? SpriteManager.Get(TechType.Fabricator));
+            .WithIcon(icon ?? SpriteHelper.ToSprite(SpriteManager.Get(TechType.Fabricator)));
 
         var prefab = new Nautilus.Assets.CustomPrefab(Info);
 

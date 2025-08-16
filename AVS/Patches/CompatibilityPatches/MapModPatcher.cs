@@ -47,7 +47,7 @@ public static class MapModPatcher
                 foreach (var mvType in AvsVehicleManager.VehicleTypes)
                     if (mvType.pt == ping.pingType)
                     {
-                        icon.sprite = mvType.ping_sprite;
+                        icon.sprite = new Atlas.Sprite(mvType.ping_sprite);
                         break;
                     }
 

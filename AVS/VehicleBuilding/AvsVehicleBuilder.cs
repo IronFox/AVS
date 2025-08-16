@@ -694,7 +694,7 @@ internal static class AvsVehicleBuilder
             {
                 LogWriter.Default.Debug(
                     $"[AvsVehicleBuilder] Setting icon for ping {ping.name} of type {inputType} to sprite {ve.ping_sprite?.texture.NiceName()}");
-                ping.SetIcon(ve.ping_sprite);
+                ping.SetIcon(new Atlas.Sprite(ve.ping_sprite));
                 return;
             }
 
@@ -703,7 +703,7 @@ internal static class AvsVehicleBuilder
             {
                 LogWriter.Default.Debug(
                     $"[AvsVehicleBuilder] Setting icon for ping {ping.name} of type {inputType} to sprite {pair.Sprite?.texture.NiceName()}");
-                ping.SetIcon(pair.Sprite);
+                ping.SetIcon(new Atlas.Sprite(pair.Sprite));
                 return;
             }
 

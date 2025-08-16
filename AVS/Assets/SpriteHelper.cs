@@ -96,6 +96,11 @@ public static class SpriteHelper
         PingSprites.Add((name, pt, pingSprite));
     }
 
+    /// <summary>
+    /// Converts an <see cref="Atlas.Sprite"/> to a <see cref="Sprite"/>.
+    /// </summary>
+    /// <param name="s">The <see cref="Atlas.Sprite"/> to convert.</param>
+    /// <returns>A <see cref="Sprite"/> generated from the given <see cref="Atlas.Sprite"/>.</returns>
     public static Sprite ToSprite(Atlas.Sprite s)
     {
         var r = Rect.zero;
