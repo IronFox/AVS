@@ -53,6 +53,7 @@ public static class WaterClipUtil
         waterClip.distanceFieldMax = localBounds.max;
         waterClip.distanceFieldSize = localBounds.size;
         waterClip.distanceFieldTexture = distanceMap;
+        waterClip.initialized = true;
 
         log.Write($"Calculating scaled border size");
 
@@ -93,9 +94,9 @@ public static class WaterClipUtil
                 1f / localBounds.size.z);
             SDFCutout.Initialize();
             SDFCutoutPatcher.SuppressStartOf(nCutout);
-
-            if (existed == null)
-                MainPatcher.Instance.StartCoroutine(LateReconfigure(log, nCutout, localBounds, distanceMap));
+            //
+            // if (existed == null)
+            //     MainPatcher.Instance.StartCoroutine(LateReconfigure(log, nCutout, localBounds, distanceMap));
         }
         else
         {
@@ -103,29 +104,6 @@ public static class WaterClipUtil
         }
 
         log.Write($"All set. Water clip proxy bound");
-    }
-
-    private static IEnumerator LateReconfigure(LogWriter log, SDFCutout nCutout, Bounds localBounds,
-        Texture3D distanceMap)
-    {
-        for (var i = 0; i < 20; i++)
-            yield return new WaitForEndOfFrame();
-        if (nCutout == null)
-        {
-            log.Write("Cannot ref-fix nCutout: gone");
-            yield break;
-        }
-
-        log.Write("Re-fixing nCutout");
-        nCutout.distanceFieldMin = localBounds.min;
-        nCutout.distanceFieldMax = localBounds.max;
-        nCutout.distanceFieldBounds = localBounds;
-        nCutout.distanceFieldTexture = distanceMap;
-        nCutout.distanceFieldSizeRcp = new Vector3(
-            1f / localBounds.size.x,
-            1f / localBounds.size.y,
-            1f / localBounds.size.z);
-        log.Write("Done");
     }
 
     private static void DestroyComponent<T>(GameObject target, LogWriter log) where T : Component

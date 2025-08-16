@@ -15,6 +15,8 @@ public class SDFCutoutPatcher
     /// <param name="cutout">Cutout to suppress Start() of</param>
     public static void SuppressStartOf(SDFCutout cutout)
     {
+        if (suppressed.Contains(cutout))
+            return;
         suppressed.Add(cutout);
     }
 
@@ -22,6 +24,7 @@ public class SDFCutoutPatcher
     [HarmonyPatch(nameof(SDFCutout.Start))]
     public static bool StartPatch(SDFCutout __instance)
     {
+        suppressed.RemoveAll(x => !x);
         if (suppressed.Contains(__instance))
             return false;
         return true;
