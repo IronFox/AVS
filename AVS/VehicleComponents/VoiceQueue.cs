@@ -199,38 +199,39 @@ namespace AVS
         }
         private void SetupSpeakers()
         {
+            speakers.Add(gameObject.EnsureComponent<AudioSource>().Register());
             //speakers.Add(mv.VehicleModel.EnsureComponent<AudioSource>());
-            if (mv is Submarine sub)
-            {
-                foreach (var ps in sub.Com.Helms)
-                {
-                    speakers.Add(ps.Root.EnsureComponent<AudioSource>().Register());
-                }
-                foreach (var ps in sub.Com.Hatches)
-                {
-                    speakers.Add(ps.Hatch.EnsureComponent<AudioSource>().Register());
-                }
-                foreach (var ps in sub.Com.TetherSources)
-                {
-                    speakers.Add(ps.EnsureComponent<AudioSource>().Register());
-                }
-            }
-            if (mv is Submersible sub2)
-            {
-                speakers.Add(sub2.Com.PilotSeat.Root.EnsureComponent<AudioSource>().Register());
-                foreach (var ps in sub2.Com.Hatches)
-                {
-                    speakers.Add(ps.Hatch.EnsureComponent<AudioSource>().Register());
-                }
-            }
+            // if (mv is Submarine sub)
+            // {
+            //     foreach (var ps in sub.Com.Helms)
+            //     {
+            //         speakers.Add(ps.Root.EnsureComponent<AudioSource>().Register());
+            //     }
+            //     foreach (var ps in sub.Com.Hatches)
+            //     {
+            //         speakers.Add(ps.Hatch.EnsureComponent<AudioSource>().Register());
+            //     }
+            //     foreach (var ps in sub.Com.TetherSources)
+            //     {
+            //         speakers.Add(ps.EnsureComponent<AudioSource>().Register());
+            //     }
+            // }
+            // if (mv is Submersible sub2)
+            // {
+            //     speakers.Add(sub2.Com.PilotSeat.Root.EnsureComponent<AudioSource>().Register());
+            //     foreach (var ps in sub2.Com.Hatches)
+            //     {
+            //         speakers.Add(ps.Hatch.EnsureComponent<AudioSource>().Register());
+            //     }
+            // }
             foreach (var sp in speakers)
             {
                 sp.gameObject.EnsureComponent<AudioLowPassFilter>().cutoffFrequency = 1500;
                 sp.priority = 1;
                 sp.playOnAwake = false;
                 //sp.clip = VoiceManager.silence;
-                sp.spatialBlend = 0.92f;
-                sp.spatialize = true;
+                sp.spatialBlend = 0;
+                sp.spatialize = false;
                 sp.rolloffMode = AudioRolloffMode.Linear;
                 sp.minDistance = 0f;
                 sp.maxDistance = 100f;
