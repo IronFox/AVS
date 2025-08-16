@@ -29,11 +29,19 @@ namespace AVS.MaterialAdapt
     /// <author>https://github.com/IronFox</author>
     public class UnityMaterialData
     {
+        private const string SpecTexName = "_SpecTex";
+        private const string IllumTexName = "_Illum";
+        private static readonly int SpecTex = Shader.PropertyToID(SpecTexName);
+        private static readonly int Illum = Shader.PropertyToID(IllumTexName);
+
         /// <summary>
         /// The name of the source material
         /// </summary>
         public string MaterialName { get; }
 
+        /// <summary>
+        /// The material classification
+        /// </summary>
         public MaterialType Type { get; }
 
         /// <summary>
@@ -110,7 +118,7 @@ namespace AVS.MaterialAdapt
         /// <summary>
         /// Constructs a new instance of <see cref="UnityMaterialData"/>
         /// </summary>
-        public UnityMaterialData(
+        private UnityMaterialData(
             MaterialType type,
             string materialName,
             Color color,
@@ -287,8 +295,9 @@ namespace AVS.MaterialAdapt
         /// the method returns null if the material's shader's name does not
         /// currently match "Standard"
         /// </summary>
-        /// <param name="source">The source material</param>
-        /// <param name="logConfig">Log Configuration</param>
+        /// <param name="source">The source material address to read from</param>
+        /// <param name="logConfig">Configuration for logging material operations</param>
+        /// <param name="type">The type classification for this material</param>
         /// <param name="ignoreShaderName">
         /// If true, will always read the material, regardless of shader name.
         /// If false, will only read the material if its shader name equals "Standard",
@@ -314,6 +323,7 @@ namespace AVS.MaterialAdapt
         /// the method returns null if the material's shader's name does not
         /// currently match "Standard"
         /// </summary>
+        /// <param name="type">The type classification for this material</param>
         /// <param name="renderer">The source renderer</param>
         /// <param name="materialIndex">The source material index on that renderer</param>
         /// <param name="logConfig">Log Configuration</param>
@@ -333,8 +343,6 @@ namespace AVS.MaterialAdapt
         }
 
 
-        private const string SpecTexName = "_SpecTex";
-        private const string IllumTexName = "_Illum";
         /// <summary>
         /// Applies the loaded configuration to the given material
         /// </summary>
@@ -355,7 +363,7 @@ namespace AVS.MaterialAdapt
             //    m.mainTexture = Texture2D.whiteTexture;
             //}
 
-            var existingSpecTex = m.GetTexture(SpecTexName);
+            var existingSpecTex = m.GetTexture(SpecTex);
 
             var spec = SpecularTexture;
 
@@ -367,7 +375,7 @@ namespace AVS.MaterialAdapt
                         SpecTexName, existingSpecTex, spec, m, materialName);
                     //                    logConfig.LogExtraStep($"Translating smoothness alpha map {spec.NiceName()} to spec");
 
-                    m.SetTexture(SpecTexName, spec);
+                    m.SetTexture(SpecTex, spec);
                 }
             }
             else
@@ -380,7 +388,7 @@ namespace AVS.MaterialAdapt
                     logConfig.LogExtraStep($"Source has no smoothness alpha texture. Setting to {Smoothness} on {materialName ?? m.NiceName()}");
                     var gray = uniformShininess ?? Smoothness;
                     tex = OnePixelTexture.Create(new Color(gray, gray, gray, gray));
-                    m.SetTexture(SpecTexName, tex.Texture);
+                    m.SetTexture(SpecTex, tex.Texture);
                 }
                 else
                 {
@@ -389,7 +397,7 @@ namespace AVS.MaterialAdapt
                     tex.Update(col, (old, nw) => logConfig.LogExtraStep($"Updating smoothness alpha texture. Setting {old} -> {nw} in {materialName ?? m.NiceName()}"));
                 }
             }
-            var existingIllumTex = m.GetTexture(IllumTexName);
+            var existingIllumTex = m.GetTexture(Illum);
 
             if (EmissionTexture != null)
             {
@@ -397,7 +405,7 @@ namespace AVS.MaterialAdapt
                 {
                     logConfig.LogExtraStep($"Translating emission map {EmissionTexture} to {IllumTexName} on {materialName ?? m.NiceName()}");
 
-                    m.SetTexture(IllumTexName, EmissionTexture);
+                    m.SetTexture(Illum, EmissionTexture);
                 }
 
             }
@@ -412,13 +420,13 @@ namespace AVS.MaterialAdapt
                     {
                         logConfig.LogExtraStep($"Translating emission color {EmissionColor} to {IllumTexName} on {materialName ?? m.NiceName()}");
                         tex = OnePixelTexture.Create(EmissionColor);
-                        m.SetTexture(IllumTexName, tex.Texture);
+                        m.SetTexture(Illum, tex.Texture);
                     }
                 }
                 else if (existingIllumTex != Texture2D.blackTexture)
                 {
                     logConfig.LogExtraStep($"Source has no illumination texture and illumination color is black. Loading black into {IllumTexName} on {materialName ?? m.NiceName()}");
-                    m.SetTexture(IllumTexName, Texture2D.blackTexture);
+                    m.SetTexture(Illum, Texture2D.blackTexture);
                 }
             }
         }
