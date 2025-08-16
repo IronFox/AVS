@@ -11,10 +11,10 @@ namespace AVS.Patches
     [HarmonyPatch(typeof(FreezeTime))]
     public class FreezeTimePatcher
     {
-        private static List<AudioSource> audioSources = new List<AudioSource>();
+        private static List<AudioSource> audioSources = new ();
         public static AudioSource Register(AudioSource source)
         {
-            audioSources.RemoveAll(item => item == null);
+            audioSources.RemoveAll(item => !item);
             audioSources.Add(source);
             return source;
         }
@@ -22,7 +22,7 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(FreezeTime.Set))]
         public static void FreezeTimeSetPostfix()
         {
-            audioSources.RemoveAll(item => item == null);
+            audioSources.RemoveAll(item => !item);
             if (FreezeTime.HasFreezers())
             {
                 audioSources.ForEach(x => { if (x) x.Pause(); });

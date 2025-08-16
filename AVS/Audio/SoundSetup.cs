@@ -4,32 +4,19 @@ namespace AVS.Audio
 {
 
     /// <summary>
-    /// Represents the volume and pitch settings for a sound.
+    /// Settings that can be changed during the lifetime of a sound source
     /// </summary>
-    public readonly struct SoundSettings
+    /// <param name="Volume">The volume value for the sound. Default is 1.0f.</param>
+    /// <param name="Pitch">The pitch value for the sound. Default is 1.0f.</param>
+    /// <param name="MinDistance">The minimum distance at which point the sound will not get any louder. Default is 1 (meter)</param>
+    /// <param name="MaxDistance">The maximum distance at which point the sound can no longer be heard. Default is 500 (meters)</param>
+    public readonly record struct SoundSettings(
+        float MinDistance = 1f,
+        float MaxDistance = 500f,
+        float Volume = 1f,
+        float Pitch = 1f
+    )
     {
-        /// <summary>
-        /// Gets the pitch value for the sound.
-        /// </summary>
-        public float Pitch { get; }
-
-        /// <summary>
-        /// Gets the volume value for the sound.
-        /// </summary>
-        public float Volume { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SoundSettings"/> struct.
-        /// </summary>
-        /// <param name="volume">The volume of the sound. Default is 1.0f.</param>
-        /// <param name="pitch">The pitch of the sound. Default is 1.0f.</param>
-        public SoundSettings(
-            float volume = 1f,
-            float pitch = 1f)
-        {
-            Pitch = pitch;
-            Volume = volume;
-        }
 
         /// <summary>
         /// Determines whether the current settings are significantly different from another <see cref="SoundSettings"/> instance.
@@ -38,7 +25,10 @@ namespace AVS.Audio
         /// <returns>True if the settings differ by more than a small threshold; otherwise, false.</returns>
         public bool IsSignificantlyDifferent(SoundSettings other)
         {
-            if (!SigDif(Pitch, other.Pitch) && !SigDif(Volume, other.Volume))
+            if (!SigDif(Pitch, other.Pitch)
+                && !SigDif(Volume, other.Volume)
+                && !SigDif(MinDistance, other.MinDistance)
+                && !SigDif(MaxDistance, other.MaxDistance))
                 return false;
 
             return true;
@@ -55,6 +45,7 @@ namespace AVS.Audio
             return Mathf.Abs(a - b) > 0.005f;
         }
     }
+
     /// <summary>
     /// Represents the configuration for a sound source, including its audio clip, playback settings, and spatial properties.
     /// </summary>
@@ -63,89 +54,55 @@ namespace AVS.Audio
     /// associated audio clip, volume, pitch, spatial distances, and looping behavior. It is immutable and can be used
     /// to define sound properties for playback in both 2D and 3D contexts.
     /// </remarks>
-    public readonly struct SoundSetup
+    /// <summary>
+    /// Represents the configuration for a sound source, including its audio clip, playback settings, and spatial properties.
+    /// </summary>
+    /// <param name="Owner">The owning game object</param>
+    /// <param name="AudioClip">The audio clip associated with this instance</param>
+    /// <param name="Settings">The initial volume and pitch settings</param>
+    /// <param name="MinDistance">The minimum distance for the listener. If the listener is closer than this distance, the sound will be played at full volume.</param>
+    /// <param name="MaxDistance">The maximum distance for the listener. If the listener is farther than this distance, the sound will not be heard.</param>
+    /// <param name="HalfDistance">The listener distance at which the sound volume is exactly half the maximum volume. Must be in the range (MinDistance*2, MaxDistance-MinDistance), otherwise clamped.</param>
+    /// <param name="Loop">Whether the playback is set to loop</param>
+    /// <param name="Is3D">Whether the object is represented in 3D</param>
+    /// <exception cref="System.ArgumentNullException">Thrown if AudioClip is null.</exception>
+    /// <exception cref="System.ArgumentOutOfRangeException">Thrown if distance parameters are invalid.</exception>
+    public readonly record struct SoundSetup(
+        GameObject Owner,
+        AudioClip AudioClip,
+        SoundSettings Settings = default,
+        float HalfDistance = 20f,
+        bool Loop = false,
+        bool Is3D = true)
     {
         /// <summary>
-        /// Gets the audio clip associated with this instance.
+        /// Validates the current <see cref="SoundSetup"/> instance to ensure that all properties have valid values.
         /// </summary>
-        public AudioClip AudioClip { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the object is represented in 3D.
-        /// </summary>
-        public bool Is3D { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the playback is set to loop.
-        /// </summary>
-        public bool Loop { get; }
-
-        /// <summary>
-        /// Gets the minimum distance for the listener.
-        /// If the listener is closer than this distance, the sound will be played at full volume.
-        /// </summary>
-        public float MinDistance { get; }
-
-        /// <summary>
-        /// Gets the maximum distance for the listener.
-        /// If the listener is farther than this distance, the sound will not be heard.
-        /// </summary>
-        public float MaxDistance { get; }
-
-        /// <summary>
-        /// Gets the listener distance at which the sound volume is exactly half the maximum volume.
-        /// Must be in the range (MinDistance, MaxDistance).
-        /// </summary>
-        public float HalfDistance { get; }
-
-        /// <summary>
-        /// The initial volume and pitch settings.
-        /// </summary>
-        public SoundSettings Settings { get; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SoundSetup"/> struct.
-        /// </summary>
-        /// <param name="audioClip">The audio clip to play. Cannot be null.</param>
-        /// <param name="volume">The initial volume. Default is 1.0f.</param>
-        /// <param name="pitch">The initial pitch. Default is 1.0f.</param>
-        /// <param name="minDistance">The minimum distance for full volume. Default is 1.0f.</param>
-        /// <param name="maxDistance">The maximum distance for audibility. Default is 500.0f.</param>
-        /// <param name="halfDistance">The distance at which the volume is half. Must be between minDistance and maxDistance. Default is 20.0f.</param>
-        /// <param name="loop">Whether the sound should loop. Default is false.</param>
-        /// <param name="is3D">Whether the sound is 3D. Default is true.</param>
-        /// <exception cref="System.ArgumentNullException">Thrown if <paramref name="audioClip"/> is null.</exception>
-        /// <exception cref="System.ArgumentOutOfRangeException">Thrown if distance parameters are invalid.</exception>
-        public SoundSetup(
-            AudioClip audioClip,
-            float volume = 1f,
-            float pitch = 1f,
-            float minDistance = 1f,
-            float maxDistance = 500f,
-            float halfDistance = 20f,
-            bool loop = false,
-            bool is3D = true
-            )
+        /// <exception cref="ArgumentNullException">
+        /// Thrown if <see cref="AudioClip"/> or <see cref="Owner"/> is null.
+        /// </exception>
+        /// <exception cref="ArgumentOutOfRangeException">
+        /// Thrown if <see cref="MinDistance"/> is greater than <see cref="MaxDistance"/>,
+        /// <see cref="HalfDistance"/> is greater than the difference between <see cref="MaxDistance"/>
+        /// and <see cref="MinDistance"/>, <see cref="HalfDistance"/> is less than twice the <see cref="MinDistance"/>,
+        /// or if <see cref="MinDistance"/> or <see cref="MaxDistance"/> is negative.
+        /// </exception>
+        public void Validate()
         {
-            if (!audioClip)
-            {
-                throw new System.ArgumentNullException(nameof(audioClip), "AudioClip cannot be null.");
-            }
-            if (halfDistance <= minDistance || halfDistance >= maxDistance)
-            {
-                throw new System.ArgumentOutOfRangeException(nameof(halfDistance), "HalfDistance must be between MinDistance and MaxDistance.");
-            }
-            if (minDistance <= 0f || maxDistance <= 0f || minDistance >= maxDistance)
-            {
-                throw new System.ArgumentOutOfRangeException(nameof(minDistance), "MinDistance and MaxDistance must be positive and MinDistance must be less than MaxDistance.");
-            }
-            AudioClip = audioClip;
-            HalfDistance = halfDistance;
-            MinDistance = minDistance;
-            MaxDistance = maxDistance;
-            Is3D = is3D;
-            Loop = loop;
-            Settings = new SoundSettings(volume, pitch);
+            if (AudioClip == null)
+                throw new System.ArgumentNullException(nameof(AudioClip));
+            if (Settings.MinDistance > Settings.MaxDistance)
+                throw new System.ArgumentOutOfRangeException(nameof(Settings.MinDistance));
+            if (HalfDistance > Settings.MaxDistance - Settings.MinDistance)
+                throw new System.ArgumentOutOfRangeException(nameof(HalfDistance));
+            if (HalfDistance < Settings.MinDistance * 2)
+                throw new System.ArgumentOutOfRangeException(nameof(HalfDistance));
+            if (Settings.MinDistance < 0)
+                throw new System.ArgumentOutOfRangeException(nameof(Settings.MinDistance));
+            if (Settings.MaxDistance < 0)
+                throw new System.ArgumentOutOfRangeException(nameof(Settings.MaxDistance));
+            if (Owner == null)
+                throw new System.ArgumentNullException(nameof(Owner));
         }
 
         /// <summary>
