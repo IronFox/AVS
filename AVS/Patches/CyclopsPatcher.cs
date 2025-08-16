@@ -10,13 +10,27 @@ using System.Reflection.Emit;
 
 namespace AVS.Patches
 {
+    /// <summary>
+    /// This class provides a patch for the CyclopsVehicleStorageTerminalManager to enhance its functionality.
+    /// Specifically, it modifies the behavior of the storage interface when interacting with docked vehicles.
+    /// </summary>
+    /// <remarks>
+    /// The patch allows the Cyclops Vehicle Storage Terminal to interact with AvsVehicle data,
+    /// enabling seamless integration and interaction with expanded vehicle types and their storage systems.
+    /// </remarks>
+    /// <example>
+    /// This patch executes a postfix on the StorageButtonClick method of the
+    /// CyclopsVehicleStorageTerminalManager, enabling custom logic for storage access.
+    /// </example>
     [HarmonyPatch(typeof(CyclopsVehicleStorageTerminalManager))]
     public static class CyclopsPatcher
     {
-        /* This transpiler makes one part of OnDockedChanged more generic
-         * Optionally change GetComponent to GetComponentInChildren
-         * Simple as
-         */
+        /// <summary>
+        /// Transforms the IL code within the target method of the CyclopsVehicleStorageTerminalManager class to modify behavior.
+        /// This method is designed to enhance compatibility with additional vehicle types by replacing specific calls in instructions.
+        /// </summary>
+        /// <param name="instructions">A collection of IL code instructions to be modified by this transpiler.</param>
+        /// <returns>A transformed IEnumerable of CodeInstruction objects with modifications applied for enhanced functionality.</returns>
         [HarmonyPatch(nameof(CyclopsVehicleStorageTerminalManager.VehicleDocked))]
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -41,6 +55,12 @@ namespace AVS.Patches
             return newCodes.AsEnumerable();
         }
 
+        /// <summary>
+        /// Modifies the behavior of the VehicleDocked method in the CyclopsVehicleStorageTerminalManager class
+        /// to support specific functionalities for custom vehicle types derived from AvsVehicle.
+        /// </summary>
+        /// <param name="__instance">The instance of CyclopsVehicleStorageTerminalManager where the method is being executed.</param>
+        /// <param name="vehicle">The vehicle object that is being docked.</param>
         [HarmonyPrefix]
         [HarmonyPatch(nameof(CyclopsVehicleStorageTerminalManager.VehicleDocked))]
         static void VehicleDockedPrefix(CyclopsVehicleStorageTerminalManager __instance, Vehicle vehicle)
@@ -64,6 +84,13 @@ namespace AVS.Patches
                 MainPatcher.Instance.StartCoroutine(EnsureSubRootSet());
             }
         }
+
+        /// <summary>
+        /// Executes after a vehicle is docked in the Cyclops's vehicle storage terminal and modifies its behavior for compatibility with custom vehicle types.
+        /// Adjusts the instance to accommodate the docked vehicle, ensuring proper utility and interface functionality.
+        /// </summary>
+        /// <param name="__instance">The instance of the CyclopsVehicleStorageTerminalManager handling the vehicle docking process.</param>
+        /// <param name="vehicle">The vehicle being docked in the Cyclops that may require customized behavior adjustments.</param>
         [HarmonyPostfix]
         [HarmonyPatch(nameof(CyclopsVehicleStorageTerminalManager.VehicleDocked))]
         static void VehicleDockedPostfix(CyclopsVehicleStorageTerminalManager __instance, Vehicle vehicle)
@@ -81,6 +108,14 @@ namespace AVS.Patches
                 }
             }
         }
+
+        /// <summary>
+        /// Modifies the behavior of the Cyclops Vehicle Storage Terminal's StorageButtonClick method to support specific functionality for docked vehicles.
+        /// This postfix ensures proper handling of storage interactions for Seamoth vehicles docked in the Cyclops.
+        /// </summary>
+        /// <param name="__instance">The instance of the CyclopsVehicleStorageTerminalManager currently being patched.</param>
+        /// <param name="type">The type of vehicle storage being accessed.</param>
+        /// <param name="slotID">The slot ID of the storage container being interacted with.</param>
         [HarmonyPostfix]
         [HarmonyPatch(nameof(CyclopsVehicleStorageTerminalManager.StorageButtonClick))]
         public static void StorageButtonClickPostfix(CyclopsVehicleStorageTerminalManager __instance, CyclopsVehicleStorageTerminalManager.VehicleStorageType type, int slotID)

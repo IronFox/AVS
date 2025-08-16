@@ -8,9 +8,28 @@ using UnityEngine;
 
 namespace AVS.Patches
 {
+    /// <summary>
+    /// Provides patches for the CellManager class to handle specific anomalies or edge cases.
+    /// </summary>
+    /// <remarks>
+    /// The primary purpose of this patch is to address a potential issue where the streamer or globalRoot
+    /// properties of the CellManager instance might be null during the invocation of certain methods.
+    /// This could lead to unexpected errors in scenarios where registering global entities is performed.
+    /// </remarks>
     [HarmonyPatch(typeof(CellManager))]
     public static class CellManagerPatcher
     {
+        /// <summary>
+        /// Handles the registration of a global entity within the CellManager.
+        /// Ensures that the proper parent is set even when the streamer or globalRoot properties are null
+        /// during the registration process.
+        /// </summary>
+        /// <param name="__instance">The instance of the CellManager performing the global entity registration.</param>
+        /// <param name="ent">The entity being registered as a global entity.</param>
+        /// <returns>
+        /// Returns true if the registration process can continue normally. Returns false if the parent-setting
+        /// process needs to be deferred due to null streamer or globalRoot properties.
+        /// </returns>
         [HarmonyPrefix]
         [HarmonyPatch(nameof(CellManager.RegisterGlobalEntity))]
         public static bool RegisterGlobalEntityPostfix(CellManager __instance, GameObject ent)

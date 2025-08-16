@@ -2,17 +2,19 @@
 using HarmonyLib;
 using System;
 
-// PURPOSE: add compatibility for better vehicle storage upgrades
-// VALUE: High. It's a very cool mod.
 
 namespace AVS.Patches.CompatibilityPatches
 {
+    /// <summary>
+    /// PURPOSE: add compatibility for better vehicle storage upgrades
+    /// VALUE: High. It's a very cool mod.
+    /// </summary>
     public static class BetterVehicleStoragePatcher
     {
-        /*
-         * This patch is specifically for the Better Vehicle Storage Mod.
-         * It allows the storage containers to be added to AvsVehicles.
-         */
+        /// <summary>
+        /// This patch is specifically for the Better Vehicle Storage Mod.
+        /// It allows the storage containers to be added to AvsVehicles.
+        /// </summary>
         [HarmonyPrefix]
         public static bool Prefix(object __instance, Equipment equipment, ref bool __result)
         {
@@ -24,7 +26,7 @@ namespace AVS.Patches.CompatibilityPatches
             return true;
         }
 
-        public static void TryUseBetterVehicleStorage(AvsVehicle mv, int slotID, TechType techType)
+        internal static void TryUseBetterVehicleStorage(AvsVehicle mv, int slotID, TechType techType)
         {
             var type3 = Type.GetType("BetterVehicleStorage.Managers.StorageModuleMgr, BetterVehicleStorage", false, false);
             if (type3 != null)

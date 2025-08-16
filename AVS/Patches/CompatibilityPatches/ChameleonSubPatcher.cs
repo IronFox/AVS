@@ -1,23 +1,36 @@
 ﻿using HarmonyLib;
 
-// PURPOSE: ensures AvsVehicles are built normally despite the presence of the Chameleon sub
-// VALUE: High, unfortunately. As you can see, the prefix is empty. Odd!
 
 namespace AVS.Patches.CompatibilityPatches
 {
+    /// <summary>
+    /// ChameleonSubPatcher is a compatibility patch specifically created for the Chameleon mod.
+    /// It ensures that AvsVehicles are built correctly despite the presence of the Chameleon sub.
+    /// Without this patch, vehicles such as submarines may not complete the construction process properly
+    /// and would lack essential components like fabricators.
+    /// </summary>
+    /// <remarks>
+    /// The patch addresses issues caused by a specific transpilation chain that interferes with
+    /// the crafting process of vehicles. Although the implementation does not contain any logic
+    /// within the postfix method, it effectively resolves the problem.
+    /// The underlying issue and its resolution through this patch are currently not fully understood.
+    /// </remarks>
     [HarmonyPatch(typeof(ConstructorInput))]
     public static class ChameleonSubPatcher
     {
-        /*
-         * This patch is specifically for the Chameleon mod.
-         * It ensures AvsVehicles are built normally;
-         * without it, Submarines don't finish being constructed correctly,
-         * and mostly obviously, they don't get fabricators.
-         * 
-         * The purpose of this "empty" patch is to bump the transpilation chain on this method.
-         * I don't know why it fixes the problem.
-         * I don't even know why the original transpiler is a problem.
-         */
+        /// <summary>
+        /// Postfix method applied to `ConstructorInput.OnCraftingBeginAsync`.
+        /// This patch is implemented to resolve compatibility issues with the Chameleon mod,
+        /// ensuring that AvsVehicles, such as submarines, finish construction correctly
+        /// and include essential components like fabricators.
+        /// </summary>
+        /// <remarks>
+        /// The method itself contains no explicit logic and serves to modify or adjust
+        /// the transpilation chain affecting the crafting process. The specific behavior
+        /// of the original transpiler and why this method fixes the issue are currently unclear.
+        /// This patch plays a critical role in maintaining proper functionality of vehicles
+        /// during their construction process when the Chameleon mod is in use.
+        /// </remarks>
         [HarmonyPatch(nameof(ConstructorInput.OnCraftingBeginAsync)), HarmonyPatch(MethodType.Enumerator), HarmonyPostfix]
         public static void OnCraftingBeginAsyncPostfix()
         {

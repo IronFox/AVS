@@ -8,6 +8,13 @@ using UnityEngine;
 
 namespace AVS.Patches
 {
+    /// <summary>
+    /// A component designed to prevent AVS vehicles from entering specific restricted areas referred to as "moon gates."
+    /// </summary>
+    /// <remarks>
+    /// This class monitors the entry and exit of AVS vehicles into a trigger zone defined by its collider.
+    /// It applies force to prevent the vehicles from progressing further while maintaining consistency in gameplay or world design.
+    /// </remarks>
     internal class BlockAvsVehicle : MonoBehaviour
     {
         private readonly Dictionary<AvsVehicle, int> MVs = new Dictionary<AvsVehicle, int>();
@@ -46,23 +53,4 @@ namespace AVS.Patches
         }
     }
 
-
-    /* 
-     * Prevent AvsVehicles from entering "moon gates"
-     * which are vertical force fields that prevent seamoth entry.
-     * There's one at "prison" and one at "lavacastlebase"
-     */
-    [HarmonyPatch(typeof(BlockSeamoth))]
-    public class BlockSeamothPatcher
-    {
-        [HarmonyPostfix]
-        [HarmonyPatch(nameof(BlockSeamoth.FixedUpdate))]
-        public static void BlockSeamothFixedUpdatePostfix(BlockSeamoth __instance)
-        {
-            if (__instance.GetComponent<BlockAvsVehicle>() == null)
-            {
-                __instance.gameObject.AddComponent<BlockAvsVehicle>();
-            }
-        }
-    }
 }

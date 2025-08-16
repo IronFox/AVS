@@ -1,22 +1,30 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Configuration;
 using AVS.Util;
 using HarmonyLib;
 using UnityEngine;
 
-// PURPOSE: allows Reaper Leviathans to grab an AvsVehicle. Configure how much damage their bite does.
-// VALUE: High.
-
-namespace AVS.Patches.LeviathanPatches
+namespace AVS.Patches.CreaturePatches
 {
+    /// <summary>
+    /// A Harmony patch class that modifies the behavior of the <see cref="ReaperMeleeAttack"/> class
+    /// to allow Reaper Leviathans to interact with instances of <see cref="AvsVehicle"/>.
+    /// </summary>
+    /// <remarks>
+    /// This patch implements changes to enable Reaper Leviathans to grab an <see cref="AvsVehicle"/>
+    /// in a manner similar to their interaction with Seamoths. Additionally, it adjusts damage dealt
+    /// by the Reaper Leviathan's bite dynamically based on the <see cref="VehicleConfiguration"/> of
+    /// the targeted <see cref="AvsVehicle"/>.
+    /// </remarks>
     [HarmonyPatch(typeof(ReaperMeleeAttack))]
     class ReaperMeleeAttackPatcher
     {
-        /*
-		 * This patch allows Reaper Leviathans to grab an AvsVehicle the same way they grab a Seamoth.
-		 * The Reaper's grab-anchor point is the root GameObject's transform.
-		 * So if when grabbed, the Reaper is too close or too far away,
-		 * all child GameObjects must be moved in relation to the root GameObject.
-		 */
+        /// <summary>
+        /// Executes additional logic after the ReaperMeleeAttack.OnTouch method. Handles interactions with AVS vehicles specifically
+        /// allowing Reaper Leviathans to grab AVS vehicles similar to how they grab Seamoths.
+        /// </summary>
+        /// <param name="__instance">The instance of the ReaperMeleeAttack class executing the OnTouch method.</param>
+        /// <param name="collider">The collider of the object that the Reaper Leviathan interacts with.</param>
         [HarmonyPostfix]
         [HarmonyPatch(nameof(ReaperMeleeAttack.OnTouch))]
         public static void OnTouchPostfix(ReaperMeleeAttack __instance, Collider collider)
@@ -54,6 +62,13 @@ namespace AVS.Patches.LeviathanPatches
             }
         }
 
+        /// <summary>
+        /// Modifies the bite damage dealt by Reaper Leviathans when targeting AVS vehicles, applying custom damage values
+        /// specific to the targeted vehicle's configuration.
+        /// </summary>
+        /// <param name="__instance">The instance of the ReaperMeleeAttack performing the bite attack.</param>
+        /// <param name="__result">The original damage dealt by the Reaper Leviathan, modified to reflect the custom configuration.</param>
+        /// <param name="target">The target GameObject, potentially an AVS vehicle, that the Reaper Leviathan is attacking.</param>
         [HarmonyPostfix]
         [HarmonyPatch(nameof(ReaperMeleeAttack.GetBiteDamage))]
         public static void GetBiteDamagePostfix(ReaperMeleeAttack __instance, ref float __result, GameObject target)
@@ -65,9 +80,24 @@ namespace AVS.Patches.LeviathanPatches
         }
     }
 
+    /// <summary>
+    /// A Harmony patch class that modifies the behavior of the <see cref="ReaperLeviathan"/> class
+    /// to ensure proper interaction and positioning of an attached <see cref="AvsVehicle"/> when grabbed.
+    /// </summary>
+    /// <remarks>
+    /// This patch implements a post-fix to update the position of the <see cref="AvsVehicle"/> being
+    /// held by the <see cref="ReaperLeviathan"/>. If a valid grab point is defined within the vehicle,
+    /// the patch ensures that the vehicle's position is adjusted to align with its intended grab point,
+    /// maintaining consistent positioning during the interaction.
+    /// </remarks>
     [HarmonyPatch(typeof(ReaperLeviathan))]
     class ReaperPatcher
     {
+        /// <summary>
+        /// Ensures the proper positioning of an attached <see cref="AvsVehicle"/> when held by the <see cref="ReaperLeviathan"/>.
+        /// This method adjusts the vehicle's position to align with its defined grab point or its default position.
+        /// </summary>
+        /// <param name="__instance">The instance of the <see cref="ReaperLeviathan"/> currently executing the update method.</param>
         [HarmonyPostfix]
         [HarmonyPatch(nameof(ReaperLeviathan.Update))]
         public static void UpdatePostfix(ReaperLeviathan __instance)

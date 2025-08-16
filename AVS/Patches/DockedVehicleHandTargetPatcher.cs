@@ -15,13 +15,25 @@ using UnityEngine;
 
 namespace AVS.Patches
 {
+    /// <summary>
+    /// A patch class designed to modify the behavior of the DockedVehicleHandTarget class.
+    /// This patch ensures the expected interaction with docked vehicles, including hover and click functionalities,
+    /// enabling appropriate feedback and operations.
+    /// </summary>
+    /// <remarks>
+    /// This class utilizes the Harmony library to inject additional behavior into the DockedVehicleHandTarget's methods
+    /// through postfix and prefix patches, enhancing the functionality of vehicle docking and undocking processes.
+    /// </remarks>
     [HarmonyPatch(typeof(DockedVehicleHandTarget))]
     public static class DockedVehicleHandTargetPatch
     {
-        /* This transpiler makes one part of OnHandHover more generic
-         * Optionally change GetComponent to GetComponentInChildren
-         * Simple as
-         */
+        /// <summary>
+        /// Transpiles the instructions of the OnHandHover method in the DockedVehicleHandTarget class to inject
+        /// custom behavior by modifying certain code instructions. This allows enhanced interaction with docked vehicles,
+        /// making the method more general and flexible in its functionality.
+        /// </summary>
+        /// <param name="instructions">An enumerable collection of original IL code instructions to be transpiled.</param>
+        /// <returns>A modified enumerable collection of IL code instructions with the custom changes applied.</returns>
         [HarmonyPatch(nameof(DockedVehicleHandTarget.OnHandHover))]
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
@@ -46,6 +58,11 @@ namespace AVS.Patches
             return newCodes.AsEnumerable();
         }
 
+        /// <summary>
+        /// Executes additional behavior and modifications after the OnHandHover method is invoked on a DockedVehicleHandTarget instance.
+        /// This method is used to enhance the interaction with docked vehicles, such as displaying additional information or altering behavior.
+        /// </summary>
+        /// <param name="__instance">The instance of DockedVehicleHandTarget on which the OnHandHover method was called.</param>
         [HarmonyPostfix]
         [HarmonyPatch(nameof(DockedVehicleHandTarget.OnHandHover))]
         public static void OnHandHoverPostfix(DockedVehicleHandTarget __instance)
