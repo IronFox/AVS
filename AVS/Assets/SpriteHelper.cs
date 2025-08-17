@@ -95,3 +95,4 @@ public static class SpriteHelper
     {
         PingSprites.Add((name, pt, pingSprite));
     }
+}
