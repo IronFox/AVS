@@ -21,9 +21,11 @@ internal static class BuildBotManager
         if (modVehicle != null)
         {
             if (modVehicle.collisionModel != null)
-                foreach (var go in modVehicle.collisionModel)
+            {
+                var go = modVehicle.collisionModel;
                 foreach (var child in go.transform.GetComponentsInChildren<Transform>())
                     bbbpList.Add(child);
+            }
         }
         else
         {

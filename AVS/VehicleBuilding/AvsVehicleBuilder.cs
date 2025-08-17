@@ -616,7 +616,7 @@ internal static class AvsVehicleBuilder
         SetupDamageComponents(mv, seamoth);
         SetupLavaLarvaAttachPoints(mv);
         SetupDenyBuildingTags(mv);
-        mv.collisionModel = mv.Com.CollisionModel;
+        mv.collisionModel = mv.Com.CollisionModel[0];
 
         if (mv is Submarine sub3)
         {
