@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using AVS.Log;
 using UnityEngine;
 
 namespace AVS.VehicleComponents;
@@ -105,6 +106,14 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     private AvsVehicle? mv;
     private ReactorBattery? reactorBattery;
     private float capacity = 0;
+
+    private LogWriter Log { get; set; } = LogWriter.Default.Tag(nameof(MaterialReactor));
+
+    private class EnergyEntry
+    {
+        public float RemainingEnergy { get; set; }
+        public float MaxEnergy { get; set; }
+    }
 
 
     /// <summary>
@@ -218,6 +227,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         }
 
         mv = avsVehicle;
+        Log = mv.Log.Tag(nameof(MaterialReactor));
         capacity = totalCapacity;
         container = new ItemsContainer(width, height, transform, label.Rendered, null);
         container.onAddItem += OnAddItem;
@@ -307,14 +317,14 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     {
         if (mv == null || reactorBattery == null || container == null)
         {
-            Logger.Error(
+            Log.Error(
                 $"MaterialReactor: {nameof(AvsVehicle)}, ReactorBattery or Container is null, cannot add material.");
             yield break;
         }
 
         var result = new TaskResult<GameObject>();
 
-        yield return AvsCraftData.InstantiateFromPrefabAsync(mv.Log.Tag(nameof(MaterialReactor)), toAdd, result, false);
+        yield return AvsCraftData.InstantiateFromPrefabAsync(Log, toAdd, result, false);
         var spentMaterial = result.Get();
         spentMaterial.LoggedSetActive(false);
         try
@@ -324,7 +334,8 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         catch (Exception e)
         {
             var errorMessage = $"Could not add material {toAdd.AsString()} to the material reactor!";
-            Logger.LogException(errorMessage, e, true);
+            Log.Error(errorMessage, e);
+            ErrorMessage.AddError(errorMessage);
         }
     }
 
@@ -469,106 +480,106 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         };
     }
 
+    private record SavedReactorStatus(IReadOnlyList<ReactorEntry> Entries, float BatteryCharge);
+
     void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
     {
         if (mv == null)
         {
-            Logger.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot save data.");
+            Log.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot save data.");
             return;
         }
 
-        mv.PrefabID.WriteReflected(newSaveFileName, GetSaveDict(), mv.Log);
+        Log.Write($"Saving state");
+        mv.PrefabID.WriteReflected(newSaveFileName,
+            new SavedReactorStatus(GetSaveDict(), reactorBattery.SafeGet(x => x.GetCharge(), 0)), mv.Log);
     }
 
     void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
     {
         if (mv == null)
         {
-            Logger.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot load saved data.");
+            Log.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot load saved data.");
             return;
         }
 
-        mv.PrefabID.ReadReflected(newSaveFileName, out List<Tuple<TechType, float>>? saveDict, mv.Log);
-        if (saveDict == default || saveDict.Count == 0)
+        Log.Write($"Loading state");
+
+        mv.PrefabID.ReadReflected(newSaveFileName, out SavedReactorStatus? reactorStatus, mv.Log);
+        if (reactorStatus == null)
         {
-            Logger.Warn("MaterialReactor: No saved data found, skipping load.");
+            Log.Warn("MaterialReactor: No saved data found, skipping load.");
             return;
         }
 
-        MainPatcher.Instance.StartCoroutine(LoadSaveDict(saveDict));
+        if (reactorBattery != null)
+            reactorBattery.SetCharge(reactorStatus.BatteryCharge);
+        MainPatcher.Instance.StartCoroutine(LoadSaveDict(reactorStatus.Entries));
     }
 
-    private List<Tuple<TechType, float>> GetSaveDict()
+    private record ReactorEntry(string Type, float Energy, float MaxEnergy);
+
+    private IReadOnlyList<ReactorEntry> GetSaveDict()
     {
         if (reactorBattery == null)
         {
             Logger.Error("MaterialReactor: ReactorBattery is null, cannot save data.");
-            return new List<Tuple<TechType, float>>();
+            return [];
         }
 
         if (container == null)
         {
             Logger.Error("MaterialReactor: Container is null, cannot save data.");
-            return new List<Tuple<TechType, float>>();
+            return [];
         }
 
-        var result = new List<Tuple<TechType, float>>
-        {
-            new(TechType.None, reactorBattery.GetCharge())
-        };
+        var result = new List<ReactorEntry>();
+        // {
+        //     Tuple.Create("", reactorBattery.GetCharge())
+        // };
         foreach (var reactant in currentEnergies)
-            result.Add(new Tuple<TechType, float>(reactant.Key.techType, reactant.Value));
+            result.Add(new(reactant.Key.techType.AsString(), reactant.Value, maxEnergies[reactant.Key.techType]));
+        ;
         foreach (var item in container)
         {
-            if (currentEnergies.ContainsKey(item)) continue;
-            result.Add(new Tuple<TechType, float>(item.techType, 0));
+            if (currentEnergies.ContainsKey(item))
+                continue;
+            result.Add(new(item.techType.AsString(), 0f, maxEnergies[item.techType]));
         }
 
         return result;
     }
 
-    private IEnumerator LoadSaveDict(List<Tuple<TechType, float>> saveDict)
+    private IEnumerator LoadSaveDict(IReadOnlyList<ReactorEntry> restoredContents)
     {
-        if (saveDict == null || saveDict.Count == 0)
+        if (restoredContents.Count == 0)
         {
-            Logger.Warn("MaterialReactor: No saved data found, skipping load.");
+            Log.Warn("MaterialReactor: No saved data found, skipping load.");
             yield break;
         }
 
-        if (reactorBattery == null)
-        {
-            Logger.Error("MaterialReactor: ReactorBattery is null, cannot load saved data.");
-            yield break;
-        }
+        Dictionary<TechType, float> energyDict = new();
 
-        foreach (var reactant in saveDict)
-        {
-            if (reactant.Item1 == TechType.None)
+        foreach (var reactant in restoredContents)
+            if (TechTypeExtensions.FromString(reactant.Type, out var techType, true))
             {
-                reactorBattery.SetCharge(reactant.Item2);
-                continue;
+                Log.Write($"Adding {techType} to the reactor");
+                energyDict[techType] = reactant.Energy;
+                yield return MainPatcher.Instance.StartCoroutine(AddMaterial(techType));
             }
 
-            yield return MainPatcher.Instance.StartCoroutine(AddMaterial(reactant.Item1));
-        }
+        Dictionary<InventoryItem, float> energyDict2 = new();
 
-        var changesPending = new Dictionary<InventoryItem, float>();
         foreach (var reactant in currentEnergies)
-        {
-            Tuple<TechType, float>? selectedReactant = default;
-            foreach (var savedReactant in saveDict)
-                if (reactant.Key.techType == savedReactant.Item1)
-                {
-                    selectedReactant = savedReactant;
-                    changesPending.Add(reactant.Key, savedReactant.Item2);
-                    break;
-                }
+            if (energyDict.TryGetValue(reactant.Key.techType, out var energy))
+                energyDict2[reactant.Key] = energy;
 
-            if (selectedReactant == null)
-                continue;
-            saveDict.Remove(selectedReactant);
+        foreach (var reactant in energyDict2)
+        {
+            currentEnergies[reactant.Key] = reactant.Value;
+            Log.Write($"Restored {reactant.Key.techType} to {reactant.Value}");
         }
 
-        foreach (var reactantToLoad in changesPending) currentEnergies[reactantToLoad.Key] = reactantToLoad.Value;
+        Log.Write($"Energy dict: {energyDict2.Count} restored");
     }
 }
