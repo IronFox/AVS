@@ -1,4 +1,7 @@
-﻿using AVS.Localization;
+﻿using System;
+using AVS.Localization;
+using AVS.Log;
+using AVS.Util;
 using Nautilus.Assets.Gadgets;
 using UnityEngine;
 using static CraftData;
@@ -14,33 +17,43 @@ internal static class AvsFabricator
 
     internal static void CreateAndRegister(Sprite icon)
     {
-        var Info = Nautilus.Assets.PrefabInfo.WithTechType(ClassID, DisplayName, Description)
-            .WithIcon(icon ?? SpriteManager.Get(TechType.Fabricator));
-
-        var prefab = new Nautilus.Assets.CustomPrefab(Info);
-
-        if (GetBuilderIndex(TechType.Fabricator, out var group, out var category, out _))
-        {
-            var scanGadget = prefab.SetPdaGroupCategoryAfter(group, category, TechType.Fabricator);
-            scanGadget.RequiredForUnlock = TechType.Constructor;
-        }
-
-        var fabGadget = prefab.CreateFabricator(out var treeType);
-        TreeType = treeType;
-
-        var vfFabTemplate = new Nautilus.Assets.PrefabTemplates.FabricatorTemplate(Info, TreeType)
-        {
-            ModifyPrefab = ModifyFabricatorPrefab,
-            FabricatorModel = Nautilus.Assets.PrefabTemplates.FabricatorTemplate.Model.MoonPool,
-            ConstructableFlags = Nautilus.Utility.ConstructableFlags.Wall | Nautilus.Utility.ConstructableFlags.Base |
-                                 Nautilus.Utility.ConstructableFlags.Submarine
-                                 | Nautilus.Utility.ConstructableFlags.Inside
-        };
-
-        prefab.SetGameObject(vfFabTemplate);
-
-        Nautilus.Handlers.CraftDataHandler.SetRecipeData(Info.TechType, GetBlueprintRecipe());
-        prefab.Register();
+        // LogWriter.Default.Write(nameof(CreateAndRegister) + $" ({icon.NiceName()})");
+        // try
+        // {
+        //     var Info = Nautilus.Assets.PrefabInfo.WithTechType(ClassID, DisplayName, Description)
+        //         .WithIcon(icon.OrRequired(() => SpriteManager.Get(TechType.Fabricator)));
+        //
+        //     var prefab = new Nautilus.Assets.CustomPrefab(Info);
+        //
+        //     if (GetBuilderIndex(TechType.Fabricator, out var group, out var category, out _))
+        //     {
+        //         var scanGadget = prefab.SetPdaGroupCategoryAfter(group, category, TechType.Fabricator);
+        //         scanGadget.RequiredForUnlock = TechType.Constructor;
+        //     }
+        //
+        //     var fabGadget = prefab.CreateFabricator(out var treeType);
+        //     TreeType = treeType;
+        //
+        //     var vfFabTemplate = new Nautilus.Assets.PrefabTemplates.FabricatorTemplate(Info, TreeType)
+        //     {
+        //         ModifyPrefab = ModifyFabricatorPrefab,
+        //         FabricatorModel = Nautilus.Assets.PrefabTemplates.FabricatorTemplate.Model.MoonPool,
+        //         ConstructableFlags = Nautilus.Utility.ConstructableFlags.Wall |
+        //                              Nautilus.Utility.ConstructableFlags.Base |
+        //                              Nautilus.Utility.ConstructableFlags.Submarine
+        //                              | Nautilus.Utility.ConstructableFlags.Inside
+        //     };
+        //
+        //     prefab.SetGameObject(vfFabTemplate);
+        //
+        //     Nautilus.Handlers.CraftDataHandler.SetRecipeData(Info.TechType, GetBlueprintRecipe());
+        //     prefab.Register();
+        // }
+        // catch (Exception e)
+        // {
+        //     LogWriter.Default.Error(nameof(CreateAndRegister), e);
+        //     throw;
+        // }
     }
 
     private static Nautilus.Crafting.RecipeData GetBlueprintRecipe()
