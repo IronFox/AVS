@@ -24,7 +24,7 @@ internal class ModuleBuilder : MonoBehaviour
     public static bool haveWeCalledBuildAllSlots = false;
     public static bool slotExtenderIsPatched = false;
     public static bool SlotExtenderHasGreenLight { get; set; } = false;
-    internal static string ModulePrefix => "Avs_Vehicle_Module";
+    internal static string ModulePrefix => MainPatcher.Instance.ModName + "_Avs_Vehicle_Module";
 
     public static bool IsModuleName(string name)
     {
