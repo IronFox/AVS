@@ -41,9 +41,28 @@ internal static class AvsVehicleBuilder
     private static int numVehicleTypes = 0;
     public static List<AvsVehicle> prefabs = new();
 
-    public const EquipmentType ModuleType = (EquipmentType)625;
-    public const EquipmentType ArmType = (EquipmentType)626;
-    public const TechType InnateStorage = (TechType)0x4100;
+
+    public const string ControlScheme = "AvsScheme";
+    public const string ModuleTypeName = "AvsModuleType";
+    public const string ArmTypeName = "AvsArmType";
+    public const string InnateStorageName = "AvsInnateStorage";
+
+    public static EquipmentType ModuleType { get; }
+    public static TechType InnateStorage { get; }
+
+
+    static AvsVehicleBuilder()
+    {
+        Nautilus.Handlers.EnumHandler.AddEntry<Vehicle.ControlSheme>(ControlScheme);
+        ModuleType = Nautilus.Handlers.EnumHandler.AddEntry<EquipmentType>(ModuleTypeName).Value;
+        //Nautilus.Handlers.EnumHandler.AddEntry<EquipmentType>(ArmTypeName);
+        InnateStorage = Nautilus.Handlers.EnumHandler.AddEntry<TechType>(InnateStorageName).Value;
+    }
+
+    public static bool IsKnownItemType(EquipmentType itemType)
+    {
+        return itemType == ModuleType;
+    }
 
     public static IEnumerator Prefabricate(AvsVehicle mv, PingType pingType, bool verbose)
     {

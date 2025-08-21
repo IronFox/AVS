@@ -373,8 +373,11 @@ public abstract class Submarine : AvsVehicle
     private IEnumerator SpawnFabricator(Transform location)
     {
         var result = new TaskResult<GameObject>();
+        Log.Tag($"SpawnFabricator")
+            .Write(
+                $"Loading prefab '{TechType.Fabricator}'");
         yield return MainPatcher.Instance.StartCoroutine(
-            CraftData.InstantiateFromPrefabAsync(TechType.Fabricator, result));
+            AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(SpawnFabricator)), TechType.Fabricator, result));
         fabricator = result.Get();
         fabricator.GetComponent<SkyApplier>().enabled = true;
         fabricator.transform.SetParent(transform);
