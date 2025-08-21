@@ -372,17 +372,18 @@ public abstract partial class AvsVehicle
 
     private bool SanitizePlayerForWalking(bool isBoarding)
     {
+        var log = Log.Tag(nameof(SanitizePlayerForWalking));
         var anyIssues = false;
         if (Player.main.currentMountedVehicle != this)
         {
-            Log.Write($"{nameof(SanitizePlayerForWalking)}: Updating currentMountedVehicle to this.");
+            log.Write($"Updating currentMountedVehicle to this.");
             Player.main.currentMountedVehicle = this;
             anyIssues = true;
         }
 
         if (Player.main.sitting || Player.main.mode == Player.Mode.Sitting)
         {
-            Log.Write($"{nameof(SanitizePlayerForWalking)}: Player is sitting, exiting sitting mode.");
+            log.Write($"Player is sitting, exiting sitting mode.");
             Player.main.ExitSittingMode();
             Player.main.sitting = false;
             anyIssues = true;
@@ -390,7 +391,7 @@ public abstract partial class AvsVehicle
 
         if (Player.main.mode != Player.Mode.Normal)
         {
-            Log.Write($"{nameof(SanitizePlayerForWalking)}: Setting player mode to Normal.");
+            log.Write($"Setting player mode to Normal.");
             Player.main.mode = Player.Mode.Normal;
             Player.main.playerModeChanged?.Trigger(Player.Mode.Normal);
             anyIssues = true;
@@ -398,15 +399,14 @@ public abstract partial class AvsVehicle
 
         if (Player.main.transform.parent != transform)
         {
-            Log.Write(
-                $"{nameof(SanitizePlayerForWalking)}: Player parent is not this vehicle, setting parent to this vehicle.");
+            log.Write($"Player parent is not this vehicle, setting parent to this vehicle.");
             Player.main.transform.SetParent(transform);
             anyIssues = true;
         }
 
         if (Player.main.isUnderwater.value)
         {
-            Log.Write($"{nameof(SanitizePlayerForWalking)}: Player is underwater, setting to not.");
+            log.Write($"Player is underwater, setting to not.");
             Player.main.playerController.activeController.SetUnderWater(false);
             Player.main.playerController.SetEnabled(true);
             Player.main.SetScubaMaskActive(false);
@@ -416,14 +416,14 @@ public abstract partial class AvsVehicle
 
         if (Player.main.isUnderwaterForSwimming.value)
         {
-            Log.Write($"{nameof(SanitizePlayerForWalking)}: Player is underwater for swimming, setting to not.");
+            log.Write($"Player is underwater for swimming, setting to not.");
             Player.main.isUnderwaterForSwimming.Update(false);
             anyIssues = true;
         }
 
         if (Player.main.motorMode != Player.MotorMode.Walk)
         {
-            Log.Write($"{nameof(SanitizePlayerForWalking)}: Player motor mode is not Walk, setting to Walk.");
+            log.Write($"Player motor mode is not Walk, setting to Walk.");
             Player.main.playerController.SetMotorMode(Player.MotorMode.Walk);
             Player.main.motorMode = Player.MotorMode.Walk;
             Player.main.playerMotorModeChanged.Trigger(Player.MotorMode.Walk);
@@ -432,7 +432,7 @@ public abstract partial class AvsVehicle
 
         if (!AvatarInputHandler.main.gameObject.activeSelf)
         {
-            Log.Write($"{nameof(SanitizePlayerForWalking)}: AvatarInputHandler is not active, activating it.");
+            log.Write($"AvatarInputHandler is not active, activating it.");
             AvatarInputHandler.main.gameObject.SetActive(true);
             anyIssues = true;
         }
