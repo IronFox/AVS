@@ -38,7 +38,7 @@ public static class WaterClipUtil
         var seamothWCP = seamoth.GetComponentInChildren<WaterClipProxy>();
 
         log.Write(
-            $"Binding WaterClipProxy to {target.name} with distance map {distanceMap.name} and bounds {localBounds}");
+            $"Binding WaterClipProxy to {target.NiceName()} with distance map {distanceMap.NiceName()} and bounds {localBounds}");
 
         //bool existed = target.GetComponent<WaterCausticsGenerator>() != null;
 
