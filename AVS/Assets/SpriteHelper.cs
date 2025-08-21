@@ -1,7 +1,9 @@
 ﻿using AVS.Log;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
+using AVS.Util;
 using UnityEngine;
 
 namespace AVS.Assets;
@@ -101,7 +103,7 @@ public static class SpriteHelper
     /// </summary>
     /// <param name="s">The <see cref="Atlas.Sprite"/> to convert.</param>
     /// <returns>A <see cref="Sprite"/> generated from the given <see cref="Atlas.Sprite"/>.</returns>
-    public static Sprite ToSprite(Atlas.Sprite s)
+    public static Sprite ToSprite(this Atlas.Sprite s)
     {
         var r = Rect.zero;
         float minX = float.MaxValue, minY = float.MaxValue;
@@ -114,7 +116,26 @@ public static class SpriteHelper
             maxY = Mathf.Max(maxY, v.y * s.texture.height);
         }
 
-        r = new Rect(minX, minY, maxX - minX, maxY - minY);
-        return Sprite.Create(s.texture, r, new Vector2(0.5f, 0.5f), 100.0f);
+        var w = maxX - minX;
+        // minX -= w * 0.1f;
+        // w += w * 0.2f;
+        var h = maxY - minY;
+        // minY -= h * 0.1f;
+        // h += h * 0.2f;
+
+
+        r = new Rect(minX, minY, w, h);
+
+        // Create a new Sprite
+        var newSprite = Sprite.Create(s.texture, r,
+            //var newSprite = Sprite.Create(s.texture, new Rect(0, 0, s.texture.width, s.texture.height),
+            new Vector2(0.5f, 0.5f));
+        var rect = newSprite.rect;
+        // Override the Sprite's geometry
+        var uvs = s.uv0
+            .Select(x => new Vector2(x.x * s.texture.width - rect.x, x.y * s.texture.height - rect.y))
+            .ToArray();
+        newSprite.OverrideGeometry(uvs, s.triangles);
+        return newSprite;
     }
 }
