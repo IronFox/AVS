@@ -4,42 +4,43 @@ using HarmonyLib;
 // PURPOSE: Ensure AVS is compatible with Slot Extender (both can be used to full effect)
 // VALUE: Very high. Excellent mod!
 
-namespace AVS.Patches.CompatibilityPatches
+namespace AVS.Patches.CompatibilityPatches;
+
+internal class SlotExtenderPatcher
 {
-    class SlotExtenderPatcher
+    /*
+     * This patch is specifically for the Slot Extender mod.
+     * It ensures that our AvsVehicle upgrades UI is displayed correctly.
+     */
+    [HarmonyPrefix]
+    public static bool PrePrefix(object __instance)
     {
-        /*
-         * This patch is specifically for the Slot Extender mod.
-         * It ensures that our AvsVehicle upgrades UI is displayed correctly.
-         */
-        [HarmonyPrefix]
-        public static bool PrePrefix(object __instance)
+        if (ModuleBuilder.slotExtenderIsPatched)
         {
-            if (ModuleBuilder.slotExtenderIsPatched)
-            {
-                return true;
-            }
-            else if (ModuleBuilder.slotExtenderHasGreenLight)
-            {
-                ModuleBuilder.slotExtenderIsPatched = true;
-                return true;
-            }
-            return false;
+            return true;
+        }
+        else if (ModuleBuilder.SlotExtenderHasGreenLight)
+        {
+            ModuleBuilder.slotExtenderIsPatched = true;
+            return true;
         }
 
-        [HarmonyPrefix]
-        public static bool PrePostfix(object __instance)
+        return false;
+    }
+
+    [HarmonyPrefix]
+    public static bool PrePostfix(object __instance)
+    {
+        if (ModuleBuilder.slotExtenderIsPatched)
         {
-            if (ModuleBuilder.slotExtenderIsPatched)
-            {
-                return true;
-            }
-            else if (ModuleBuilder.slotExtenderHasGreenLight)
-            {
-                ModuleBuilder.slotExtenderIsPatched = true;
-                return true;
-            }
-            return false;
+            return true;
         }
+        else if (ModuleBuilder.SlotExtenderHasGreenLight)
+        {
+            ModuleBuilder.slotExtenderIsPatched = true;
+            return true;
+        }
+
+        return false;
     }
 }

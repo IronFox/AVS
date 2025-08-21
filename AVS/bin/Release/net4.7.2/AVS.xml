@@ -9013,6 +9013,15 @@
             <param name="index">The index of the material on the renderer</param>
             <param name="material">The material to set</param>
         </member>
+        <member name="M:AVS.Util.GameObjectHelper.DestroyChildren(UnityEngine.Transform)">
+            <summary>
+            Destroys all child transforms of <paramref name="transform"/>
+            </summary>
+            <remarks>
+            The children will actually be destroyed at the end of the frame, but they will immediately be de-parented
+            </remarks>
+            <param name="transform">Parent transform to destroy all children of</param>
+        </member>
         <member name="T:AVS.Util.HierarchyAnalyzer">
             <summary>
             Game object/component hierarchy analyzer

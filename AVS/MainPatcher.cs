@@ -205,7 +205,7 @@ public abstract class MainPatcher : BaseUnityPlugin
             Admin.GameStateWatcher.IsWorldLoaded = false;
             ModuleBuilder.haveWeCalledBuildAllSlots = false;
             ModuleBuilder.slotExtenderIsPatched = false;
-            ModuleBuilder.slotExtenderHasGreenLight = false;
+            ModuleBuilder.SlotExtenderHasGreenLight = false;
         }
 
         void SetWorldLoaded()
