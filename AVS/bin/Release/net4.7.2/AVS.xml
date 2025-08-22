@@ -5213,7 +5213,14 @@
             <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         </member>
         <member name="M:AVS.MaterialAdapt.ColorVariable.Set(UnityEngine.Material,System.String,UnityEngine.Color,AVS.Log.MaterialLog,System.String)">
-            <inheritdoc/>
+            <summary>
+            Sets the color property of a material with the given value and logs the change.
+            </summary>
+            <param name="m">The material on which the color property will be set.</param>
+            <param name="name">The name of the color property to set.</param>
+            <param name="value">The new color value to assign to the property.</param>
+            <param name="logConfig">The log configuration used to log the operation.</param>
+            <param name="materialName">Optional custom material name for logging purposes.</param>
         </member>
         <member name="T:AVS.MaterialAdapt.SubnauticaMaterialPrototype">
             <summary>
@@ -8802,7 +8809,7 @@
             <param name="exceptionFactory">Factory that produces the exception to throw. Can throw itself</param>
             <returns>Non-null <paramref name="item"/></returns>
         </member>
-        <member name="M:AVS.Util.GameObjectHelper.LoggedSetActive(UnityEngine.GameObject,System.Boolean)">
+        <member name="M:AVS.Util.GameObjectHelper.LoggedSetActive(UnityEngine.GameObject,System.Boolean,AVS.Log.LogWriter)">
             <summary>
             Changes the active state of a GameObject and logs the action, including any exceptions that occur.
             </summary>
