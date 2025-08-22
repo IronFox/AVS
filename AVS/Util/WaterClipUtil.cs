@@ -27,7 +27,7 @@ public static class WaterClipUtil
     {
         log = log.Tag("WCP");
         var seamoth = SeamothHelper.Seamoth;
-        if (seamoth == null)
+        if (seamoth.IsNull())
         {
             log.Error("Seamoth not found. Cannot bind water clip proxy.");
             throw new InvalidOperationException("Seamoth not found. Cannot bind water clip.");
@@ -40,7 +40,7 @@ public static class WaterClipUtil
         log.Write(
             $"Binding WaterClipProxy to {target.NiceName()} with distance map {distanceMap.NiceName()} and bounds {localBounds}");
 
-        //bool existed = target.GetComponent<WaterCausticsGenerator>() != null;
+        //bool existed = target.GetComponent<WaterCausticsGenerator>().IsNotNull();
 
         var waterClip = target.EnsureComponent<WaterClipProxy>();
         waterClip.shape = WaterClipProxy.Shape.DistanceField;
@@ -79,7 +79,7 @@ public static class WaterClipUtil
         waterClip.clipMaterial = meshRenderer.material;
         waterClip.UpdateMaterial();
 
-        if (cutout != null)
+        if (cutout.IsNotNull())
         {
             log.Write("Setting up SDF cutout");
             var existed = target.GetComponent<SDFCutout>();
@@ -95,7 +95,7 @@ public static class WaterClipUtil
             SDFCutout.Initialize();
             SDFCutoutPatcher.SuppressStartOf(nCutout);
             //
-            // if (existed == null)
+            // if (existed.IsNull())
             //     MainPatcher.Instance.StartCoroutine(LateReconfigure(log, nCutout, localBounds, distanceMap));
         }
         else
@@ -109,7 +109,7 @@ public static class WaterClipUtil
     private static void DestroyComponent<T>(GameObject target, LogWriter log) where T : Component
     {
         var component = target.GetComponent<T>();
-        if (component != null)
+        if (component.IsNotNull())
         {
             log.Write($"Destroying component {typeof(T).Name} on {target.name}");
             UnityEngine.Object.Destroy(component);
@@ -129,7 +129,7 @@ public static class WaterClipUtil
     public static void UnbindProxy(LogWriter log, GameObject target)
     {
         //log = log.Tag("WCP");
-        //if (target == null)
+        //if (target.IsNull())
         //{
         //    log.Error("Target is null. Cannot unbind water clip proxy.");
         //    return;

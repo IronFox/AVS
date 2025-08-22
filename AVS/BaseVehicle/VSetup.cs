@@ -19,7 +19,7 @@ public abstract partial class AvsVehicle
 {
     internal void SetupVolumetricLights()
     {
-        if (SeamothHelper.Seamoth == null)
+        if (SeamothHelper.Seamoth.IsNull())
         {
             Log.Error("SeamothHelper.Seamoth is null. Cannot setup volumetric lights.");
             return;
@@ -106,11 +106,11 @@ public abstract partial class AvsVehicle
             yield return new WaitForSeconds(2.5f);
 
             // give us an AI battery please
-            var result = new TaskResult<GameObject>();
+            var result = new InstanceContainer();
             yield return AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(OnCraftEnd)), TechType.PowerCell,
                 result);
-            var newAIBattery = result.Get();
-            if (newAIBattery == null)
+            var newAIBattery = result.Instance;
+            if (newAIBattery.IsNull())
             {
                 Log.Error($"Could not find PowerCell prefab for {techType}");
                 yield break;
@@ -118,7 +118,7 @@ public abstract partial class AvsVehicle
 
             newAIBattery.GetComponent<Battery>().charge = 200;
             newAIBattery.transform.SetParent(Com.StorageRootObject.transform);
-            if (aiEnergyInterface != null)
+            if (aiEnergyInterface.IsNotNull())
             {
                 aiEnergyInterface.sources.First().battery = newAIBattery.GetComponent<Battery>();
                 aiEnergyInterface.sources.First().batterySlot.AddItem(newAIBattery.GetComponent<Pickupable>());
@@ -129,8 +129,8 @@ public abstract partial class AvsVehicle
             {
                 yield return AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(OnCraftEnd)), TechType.PowerCell,
                     result);
-                var newPowerCell = result.Get();
-                if (newPowerCell != null)
+                var newPowerCell = result.Instance;
+                if (newPowerCell.IsNotNull())
                 {
                     newPowerCell.GetComponent<Battery>().charge = 200;
                     newPowerCell.transform.SetParent(Com.StorageRootObject.transform);
@@ -146,7 +146,8 @@ public abstract partial class AvsVehicle
             }
         }
 
-        if (Com.Batteries != null && Com.Batteries.Count() > 0) StartCoroutine(GiveUsABatteryOrGiveUsDeath());
+        if (Com.Batteries.Count > 0)
+            StartCoroutine(GiveUsABatteryOrGiveUsDeath());
     }
 
     internal void CheckEnergyInterface()
@@ -186,7 +187,7 @@ public abstract partial class AvsVehicle
             energyMixin.soundBatteryAdd = seamothEnergyMixin.soundBatteryAdd;
             energyMixin.soundBatteryRemove = seamothEnergyMixin.soundBatteryRemove;
             energyMixin.batteryModels = seamothEnergyMixin.batteryModels;
-            energyMixin.controlledObjects = new GameObject[] { };
+            energyMixin.controlledObjects = [];
             energyMixins.Add(energyMixin);
         }
 
@@ -234,16 +235,13 @@ public abstract partial class AvsVehicle
     /// </summary>
     /// <param name="recipe">Recipe restored from file</param>
     /// <returns>Recipe to use</returns>
-    public virtual Recipe OnRecipeOverride(Recipe recipe)
-    {
-        return recipe;
-    }
+    public virtual Recipe OnRecipeOverride(Recipe recipe) => recipe;
 
 
     /// <summary>
     /// True if the vehicle is constructed and ready to be piloted.
     /// </summary>
-    public bool IsConstructed => vfxConstructing == null || vfxConstructing.IsConstructed();
+    public bool IsConstructed => vfxConstructing.IsNull() || vfxConstructing.IsConstructed();
 
     /// <summary>
     /// Constructs the vehicle's ping instance as part of the prefab setup.
@@ -274,7 +272,7 @@ public abstract partial class AvsVehicle
                 var sm = SeamothHelper.RequireSeamoth;
                 LogWriter.Default.Debug("Found seamoth: " + sm.NiceName());
                 var storage = sm.transform.Find("Storage/Storage1");
-                if (storage == null)
+                if (storage.IsNull())
                 {
                     LogWriter.Default.Error("Could not find Storage/Storage1 in the Seamoth prefab");
                     return false;
@@ -416,12 +414,12 @@ public abstract partial class AvsVehicle
         foreach (var vb in Com.BackupBatteries)
         {
             // Configure energy mixin for this battery slot
-            vb.Root.GetComponents<EnergyMixin>().ForEach(em => Destroy(em)); // remove old energy mixins
+            vb.Root.GetComponents<EnergyMixin>().ForEach(Destroy); // remove old energy mixins
             var em = vb.Root.AddComponent<DebugBatteryEnergyMixin>();
             em.originalProxy = vb.BatteryProxy;
             em.storageRoot = Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
             em.defaultBattery = seamothEnergyMixin.defaultBattery;
-            em.compatibleBatteries = new List<TechType>() { TechType.PowerCell, TechType.PrecursorIonPowerCell };
+            em.compatibleBatteries = [TechType.PowerCell, TechType.PrecursorIonPowerCell];
             em.soundPowerUp = seamothEnergyMixin.soundPowerUp;
             em.soundPowerDown = seamothEnergyMixin.soundPowerDown;
             em.soundBatteryAdd = seamothEnergyMixin.soundBatteryAdd;
@@ -474,6 +472,6 @@ public abstract partial class AvsVehicle
                 lightsOffSound = ce;
             }
 
-        if (lightsOnSound == null || lightsOffSound == null) Log.Error("Failed to find light sounds for " + name);
+        if (lightsOnSound.IsNull() || lightsOffSound.IsNull()) Log.Error("Failed to find light sounds for " + name);
     }
 }

@@ -53,13 +53,13 @@ public class UpgradeProxy : MonoBehaviour
         slots = [];
         var module = SeamothHelper.RequireSeamoth.transform
             .Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/engine_console_key_02_geo").gameObject;
-        if (module == null)
+        if (module.IsNull())
         {
             log.Error("Could not find the upgrade module in the Seamoth prefab.");
             yield break;
         }
 
-        if (proxies == null)
+        if (proxies.IsNull())
         {
             log.Error("Proxies array is null. Cannot proceed with upgrade slot setup.");
             yield break;

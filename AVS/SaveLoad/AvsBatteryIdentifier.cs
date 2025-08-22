@@ -15,7 +15,7 @@ internal class AvsBatteryIdentifier : MonoBehaviour, IProtoTreeEventListener
     void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
     {
         var thisEM = GetComponent<EnergyMixin>();
-        if (thisEM.batterySlot.storedItem == null)
+        if (thisEM.batterySlot.storedItem.IsNull())
         {
             var emptyBattery = new Tuple<TechType, float>(0, 0);
             mv.SaveBatteryData(SaveFileName, emptyBattery);
@@ -36,17 +36,17 @@ internal class AvsBatteryIdentifier : MonoBehaviour, IProtoTreeEventListener
 
     private IEnumerator LoadBattery()
     {
-        yield return new WaitUntil(() => mv != null);
+        yield return new WaitUntil(() => mv.IsNotNull());
         var log = mv.Log.Tag(nameof(LoadBattery));
         var thisBattery = mv.ReadBatteryData(SaveFileName);
         if (thisBattery == default)
             SaveFiles.Current.ReadPrefabReflected(mv.PrefabID, SaveFileName, out thisBattery, mv.Log);
         if (thisBattery == default || thisBattery.Item1 == TechType.None) yield break;
-        var result = new TaskResult<GameObject>();
+        var result = new InstanceContainer();
         yield return
             AvsCraftData.InstantiateFromPrefabAsync(mv.Log.Tag(nameof(LoadBattery)), thisBattery.Item1, result);
-        var thisItem = result.Get();
-        if (thisItem == null)
+        var thisItem = result.Instance;
+        if (thisItem.IsNull())
         {
             log.Error($"AvsCraftData.InstantiateFromPrefabAsync returned null for {thisBattery.Item1}");
             yield break;

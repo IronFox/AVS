@@ -172,7 +172,7 @@ public static class Character
                 yield break;
             }
 
-            if (Player.main.currentMountedVehicle != null)
+            if (Player.main.currentMountedVehicle.IsNotNull())
             {
                 log.Error("Cannot exit vehicle to surface while mounted.");
                 yield break;

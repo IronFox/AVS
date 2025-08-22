@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
 using AVS.StorageComponents;
+using AVS.Util;
 
 // PURPOSE: allow the Cyclops dock terminal to display AvsVehicle data. 
 // VALUE: High.
@@ -95,7 +96,7 @@ public static class CyclopsPatcher
             __instance.usingModulesUIHolder = __instance.seamothModulesUIHolder;
             __instance.currentScreen = __instance.seamothVehicleScreen;
             __instance.vehicleUpgradeConsole = mv.upgradesInput;
-            if (__instance.vehicleUpgradeConsole && __instance.vehicleUpgradeConsole.equipment != null)
+            if (__instance.vehicleUpgradeConsole && __instance.vehicleUpgradeConsole.equipment.IsNotNull())
             {
                 //__instance.vehicleUpgradeConsole.equipment.onEquip += __instance.OnEquip;
                 //__instance.vehicleUpgradeConsole.equipment.onUnequip += __instance.OnUneqip;

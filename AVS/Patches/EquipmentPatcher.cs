@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using AVS.BaseVehicle;
+using AVS.Util;
 using AVS.VehicleBuilding;
 using HarmonyLib;
 
@@ -41,10 +42,9 @@ public class EquipmentPatcher
         if (!ModuleBuilder.IsModuleName(l))
             return;
         var mv = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (mv == null)
+        if (mv.IsNull())
             return;
         ___typeToSlots = mv.VehicleTypeToSlots;
-        return;
     }
 
     /// <summary>
@@ -63,10 +63,9 @@ public class EquipmentPatcher
         if (!ModuleBuilder.IsModuleName(slot))
             return;
         var mv = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (mv == null)
+        if (mv.IsNull())
             return;
         ___typeToSlots = mv.VehicleTypeToSlots;
-        return;
     }
 
     /// <summary>
@@ -85,10 +84,9 @@ public class EquipmentPatcher
         if (!AvsVehicleBuilder.IsKnownItemType(itemType))
             return;
         var mv = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (mv == null)
+        if (mv.IsNull())
             return;
         ___typeToSlots = mv.VehicleTypeToSlots;
-        return;
     }
 
     /// <summary>
@@ -109,10 +107,9 @@ public class EquipmentPatcher
             return;
 
         var mv = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (mv == null)
+        if (mv.IsNull())
             return;
         ___typeToSlots = mv.VehicleTypeToSlots;
-        return;
     }
 
     /// <summary>
@@ -132,10 +129,9 @@ public class EquipmentPatcher
             return;
 
         var mv = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (mv == null)
+        if (mv.IsNull())
             return;
         ___typeToSlots = mv.VehicleTypeToSlots;
-        return;
     }
 
     /// <summary>
@@ -155,10 +151,9 @@ public class EquipmentPatcher
         if (!ModuleBuilder.IsModuleName(slot))
             return;
         var mv = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (mv == null)
+        if (mv.IsNull())
             return;
         ___typeToSlots = mv.VehicleTypeToSlots;
-        return;
     }
 
     /// <summary>

@@ -5,6 +5,7 @@ using HarmonyLib;
 using Nautilus.Handlers;
 using System;
 using System.Collections;
+using AVS.Util;
 using AVS.VehicleBuilding;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -26,7 +27,7 @@ public abstract class MainPatcher : BaseUnityPlugin
     {
         get
         {
-            if (images == null)
+            if (images is null)
                 throw new InvalidOperationException(
                     "PatcherImages is not initialized. Ensure that LoadImages() is called before accessing this property.");
             return images;
@@ -56,8 +57,8 @@ public abstract class MainPatcher : BaseUnityPlugin
     /// <summary>
     /// Queries the main singleton instance of <see cref="MainPatcher"/>.
     /// </summary>
-    public static MainPatcher Instance => _instance ?? throw new InvalidOperationException(
-        "MainPatcher instance is not set. Ensure that the Awake method is called before accessing Instance.");
+    public static MainPatcher Instance => _instance.OrThrow(() => new InvalidOperationException(
+        "MainPatcher instance is not set. Ensure that the Awake method is called before accessing Instance."));
 
     /// <summary>
     /// Loads the images used by AVS.
@@ -81,8 +82,6 @@ public abstract class MainPatcher : BaseUnityPlugin
     //internal static VFConfig VFConfig { get; private set; }
     //internal static AVSNautilusConfig NautilusConfig { get; private set; }
 
-    internal Coroutine? GetVoices { get; private set; } = null;
-    internal Coroutine? GetEngineSounds { get; private set; } = null;
 
     /// <summary>
     /// Begins plugin patching and initialization.
@@ -229,7 +228,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
         // Patch SubnauticaMap with appropriate ping sprites, lest it crash.
         var type = Type.GetType("SubnauticaMap.PingMapIcon, SubnauticaMap", false, false);
-        if (type != null)
+        if (type.IsNotNull())
         {
             var pingOriginal = AccessTools.Method(type, "Refresh");
             var pingPrefix =
@@ -239,7 +238,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
         // Patch SlotExtender, lest it break or break us
         var type2 = Type.GetType("SlotExtender.Patches.uGUI_Equipment_Awake_Patch, SlotExtender", false, false);
-        if (type2 != null)
+        if (type2.IsNotNull())
         {
             var awakePreOriginal = AccessTools.Method(type2, "Prefix");
             var awakePrefix =
@@ -256,7 +255,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
         // Patch BetterVehicleStorage to add AvsVehicle compat
         var type3 = Type.GetType("BetterVehicleStorage.Managers.StorageModuleMgr, BetterVehicleStorage", false, false);
-        if (type3 != null)
+        if (type3.IsNotNull())
         {
             var AllowedToAddOriginal = AccessTools.Method(type3, "AllowedToAdd");
             var AllowedToAddPrefix =
@@ -266,7 +265,7 @@ public abstract class MainPatcher : BaseUnityPlugin
         }
         /*
         var type2 = Type.GetType("SlotExtender.Patches.uGUI_Equipment_Awake_Patch, SlotExtender", false, false);
-        if (type2 != null)
+        if (type2.IsNotNull())
         {
             // Example of assigning a static field in another mod
             var type3 = Type.GetType("SlotExtender.Main, SlotExtender", false, false);
@@ -298,7 +297,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
     private void SetupInstance()
     {
-        if (_instance == null)
+        if (_instance.IsNull())
         {
             _instance = this;
             return;

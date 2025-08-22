@@ -49,7 +49,7 @@ internal class uGUI_PingsPatcher
         var loadInstance = instructions.FirstOrDefault(i => i.opcode == OpCodes.Ldarg_1);
         var loadPingType =
             instructions.FirstOrDefault(i => i.opcode == OpCodes.Ldfld && i.operand.ToString() == "PingType pingType");
-        if (loadInstance == null || loadPingType == null)
+        if (loadInstance.IsNull() || loadPingType.IsNull())
         {
             log.Error("Failed to find required instructions for patching.");
             return instructions;

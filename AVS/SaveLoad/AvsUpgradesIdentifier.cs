@@ -23,7 +23,7 @@ internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
         var result = new Dictionary<string, string>();
         foreach (var installed in upgradeList)
         {
-            if (installed.Value == null) continue; // Skip null slots
+            if (installed.Value.IsNull()) continue; // Skip null slots
             if (installed.Value.techType == TechType.None) continue; // Skip empty slots
 
             //if (UpgradeRegistrar.UpgradeTechTypeMap.TryGetValue(installed.Value.techType, out var upgrade))
@@ -49,8 +49,8 @@ internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
 
     private IEnumerator LoadUpgrades()
     {
-        yield return new WaitUntil(() => mv != null);
-        yield return new WaitUntil(() => mv.upgradesInput.equipment != null);
+        yield return new WaitUntil(() => mv.IsNotNull());
+        yield return new WaitUntil(() => mv.upgradesInput.equipment.IsNotNull());
         mv.UnlockDefaultModuleSlots();
         if (!mv.PrefabID.ReadReflected<Dictionary<string, string>>(
                 NewSaveFileName,
@@ -61,15 +61,15 @@ internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
             yield break;
         }
 
+        var result = new InstanceContainer();
         var log = mv.Log.Tag(nameof(LoadUpgrades));
         foreach (var upgrade in theseUpgrades)
         {
-            var result = new TaskResult<GameObject>();
             TechType techType;
 
             if (upgrade.Value.StartsWith($"Tech:"))
             {
-                techType = TechTypeExtensions.DecodeKey(upgrade.Value.Substring(5));
+                techType = upgrade.Value.Substring(5).DecodeKey();
                 if (techType == TechType.None)
                 {
                     log.Error(
@@ -134,7 +134,6 @@ internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
                 else
                 {
                     log.Error($"Slot name '{upgrade.Key}' is invalid, unable to remap. Skipping upgrade");
-                    ;
                     continue;
                 }
             }
@@ -146,8 +145,8 @@ internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
                 result);
             try
             {
-                var thisUpgrade = result.Get();
-                if (!thisUpgrade)
+                var thisUpgrade = result.Instance;
+                if (thisUpgrade.IsNull())
                 {
                     log.Error(
                         $"Failed to load upgrade {techType} in slot '{slotName}' for {mv.NiceName()} : {mv.VehicleName}");

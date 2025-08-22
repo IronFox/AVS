@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using System.Reflection;
 using AVS.Assets;
+using AVS.Util;
 using UnityEngine;
 
 // PURPOSE: ensure AvsVehicles are displayed correctly in the Map mod
@@ -35,13 +36,14 @@ public static class MapModPatcher
     {
         var field = __instance.GetType().GetField("ping");
         var ping = field.GetValue(__instance) as PingInstance;
-        if (ping == null) return true;
+        if (ping.IsNull())
+            return true;
         foreach (var mvPIs in AvsVehicleManager.MvPings)
             if (mvPIs.pingType == ping.pingType)
             {
                 var field2 = __instance.GetType().GetField("icon");
                 var icon = field2?.GetValue(__instance) as uGUI_Icon;
-                if (icon == null)
+                if (icon.IsNull())
                     continue; // If we don't have an icon, we can't modify it
                 icon.sprite = SpriteManager.Get(TechType.Exosuit);
                 foreach (var mvType in AvsVehicleManager.VehicleTypes)

@@ -12,10 +12,7 @@ public static class CommonExtensions
     /// </summary>
     /// <param name="f">Float to convert</param>
     /// <returns>Converted float</returns>
-    public static string ToStr(this float f)
-    {
-        return f.ToString(CultureInfo.InvariantCulture);
-    }
+    public static string ToStr(this float f) => f.ToString(CultureInfo.InvariantCulture);
 
     /// <summary>
     /// Parses a string into a float using the universal decimal sign (.)
@@ -23,20 +20,15 @@ public static class CommonExtensions
     /// <param name="s">String to try parse</param>
     /// <param name="f">Resulting float</param>
     /// <returns>True on success</returns>
-    public static bool ToFloat(this string s, out float f)
-    {
-        return float.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out f);
-    }
+    public static bool ToFloat(this string s, out float f) =>
+        float.TryParse(s, NumberStyles.Any, CultureInfo.InvariantCulture, out f);
 
     /// <summary>
     /// Converts a string into a float using the universal decimal sign (.)
     /// </summary>
     /// <param name="s">String to parse</param>
     /// <returns>Converted float</returns>
-    public static float ToFloat(this string s)
-    {
-        return float.Parse(s, NumberStyles.Any, CultureInfo.InvariantCulture);
-    }
+    public static float ToFloat(this string s) => float.Parse(s, NumberStyles.Any, CultureInfo.InvariantCulture);
 
     /// <summary>
     /// Produces a percentage string from a float value.
@@ -64,7 +56,7 @@ public static class CommonExtensions
     /// <returns>String in the form "[v]%" where [v] is either 1.23 or - </returns>
     public static string Percentage(this LiveMixin? live)
     {
-        if (live == null) return "-%";
+        if (live.IsNull()) return "-%";
         if (live.maxHealth <= 0 || live.invincible) return "-%";
         return (live.health / live.maxHealth).ToString("#.#%", CultureInfo.CurrentCulture);
     }

@@ -24,7 +24,7 @@ internal class AvsInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListen
             float batteryChargeIfApplicable = -1;
             var bat = item.item.GetComponentInChildren<Battery>(true);
             var innerBatteryTT = TechType.None;
-            if (bat != null)
+            if (bat.IsNotNull())
             {
                 batteryChargeIfApplicable = bat.charge;
                 innerBatteryTT = bat.gameObject.GetComponent<TechTag>().type;
@@ -43,21 +43,21 @@ internal class AvsInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListen
 
     private IEnumerator LoadInnateStorage()
     {
-        yield return new WaitUntil(() => mv != null);
+        yield return new WaitUntil(() => mv.IsNotNull());
 
         var log = mv.Log.Tag(nameof(LoadInnateStorage));
         var thisStorage = mv.ReadInnateStorage(SaveFileName);
-        if (thisStorage == null)
+        if (thisStorage.IsNull())
             if (!mv.PrefabID.ReadReflected(SaveFileName, out thisStorage, mv.Log))
                 yield break;
 
-        var result = new TaskResult<GameObject>();
+        var result = new InstanceContainer();
         foreach (var item in thisStorage)
         {
             yield return AvsCraftData.InstantiateFromPrefabAsync(mv.Log.Tag(nameof(AvsInnateStorageIdentifier)),
                 item.Item1, result);
-            var thisItem = result.Get();
-            if (thisItem == null)
+            var thisItem = result.Instance;
+            if (thisItem.IsNull())
             {
                 log.Error($"AvsCraftData.InstantiateFromPrefabAsync returned null for {item.Item1}");
                 continue;
@@ -67,7 +67,7 @@ internal class AvsInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListen
             try
             {
                 var ic = GetComponent<InnateStorageContainer>();
-                if (ic == null)
+                if (ic.IsNull())
                 {
                     log.Error(
                         $"InnateStorageContainer not found on {gameObject.name} for {mv.name} : {mv.subName.hullName.text}");

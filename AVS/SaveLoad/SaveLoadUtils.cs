@@ -57,17 +57,15 @@ internal static class SaveLoadUtils
         return result;
     }
 
-    internal static string GetSaveFileName(Transform root, Transform target, string fileSuffix)
-    {
-        return $"{GetTransformPath(root, target)}-{fileSuffix}";
-    }
+    internal static string GetSaveFileName(Transform root, Transform target, string fileSuffix) =>
+        $"{GetTransformPath(root, target)}-{fileSuffix}";
 
     internal static IEnumerator ReloadBatteryPower(GameObject thisItem, float thisCharge, TechType innerBatteryTT)
     {
         var log = LogWriter.Default.Tag(nameof(ReloadBatteryPower));
         var existing = thisItem.GetComponentInChildren<Battery>();
         // check whether we *are* a battery xor we *have* a battery
-        if (existing != null)
+        if (existing.IsNotNull())
         {
             // we are a battery
             existing.charge = thisCharge;
@@ -77,21 +75,21 @@ internal static class SaveLoadUtils
             // we have a battery (we are a tool)
             // Thankfully we have this naming convention
             var batSlot = thisItem.transform.Find("BatterySlot");
-            if (batSlot == null)
+            if (batSlot.IsNull())
             {
                 log.Error($"Failed to find battery slot for tool in innate storage: {thisItem.name}");
                 yield break;
             }
 
-            var result = new TaskResult<GameObject>();
+            var result = new InstanceContainer();
             yield return AvsCraftData.InstantiateFromPrefabAsync(LogWriter.Default.Tag(nameof(ReloadBatteryPower)),
                 innerBatteryTT, result);
-            var newBat = result.Get();
+            var newBat = result.Instance;
             var bat = newBat.SafeGetComponent<Battery>();
-            if (bat != null)
+            if (bat.IsNotNull())
             {
                 bat.charge = thisCharge;
-                newBat.transform.SetParent(batSlot);
+                newBat!.transform.SetParent(batSlot);
                 newBat.SetActive(false);
             }
             else

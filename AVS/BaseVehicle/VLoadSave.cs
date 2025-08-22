@@ -27,7 +27,7 @@ public abstract partial class AvsVehicle
 
     private Data GetOrCreateData()
     {
-        if (data != null)
+        if (data.IsNotNull())
             return data;
         var blocks = new List<DataBlock>();
         CreateDataBlocks(blocks.Add);
@@ -189,12 +189,12 @@ public abstract partial class AvsVehicle
 
     internal List<Tuple<TechType, float, TechType>>? ReadInnateStorage(string path)
     {
-        if (loadedStorageData == null)
+        if (loadedStorageData.IsNull())
             PrefabID.ReadReflected(
                 StorageSaveName,
                 out loadedStorageData,
                 Log);
-        if (loadedStorageData == null)
+        if (loadedStorageData.IsNull())
             return default;
         if (loadedStorageData.ContainsKey(path))
             return loadedStorageData[path];
@@ -229,10 +229,10 @@ public abstract partial class AvsVehicle
 
     internal Tuple<TechType, float>? ReadBatteryData(string path)
     {
-        if (loadedBatteryData == null)
+        if (loadedBatteryData.IsNull())
             PrefabID.ReadReflected(BatterySaveName, out loadedBatteryData, Log);
         var log = Log.Tag(nameof(ReadBatteryData));
-        if (loadedBatteryData == null)
+        if (loadedBatteryData.IsNull())
         {
             log.Error(
                 $"Failed to load battery data for {path}: Unable to deserialize loaded battery data from save file");
@@ -278,7 +278,7 @@ public abstract partial class AvsVehicle
         foreach (var wp in Com.WaterParks)
         {
             var waterPark = wp.Container.GetComponent<StorageComponents.MobileWaterPark>();
-            if (waterPark == null)
+            if (waterPark.IsNull())
             {
                 Log.Error($"WaterPark {wp.Container.name} has no MobileWaterPark component!");
                 continue;
@@ -287,7 +287,7 @@ public abstract partial class AvsVehicle
             waterPark.OnVehicleLoaded();
         }
 
-        if (lateBoardAt != null)
+        if (lateBoardAt.IsNotNull())
             RegisterPlayerEntry(() => { Player.mainObject.transform.position = lateBoardAt.Value; });
 
         if (lateControl)

@@ -38,13 +38,13 @@ namespace AVS.VehicleComponents
         {
             const string failMessagePrefix = "Dockingbay Initialization Error:";
             string failTransformPrefix = $"{failMessagePrefix} Input transform was null:";
-            if (PlayerExitLocation == null)
+            if (PlayerExitLocation.IsNull())
             {
                 Logger.Log($"{failTransformPrefix} PlayerExitLocation. Destroying this component.");
                 Component.DestroyImmediate(this);
                 return;
             }
-            if (DockTrigger == null)
+            if (DockTrigger.IsNull())
             {
                 Logger.Log($"{failTransformPrefix} DockTrigger. Destroying this component.");
                 Component.DestroyImmediate(this);
@@ -53,7 +53,7 @@ namespace AVS.VehicleComponents
         }
         public void Detach(bool withPlayer)
         {
-            if (dockAnimation == null && IsSufficientSpace())
+            if (dockAnimation.IsNull() && IsSufficientSpace())
             {
                 MainPatcher.Instance.StartCoroutine(InternalDetach(withPlayer));
             }
@@ -84,7 +84,7 @@ namespace AVS.VehicleComponents
         }
         protected virtual void UpdateDockedVehicle()
         {
-            if (currentDockedVehicle == null)
+            if (currentDockedVehicle.IsNull())
             {
                 return;
             }
@@ -101,7 +101,7 @@ namespace AVS.VehicleComponents
             }
             else if (currentDockedVehicle is AvsVehicle mv)
             {
-                if (mv.HeadlightsController != null && mv.HeadlightsController.IsLightsOn)
+                if (mv.HeadlightsController.IsNotNull() && mv.HeadlightsController.IsLightsOn)
                 {
                     mv.HeadlightsController.Toggle();
                 }
@@ -151,7 +151,7 @@ namespace AVS.VehicleComponents
 
         protected virtual void OnStartedUndocking(bool withPlayer)
         {
-            if (currentDockedVehicle == null)
+            if (currentDockedVehicle.IsNull())
             {
                 return;
             }
@@ -178,7 +178,7 @@ namespace AVS.VehicleComponents
         }
         protected virtual IEnumerator DoUndockingAnimations()
         {
-            if (currentDockedVehicle == null)
+            if (currentDockedVehicle.IsNull())
             {
                 yield break;
             }
@@ -189,7 +189,7 @@ namespace AVS.VehicleComponents
         }
         protected virtual void OnFinishedUndocking(bool hasPlayer)
         {
-            if (currentDockedVehicle == null)
+            if (currentDockedVehicle.IsNull())
             {
                 return;
             }
@@ -211,11 +211,11 @@ namespace AVS.VehicleComponents
         private void Update()
         {
             OnDockUpdate();
-            if (dockAnimation != null)
+            if (dockAnimation.IsNotNull())
             {
                 return;
             }
-            else if (currentDockedVehicle == null)
+            else if (currentDockedVehicle.IsNull())
             {
                 TryAttachVehicle();
             }
@@ -229,7 +229,7 @@ namespace AVS.VehicleComponents
         private void TryAttachVehicle()
         {
             Vehicle dockTarget = GetDockingTarget();
-            if (dockTarget == null)
+            if (dockTarget.IsNull())
             {
                 HandleDockDoors(TechType.None, false);
                 return;
@@ -249,7 +249,7 @@ namespace AVS.VehicleComponents
         }
         private IEnumerator InternalAttach(Vehicle dockTarget)
         {
-            if (dockTarget == null)
+            if (dockTarget.IsNull())
             {
                 yield break;
             }
@@ -263,7 +263,7 @@ namespace AVS.VehicleComponents
         }
         private IEnumerator InternalDetach(bool withPlayer)
         {
-            if (currentDockedVehicle == null)
+            if (currentDockedVehicle.IsNull())
             {
                 yield break;
             }

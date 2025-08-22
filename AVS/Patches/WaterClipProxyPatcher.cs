@@ -30,7 +30,7 @@ internal class WaterClipProxyPatcher
     private static void VehicleDockedPostfix(WaterClipProxy __instance)
     {
         var vehicle = __instance.GetComponentInParent<AvsVehicle>();
-        if (vehicle != null)
+        if (vehicle.IsNotNull())
         {
             var oldScale = __instance.transform.lossyScale;
             var newScale = new Vector3(

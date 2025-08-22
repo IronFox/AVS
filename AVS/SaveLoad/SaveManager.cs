@@ -21,21 +21,16 @@ internal static class SaveManager
      * List<Tuple<Dictionary<Vector3, Vector3>, TechType>>
      * List<TechType>
      */
-    internal static bool MatchMv(AvsVehicle mv, Vector3 location)
-    {
+    internal static bool MatchMv(AvsVehicle mv, Vector3 location) =>
         // the following floats we compare should in reality be the same
         // but anyways there's probably no closer mod vehicle than 1 meter
-        return Vector3.Distance(mv.transform.position, location) < 2;
-    }
+        Vector3.Distance(mv.transform.position, location) < 2;
 
-    internal static List<Tuple<Vector3, Dictionary<string, techtype>>> SerializeUpgrades()
-    {
-        return new List<Tuple<Vector3, Dictionary<string, techtype>>>();
-    }
+    internal static List<Tuple<Vector3, Dictionary<string, techtype>>> SerializeUpgrades() => new();
 
     //internal static IEnumerator DeserializeUpgrades(SaveData data, AvsVehicle mv)
     //{
-    //    if (data == null || mv == null || data.UpgradeLists == null)
+    //    if (data.IsNull() || mv.IsNull() || data.UpgradeLists.IsNull())
     //    {
     //        yield break;
     //    }
@@ -71,14 +66,11 @@ internal static class SaveManager
     //        }
     //    }
     //}
-    internal static List<Tuple<Vector3, List<Tuple<int, batteries>>>> SerializeModularStorage()
-    {
-        return new List<Tuple<Vector3, List<Tuple<int, batteries>>>>();
-    }
+    internal static List<Tuple<Vector3, List<Tuple<int, batteries>>>> SerializeModularStorage() => new();
 
     //internal static IEnumerator DeserializeModularStorage(SaveData data, AvsVehicle mv)
     //{
-    //    if (data == null || mv == null || data.ModularStorages == null)
+    //    if (data.IsNull() || mv.IsNull() || data.ModularStorages.IsNull())
     //    {
     //        yield break;
     //    }
@@ -91,7 +83,7 @@ internal static class SaveManager
     //            foreach (var container in vehicle.Item2)
     //            {
     //                var thisContainer = mv.ModGetStorageInSlot(container.Item1, TechType.VehicleStorageModule);
-    //                if (thisContainer != null)
+    //                if (thisContainer.IsNotNull())
     //                {
     //                    foreach (var techtype in container.Item2)
     //                    {
@@ -106,7 +98,7 @@ internal static class SaveManager
     //                        if (techtype.Item2 >= 0)
     //                        {
     //                            // check whether we *are* a battery xor we *have* a battery
-    //                            if (thisItem.GetComponent<Battery>() != null && thisItem.GetComponentInChildren<Battery>() != null)
+    //                            if (thisItem.GetComponent<Battery>().IsNotNull() && thisItem.GetComponentInChildren<Battery>().IsNotNull())
     //                            {
     //                                // we are a battery
     //                                thisItem.GetComponentInChildren<Battery>().charge = techtype.Item2;
@@ -116,7 +108,7 @@ internal static class SaveManager
     //                                // we have a battery (we are a tool)
     //                                // Thankfully we have this naming convention
     //                                Transform batSlot = thisItem.transform.Find("BatterySlot");
-    //                                if (batSlot == null)
+    //                                if (batSlot.IsNull())
     //                                {
     //                                    Logger.Warn($"Failed to load modular storage item {thisItem.name} to modular storage in vehicle {mv.GetName()}.");
     //                                    continue;
@@ -124,7 +116,7 @@ internal static class SaveManager
     //                                result = new TaskResult<GameObject>();
     //                                yield return CraftData.InstantiateFromPrefabAsync(TechType.Battery, result, false);
     //                                GameObject newBat = result.Get();
-    //                                if (newBat.GetComponent<Battery>() != null)
+    //                                if (newBat.GetComponent<Battery>().IsNotNull())
     //                                {
     //                                    newBat.GetComponent<Battery>().charge = techtype.Item2;
     //                                    Logger.Warn($"Failed to load modular storage battery {thisItem.name} to modular storage in vehicle {mv.GetName()}.");
@@ -153,14 +145,11 @@ internal static class SaveManager
     //        }
     //    }
     //}
-    internal static List<Tuple<Vector3, List<Tuple<Vector3, batteries>>>> SerializeInnateStorage()
-    {
-        return new List<Tuple<Vector3, List<Tuple<Vector3, batteries>>>>();
-    }
+    internal static List<Tuple<Vector3, List<Tuple<Vector3, batteries>>>> SerializeInnateStorage() => new();
 
     //internal static IEnumerator DeserializeInnateStorage(SaveData data, AvsVehicle mv)
     //{
-    //    if (data == null || mv == null || data.InnateStorages == null)
+    //    if (data.IsNull() || mv.IsNull() || data.InnateStorages.IsNull())
     //    {
     //        yield break;
     //    }
@@ -215,14 +204,11 @@ internal static class SaveManager
     //    }
     //    yield break;
     //}
-    internal static List<Tuple<Vector3, batteries>> SerializeBatteries()
-    {
-        return new List<Tuple<Vector3, batteries>>();
-    }
+    internal static List<Tuple<Vector3, batteries>> SerializeBatteries() => new();
 
     //internal static IEnumerator DeserializeBatteries(SaveData data, AvsVehicle mv)
     //{
-    //    if (data == null || mv == null || data.Batteries == null)
+    //    if (data.IsNull() || mv.IsNull() || data.Batteries.IsNull())
     //    {
     //        yield break;
     //    }
@@ -258,14 +244,11 @@ internal static class SaveManager
     //    }
     //    yield break;
     //}
-    internal static List<Tuple<Vector3, batteries>> SerializeBackupBatteries()
-    {
-        return new List<Tuple<Vector3, batteries>>();
-    }
+    internal static List<Tuple<Vector3, batteries>> SerializeBackupBatteries() => new();
 
     //internal static IEnumerator DeserializeBackupBatteries(SaveData data, Submarine mv)
     //{
-    //    if (data == null || mv == null || data.BackupBatteries == null)
+    //    if (data.IsNull() || mv.IsNull() || data.BackupBatteries.IsNull())
     //    {
     //        yield break;
     //    }
@@ -305,14 +288,11 @@ internal static class SaveManager
     //    }
     //    yield break;
     //}
-    internal static List<Tuple<Vector3, bool>> SerializePlayerInside()
-    {
-        return new List<Tuple<Vector3, bool>>();
-    }
+    internal static List<Tuple<Vector3, bool>> SerializePlayerInside() => new();
 
     //internal static IEnumerator DeserializePlayerInside(SaveData data, AvsVehicle mv)
     //{
-    //    if (data == null || mv == null || data.IsPlayerInside == null)
+    //    if (data.IsNull() || mv.IsNull() || data.IsPlayerInside.IsNull())
     //    {
     //        yield break;
     //    }
@@ -332,13 +312,10 @@ internal static class SaveManager
     //        }
     //    }
     //}
-    internal static List<Tuple<Vector3, string, color, color, color, color, bool>> SerializeAesthetics()
-    {
-        return new List<Tuple<Vector3, string, color, color, color, color, bool>>();
-    }
+    internal static List<Tuple<Vector3, string, color, color, color, color, bool>> SerializeAesthetics() => new();
     //internal static IEnumerator DeserializeAesthetics(SaveData data, AvsVehicle mv)
     //{
-    //    if (data == null || mv == null || data.AllVehiclesAesthetics == null)
+    //    if (data.IsNull() || mv.IsNull() || data.AllVehiclesAesthetics.IsNull())
     //    {
     //        yield break;
     //    }
@@ -352,7 +329,7 @@ internal static class SaveManager
     //        {
     //            try
     //            {
-    //                if (mv is Submarine mvSub && mvSub.Com.ColorPicker != null)
+    //                if (mv is Submarine mvSub && mvSub.Com.ColorPicker.IsNotNull())
     //                {
     //                    var active = mvSub.Com.ColorPicker.transform.Find("EditScreen/Active");
     //                    if (active is null)
@@ -407,14 +384,11 @@ internal static class SaveManager
     //        }
     //    }
     //}
-    internal static List<Tuple<Vector3, bool>> SerializePlayerControlling()
-    {
-        return new List<Tuple<Vector3, bool>>();
-    }
+    internal static List<Tuple<Vector3, bool>> SerializePlayerControlling() => new();
 
     //internal static IEnumerator DeserializePlayerControlling(SaveData data, AvsVehicle mv)
     //{
-    //    if (data == null || mv == null || data.IsPlayerControlling == null)
+    //    if (data.IsNull() || mv.IsNull() || data.IsPlayerControlling.IsNull())
     //    {
     //        yield break;
     //    }
@@ -434,13 +408,10 @@ internal static class SaveManager
     //        }
     //    }
     //}
-    internal static List<Tuple<Vector3, string>> SerializeSubName()
-    {
-        return new List<Tuple<Vector3, string>>();
-    }
+    internal static List<Tuple<Vector3, string>> SerializeSubName() => new();
     //internal static IEnumerator DeserializeSubName(SaveData data, AvsVehicle mv)
     //{
-    //    if (data == null || mv == null || data.SubNames == null)
+    //    if (data.IsNull() || mv.IsNull() || data.SubNames.IsNull())
     //    {
     //        yield break;
     //    }
@@ -476,7 +447,7 @@ internal static class SaveManager
     //         if (techtype.Item2 >= 0)
     //         {
     //             // check whether we *are* a battery xor we *have* a battery
-    //             if (thisItem.GetComponent<Battery>() != null && thisItem.GetComponentInChildren<Battery>() != null)
+    //             if (thisItem.GetComponent<Battery>().IsNotNull() && thisItem.GetComponentInChildren<Battery>().IsNotNull())
     //             {
     //                 // we are a battery
     //                 thisItem.GetComponentInChildren<Battery>().charge = techtype.Item2;
@@ -486,7 +457,7 @@ internal static class SaveManager
     //                 // we have a battery (we are a tool)
     //                 // Thankfully we have this naming convention
     //                 Transform batSlot = thisItem.transform.Find("BatterySlot");
-    //                 if (batSlot == null)
+    //                 if (batSlot.IsNull())
     //                 {
     //                     Logger.Warn($"Failed to load innate storage item {thisItem.name} to modular storage for {mv.name} : {mv.GetName()}.");
     //                     continue;
@@ -494,7 +465,7 @@ internal static class SaveManager
     //                 result = new TaskResult<GameObject>();
     //                 yield return CraftData.InstantiateFromPrefabAsync(TechType.Battery, result, false);
     //                 GameObject newBat = result.Get();
-    //                 if (newBat.GetComponent<Battery>() != null)
+    //                 if (newBat.GetComponent<Battery>().IsNotNull())
     //                 {
     //                     newBat.GetComponent<Battery>().charge = techtype.Item2;
     //                     Logger.Warn($"Failed to load innate storage battery {thisItem.name} to modular storage for {mv.name} : {mv.GetName()}.");

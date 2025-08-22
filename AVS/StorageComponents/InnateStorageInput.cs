@@ -1,47 +1,50 @@
 ﻿using AVS.StorageComponents;
+using AVS.Util;
 using UnityEngine;
 
-namespace AVS
+namespace AVS;
+
+internal class InnateStorageInput : StorageInput
 {
-    internal class InnateStorageInput : StorageInput
+    public override void OpenFromExternal()
     {
-        public override void OpenFromExternal()
+        if (mv.IsNull())
         {
-            if (mv == null)
+            Debug.LogError("AvsVehicle is null in InnateStorageInput.OpenFromExternal");
+            return;
+        }
+
+        var storageInSlot = mv.ModGetStorageInSlot(slotID, AvsVehicleBuilder.InnateStorage);
+        if (storageInSlot.IsNotNull())
+        {
+            var pda = Player.main.GetPDA();
+            Inventory.main.SetUsedStorage(storageInSlot, false);
+            pda.Open(PDATab.Inventory, null, null);
+        }
+    }
+
+    protected override void OpenPDA()
+    {
+        if (mv.IsNull())
+        {
+            Debug.LogError("AvsVehicle is null in InnateStorageInput.OpenPDA");
+            return;
+        }
+
+        var storageInSlot = mv.ModGetStorageInSlot(slotID, AvsVehicleBuilder.InnateStorage);
+        if (storageInSlot.IsNotNull())
+        {
+            var pda = Player.main.GetPDA();
+            Inventory.main.SetUsedStorage(storageInSlot, false);
+            if (!pda.Open(PDATab.Inventory, tr, new PDA.OnClose(OnClosePDA)))
             {
-                Debug.LogError("AvsVehicle is null in InnateStorageInput.OpenFromExternal");
+                OnClosePDA(pda);
                 return;
-            }
-            var storageInSlot = mv.ModGetStorageInSlot(slotID, AvsVehicleBuilder.InnateStorage);
-            if (storageInSlot != null)
-            {
-                PDA pda = Player.main.GetPDA();
-                Inventory.main.SetUsedStorage(storageInSlot, false);
-                pda.Open(PDATab.Inventory, null, null);
             }
         }
-        protected override void OpenPDA()
+        else
         {
-            if (mv == null)
-            {
-                Debug.LogError("AvsVehicle is null in InnateStorageInput.OpenPDA");
-                return;
-            }
-            var storageInSlot = mv.ModGetStorageInSlot(slotID, AvsVehicleBuilder.InnateStorage);
-            if (storageInSlot != null)
-            {
-                PDA pda = Player.main.GetPDA();
-                Inventory.main.SetUsedStorage(storageInSlot, false);
-                if (!pda.Open(PDATab.Inventory, this.tr, new PDA.OnClose(this.OnClosePDA)))
-                {
-                    this.OnClosePDA(pda);
-                    return;
-                }
-            }
-            else
-            {
-                this.OnClosePDA(null);
-            }
+            OnClosePDA(null);
         }
     }
 }
