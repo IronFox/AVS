@@ -1,4 +1,5 @@
 using System.Collections;
+using AVS.Assets;
 using AVS.Log;
 using UnityEngine;
 
@@ -10,7 +11,16 @@ internal static class AvsCraftData
         TaskResult<GameObject> result, bool customOnly = false)
     {
         log.Write($"Loading prefab for tech type {techType.AsString()} with customOnly={customOnly}");
-        yield return CraftData.InstantiateFromPrefabAsync(techType, result, customOnly);
-        log.Write($"Prefab for tech type {techType.AsString()} is done loading.");
+        var req = PrefabLoader.Request(techType, log, customOnly);
+        yield return req.WaitUntilLoaded();
+        var instance = req.Instantiate();
+        if (instance == null)
+        {
+            log.Error($"Request for {techType.AsString()} produced no instance. This should never happen.");
+            //result.Set(null);
+            yield break;
+        }
+
+        result.Set(instance);
     }
 }

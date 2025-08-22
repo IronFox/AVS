@@ -35,7 +35,7 @@ internal static class BuildBotManager
 
     public static IEnumerator SetupVFXConstructing(GameObject go)
     {
-        yield return SeamothHelper.Coroutine;
+        yield return SeamothHelper.WaitUntilLoaded();
         var seamoth = SeamothHelper.RequireSeamoth;
         var seamothVFXC = seamoth.GetComponent<VFXConstructing>();
         var rocketPlatformVfx = seamoth.GetComponentInChildren<VFXConstructing>();

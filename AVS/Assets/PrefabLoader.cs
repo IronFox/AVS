@@ -11,17 +11,21 @@ namespace AVS.Assets;
 /// </summary>
 public class PrefabLoader
 {
-    private static Dictionary<TechType, PrefabLoader> _loaders = new();
-    private TaskResult<GameObject> RequestResult { get; } = new();
-    private Coroutine? cor = null;
+    private static readonly Dictionary<(TechType, bool), PrefabLoader> _loaders = new();
     private LogWriter Log { get; }
 
-    private PrefabLoader(TechType techtype)
+    private PrefabLoader(TechType techtype, bool customOnly, LogWriter outLog)
     {
+        Log = outLog.Tag(nameof(PrefabLoader)).Tag(techtype.AsString());
         Techtype = techtype;
-        Coroutine = MainPatcher.Instance.StartCoroutine(LoadResource());
-        Log = LogWriter.Default.Tag($"PrefabLoader").Tag(techtype.AsString());
+        CustomOnly = customOnly;
+        SingleAwaitableCoroutine = MainPatcher.Instance.StartCoroutine(LoadResource());
     }
+
+    /// <summary>
+    /// True if this loader was instantiated with the customOnly flag
+    /// </summary>
+    public bool CustomOnly { get; set; }
 
     internal static void SignalCanLoad()
     {
@@ -36,36 +40,45 @@ public class PrefabLoader
     /// <summary>
     /// The coroutine that is responsible for loading the prefab.
     /// </summary>
-    public Coroutine Coroutine { get; }
+    private Coroutine SingleAwaitableCoroutine { get; }
+
+    /// <summary>
+    /// Returns an awaitable object that completes ones the local prefab has successfully loaded
+    /// </summary>
+    public WaitUntil WaitUntilLoaded()
+    {
+        return new WaitUntil(() => Prefab != null);
+    }
 
     /// <summary>
     /// Requests a <see cref="PrefabLoader"/> instance for the specified <see cref="TechType"/>.
     /// </summary>
     /// <param name="techtype">The <see cref="TechType"/> for which to request a <see cref="PrefabLoader"/>.</param>
+    /// <param name="customOnly">If true, Subnautica will not load a custom instance if the tech type is not found</param>
+    /// <param name="outLog">Out log writer. Effective only if this is the first request</param>
     /// <returns>A <see cref="PrefabLoader"/> instance associated with the specified <paramref name="techtype"/>. If an
     /// instance already exists, it returns the existing instance; otherwise, it creates a new one and starts the loading process.</returns>
-    public static PrefabLoader Request(TechType techtype)
+    public static PrefabLoader Request(TechType techtype, LogWriter outLog, bool customOnly = false)
     {
-        if (_loaders.TryGetValue(techtype, out var instance))
+        if (_loaders.TryGetValue((techtype, customOnly), out var instance))
             return instance;
-        LogWriter.Default.Write($"PrefabLoader: Creating new loader for {techtype}.");
-        _loaders[techtype] = instance = new PrefabLoader(techtype);
+
+        _loaders[(techtype, customOnly)] = instance = new PrefabLoader(techtype, customOnly, outLog);
         return instance;
     }
 
     /// <summary>
-    /// Queries the latest known instance of the requested resource.
+    /// Queries the latest known prefab instance of the requested resource.
     /// </summary>
-    public GameObject? Instance
+    public GameObject? Prefab { get; private set; }
+
+    /// <summary>
+    /// Instantiates a new game object from the prefab instance
+    /// </summary>
+    public GameObject? Instantiate()
     {
-        get
-        {
-            var thisInstance = RequestResult.Get();
-            if (thisInstance == null) return null;
-            Object.DontDestroyOnLoad(thisInstance);
-            thisInstance.SetActive(false);
-            return thisInstance;
-        }
+        var prefab = Prefab;
+        return Object.Instantiate(prefab);
     }
 
     /// <summary>
@@ -75,27 +88,30 @@ public class PrefabLoader
 
     private IEnumerator LoadResource()
     {
-        while (Instance == null)
+        while (true)
         {
             while (!CanLoad)
                 yield return new WaitForSeconds(0.1f); // wait until we can load
 
-            Log.Write($"PrefabLoader: Requesting prefab for {Techtype}.");
-            if (RequestResult.Get()) // if we have instance
+            Log.Write($"Requesting prefab for {Techtype}.");
+            TaskResult<GameObject> result = new();
+            var cor = MainPatcher.Instance.StartCoroutine(
+                CraftData.InstantiateFromPrefabAsync(Techtype, result, CustomOnly));
+            yield return cor;
+            var prefab = result.Get();
+            if (prefab == null)
             {
-                Log.Write($"PrefabLoader: Prefab for {Techtype} is done loading.");
-                yield break;
-            }
-            else if (cor == null) // if we need to get instance
-            {
-                cor = MainPatcher.Instance.StartCoroutine(
-                    AvsCraftData.InstantiateFromPrefabAsync(Log, Techtype, RequestResult, false));
-                yield return cor;
-                cor = null;
+                Log.Error($"Failed to load prefab for {Techtype} at this time.");
+                yield return new WaitForSeconds(1f); // wait a bit and try again
             }
             else
             {
-                yield return null;
+                Log.Write($"Loaded {prefab.NiceName()} for {Techtype}. Setting as DontDestroyOnLoad.");
+                Object.DontDestroyOnLoad(prefab);
+                prefab.hideFlags |= HideFlags.HideAndDontSave;
+                prefab.SetActive(false);
+                Prefab = prefab;
+                yield break;
             }
         }
     }
