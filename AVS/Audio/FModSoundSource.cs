@@ -15,10 +15,7 @@ namespace AVS.Audio;
 /// </summary>
 public static class FModSoundCreator
 {
-    private static float Sqr(float value)
-    {
-        return value * value;
-    }
+    private static float Sqr(float value) => value * value;
 
     /// <summary>
     /// Attempts to instantiate a new FMOD sound source, based on the provided configuration.
@@ -149,7 +146,7 @@ internal class FModComponent : MonoBehaviour
 
     public void Update()
     {
-        if (sound == null)
+        if (sound is null)
         {
             Log.Error($"sound is null. Self-destructing");
             Destroy(this);

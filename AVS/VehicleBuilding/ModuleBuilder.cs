@@ -26,15 +26,10 @@ internal class ModuleBuilder : MonoBehaviour
     public static bool SlotExtenderHasGreenLight { get; set; } = false;
     internal static string ModulePrefix => MainPatcher.Instance.ModName + "_Avs_Vehicle_Module";
 
-    public static bool IsModuleName(string name)
-    {
-        return name.StartsWith(ModulePrefix) && int.TryParse(name.Substring(ModulePrefix.Length), out _);
-    }
+    public static bool IsModuleName(string name) =>
+        name.StartsWith(ModulePrefix) && int.TryParse(name.Substring(ModulePrefix.Length), out _);
 
-    public static string ModuleName(int index)
-    {
-        return ModulePrefix + index;
-    }
+    public static string ModuleName(int index) => ModulePrefix + index;
 
     public void Awake()
     {
@@ -100,7 +95,7 @@ internal class ModuleBuilder : MonoBehaviour
         var eq = uGUI_PDA.main.transform
             .Find("Content/InventoryTab/Equipment")
             .SafeGetComponent<uGUI_Equipment>();
-        if (eq == null)
+        if (eq.IsNull())
         {
             Log.Error("Failed to find Equipment in PDA. Cannot build vehicle module slots.");
             yield break;
@@ -117,7 +112,7 @@ internal class ModuleBuilder : MonoBehaviour
             {
                 var slotName = ModuleName(i);
                 var mod = eq.transform.Find(slotName);
-                if (mod == null)
+                if (mod.IsNull())
                 {
                     // If the slot does not exist, create it
                     Log.Error("Missing vehicle module slot: " + slotName);
@@ -141,7 +136,7 @@ internal class ModuleBuilder : MonoBehaviour
                     .Find(slotName)
                     .SafeGetComponent<uGUI_EquipmentSlot>();
                 ;
-                if (slot == null)
+                if (slot.IsNull())
                 {
                     // If the slot does not exist, create it
                     Log.Error("Missing vehicle module slot: " + slotName);
@@ -156,7 +151,7 @@ internal class ModuleBuilder : MonoBehaviour
         // Now that we've gotten the data we need,
         // we can let slot extender mangle it
         var type2 = Type.GetType("SlotExtender.Patches.uGUI_Equipment_Awake_Patch, SlotExtender", false, false);
-        if (type2 != null)
+        if (type2.IsNotNull())
         {
             SlotExtenderHasGreenLight = true;
             eq.Awake();
@@ -179,7 +174,7 @@ internal class ModuleBuilder : MonoBehaviour
         equipment = uGUI_PDA.main.transform
             .Find("Content/InventoryTab")
             .SafeGetComponentInChildren<uGUI_Equipment>(true);
-        if (equipment == null)
+        if (equipment.IsNull())
         {
             log.Error("Failed to find Equipment in PDA. Cannot build vehicle module slots.");
             yield break;
@@ -275,7 +270,7 @@ internal class ModuleBuilder : MonoBehaviour
                     var genericModuleBackground = new GameObject("Background");
                     genericModuleBackground.transform.SetParent(armModuleObject.transform, false);
 
-                    if (topLeftSlot == null)
+                    if (topLeftSlot.IsNull())
                     {
                         Logger.Error("TopLeftSlot is null, cannot copy background components.");
                         yield break;
@@ -320,7 +315,7 @@ internal class ModuleBuilder : MonoBehaviour
     public void BuildVehicleModuleSlots(LogWriter log, int modules)
     {
         log.Write(nameof(BuildVehicleModuleSlots) + $" ({modules}) called.");
-        if (equipment == null)
+        if (equipment.IsNull())
         {
             log.Error("Equipment is null, cannot build vehicle module slots.");
             return;
@@ -330,7 +325,7 @@ internal class ModuleBuilder : MonoBehaviour
         for (var i = 0; i < modules; i++)
         {
             var thisModule = InstantiateGenericModuleSlot();
-            if (thisModule == null)
+            if (thisModule.IsNull())
             {
                 log.Error("Failed to get generic module slot for index: " + i);
                 continue;
@@ -357,7 +352,7 @@ internal class ModuleBuilder : MonoBehaviour
         log.Write(nameof(LinkModule) + $" ({thisModule.NiceName()}) called.");
         // add background
         var backgroundTop = thisModule.transform.Find("Background").SafeGetGameObject();
-        if (backgroundTop == null || genericModuleObject == null)
+        if (backgroundTop.IsNull() || genericModuleObject.IsNull())
         {
             log.Error("Background or genericModuleObject is null, cannot link module.");
             return;
@@ -380,7 +375,7 @@ internal class ModuleBuilder : MonoBehaviour
         var arrayX = position % row_size;
         var arrayY = position / row_size;
 
-        if (topLeftSlot == null || bottomRightSlot == null)
+        if (topLeftSlot.IsNull() || bottomRightSlot.IsNull())
         {
             log.Error("TopLeftSlot or BottomRightSlot is null, cannot distribute module.");
             return;
@@ -403,7 +398,7 @@ internal class ModuleBuilder : MonoBehaviour
     public void AddBackgroundImage(LogWriter log, ref GameObject parent)
     {
         log.Write(nameof(AddBackgroundImage) + $" ({parent.NiceName()}) called.");
-        if (modulesBackground == null)
+        if (modulesBackground.IsNull())
         {
             log.Error("ModulesBackground is null, cannot add background image.");
             return;
@@ -418,7 +413,7 @@ internal class ModuleBuilder : MonoBehaviour
 
     public GameObject? InstantiateGenericModuleSlot()
     {
-        if (genericModuleObject == null)
+        if (genericModuleObject.IsNull())
         {
             Log.Error("Generic module object is null, cannot get generic module slot.");
             return null;
@@ -433,16 +428,16 @@ internal class ModuleBuilder : MonoBehaviour
     {
         var log = mv.Log.Tag(nameof(ModuleBuilder)).Prefixed(nameof(SignalOpened));
         Sprite? setSprite;
-        if (mv.Config.ModuleBackgroundImage == null)
+        if (mv.Config.ModuleBackgroundImage.IsNull())
             setSprite = MainPatcher.Instance.Images.ModulesBackground;
         else
             setSprite = mv.Config.ModuleBackgroundImage;
-        if (equipment != null)
+        if (equipment.IsNotNull())
         {
             var img = equipment.transform
                 .Find(ModuleName(0) + "/VehicleModuleBackground(Clone)")
                 .SafeGetComponent<UnityEngine.UI.Image>();
-            if (img != null)
+            if (img.IsNotNull())
             {
                 img.sprite = setSprite;
                 log.Write($"Background set to {setSprite.NiceName()}");

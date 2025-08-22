@@ -1,5 +1,4 @@
-﻿
-using AVS;
+﻿using AVS;
 using AVS.BaseVehicle;
 using AVS.UpgradeModules;
 using AVS.UpgradeModules.Common;
@@ -27,13 +26,15 @@ public static class AvsUtils
     /// <param name="checkedAncestry">A list of all transforms visited by the recursion.</param>
     /// <returns><see langword="true"/> if the specified transform or one of its ancestors is the vehicle currently mounted
     /// by the player; otherwise, <see langword="false"/>.</returns>
-    public static bool FindVehicleInParents(Transform current, out Vehicle? vehicle, List<Transform>? checkedAncestry = null)
+    public static bool FindVehicleInParents(Transform current, out Vehicle? vehicle,
+        List<Transform>? checkedAncestry = null)
     {
         if (!current)
         {
             vehicle = null;
             return false;
         }
+
         checkedAncestry?.Add(current);
         var vh = current.GetComponent<Vehicle>();
         if (vh)
@@ -41,6 +42,7 @@ public static class AvsUtils
             vehicle = vh;
             return vh == Player.main.GetVehicle();
         }
+
         return FindVehicleInParents(current.parent, out vehicle, checkedAncestry);
     }
 
@@ -57,11 +59,12 @@ public static class AvsUtils
     public static void EvaluateDepthModules(AddActionParams param)
     {
         var mv = param.Vehicle.SafeGetComponent<AvsVehicle>();
-        if (mv == null)
+        if (mv.IsNull())
         {
             Subtitles.Add("This upgrade is not compatible with this vehicle.");
             return;
         }
+
         var depthModule1Count = DepthModule1.Registered.CountSumIn(mv.modules);
         var depthModule2Count = DepthModule2.Registered.CountSumIn(mv.modules);
         var depthModule3Count = DepthModule3.Registered.CountSumIn(mv.modules);
@@ -69,14 +72,14 @@ public static class AvsUtils
 
         // Iterate over all upgrade modules,
         // in order to determine our max depth module level
-        int maxDepthModuleLevel =
+        var maxDepthModuleLevel =
             Mathf.Max(
                 Math.Min(1, depthModule3Count) * 3,
                 Math.Min(1, depthModule2Count) * 2,
                 Math.Min(1, depthModule1Count) * 1
-                );
+            );
 
-        int extraDepthToAdd = 0;
+        var extraDepthToAdd = 0;
         extraDepthToAdd = maxDepthModuleLevel > 0 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade1 : extraDepthToAdd;
         extraDepthToAdd = maxDepthModuleLevel > 1 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade2 : extraDepthToAdd;
         extraDepthToAdd = maxDepthModuleLevel > 2 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade3 : extraDepthToAdd;
@@ -96,12 +99,13 @@ public static class AvsUtils
     {
         try
         {
-            VehicleEntry ve = AvsVehicleManager.VehicleTypes.Where(x => x.name.Contains(name)).First();
+            var ve = AvsVehicleManager.VehicleTypes.Where(x => x.name.Contains(name)).First();
             return ve.techType;
         }
         catch
         {
-            Logger.Error("GetTechTypeFromVehicleName Error. Could not find a vehicle by the name: " + name + ". Here are all vehicle names:");
+            Logger.Error("GetTechTypeFromVehicleName Error. Could not find a vehicle by the name: " + name +
+                         ". Here are all vehicle names:");
             AvsVehicleManager.VehicleTypes.ForEach(x => Logger.Log(x.name));
             return 0;
         }
@@ -120,17 +124,13 @@ public static class AvsUtils
     {
         IEnumerator AddEncyclopediaEntryInternal()
         {
-            yield return new WaitUntil(() => PDAEncyclopedia.mapping != null);
+            yield return new WaitUntil(() => PDAEncyclopedia.mapping.IsNotNull());
             if (PDAEncyclopedia.mapping.ContainsKey(data.key))
-            {
                 PDAEncyclopedia.mapping[data.key] = data;
-            }
             else
-            {
                 PDAEncyclopedia.mapping.Add(data.key, data);
-            }
         }
+
         MainPatcher.Instance.StartCoroutine(AddEncyclopediaEntryInternal());
     }
 }
-

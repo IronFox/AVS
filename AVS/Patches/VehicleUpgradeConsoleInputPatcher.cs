@@ -33,12 +33,12 @@ internal class VehicleUpgradeConsoleInputPatcher
     public static void UpdateVisualsPostfix(VehicleUpgradeConsoleInput __instance)
     {
         var mv = __instance.GetComponentInParent<AvsVehicle>();
-        if (mv != null && __instance.GetComponentInChildren<UpgradeProxy>() != null &&
-            __instance.GetComponentInChildren<UpgradeProxy>().slots != null)
+        if (mv.IsNotNull() && __instance.GetComponentInChildren<UpgradeProxy>().IsNotNull() &&
+            __instance.GetComponentInChildren<UpgradeProxy>().slots.IsNotNull())
         {
             var log = mv.Log.Tag(nameof(UpdateVisualsPostfix));
             var proxy = __instance.GetComponentInChildren<UpgradeProxy>();
-            if (proxy == null || proxy.slots == null)
+            if (proxy.IsNull() || proxy.slots.IsNull())
             {
                 log.Error("proxy or proxy.slots is null");
                 return;
@@ -50,13 +50,13 @@ internal class VehicleUpgradeConsoleInputPatcher
                 var slot = __instance.slots[i];
                 var model = slot.model;
                 log.Write($"Slot {i} : {slot.id} : {model.NiceName()}");
-                if (model != null)
+                if (model.IsNotNull())
                 {
-                    var active = __instance.equipment != null &&
+                    var active = __instance.equipment.IsNotNull() &&
                                  __instance.equipment.GetTechTypeInSlot(slot.id) > TechType.None;
                     model.SetActive(active);
                     log.Write(
-                        $"Active: {active}, equipment={__instance.equipment != null}");
+                        $"Active: {active}, equipment={__instance.equipment.IsNotNull()}");
                 }
             }
         }
@@ -72,7 +72,7 @@ internal class VehicleUpgradeConsoleInputPatcher
     [HarmonyPatch(nameof(VehicleUpgradeConsoleInput.OnHandClick))]
     public static void VehicleUpgradeConsoleInputOnHandClickHarmonyPostfix(VehicleUpgradeConsoleInput __instance)
     {
-        foreach (var mv in AvsVehicleManager.VehiclesInPlay.Where(x => x != null))
+        foreach (var mv in AvsVehicleManager.VehiclesInPlay.Where(x => x.IsNotNull()))
             if (mv.upgradesInput == __instance)
             {
                 ModuleBuilder.Main.SignalOpened(__instance, mv);

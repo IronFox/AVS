@@ -48,7 +48,7 @@ namespace AVS.Localization
         private static LocalDict<TEnum>? main = null;
         public static string GetString(TEnum value)
         {
-            if (main == null)
+            if (main.IsNull())
             {
                 string modPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
                 main = LocalizationManager.LoadLanguageFiles<TEnum>(modPath);

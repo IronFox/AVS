@@ -109,9 +109,9 @@ public abstract class Submarine : AvsVehicle
 
         // now that we're in-game, load the color picker
         // we can't do this before we're in-game because not all assets are ready before the game is started
-        if (Com.ColorPicker != null)
+        if (Com.ColorPicker.IsNotNull())
         {
-            if (Com.ColorPicker.transform.Find("EditScreen") == null)
+            if (Com.ColorPicker.transform.Find("EditScreen").IsNull())
                 MainPatcher.Instance.StartCoroutine(SetupColorPicker(Com.ColorPicker));
             else
                 EnsureColorPickerEnabled();
@@ -156,23 +156,21 @@ public abstract class Submarine : AvsVehicle
     }
 
     /// <inheritdoc />
-    protected override Helm GetLoadedHelm()
-    {
-        return Com.Helms.Count > currentHelmIndex
+    protected override Helm GetLoadedHelm() =>
+        Com.Helms.Count > currentHelmIndex
             ? Com.Helms[currentHelmIndex]
             : Com.Helms[0];
-    }
 
     private void EnsureColorPickerEnabled()
     {
-        if (Com.ColorPicker != null)
+        if (Com.ColorPicker.IsNotNull())
         {
             var edit = Com.ColorPicker.transform.Find("EditScreen");
-            if (edit != null)
+            if (edit.IsNotNull())
                 ActualEditScreen = edit.gameObject;
         }
 
-        if (ActualEditScreen == null) return;
+        if (ActualEditScreen.IsNull()) return;
         // why is canvas sometimes disabled, and Active is sometimes inactive?
         // Don't know!
         ActualEditScreen.GetComponent<Canvas>().enabled = true;
@@ -182,25 +180,16 @@ public abstract class Submarine : AvsVehicle
     /// <summary>
     ///     True if the player is inside the submarine, false otherwise.
     /// </summary>
-    public bool IsPlayerInside()
-    {
-        return isPlayerInside;
-    }
+    public bool IsPlayerInside() => isPlayerInside;
 
     /// <summary>
     ///     Gets a value indicating whether the player is currently piloting the vehicle.
     /// </summary>
-    public bool IsPlayerPiloting()
-    {
-        return isAtHelm;
-    }
+    public bool IsPlayerPiloting() => isAtHelm;
 
 
     /// <inheritdoc />
-    public override Helm GetMainHelm()
-    {
-        return Com.Helms[0];
-    }
+    public override Helm GetMainHelm() => Com.Helms[0];
 
 
     /// <inheritdoc />
@@ -235,10 +224,10 @@ public abstract class Submarine : AvsVehicle
             var exit = currentHelmIndex < Com.Helms.Count
                 ? Com.Helms[currentHelmIndex].ExitLocation
                 : null;
-            if (exit == null)
+            if (exit.IsNull())
             {
-                var tetherTarget = Com.TetherSources.FirstOrDefault(x => x != null);
-                if (tetherTarget != null)
+                var tetherTarget = Com.TetherSources.FirstOrDefault(x => x.IsNotNull());
+                if (tetherTarget.IsNotNull())
                 {
                     Logger.Warn("Warning: pilot exit location is null. Defaulting to first tether.");
                     Player.main.transform.position = tetherTarget.transform.position;
@@ -361,7 +350,7 @@ public abstract class Submarine : AvsVehicle
 
     private IEnumerator TrySpawnFabricator()
     {
-        if (Com.Fabricator == null) yield break;
+        if (Com.Fabricator.IsNull()) yield break;
         foreach (var fab in GetComponentsInChildren<Fabricator>())
             if (fab.gameObject.transform.localPosition == Com.Fabricator.transform.localPosition)
                 // This fabricator blueprint has already been fulfilled.
@@ -372,13 +361,17 @@ public abstract class Submarine : AvsVehicle
 
     private IEnumerator SpawnFabricator(Transform location)
     {
-        var result = new TaskResult<GameObject>();
-        Log.Tag($"SpawnFabricator")
-            .Write(
-                $"Loading prefab '{TechType.Fabricator}'");
+        var log = Log.Tag(nameof(SpawnFabricator));
+        var result = new InstanceContainer();
         yield return MainPatcher.Instance.StartCoroutine(
             AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(SpawnFabricator)), TechType.Fabricator, result));
-        fabricator = result.Get();
+        fabricator = result.Instance;
+        if (fabricator.IsNull())
+        {
+            log.Error("Error: Fabricator could not be instantiated.");
+            yield break;
+        }
+
         fabricator.GetComponent<SkyApplier>().enabled = true;
         fabricator.transform.SetParent(transform);
         fabricator.transform.localPosition = location.localPosition;
@@ -386,7 +379,6 @@ public abstract class Submarine : AvsVehicle
         fabricator.transform.localScale = location.localScale;
         if (location.localScale.x == 0 || location.localScale.y == 0 || location.localScale.z == 0)
             fabricator.transform.localScale = Vector3.one;
-        yield break;
     }
 
     /// <summary>
@@ -486,7 +478,7 @@ public abstract class Submarine : AvsVehicle
     /// <param name="col">The new color to apply.</param>
     public virtual void SetColorPickerUIColor(string name, Color col)
     {
-        if (ActualEditScreen != null)
+        if (ActualEditScreen.IsNotNull())
             ActualEditScreen.transform.Find("Active/" + name + "/SelectedColor").GetComponent<Image>().color = col;
     }
 
@@ -499,7 +491,7 @@ public abstract class Submarine : AvsVehicle
         // determine which tab is selected
         // call the desired function
 
-        if (ActualEditScreen == null)
+        if (ActualEditScreen.IsNull())
         {
             Logger.Error("Error: ActualEditScreen is null. Color picker cannot be used.");
             return;
@@ -582,7 +574,7 @@ public abstract class Submarine : AvsVehicle
         var console = Resources.FindObjectsOfTypeAll<BaseUpgradeConsoleGeometry>()
             ?.ToList().Find(x => x.gameObject.name.Contains("Short")).SafeGetGameObject();
 
-        if (console == null)
+        if (console.IsNull())
         {
             yield return MainPatcher.Instance.StartCoroutine(Builder.BeginAsync(TechType.BaseUpgradeConsole));
             Builder.ghostModel.GetComponentInChildren<BaseGhost>().OnPlace();
@@ -641,10 +633,7 @@ public abstract class Submarine : AvsVehicle
 
 
     /// <inheritdoc />
-    public override float OnStorageOpen(string name, bool open)
-    {
-        return 0;
-    }
+    public override float OnStorageOpen(string name, bool open) => 0;
 
     /// <inheritdoc />
     public void EnableFabricator(bool enabled)
@@ -743,7 +732,7 @@ public abstract class Submarine : AvsVehicle
         var seat = Com.Helms[currentHelmIndex];
         var exitLocation = seat.ExitLocation;
         Vector3 exit;
-        if (exitLocation != null)
+        if (exitLocation.IsNotNull())
         {
             Log.Debug(this,
                 $"Exit location defined. Deriving from seat status {seat.Root.transform.localPosition} / {seat.Root.transform.localRotation}");

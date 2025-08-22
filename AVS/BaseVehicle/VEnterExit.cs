@@ -52,10 +52,7 @@ public abstract partial class AvsVehicle
     /// <summary>
     /// Checks if this vehicle can be piloted.
     /// </summary>
-    public override bool CanPilot()
-    {
-        return !FPSInputModule.current.lockMovement && IsPowered();
-    }
+    public override bool CanPilot() => !FPSInputModule.current.lockMovement && IsPowered();
 
 
     /// <summary>
@@ -71,10 +68,7 @@ public abstract partial class AvsVehicle
     /// <summary>
     /// Checks if the player is currently piloting this vehicle.
     /// </summary>
-    public bool IsPlayerControlling()
-    {
-        return PlayerAtHelm != null;
-    }
+    public bool IsPlayerControlling() => PlayerAtHelm.IsNotNull();
 
     /// <summary>
     /// Executed has started being piloted by a player and <see cref="VehicleConfiguration.PilotingStyle" /> is set to <see cref="PilotingStyle.Other" />.
@@ -91,10 +85,7 @@ public abstract partial class AvsVehicle
     /// <param name="pitch">Current pitch delta angle from identity</param>
     /// <param name="velocity">Current vehicle velocity</param>
     /// <returns>True if the player is permitted to exit helm control</returns>
-    protected virtual bool PlayerCanExitHelmControl(float roll, float pitch, float velocity)
-    {
-        return true;
-    }
+    protected virtual bool PlayerCanExitHelmControl(float roll, float pitch, float velocity) => true;
 
 
     /// <summary>
@@ -178,7 +169,7 @@ public abstract partial class AvsVehicle
     {
         Log.Write(
             $"{nameof(AvsVehicle)}.{nameof(EnterVehicle)} called with teleport={teleport}, playEnterAnimation={playEnterAnimation}");
-        if (playerPosition != null) base.EnterVehicle(player, teleport, playEnterAnimation);
+        if (playerPosition.IsNotNull()) base.EnterVehicle(player, teleport, playEnterAnimation);
     }
 
     /// <summary>
@@ -197,13 +188,13 @@ public abstract partial class AvsVehicle
     )
     {
         Log.Debug(this, nameof(AvsVehicle) + '.' + nameof(BeginHelmControl));
-        if (helm.PlayerControlLocation == null)
+        if (helm.PlayerControlLocation.IsNull())
             throw new NullReferenceException($"Helm must have a valid {nameof(helm.PlayerControlLocation)}");
         playerPosition = helm.PlayerControlLocation;
-        if (energyInterface == null)
+        if (energyInterface.IsNull())
             throw new NullReferenceException(
                 $"{nameof(energyInterface)} must be set before calling {nameof(AvsVehicle)}.{nameof(BeginHelmControl)}");
-        if (mainAnimator == null)
+        if (mainAnimator.IsNull())
             throw new NullReferenceException(
                 $"{nameof(mainAnimator)} must be set before calling {nameof(AvsVehicle)}.{nameof(BeginHelmControl)}");
         try
@@ -567,7 +558,7 @@ public abstract partial class AvsVehicle
             {
                 if (transform.position.y < -3f || !canExitToSurface)
                 {
-                    if (hatch.ExitLocation == null)
+                    if (hatch.ExitLocation.IsNull())
                     {
                         Logger.Error("Error: exitLocation is null. Cannot exit vehicle.");
                         return;

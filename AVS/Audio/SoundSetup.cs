@@ -1,4 +1,5 @@
 ﻿using System;
+using AVS.Util;
 using UnityEngine;
 
 namespace AVS.Audio;
@@ -84,7 +85,7 @@ public readonly record struct SoundSetup(
     /// <exception cref="ArgumentOutOfRangeException">Thrown when parameter values do not meet the expected range in a 3D sound configuration.</exception>
     public void Validate()
     {
-        if (AudioClip == null)
+        if (AudioClip.IsNull())
             throw new ArgumentNullException(nameof(AudioClip));
         if (Is3D)
         {
@@ -100,7 +101,7 @@ public readonly record struct SoundSetup(
                 throw new ArgumentOutOfRangeException(nameof(MaxDistance));
         }
 
-        if (Owner == null)
+        if (Owner.IsNull())
             throw new ArgumentNullException(nameof(Owner));
     }
 

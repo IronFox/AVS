@@ -3,6 +3,7 @@ using AVS.BaseVehicle;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using AVS.Util;
 using UnityEngine;
 
 namespace AVS;
@@ -18,9 +19,9 @@ internal static class BuildBotManager
         var bbbp = mv.EnsureComponent<BuildBotBeamPoints>();
         var bbbpList = new List<Transform>();
         var modVehicle = mv.GetComponent<AvsVehicle>();
-        if (modVehicle != null)
+        if (modVehicle.IsNotNull())
         {
-            if (modVehicle.collisionModel != null)
+            if (modVehicle.collisionModel.IsNotNull())
             {
                 var go = modVehicle.collisionModel;
                 foreach (var child in go.transform.GetComponentsInChildren<Transform>())
@@ -44,7 +45,7 @@ internal static class BuildBotManager
         var vfxc = go.EnsureComponent<VFXConstructing>();
 
         var mv = go.GetComponent<AvsVehicle>();
-        vfxc.timeToConstruct = mv == null ? 10f : mv.Config.TimeToConstruct;
+        vfxc.timeToConstruct = mv.IsNull() ? 10f : mv.Config.TimeToConstruct;
 
         vfxc.alphaTexture = seamothVFXC.alphaTexture;
         vfxc.alphaDetailTexture = seamothVFXC.alphaDetailTexture;
@@ -59,13 +60,11 @@ internal static class BuildBotManager
 
         vfxc.heightOffset = seamothVFXC.heightOffset;
         vfxc.constructSound = seamothVFXC.constructSound;
-        vfxc.delay = 5f; // the time it takes for the buildbots to fly out and begin
+        vfxc.delay = 5f; // the time it takes for the build bots to fly out and begin
         vfxc.isDone = false;
         vfxc.informGameObject = null;
         vfxc.transparentShaders = null; // TODO maybe we'll want to use this?
         vfxc.Regenerate();
-
-        yield break;
     }
 
     public static void BuildPathsUsingCorners(GameObject root, GameObject pointsRoot, Transform A, Transform B,
@@ -227,7 +226,7 @@ internal static class BuildBotManager
     public static void BuildPathsForAvsVehicle(AvsVehicle mv, GameObject pointsRoot)
     {
         var box = mv.Com.BoundingBoxCollider;
-        if (box != null)
+        if (box.IsNotNull())
         {
             var A = GetCornerBoxCollider(pointsRoot, box, CornerValue.lefttopfront);
             var B = GetCornerBoxCollider(pointsRoot, box, CornerValue.righttopfront);
@@ -250,7 +249,7 @@ internal static class BuildBotManager
         var mv = go.GetComponent<AvsVehicle>();
         var bbPointsRoot = new GameObject("BuildBotPoints");
         bbPointsRoot.transform.SetParent(go.transform);
-        if (mv != null && mv.Com.BoundingBoxCollider != null)
+        if (mv.IsNotNull() && mv.Com.BoundingBoxCollider.IsNotNull())
         {
             bbPointsRoot.transform.localPosition =
                 go.transform.InverseTransformPoint(mv.Com.BoundingBoxCollider.transform.position);
@@ -273,7 +272,7 @@ internal static class BuildBotManager
     public static IEnumerator SetupBuildBotPathsForAllMVs()
     {
         foreach (var mv in AvsVehicleBuilder.prefabs)
-            if (mv.GetComponentInChildren<BuildBotPath>(true) == null)
+            if (mv.GetComponentInChildren<BuildBotPath>(true).IsNull())
                 yield return SetupBuildBotPaths(mv.gameObject);
     }
 

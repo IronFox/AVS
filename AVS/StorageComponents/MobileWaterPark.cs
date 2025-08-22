@@ -72,14 +72,14 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     private bool IsLivingFishOrEgg(Pickupable pickupable, bool verbose)
     {
-        if (pickupable == null || pickupable.gameObject == null)
+        if (pickupable.IsNull() || pickupable.gameObject.IsNull())
             return false;
         var creature = pickupable.GetComponent<WaterParkCreature>();
         var live = pickupable.GetComponent<LiveMixin>();
         var localizedName = Language.main.Get(pickupable.GetTechName());
-        if (creature != null)
+        if (creature.IsNotNull())
         {
-            if (live != null && live.IsAlive())
+            if (live.IsNotNull() && live.IsAlive())
                 return true;
             if (CanWarnAbout(pickupable))
                 ErrorMessage.AddMessage(Translator.GetFormatted(
@@ -88,9 +88,9 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         }
 
         var egg = pickupable.GetComponent<CreatureEgg>();
-        if (egg != null)
+        if (egg.IsNotNull())
         {
-            if (live != null && live.IsAlive())
+            if (live.IsNotNull() && live.IsAlive())
                 return true;
             //as it turns out, eggs die when hatched
             if (CanWarnAbout(pickupable))
@@ -108,7 +108,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     private void Init()
     {
-        if (_container != null)
+        if (_container.IsNotNull())
             return;
         Log.Write(
             $"Initializing {this.NiceName()} for {DisplayName.Rendered} ({DisplayName.Localize}) with width {width} and height {height}");
@@ -125,14 +125,14 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             //if (item.item/* && item.item.transform.parent != waterPark*/)
             //{
             //    var prefabId = item.item.GetComponent<PrefabIdentifier>();
-            //    if (prefabId == null)
+            //    if (prefabId.IsNull())
             //    {
             //        LogWriter.Default.Error($"Item {item.item.NiceName()} does not have a valid PrefabIdentifier, skipping.");
             //        return;
             //    }
             //    var live = item.item.GetComponent<LiveMixin>();
             //    var infect = item.item.GetComponent<InfectedMixin>();
-            //    if (live == null || !live.IsAlive())
+            //    if (live.IsNull() || !live.IsAlive())
             //    {
             //        if (CanWarnAbout(item.item))
             //            ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotAdd_FishIsDead, item.item.GetTechName()));
@@ -146,7 +146,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             //    //newLive.health = live.health; //copy health from the original item
 
             //    //var newInfect = embed.GetComponent<InfectedMixin>();
-            //    //if (newInfect != null && infect != null)
+            //    //if (newInfect.IsNotNull() && infect.IsNotNull())
             //    //{
             //    //    newInfect.infectedAmount = infect.infectedAmount;
             //    //}
@@ -154,7 +154,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             //    LogWriter.Default.Debug($"Adding item {embed.NiceName()} from {embed.transform.parent.NiceName()} to water park {waterPark.NiceName()}");
             //    embed.transform.SetParent(waterPark, false);
             //    var creature = embed.GetComponent<WaterParkCreature>();
-            //    if (creature != null)
+            //    if (creature.IsNotNull())
             //    {
             //        creature.currentWaterPark = new WaterPark();
             //        //creature.currentWaterPark.internalRadius = 5f;
@@ -171,7 +171,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             //    else
             //    {
             //        var egg = embed.GetComponent<CreatureEgg>();
-            //        if (egg != null)
+            //        if (egg.IsNotNull())
             //        {
 
             //            egg.transform.SetParent(waterPark, false);
@@ -224,16 +224,15 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         return rs;
     }
 
-    private bool IsNotHatchingEgg(Pickupable pickupable, bool verbose)
-    {
-        //    if (pickupable == null || pickupable.gameObject == null)
+    private bool IsNotHatchingEgg(Pickupable pickupable, bool verbose) =>
+        //    if (pickupable.IsNull() || pickupable.gameObject.IsNull())
         //    {
         //        return false;
         //    }
         //    var egg = pickupable.GetComponent<CreatureEgg>();
-        //    if (egg != null)
+        //    if (egg.IsNotNull())
         //    {
-        //        if (canHatchEggs && egg.creaturePrefab != null && egg.creaturePrefab.RuntimeKeyIsValid())
+        //        if (canHatchEggs && egg.creaturePrefab.IsNotNull() && egg.creaturePrefab.RuntimeKeyIsValid())
         //        {
         //            if (CanWarnAbout(pickupable))
         //                ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotRemove_HatchingEgg, pickupable.GetTechName())); afskdldf add name and localize tech name
@@ -241,8 +240,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         //        }
         //        return true;
         //    }
-        return true; //not an egg, so we can remove it
-    }
+        true; //not an egg, so we can remove it
 
     public void OnCraftEnd(TechType techType)
     {
@@ -251,7 +249,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     private void Reinit()
     {
-        if (_container != null)
+        if (_container.IsNotNull())
         {
             var items = _container.ToList();
             _container = null; //reset the container so it can be re-initialized
@@ -268,7 +266,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     private Transform GetOrCreateChild(GameObject parent, string childName)
     {
         var child = parent.transform.Find(childName).SafeGetGameObject();
-        if (child == null)
+        if (child.IsNull())
         {
             child = new GameObject(childName);
             child.transform.SetParent(parent.transform);
@@ -323,13 +321,13 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     public void OnProtoSerializeObjectTree(ProtobufSerializer serializer)
     {
-        if (_container == null)
+        if (_container.IsNull())
         {
             Log.Error($"MobileWaterPark.OnProtoSerializeObjectTree called without a valid container.");
             return;
         }
 
-        if (vehicle == null)
+        if (vehicle.IsNull())
         {
             Log.Error($"MobileWaterPark.OnProtoSerializeObjectTree called without a valid vehicle or storageRoot.");
             return;
@@ -347,7 +345,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         {
             var prefabId = item.item.GetComponent<PrefabIdentifier>();
             var tt = item.item.GetTechType();
-            if (prefabId == null)
+            if (prefabId.IsNull())
             {
                 Log.Error($"Item {item.item.NiceName()} does not have a valid PrefabIdentifier, skipping.");
                 continue;
@@ -384,7 +382,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     public void OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
     {
         Log.Write($"OnProtoDeserializeObjectTree called for water park {index} with vehicle {vehicle?.NiceName()}");
-        if (vehicle == null)
+        if (vehicle.IsNull())
         {
             Log.Error($"MobileWaterPark.OnProtoDeserializeObjectTree called without a valid vehicle.");
             return;
@@ -405,7 +403,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             Reinit();
 
             var itemsToAdd = new List<LoadingInhabitant>();
-            if (data.inhabitants != null)
+            if (data.inhabitants.IsNotNull())
             {
                 Log.Write($"Found {data.inhabitants.Count} inhabitants in water park {index}");
                 foreach (var inhabitant in data.inhabitants)
@@ -441,19 +439,19 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     public void OnVehicleLoaded()
     {
         Log.Write($"OnVehicleLoaded called for water park {index} with vehicle {vehicle?.NiceName()}");
-        if (_container == null)
+        if (_container.IsNull())
         {
             Log.Error($"MobileWaterPark.OnVehicleLoaded called without a valid container.");
             return;
         }
 
-        if (vehicle == null)
+        if (vehicle.IsNull())
         {
             Log.Error($"MobileWaterPark.OnVehicleLoaded called without a valid vehicle.");
             return;
         }
 
-        if (waterPark == null)
+        if (waterPark.IsNull())
         {
             Log.Error($"MobileWaterPark.OnVehicleLoaded called without a valid water park transform.");
             return;
@@ -470,7 +468,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             //try to load the item
             yield return item.LoadTask;
             var prefab = item.LoadTask.GetResult();
-            if (prefab == null)
+            if (prefab.IsNull())
             {
                 Log.Error($"Failed to load item {item.Inhabitant.techTypeAsString} for water park {index}, skipping.");
                 continue;
@@ -479,23 +477,23 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             var thisItem = Utils.SpawnFromPrefab(prefab, null).transform;
 
             var pickupable = thisItem.GetComponent<Pickupable>();
-            if (pickupable == null)
+            if (pickupable.IsNull())
             {
                 Log.Error($"Item {thisItem.NiceName()} does not have a Pickupable component, skipping.");
                 continue;
             }
 
             var liveMixin = thisItem.GetComponent<LiveMixin>();
-            if (liveMixin != null)
+            if (liveMixin.IsNotNull())
                 liveMixin.health = item.Inhabitant.health;
             var infectedMixin = thisItem.GetComponent<InfectedMixin>();
-            if (infectedMixin != null)
+            if (infectedMixin.IsNotNull())
                 infectedMixin.infectedAmount = item.Inhabitant.infectedAmount;
             var peeper = thisItem.GetComponent<Peeper>();
-            if (peeper != null)
+            if (peeper.IsNotNull())
                 peeper.enzymeAmount = item.Inhabitant.enzymeAmount;
             var egg = thisItem.GetComponent<CreatureEgg>();
-            if (egg != null)
+            if (egg.IsNotNull())
             {
                 egg.progress = item.Inhabitant.incubationProgress;
                 egg.timeStartHatching = DayNightCycle.main.timePassedAsFloat - item.Inhabitant.hatchingTime;

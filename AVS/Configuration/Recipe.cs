@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using AVS.Log;
 
 namespace AVS.Configuration;
 
@@ -66,10 +67,7 @@ public sealed class RecipeBuilder
     /// </summary>
     /// <param name="recipe">Recipe to add ingredients of</param>
     /// <returns>this</returns>
-    public RecipeBuilder Add(IEnumerable<RecipeIngredient> recipe)
-    {
-        return AddRange(recipe);
-    }
+    public RecipeBuilder Add(IEnumerable<RecipeIngredient> recipe) => AddRange(recipe);
 
     /// <summary>
     /// Combines the current recipe with another recipe by merging their ingredients.
@@ -124,10 +122,7 @@ public sealed class RecipeBuilder
     /// <param name="ingredient">A tuple containing the type of the ingredient and the amount to add.  <paramref name="ingredient.Type"/>
     /// specifies the ingredient type, and  <paramref name="ingredient.Amount"/> specifies the quantity to add.</param>
     /// <returns>The current <see cref="RecipeBuilder"/> instance, allowing for method chaining.</returns>
-    public RecipeBuilder Add((TechType Type, int Amount) ingredient)
-    {
-        return Add(ingredient.Type, ingredient.Amount);
-    }
+    public RecipeBuilder Add((TechType Type, int Amount) ingredient) => Add(ingredient.Type, ingredient.Amount);
 
 
     /// <summary>
@@ -135,10 +130,7 @@ public sealed class RecipeBuilder
     /// </summary>
     /// <param name="ingredient">The ingredient to add, including its type and amount.</param>
     /// <returns>A <see cref="RecipeBuilder"/> instance with the ingredient added, allowing for method chaining.</returns>
-    public RecipeBuilder Add(RecipeIngredient ingredient)
-    {
-        return Add(ingredient.Type, ingredient.Amount);
-    }
+    public RecipeBuilder Add(RecipeIngredient ingredient) => Add(ingredient.Type, ingredient.Amount);
 
 
     /// <summary>
@@ -162,19 +154,14 @@ public sealed class RecipeBuilder
     /// <param name="ingredient">A tuple containing the <see cref="TechType"/> of the ingredient and the amount to add. The first item
     /// represents the type of the ingredient, and the second item represents the quantity.</param>
     /// <returns>A new <see cref="RecipeBuilder"/> instance with the specified ingredient added.</returns>
-    public static RecipeBuilder operator +(RecipeBuilder builder, (TechType Type, int Amount) ingredient)
-    {
-        return builder.Add(ingredient.Type, ingredient.Amount);
-    }
+    public static RecipeBuilder operator +(RecipeBuilder builder, (TechType Type, int Amount) ingredient) =>
+        builder.Add(ingredient.Type, ingredient.Amount);
 
     /// <summary>
     /// Constructs a new <see cref="Recipe"/> instance using the specified ingredients.
     /// </summary>
     /// <returns>A <see cref="Recipe"/> object containing the provided ingredients.</returns>
-    public Recipe Done()
-    {
-        return new Recipe(Ingredients);
-    }
+    public Recipe Done() => new(Ingredients);
 }
 
 /// <summary>
@@ -186,10 +173,7 @@ public static class NewRecipe
     /// Creates a new instance of the <see cref="NewRecipe"/> class with no ingredients.
     /// </summary>
     /// <returns>A new <see cref="NewRecipe"/> instance.</returns>
-    public static RecipeBuilder FromNothing()
-    {
-        return new RecipeBuilder();
-    }
+    public static RecipeBuilder FromNothing() => new();
 
     /// <summary>
     /// Creates a new <see cref="NewRecipe"/> instance from the specified <see cref="Recipe"/>.
@@ -212,10 +196,8 @@ public static class NewRecipe
     /// <param name="type">The type of the ingredient to add to the recipe.</param>
     /// <param name="amount">The quantity of the ingredient to add. Must be a positive integer.</param>
     /// <returns>A new <see cref="NewRecipe"/> instance containing the specified ingredient.</returns>
-    public static RecipeBuilder Add(TechType type, int amount)
-    {
-        return new RecipeBuilder().Add(new RecipeIngredient(type, amount));
-    }
+    public static RecipeBuilder Add(TechType type, int amount) =>
+        new RecipeBuilder().Add(new RecipeIngredient(type, amount));
 
     /// <summary>
     /// Creates a new instance of <see cref="NewRecipe"/> with the specified ingredient.
@@ -223,10 +205,8 @@ public static class NewRecipe
     /// <param name="ingredient">A tuple containing the ingredient's <see cref="TechType"/> and the amount to be added. The <see
     /// cref="TechType"/> specifies the type of the ingredient, and the amount must be a positive integer.</param>
     /// <returns>A new <see cref="NewRecipe"/> instance with the specified ingredient added.</returns>
-    public static RecipeBuilder Add((TechType Type, int Amount) ingredient)
-    {
-        return new RecipeBuilder().Add(ingredient.Type, ingredient.Amount);
-    }
+    public static RecipeBuilder Add((TechType Type, int Amount) ingredient) =>
+        new RecipeBuilder().Add(ingredient.Type, ingredient.Amount);
 }
 
 /// <summary>
@@ -247,6 +227,7 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
     /// <summary>
     /// Gets an empty recipe with no ingredients.
     /// </summary>
+    // ReSharper disable once UseCollectionExpression
     public static Recipe Empty { get; } = new(Array.Empty<RecipeIngredient>());
 
     /// <summary>
@@ -257,24 +238,23 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
     /// <returns>Imported data</returns>
     public static Recipe Import(RecipeData recipeData, Recipe fallback)
     {
-        if (recipeData is null
-            || recipeData.Ingredients == null
+        if (recipeData.Ingredients is null
             || recipeData.Ingredients.Count == 0
            )
         {
-            Logger.Error("RecipeData is null or has no ingredients. Returning fallback Recipe.");
+            LogWriter.Default.Error("RecipeData is null or has no ingredients. Returning fallback Recipe.");
             return fallback ?? throw new ArgumentNullException(nameof(fallback), "fallback must not be null");
         }
 
         if (recipeData.craftAmount != 1)
         {
-            Logger.Error("RecipeData produces amounts other than 1. Returning fallback Recipe.");
+            LogWriter.Default.Error("RecipeData produces amounts other than 1. Returning fallback Recipe.");
             return fallback ?? throw new ArgumentNullException(nameof(fallback), "fallback must not be null");
         }
 
         if (recipeData.linkedItemCount != 1)
         {
-            Logger.Error("RecipeData has non-empty linked item count. Returning fallback Recipe.");
+            LogWriter.Default.Error("RecipeData has non-empty linked item count. Returning fallback Recipe.");
             return fallback ?? throw new ArgumentNullException(nameof(fallback), "fallback must not be null");
         }
 
@@ -300,8 +280,6 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
 
     internal Recipe(Dictionary<TechType, int> ingredients)
     {
-        if (ingredients is null)
-            throw new ArgumentNullException(nameof(ingredients), "Ingredients dictionary must not be null");
         IngredientsDictionary = ingredients;
     }
 
@@ -333,10 +311,7 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
         foreach (var kvp in IngredientsDictionary) yield return new RecipeIngredient(kvp.Key, kvp.Value);
     }
 
-    IEnumerator IEnumerable.GetEnumerator()
-    {
-        return GetEnumerator();
-    }
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
     /// <summary>
     /// Checks if the recipe is valid for vehicle registration.
@@ -366,9 +341,6 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
     /// <inheritdoc />
     public bool Equals(Recipe other)
     {
-        if (other is null)
-            return false;
-
         if (ReferenceEquals(this, other))
             return true;
 
@@ -387,7 +359,7 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
     }
 
     /// <inheritdoc />
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is Recipe otherRecipe)
             return Equals(otherRecipe);
@@ -407,17 +379,23 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
         return hash;
     }
 
-    /// <inheritdoc />
-    public static bool operator ==(Recipe left, Recipe right)
-    {
-        return Equals(left, right);
-    }
+    /// <summary>
+    /// Determines whether two <see cref="Recipe"/> instances are equal.
+    /// </summary>
+    /// <param name="left">The first <see cref="Recipe"/> instance to compare.</param>
+    /// <param name="right">The second <see cref="Recipe"/> instance to compare.</param>
+    /// <returns><c>true</c> if the specified <see cref="Recipe"/> instances are equal; otherwise, <c>false</c>.</returns>
+    public static bool operator ==(Recipe left, Recipe right) => Equals(left, right);
 
-    /// <inheritdoc />
-    public static bool operator !=(Recipe left, Recipe right)
-    {
-        return !Equals(left, right);
-    }
+    /// <summary>
+    /// Determines whether two <see cref="Recipe"/> instances are not equal.
+    /// </summary>
+    /// <param name="left">The first <see cref="Recipe"/> instance to compare.</param>
+    /// <param name="right">The second <see cref="Recipe"/> instance to compare.</param>
+    /// <returns>
+    /// <c>true</c> if the two <see cref="Recipe"/> instances are not equal; otherwise, <c>false</c>.
+    /// </returns>
+    public static bool operator !=(Recipe left, Recipe right) => !Equals(left, right);
 
     /// <inheritdoc />
     public override string ToString()

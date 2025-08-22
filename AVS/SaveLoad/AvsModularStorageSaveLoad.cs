@@ -20,10 +20,7 @@ internal static class AvsModularStorageSaveLoad
 
     private const string SaveFileNamePrefix = "ModSto";
 
-    internal static string GetSaveFileName(int idx)
-    {
-        return $"{SaveFileNamePrefix}{idx}";
-    }
+    internal static string GetSaveFileName(int idx) => $"{SaveFileNamePrefix}{idx}";
 
 
     internal static void SerializeAllModularStorage(AvsVehicle mv)
@@ -34,7 +31,7 @@ internal static class AvsModularStorageSaveLoad
             if (mv.modules.equipment.TryGetValue(slotID, out var result))
             {
                 var container = result?.item.SafeGetComponent<SeamothStorageContainer>();
-                if (container != null && container.container != null)
+                if (container.IsNotNull() && container.container.IsNotNull())
                     SaveThisModularStorage(mv, container.container, i);
             }
         }
@@ -50,7 +47,7 @@ internal static class AvsModularStorageSaveLoad
             float batteryChargeIfApplicable = -1;
             var bat = item.item.GetComponentInChildren<Battery>(true);
             var innerBatteryTT = TechType.None;
-            if (bat != null)
+            if (bat.IsNotNull())
             {
                 batteryChargeIfApplicable = bat.charge;
                 innerBatteryTT = bat.gameObject.GetComponent<TechTag>().type;
@@ -73,7 +70,7 @@ internal static class AvsModularStorageSaveLoad
     internal static IEnumerator DeserializeAllModularStorage(AvsVehicle mv)
     {
         yield return new WaitUntil(() => Admin.GameStateWatcher.IsWorldLoaded);
-        yield return new WaitUntil(() => mv.upgradesInput.equipment != null);
+        yield return new WaitUntil(() => mv.upgradesInput.equipment.IsNotNull());
         foreach (var upgradesLoader in mv.GetComponentsInChildren<AvsUpgradesIdentifier>())
             yield return new WaitUntil(() => upgradesLoader.isFinished);
         for (var i = 0; i < mv.slotIDs.Length; i++)
@@ -82,24 +79,21 @@ internal static class AvsModularStorageSaveLoad
             if (mv.modules.equipment.TryGetValue(slotID, out var result))
             {
                 var container = result?.item?.GetComponent<SeamothStorageContainer>();
-                if (container != null && container.container != null)
+                if (container.IsNotNull() && container.container.IsNotNull())
                     MainPatcher.Instance.StartCoroutine(LoadThisModularStorage(mv, container.container, i));
             }
         }
-
-        yield break;
     }
 
     private static IEnumerator LoadThisModularStorage(AvsVehicle mv, ItemsContainer container, int slotID)
     {
         var log = mv.Log.Tag(nameof(LoadThisModularStorage));
-        List<StorageItem>? thisStorage = null;
         if (mv.PrefabID.ReadReflected(
                 GetSaveFileName(slotID),
-                out thisStorage,
+                out List<StorageItem>? thisStorage,
                 log))
         {
-            var result = new TaskResult<GameObject>();
+            var result = new InstanceContainer();
             foreach (var item in thisStorage)
             {
                 if (!TechTypeExtensions.FromString(item.techTypeAsString, out var tt, true))
@@ -110,8 +104,8 @@ internal static class AvsModularStorageSaveLoad
                 }
 
                 yield return AvsCraftData.InstantiateFromPrefabAsync(log, tt, result);
-                var thisItem = result.Get();
-                if (thisItem == null)
+                var thisItem = result.Instance;
+                if (thisItem.IsNull())
                 {
                     log.Error($"AvsCraftData.InstantiateFromPrefabAsync returned null for {tt}");
                     continue;

@@ -40,7 +40,7 @@ internal class VehicleHatch : HandTarget, IHandTarget, IDockListener
             else
                 HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, EnterHint);
         }
-        else if (mv as Submersible != null || mv as Skimmer != null)
+        else if (mv is Submersible || mv is Skimmer)
         {
             HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, EnterHint);
         }
@@ -73,13 +73,13 @@ internal class VehicleHatch : HandTarget, IHandTarget, IDockListener
         LogWriter.Default.Write("VehicleHatch.OnHandClick: end");
 
         /*
-        if (mv as Walker != null)
+        if (mv as Walker.IsNotNull())
         {
             Player.main.transform.position = (mv as Walker).PilotSeat.SitLocation.transform.position;
             Player.main.transform.rotation = (mv as Walker).PilotSeat.SitLocation.transform.rotation;
             mv.PlayerEntry();
         }
-        if (mv as Skimmer != null)
+        if (mv as Skimmer.IsNotNull())
         {
             Player.main.transform.position = (mv as Skimmer).PilotSeats.First().SitLocation.transform.position;
             Player.main.transform.rotation = (mv as Skimmer).PilotSeats.First().SitLocation.transform.rotation;

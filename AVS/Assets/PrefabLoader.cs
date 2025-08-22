@@ -121,7 +121,7 @@ public class PrefabLoader
                 CraftData.InstantiateFromPrefabAsync(TechType, result, IfNotFoundLeaveEmpty));
             yield return cor;
             var prefab = result.Get();
-            if (prefab == null)
+            if (prefab.IsNull())
             {
                 if (iteration > 60 && IfNotFoundLeaveEmpty)
                 {

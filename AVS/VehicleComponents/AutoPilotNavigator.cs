@@ -11,7 +11,7 @@ namespace AVS.VehicleComponents
     {
         public void Update()
         {
-            if (GetComponent<AvsVehicle>() != null && GetComponent<AvsVehicle>().GetPilotingMode())
+            if (GetComponent<AvsVehicle>().IsNotNull() && GetComponent<AvsVehicle>().GetPilotingMode())
             {
                 StopAllCoroutines();
                 return;
@@ -35,7 +35,7 @@ namespace AVS.VehicleComponents
         public IEnumerator GoStraightToDestination(Vector3 dest)
         {
             AbstractEngine engine = GetComponent<AbstractEngine>();
-            if (engine == null)
+            if (engine.IsNull())
             {
                 yield break;
             }
@@ -63,8 +63,8 @@ namespace AVS.VehicleComponents
             {
                 RaycastHit[] allHits = Physics.RaycastAll(transform.position, transform.forward, distance);
                 var but = allHits
-                    .Where(hit => hit.transform.GetComponent<Creature>() == null) // ignore creatures
-                    .Where(hit => hit.transform.GetComponent<Player>() == null) // ignore player
+                    .Where(hit => hit.transform.GetComponent<Creature>().IsNull()) // ignore creatures
+                    .Where(hit => hit.transform.GetComponent<Player>().IsNull()) // ignore player
                     ;
                 return 0 < but.Count();
             }

@@ -185,7 +185,7 @@ internal readonly struct FloatVariable : IShaderVariable
 /// Read-only material definition as retrieved from some existing material
 /// </summary>
 /// <author>https://github.com/IronFox</author>
-public class SubnauticaMaterialPrototype
+public class SubnauticaMaterialPrototype : INullTestableType
 {
     /// <summary>
     /// True if this instance was created without a source material.
@@ -262,7 +262,7 @@ public class SubnauticaMaterialPrototype
     /// <param name="loadTextures">If true also load texture property values</param>
     public SubnauticaMaterialPrototype(Material? source, bool loadTextures = false)
     {
-        if (source == null)
+        if (source.IsNull())
         {
             IsEmpty = true;
             ColorVariables = Array.Empty<ColorVariable>();
@@ -327,7 +327,7 @@ public class SubnauticaMaterialPrototype
     public static bool GlassMaterialFromSeamoth(out Material? result, MaterialLog logConfig = default)
     {
         var sm = SeamothHelper.Seamoth;
-        if (sm == null)
+        if (sm.IsNull())
         {
             result = null;
             return false;
@@ -366,7 +366,7 @@ public class SubnauticaMaterialPrototype
     public static bool GlassMaterialFromAquarium(out Material? result, MaterialLog logConfig = default)
     {
         var sm = PrefabLoader.Request(TechType.Aquarium, logConfig.Writer, true);
-        if (sm.Prefab == null)
+        if (sm.Prefab.IsNull())
         {
             result = null;
             return false;
@@ -392,7 +392,7 @@ public class SubnauticaMaterialPrototype
                         $"(Expected) shader mismatch on {material.NiceName()} which uses {material.shader}");
                 }
 
-            if (glassMaterial != null)
+            if (glassMaterial.IsNotNull())
                 break;
         }
 
@@ -427,7 +427,7 @@ public class SubnauticaMaterialPrototype
     public static SubnauticaMaterialPrototype? FromSeamoth(MaterialLog logConfig = default)
     {
         var sm = SeamothHelper.Seamoth;
-        if (sm == null)
+        if (sm.IsNull())
             return null;
 
         logConfig.LogExtraStep($"Found Seamoth");
@@ -450,7 +450,7 @@ public class SubnauticaMaterialPrototype
                         $"(Expected) shader mismatch on {material.NiceName()} which uses {material.shader}");
                 }
 
-            if (seamothMaterial != null)
+            if (seamothMaterial.IsNotNull())
                 break;
         }
 

@@ -70,7 +70,7 @@ public static class PowerRelayPatcher
     public static bool StartPrefix(PowerRelay __instance)
     {
         var mv = __instance.gameObject.SafeGetComponent<AvsVehicle>();
-        if (mv != null)
+        if (mv.IsNotNull())
         {
             LogOf(mv).Debug("PowerRelay.Start");
             __instance.InvokeRepeating("UpdatePowerState", UnityEngine.Random.value, 0.5f);
@@ -101,9 +101,9 @@ public static class PowerRelayPatcher
         var mv = __instance
             .SafeGetGameObject()
             .SafeGetComponent<AvsVehicle>();
-        if (mv != null)
+        if (mv.IsNotNull())
         {
-            if (mv.energyInterface != null)
+            if (mv.energyInterface.IsNotNull())
             {
                 __result = mv.energyInterface.TotalCanProvide(out _);
                 //LogOf(mv).Debug("EnergyInterface.TotalCanProvide: " + __result);
@@ -134,18 +134,18 @@ public static class PowerRelayPatcher
     [HarmonyPatch(nameof(PowerRelay.GetMaxPower))]
     public static bool GetMaxPowerPrefix(PowerRelay __instance, ref float __result)
     {
-        if (__instance == null || __instance.gameObject == null)
+        if (__instance.IsNull() || __instance.gameObject.IsNull())
             return true;
         var mv = __instance.gameObject.GetComponent<AvsVehicle>();
-        if (mv == null) return true;
-        if (mv.energyInterface == null || mv.energyInterface.sources == null)
+        if (mv.IsNull()) return true;
+        if (mv.energyInterface.IsNull() || mv.energyInterface.sources.IsNull())
         {
             LogOf(mv).Error("EnergyInterface is null");
             __result = 0;
             return false;
         }
 
-        __result = mv.energyInterface.sources.Where(x => x != null).Select(x => x.capacity).Sum();
+        __result = mv.energyInterface.sources.Where(x => x.IsNotNull()).Select(x => x.capacity).Sum();
         //LogOf(mv).Debug("EnergyInterface.sources.Sum: " + __result);
         return false;
     }

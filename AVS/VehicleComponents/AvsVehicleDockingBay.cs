@@ -26,7 +26,7 @@ namespace AVS.VehicleComponents
         }
         protected override void TryRechargeDockedVehicle()
         {
-            if (currentDockedVehicle == null)
+            if (currentDockedVehicle.IsNull())
             {
                 return;
             }

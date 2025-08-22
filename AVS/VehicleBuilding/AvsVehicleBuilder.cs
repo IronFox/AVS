@@ -59,15 +59,14 @@ internal static class AvsVehicleBuilder
         InnateStorage = Nautilus.Handlers.EnumHandler.AddEntry<TechType>(InnateStorageName).Value;
     }
 
-    public static bool IsKnownItemType(EquipmentType itemType)
-    {
-        return itemType == ModuleType;
-    }
+    public static bool IsKnownItemType(EquipmentType itemType) => itemType == ModuleType;
 
     public static IEnumerator Prefabricate(AvsVehicle mv, PingType pingType, bool verbose)
     {
+        var log = mv.Log.Tag(nameof(Prefabricate));
         mv.OnAwakeOrPrefabricate();
-        VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, "Prefabricating the " + mv.gameObject.name);
+        VehicleRegistrar.VerboseLog(log, VehicleRegistrar.LogType.Log, verbose,
+            "Prefabricating the " + mv.gameObject.name);
         yield return SeamothHelper.WaitUntilLoaded();
         var seamoth = SeamothHelper.RequireSeamoth;
         if (!Instrument(mv, pingType, seamoth))
@@ -120,7 +119,7 @@ internal static class AvsVehicleBuilder
                 vuci.collider = vuci.GetComponentInChildren<Collider>();
                 mv.upgradesInput = vuci;
                 var up = vu.Interface.EnsureComponent<UpgradeProxy>();
-                if (vu.ModuleProxies != null)
+                if (vu.ModuleProxies.IsNotNull())
                 {
                     mv.Log.Write(
                         $"Setting up UpgradeProxy in {vu.Interface.NiceName()} with {vu.ModuleProxies.Count} proxy/ies");
@@ -151,7 +150,7 @@ internal static class AvsVehicleBuilder
             return false;
         }
 
-        if (mv.Com.BoundingBoxCollider != null)
+        if (mv.Com.BoundingBoxCollider.IsNotNull())
             mv.Com.BoundingBoxCollider.enabled = false;
         return true;
     }
@@ -192,11 +191,11 @@ internal static class AvsVehicleBuilder
         // Configure the Control Panel
         try
         {
-            if (mv.Com.ControlPanel != null)
+            if (mv.Com.ControlPanel.IsNotNull())
             {
                 mv.controlPanelLogic = mv.Com.ControlPanel.EnsureComponent<ControlPanel>();
                 mv.controlPanelLogic.mv = mv;
-                if (mv.transform.Find("Control-Panel-Location") != null)
+                if (mv.transform.Find("Control-Panel-Location").IsNotNull())
                 {
                     mv.Com.ControlPanel.transform.localPosition =
                         mv.transform.Find("Control-Panel-Location").localPosition;
@@ -273,7 +272,7 @@ internal static class AvsVehicleBuilder
     private static void SetupHeadlights(AvsVehicle mv)
     {
         var seamothHeadLight = SeamothHelper.RequireSeamoth.transform.Find("lights_parent/light_left").gameObject;
-        if (mv.Com.Headlights != null)
+        if (mv.Com.Headlights.IsNotNull())
             foreach (var pc in mv.Com.Headlights)
             {
                 seamothHeadLight.GetComponent<LightShadowQuality>().CopyComponentWithFieldsTo(pc.Light);
@@ -295,7 +294,7 @@ internal static class AvsVehicleBuilder
     private static void SetupFloodlights(Submarine mv, GameObject seamoth)
     {
         var seamothHeadLight = seamoth.transform.Find("lights_parent/light_left").gameObject;
-        if (mv.Com.Floodlights != null)
+        if (mv.Com.Floodlights.IsNotNull())
             foreach (var pc in mv.Com.Floodlights)
             {
                 seamothHeadLight
@@ -407,7 +406,7 @@ internal static class AvsVehicleBuilder
                 LogWriter.Default.Write("Found crush damage sound for " + mv.name);
             }
 
-        if (ce.asset == null) LogWriter.Default.Error("Failed to find crush damage sound for " + mv.name);
+        if (ce.asset.IsNull()) LogWriter.Default.Error("Failed to find crush damage sound for " + mv.name);
         /* For reference,
          * Prawn dies from max health in 3:00 minutes.
          * Seamoth in 0:30
@@ -430,7 +429,7 @@ internal static class AvsVehicleBuilder
 
     private static void SetupWaterClipping(AvsVehicle mv, GameObject seamoth)
     {
-        if (mv.Com.WaterClipProxies != null)
+        if (mv.Com.WaterClipProxies.IsNotNull())
         {
             // Enable water clipping for proper interaction with the surface of the ocean
             var seamothWCP = seamoth.GetComponentInChildren<WaterClipProxy>();
@@ -575,7 +574,7 @@ internal static class AvsVehicleBuilder
         subroot.worldForces = mv.worldForces;
         subroot.modulesRoot = mv.modulesRoot.transform;
         subroot.powerRelay = powerRelay;
-        if (mv.Com.RespawnPoint == null)
+        if (mv.Com.RespawnPoint.IsNull())
             mv.gameObject.EnsureComponent<RespawnPoint>();
         else
             mv.Com.RespawnPoint.EnsureComponent<RespawnPoint>();
@@ -658,7 +657,7 @@ internal static class AvsVehicleBuilder
     {
         // Add the [marmoset] shader to all renderers
         foreach (var renderer in mv.gameObject.GetComponentsInChildren<Renderer>(true))
-            if (mv.Com.CanopyWindows != null && mv.Com.CanopyWindows.Contains(renderer.gameObject))
+            if (mv.Com.CanopyWindows.IsNotNull() && mv.Com.CanopyWindows.Contains(renderer.gameObject))
             {
                 var seamothGlassMaterial = seamoth.transform
                     .Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/Submersible_SeaMoth_glass_interior_geo")
@@ -679,7 +678,7 @@ internal static class AvsVehicleBuilder
     //}
     private static void ForceApplyShaders(AvsVehicle mv, Shader shader)
     {
-        if (shader == null)
+        if (shader.IsNull())
         {
             LogWriter.Default.Error("Tried to apply a null Shader.");
             return;

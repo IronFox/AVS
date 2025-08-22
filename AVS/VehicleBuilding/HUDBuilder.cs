@@ -1,163 +1,170 @@
 ﻿using AVS.BaseVehicle;
 using System.Collections.Generic;
 using AVS.StorageComponents;
+using AVS.Util;
 using UnityEngine;
 
-namespace AVS
+namespace AVS;
+
+/*
+ * This class controls building and configuring the mod vehicle HUD
+ * We have to work differently for VR
+ */
+internal static class HUDBuilder
 {
-    /*
-     * This class controls building and configuring the mod vehicle HUD
-     * We have to work differently for VR
-     */
-    internal static class HUDBuilder
+    public static bool IsVR = false;
+
+    private static List<GameObject> GetAllObjectsInScene()
     {
-        public static bool IsVR = false;
-        static List<GameObject> GetAllObjectsInScene()
+        var objectsInScene = new List<GameObject>();
+
+        foreach (var go in Resources.FindObjectsOfTypeAll<GameObject>())
         {
-            List<GameObject> objectsInScene = new List<GameObject>();
+            if (go.hideFlags == HideFlags.NotEditable || go.hideFlags == HideFlags.HideAndDontSave)
+                continue;
 
-            foreach (GameObject go in Resources.FindObjectsOfTypeAll<GameObject>())
+            objectsInScene.Add(go);
+        }
+
+        return objectsInScene;
+    }
+
+    public static GameObject? TryGetVRVehicleCanvas()
+    {
+        // Here we ensure we have a reference to the freshest copy of VRVehicleCanvas
+        // The base game has a memory leak, in which VRVehicleCanvas is not cleaned up across exit-reload
+        // so we fix that here
+        GameObject? VRVehicleCanvas = null;
+        foreach (var go in GetAllObjectsInScene())
+            if (go.name == "VRVehicleCanvas")
             {
-                if (go.hideFlags == HideFlags.NotEditable || go.hideFlags == HideFlags.HideAndDontSave)
-                    continue;
-
-                objectsInScene.Add(go);
+                if (go.transform.Find(nameof(AvsVehicle)).IsNull())
+                    VRVehicleCanvas = go;
+                else
+                    Object.Destroy(go);
             }
 
-            return objectsInScene;
-        }
-        public static GameObject? TryGetVRVehicleCanvas()
+        if (VRVehicleCanvas.IsNotNull())
         {
-            // Here we ensure we have a reference to the freshest copy of VRVehicleCanvas
-            // The base game has a memory leak, in which VRVehicleCanvas is not cleaned up across exit-reload
-            // so we fix that here
-            GameObject? VRVehicleCanvas = null;
-            foreach (GameObject go in GetAllObjectsInScene())
-            {
-                if (go.name == "VRVehicleCanvas")
-                {
-                    if (go.transform.Find(nameof(AvsVehicle)) == null)
-                    {
-                        VRVehicleCanvas = go;
-                    }
-                    else
-                    {
-                        UnityEngine.Object.Destroy(go);
-                    }
-                }
-            }
-            if (VRVehicleCanvas != null)
-            {
-                GameObject seenTag = GameObject.Instantiate(
-                    new GameObject(),
-                    VRVehicleCanvas.transform
-                    );
-                seenTag.name = nameof(AvsVehicle);
-            }
-            return VRVehicleCanvas;
+            var seenTag = Object.Instantiate(
+                new GameObject(),
+                VRVehicleCanvas.transform
+            );
+            seenTag.name = nameof(AvsVehicle);
         }
-        public static void DecideBuildHUD()
+
+        return VRVehicleCanvas;
+    }
+
+    public static void DecideBuildHUD()
+    {
+        var VRVehicleCanvas = TryGetVRVehicleCanvas();
+        if (UnityEngine.XR.XRSettings.enabled)
         {
-            GameObject? VRVehicleCanvas = TryGetVRVehicleCanvas();
-            if (UnityEngine.XR.XRSettings.enabled)
-            {
-                IsVR = true;
-                if (VRVehicleCanvas != null)
-                {
-                    BuildVRHUD(VRVehicleCanvas);
-                }
-            }
-            else
-            {
-                BuildHUDs();
-            }
+            IsVR = true;
+            if (VRVehicleCanvas.IsNotNull())
+                BuildVRHUD(VRVehicleCanvas);
         }
-        public static void BuildHUDs()
+        else
         {
-            BuildNormalHUD();
-            BuildStorageHUD();
+            BuildHUDs();
         }
+    }
 
-        public static void BuildNormalHUD()
-        {
-            // copy the seamoth hud for now
-            GameObject seamothHUDElementsRoot = uGUI.main.transform.Find("ScreenCanvas/HUD/Content/Seamoth").gameObject;
-            GameObject mvHUDElementsRoot = GameObject.Instantiate(seamothHUDElementsRoot, uGUI.main.transform.Find("ScreenCanvas/HUD/Content"));
-            mvHUDElementsRoot.name = nameof(AvsVehicle);
-            Vector3 offset = mvHUDElementsRoot.transform.localPosition;
-            mvHUDElementsRoot.transform.localPosition = Vector3.zero;
+    public static void BuildHUDs()
+    {
+        BuildNormalHUD();
+        BuildStorageHUD();
+    }
 
-            mvHUDElementsRoot.transform.Find("Background").localPosition += offset;
-            mvHUDElementsRoot.transform.Find("Health").localPosition += offset;
-            mvHUDElementsRoot.transform.Find("Power").localPosition += offset;
-            mvHUDElementsRoot.transform.Find("Temperature").localPosition += offset;
+    public static void BuildNormalHUD()
+    {
+        // copy the seamoth hud for now
+        var seamothHUDElementsRoot = uGUI.main.transform.Find("ScreenCanvas/HUD/Content/Seamoth").gameObject;
+        var mvHUDElementsRoot =
+            Object.Instantiate(seamothHUDElementsRoot, uGUI.main.transform.Find("ScreenCanvas/HUD/Content"));
+        mvHUDElementsRoot.name = nameof(AvsVehicle);
+        var offset = mvHUDElementsRoot.transform.localPosition;
+        mvHUDElementsRoot.transform.localPosition = Vector3.zero;
 
-            uGUI_VehicleHUD ret = uGUI.main.transform.Find("ScreenCanvas/HUD").gameObject.AddComponent<uGUI_VehicleHUD>();
-            ret.root = mvHUDElementsRoot;
-            ret.textHealth = mvHUDElementsRoot.transform.Find("Health").GetComponent<TMPro.TextMeshProUGUI>();
-            ret.textPower = mvHUDElementsRoot.transform.Find("Power").GetComponent<TMPro.TextMeshProUGUI>();
-            ret.textTemperature = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue").GetComponent<TMPro.TextMeshProUGUI>();
-            ret.textTemperatureSuffix = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue/TemperatureSuffix").GetComponent<TMPro.TextMeshProUGUI>();
-        }
-        public static void BuildStorageHUD()
-        {
-            // copy the seamoth hud for now
-            GameObject seamothHUDElementsRoot = uGUI.main.transform.Find("ScreenCanvas/HUD/Content/Seamoth").gameObject;
-            GameObject mvHUDElementsRoot = GameObject.Instantiate(seamothHUDElementsRoot, uGUI.main.transform.Find("ScreenCanvas/HUD/Content"));
-            mvHUDElementsRoot.name = "AvsVehicleStorage";
-            Vector3 offset = mvHUDElementsRoot.transform.localPosition;
-            mvHUDElementsRoot.transform.localPosition = Vector3.zero;
+        mvHUDElementsRoot.transform.Find("Background").localPosition += offset;
+        mvHUDElementsRoot.transform.Find("Health").localPosition += offset;
+        mvHUDElementsRoot.transform.Find("Power").localPosition += offset;
+        mvHUDElementsRoot.transform.Find("Temperature").localPosition += offset;
+
+        var ret = uGUI.main.transform.Find("ScreenCanvas/HUD").gameObject.AddComponent<uGUI_VehicleHUD>();
+        ret.root = mvHUDElementsRoot;
+        ret.textHealth = mvHUDElementsRoot.transform.Find("Health").GetComponent<TMPro.TextMeshProUGUI>();
+        ret.textPower = mvHUDElementsRoot.transform.Find("Power").GetComponent<TMPro.TextMeshProUGUI>();
+        ret.textTemperature = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue")
+            .GetComponent<TMPro.TextMeshProUGUI>();
+        ret.textTemperatureSuffix = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue/TemperatureSuffix")
+            .GetComponent<TMPro.TextMeshProUGUI>();
+    }
+
+    public static void BuildStorageHUD()
+    {
+        // copy the seamoth hud for now
+        var seamothHUDElementsRoot = uGUI.main.transform.Find("ScreenCanvas/HUD/Content/Seamoth").gameObject;
+        var mvHUDElementsRoot =
+            Object.Instantiate(seamothHUDElementsRoot, uGUI.main.transform.Find("ScreenCanvas/HUD/Content"));
+        mvHUDElementsRoot.name = "AvsVehicleStorage";
+        var offset = mvHUDElementsRoot.transform.localPosition;
+        mvHUDElementsRoot.transform.localPosition = Vector3.zero;
 
 
-            uGUI_VehicleHUD ret = uGUI.main.transform.Find("ScreenCanvas/HUD").gameObject.AddComponent<uGUI_VehicleHUD>();
-            ret.root = mvHUDElementsRoot;
-            var healthObject = mvHUDElementsRoot.transform.Find("Health");
-            healthObject.localPosition = offset + new Vector3(-56, -15, 0);
-            ret.textHealth = healthObject.GetComponent<TMPro.TextMeshProUGUI>();
+        var ret = uGUI.main.transform.Find("ScreenCanvas/HUD").gameObject.AddComponent<uGUI_VehicleHUD>();
+        ret.root = mvHUDElementsRoot;
+        var healthObject = mvHUDElementsRoot.transform.Find("Health");
+        healthObject.localPosition = offset + new Vector3(-56, -15, 0);
+        ret.textHealth = healthObject.GetComponent<TMPro.TextMeshProUGUI>();
 
-            var powerObject = mvHUDElementsRoot.transform.Find("Power");
-            powerObject.localPosition = offset + new Vector3(100, 8, 0);
-            ret.textPower = powerObject.GetComponent<TMPro.TextMeshProUGUI>();
+        var powerObject = mvHUDElementsRoot.transform.Find("Power");
+        powerObject.localPosition = offset + new Vector3(100, 8, 0);
+        ret.textPower = powerObject.GetComponent<TMPro.TextMeshProUGUI>();
 
-            mvHUDElementsRoot.transform.Find("Temperature").localPosition = offset + new Vector3(93, -58, 0);
-            ret.textTemperature = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue").GetComponent<TMPro.TextMeshProUGUI>();
-            ret.textTemperatureSuffix = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue/TemperatureSuffix").GetComponent<TMPro.TextMeshProUGUI>();
+        mvHUDElementsRoot.transform.Find("Temperature").localPosition = offset + new Vector3(93, -58, 0);
+        ret.textTemperature = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue")
+            .GetComponent<TMPro.TextMeshProUGUI>();
+        ret.textTemperatureSuffix = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue/TemperatureSuffix")
+            .GetComponent<TMPro.TextMeshProUGUI>();
 
-            var modVehicleBackground = mvHUDElementsRoot.transform.Find("Background").GetComponent<UnityEngine.UI.Image>();
-            modVehicleBackground.sprite = Assets.SpriteHelper.GetSpriteRaw("Sprites/StorageHUDBackground.png");
-            modVehicleBackground.transform.localScale = new Vector3(1, 1.238f, 1);
-            modVehicleBackground.transform.localPosition = offset;
+        var modVehicleBackground = mvHUDElementsRoot.transform.Find("Background").GetComponent<UnityEngine.UI.Image>();
+        modVehicleBackground.sprite = Assets.SpriteHelper.GetSpriteRaw("Sprites/StorageHUDBackground.png");
+        modVehicleBackground.transform.localScale = new Vector3(1, 1.238f, 1);
+        modVehicleBackground.transform.localPosition = offset;
 
-            GameObject exoTemp = uGUI.main.transform.Find("ScreenCanvas/HUD/Content/Exosuit/Temperature").gameObject;
-            GameObject storageCanvasObject = GameObject.Instantiate(exoTemp, mvHUDElementsRoot.transform);
-            storageCanvasObject.name = "Storage";
-            storageCanvasObject.transform.localPosition = offset + new Vector3(125, 65, 0);
-            storageCanvasObject.transform.Find("TemperatureValue/TemperatureSuffix").GetComponent<TMPro.TextMeshProUGUI>().text = "<color=#FFDC00FF>%</color>";
-            Transform storageTextObject = storageCanvasObject.transform.Find("TemperatureValue");
-            storageTextObject.name = "StorageValue";
-            ret.textStorage = storageTextObject.GetComponent<TMPro.TextMeshProUGUI>();
+        var exoTemp = uGUI.main.transform.Find("ScreenCanvas/HUD/Content/Exosuit/Temperature").gameObject;
+        var storageCanvasObject = Object.Instantiate(exoTemp, mvHUDElementsRoot.transform);
+        storageCanvasObject.name = "Storage";
+        storageCanvasObject.transform.localPosition = offset + new Vector3(125, 65, 0);
+        storageCanvasObject.transform.Find("TemperatureValue/TemperatureSuffix").GetComponent<TMPro.TextMeshProUGUI>()
+            .text = "<color=#FFDC00FF>%</color>";
+        var storageTextObject = storageCanvasObject.transform.Find("TemperatureValue");
+        storageTextObject.name = "StorageValue";
+        ret.textStorage = storageTextObject.GetComponent<TMPro.TextMeshProUGUI>();
+    }
 
-        }
+    public static void BuildVRHUD(GameObject VRVehicleCanvas)
+    {
+        // Now we want to add our AvsVehicle HUD to the standard HUD.
+        // We don't want to use the actual "vr vehicle hud"
+        // but we're going to grab the copy of the seamoth HUD from the "vr vehicle hud"
+        var seamothHUDElementsRoot = VRVehicleCanvas.transform.Find("Seamoth").gameObject;
+        var mvHUDElementsRoot =
+            Object.Instantiate(seamothHUDElementsRoot, uGUI.main.transform.Find("ScreenCanvas/HUD/Content"));
+        mvHUDElementsRoot.name = nameof(AvsVehicle);
+        mvHUDElementsRoot.transform.localPosition = new Vector3(245.2f, -163.5f, 0);
+        mvHUDElementsRoot.transform.localScale = 0.8f * Vector3.one;
 
-        public static void BuildVRHUD(GameObject VRVehicleCanvas)
-        {
-            // Now we want to add our AvsVehicle HUD to the standard HUD.
-            // We don't want to use the actual "vr vehicle hud"
-            // but we're going to grab the copy of the seamoth HUD from the "vr vehicle hud"
-            GameObject seamothHUDElementsRoot = VRVehicleCanvas.transform.Find("Seamoth").gameObject;
-            GameObject mvHUDElementsRoot = GameObject.Instantiate(seamothHUDElementsRoot, uGUI.main.transform.Find("ScreenCanvas/HUD/Content"));
-            mvHUDElementsRoot.name = nameof(AvsVehicle);
-            mvHUDElementsRoot.transform.localPosition = new Vector3(245.2f, -163.5f, 0);
-            mvHUDElementsRoot.transform.localScale = 0.8f * Vector3.one;
-
-            // Finally we need to add and configure a controller for our new HUD object
-            uGUI_VehicleHUD ret = uGUI.main.transform.Find("ScreenCanvas/HUD").gameObject.EnsureComponent<uGUI_VehicleHUD>();
-            ret.root = mvHUDElementsRoot;
-            ret.textHealth = mvHUDElementsRoot.transform.Find("Health").GetComponent<TMPro.TextMeshProUGUI>();
-            ret.textPower = mvHUDElementsRoot.transform.Find("Power").GetComponent<TMPro.TextMeshProUGUI>();
-            ret.textTemperature = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue").GetComponent<TMPro.TextMeshProUGUI>();
-            ret.textTemperatureSuffix = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue/TemperatureSuffix").GetComponent<TMPro.TextMeshProUGUI>();
-        }
-
+        // Finally we need to add and configure a controller for our new HUD object
+        var ret = uGUI.main.transform.Find("ScreenCanvas/HUD").gameObject.EnsureComponent<uGUI_VehicleHUD>();
+        ret.root = mvHUDElementsRoot;
+        ret.textHealth = mvHUDElementsRoot.transform.Find("Health").GetComponent<TMPro.TextMeshProUGUI>();
+        ret.textPower = mvHUDElementsRoot.transform.Find("Power").GetComponent<TMPro.TextMeshProUGUI>();
+        ret.textTemperature = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue")
+            .GetComponent<TMPro.TextMeshProUGUI>();
+        ret.textTemperatureSuffix = mvHUDElementsRoot.transform.Find("Temperature/TemperatureValue/TemperatureSuffix")
+            .GetComponent<TMPro.TextMeshProUGUI>();
     }
 }

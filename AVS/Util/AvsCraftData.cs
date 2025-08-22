@@ -5,6 +5,17 @@ using UnityEngine;
 
 namespace AVS.Util;
 
+/// <summary>
+/// Container for the result of <see cref="AvsCraftData.InstantiateFromPrefabAsync"/>
+/// </summary>
+internal class InstanceContainer
+{
+    /// <summary>
+    /// Created instance or null if none could be created
+    /// </summary>
+    public GameObject? Instance { get; set; }
+}
+
 internal static class AvsCraftData
 {
     /// <summary>
@@ -19,19 +30,20 @@ internal static class AvsCraftData
     /// but no other components.</param>
     /// <returns>An enumerator allowing for asynchronous operation during the prefab instantiation process.</returns>
     internal static IEnumerator InstantiateFromPrefabAsync(LogWriter log, TechType techType,
-        TaskResult<GameObject> result, bool ifNotFoundLeaveEmpty = true)
+        InstanceContainer result, bool ifNotFoundLeaveEmpty = true)
     {
         log.Write($"Loading prefab for tech type {techType.AsString()} with customOnly={ifNotFoundLeaveEmpty}");
+        result.Instance = null;
         var req = PrefabLoader.Request(techType, log, ifNotFoundLeaveEmpty);
         yield return req.WaitUntilLoaded();
         var instance = req.Instantiate();
-        if (instance == null)
+        if (instance.IsNull())
         {
             log.Error($"Request for {techType.AsString()} produced no instance. This should never happen.");
             //result.Set(null);
             yield break;
         }
 
-        result.Set(instance);
+        result.Instance = instance;
     }
 }

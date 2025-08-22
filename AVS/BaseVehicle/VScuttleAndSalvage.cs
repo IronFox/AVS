@@ -79,25 +79,27 @@ public abstract partial class AvsVehicle
     {
         IEnumerator DropLoot(Vector3 place, GameObject root)
         {
-            var result = new TaskResult<GameObject>();
+            var result = new InstanceContainer();
             foreach (var item in Config.Recipe)
                 for (var i = 0; i < item.Amount; i++)
                 {
                     yield return null;
                     if (Random.value < 0.6f) continue;
 
-                    yield return AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(OnSalvage)), item.Type, result,
-                        false);
-                    var go = result.Get();
-                    var loc = place + 1.2f * Random.onUnitSphere;
-                    var rot = 360 * Random.onUnitSphere;
-                    go.transform.position = loc;
-                    go.transform.eulerAngles = rot;
-                    var rb = go.EnsureComponent<Rigidbody>();
-                    rb.isKinematic = false;
+                    yield return AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(OnSalvage)), item.Type, result);
+                    var go = result.Instance;
+                    if (!go.IsNull())
+                    {
+                        var loc = place + 1.2f * Random.onUnitSphere;
+                        var rot = 360 * Random.onUnitSphere;
+                        go.transform.position = loc;
+                        go.transform.eulerAngles = rot;
+                        var rb = go.EnsureComponent<Rigidbody>();
+                        rb.isKinematic = false;
+                    }
                 }
 
-            while (root != null)
+            while (root.IsNotNull())
             {
                 Destroy(root);
                 yield return null;

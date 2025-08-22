@@ -42,7 +42,7 @@ public class InnateStorageContainer : MonoBehaviour, ICraftTarget //, IProtoEven
 
     private void Init()
     {
-        if (_container != null) return;
+        if (_container.IsNotNull()) return;
         LogWriter.Default.Debug(
             $"Initializing {this.NiceName()} for {DisplayName.Rendered} ({DisplayName.Localize}) with width {width} and height {height}");
         _container = new ItemsContainer(width, height,
@@ -64,18 +64,18 @@ public class InnateStorageContainer : MonoBehaviour, ICraftTarget //, IProtoEven
             if (techType == TechType.SeamothTorpedoModule || techType == TechType.ExosuitTorpedoArmModule)
                 for (var i = 0; i < 2; i++)
                 {
-                    var result = new TaskResult<GameObject>();
+                    var result = new InstanceContainer();
                     yield return AvsCraftData.InstantiateFromPrefabAsync(
-                        LogWriter.Default.Tag(nameof(InnateStorageContainer)), techType, result, false);
-                    var gameObject = result.Get();
-                    if (gameObject != null)
+                        LogWriter.Default.Tag(nameof(InnateStorageContainer)), techType, result);
+                    var gameObject = result.Instance;
+                    if (gameObject.IsNotNull())
                     {
                         var pickupable = gameObject.GetComponent<Pickupable>();
-                        if (pickupable != null)
+                        if (pickupable.IsNotNull())
                             // NEWNEW
                             // Why did we use to have this line?
                             //pickupable = pickupable.Pickup(false);
-                            if (Container.AddItem(pickupable) == null)
+                            if (Container.AddItem(pickupable) is null)
                                 Destroy(pickupable.gameObject);
                     }
                 }

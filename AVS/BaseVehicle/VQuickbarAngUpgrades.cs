@@ -136,7 +136,7 @@ public abstract partial class AvsVehicle
     {
         get
         {
-            if (_slotIDs == null) _slotIDs = GenerateSlotIDs(Config.NumModules);
+            if (_slotIDs.IsNull()) _slotIDs = GenerateSlotIDs(Config.NumModules);
             return _slotIDs;
         }
     }
@@ -212,7 +212,7 @@ public abstract partial class AvsVehicle
         {
             // check the appropriate storage module for emptiness
             var component = pickupable.GetComponent<SeamothStorageContainer>();
-            if (component != null)
+            if (component.IsNotNull())
             {
                 var flag = component.container.count == 0;
                 if (verbose && !flag)
@@ -225,10 +225,10 @@ public abstract partial class AvsVehicle
         else
         {
             var mod = AvsVehicleModule.GetModule(pickupable.GetTechType());
-            if (mod != null && !mod.CanRemoveFrom(this, out var message))
+            if (mod.IsNotNull() && !mod.CanRemoveFrom(this, out var message))
             {
-                if (lastRemovalError == null || lastRemovalError != message.Value
-                                             || Time.time - lastRemovalTime > 5)
+                if (lastRemovalError.IsNull() || lastRemovalError != message.Value
+                                              || Time.time - lastRemovalTime > 5)
                 {
                     lastRemovalError = message.Value;
                     lastRemovalTime = Time.time;
@@ -270,7 +270,7 @@ public abstract partial class AvsVehicle
         if (activated)
         {
             var modularContainer = GetSeamothStorageContainer(slotID);
-            if (modularContainer == null)
+            if (modularContainer.IsNull())
             {
                 Log.Warn("Warning: failed to get modular storage container for slotID: " + slotID.ToString());
                 return;
@@ -285,7 +285,7 @@ public abstract partial class AvsVehicle
     internal SeamothStorageContainer? GetSeamothStorageContainer(int slotID)
     {
         var slotItem = GetSlotItem(slotID);
-        if (slotItem == null)
+        if (slotItem.IsNull())
         {
             Log.Warn("Warning: failed to get item for that slotID: " + slotID.ToString());
             return null;
@@ -325,7 +325,7 @@ public abstract partial class AvsVehicle
             case TechType.VehicleStorageModule:
             {
                 var component = GetSeamothStorageContainer(slotID);
-                if (component == null)
+                if (component.IsNull())
                 {
                     Log.Warn("Warning: failed to get storage-container for that slotID: " + slotID.ToString());
                     return null;

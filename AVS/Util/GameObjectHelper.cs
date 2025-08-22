@@ -1,9 +1,11 @@
 ﻿using AVS.Log;
 using AVS.SaveLoad;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -23,7 +25,7 @@ public static class GameObjectHelper
     /// <returns>Duplicated component</returns>
     public static T? TryCopyComponentWithFieldsTo<T>(this T? original, GameObject destination) where T : Component
     {
-        if (original == null)
+        if (original.IsNull())
         {
             Logger.Error($"Original component of type {typeof(T).Name} is null, cannot copy.");
             return null;
@@ -41,7 +43,7 @@ public static class GameObjectHelper
     /// <returns>Duplicated component</returns>
     public static T CopyComponentWithFieldsTo<T>(this T original, GameObject destination) where T : Component
     {
-        //if (original == null)
+        //if (original .IsNull())
         //{
         //    Logger.Error($"Original component of type {typeof(T).Name} is null, cannot copy.");
         //    return null;
@@ -63,7 +65,7 @@ public static class GameObjectHelper
     /// null if both are null</returns>
     public static T? Or<T>(this T? a, T? b) where T : Object
     {
-        if (a != null)
+        if (a.IsNotNull())
             return a;
         return b;
     }
@@ -77,7 +79,7 @@ public static class GameObjectHelper
     /// <returns><paramref name="a"/> if not null, otherwise the result of <paramref name="bFactory"/>.</returns>
     public static T? Or<T>(this T? a, Func<T?> bFactory) where T : Object
     {
-        if (a != null)
+        if (a.IsNotNull())
             return a;
         return bFactory();
     }
@@ -92,9 +94,9 @@ public static class GameObjectHelper
     /// <returns><paramref name="a"/> if not null, <paramref name="b"/> if <paramref name="a"/> is null</returns>
     public static T OrRequired<T>(this T? a, T? b) where T : Object
     {
-        if (a != null)
+        if (a.IsNotNull())
             return a;
-        if (b != null)
+        if (b.IsNotNull())
             return b;
         throw new ArgumentNullException($"Both objects are null. Cannot return a valid {typeof(T).Name} object.");
     }
@@ -109,10 +111,10 @@ public static class GameObjectHelper
     /// <returns><paramref name="a"/> if not null, <paramref name="bFactory"/>() if <paramref name="a"/> is null</returns>
     public static T OrRequired<T>(this T? a, Func<T?> bFactory) where T : Object
     {
-        if (a != null)
+        if (a.IsNotNull())
             return a;
         var b = bFactory();
-        if (b != null)
+        if (b.IsNotNull())
             return b;
         throw new ArgumentNullException($"Both objects are null. Cannot return a valid {typeof(T).Name} object.");
     }
@@ -126,7 +128,7 @@ public static class GameObjectHelper
     /// <returns>Non-null <paramref name="item"/></returns>
     public static T OrThrow<T>(this T? item, Func<Exception> exceptionFactory) where T : Object
     {
-        if (item != null)
+        if (item.IsNotNull())
             return item;
         throw exceptionFactory();
     }
@@ -169,7 +171,7 @@ public static class GameObjectHelper
     /// </summary>
     public static Transform? SafeGetTransform(this GameObject? gameObject)
     {
-        if (gameObject == null)
+        if (gameObject.IsNull())
             return null;
         return gameObject.transform;
     }
@@ -180,7 +182,7 @@ public static class GameObjectHelper
     /// </summary>
     public static Transform? GetTransform(this Component? component)
     {
-        if (component == null)
+        if (component.IsNull())
             return null;
         return component.transform;
     }
@@ -191,7 +193,7 @@ public static class GameObjectHelper
     /// </summary>
     public static GameObject? SafeGetGameObject(this Component? component)
     {
-        if (component == null)
+        if (component.IsNull())
             return null;
         return component.gameObject;
     }
@@ -202,7 +204,7 @@ public static class GameObjectHelper
     /// </summary>
     public static Transform? SafeGetTransform(this Component? component)
     {
-        if (component == null)
+        if (component.IsNull())
             return null;
         return component.transform;
     }
@@ -213,7 +215,7 @@ public static class GameObjectHelper
     /// </summary>
     public static Texture2D? SafeGetTexture2D(this Sprite? sprite)
     {
-        if (sprite == null)
+        if (sprite.IsNull())
             return null;
         return sprite.texture;
     }
@@ -225,7 +227,7 @@ public static class GameObjectHelper
     /// </summary>
     public static string NiceName(this Object? o)
     {
-        if (o == null)
+        if (o.IsNull())
             return "<null>";
 
         var text = o.name;
@@ -268,7 +270,7 @@ public static class GameObjectHelper
     /// </summary>
     public static IEnumerable<Transform> SafeGetChildren(this Transform? transform)
     {
-        if (transform == null) yield break;
+        if (transform.IsNull()) yield break;
         for (var i = 0; i < transform.childCount; i++) yield return transform.GetChild(i);
     }
 
@@ -279,7 +281,7 @@ public static class GameObjectHelper
     /// </summary>
     public static GameObject? SafeGetGameObjectOf(Collider? collider)
     {
-        if (collider == null)
+        if (collider.IsNull())
             return null;
         if (collider.attachedRigidbody) return collider.attachedRigidbody.gameObject;
 
@@ -345,7 +347,7 @@ public static class GameObjectHelper
     /// type are found.</returns>
     public static T[] SafeGetComponentsInChildren<T>(this Component? c, bool includeInactive) where T : Component
     {
-        if (c == null)
+        if (c.IsNull())
             return [];
         return c.GetComponentsInChildren<T>(includeInactive);
     }
@@ -360,7 +362,7 @@ public static class GameObjectHelper
     /// children.  Returns an empty array if the <paramref name="o"/> is null.</returns>
     public static T[] SafeGetComponentsInChildren<T>(this GameObject? o) where T : Component
     {
-        if (o == null)
+        if (o.IsNull())
             return [];
         return o.GetComponentsInChildren<T>();
     }
@@ -377,7 +379,7 @@ public static class GameObjectHelper
     /// <see langword="null"/> if no such component is found or if <paramref name="o"/> is <see langword="null"/>.</returns>
     public static T? SafeGetComponentInChildren<T>(this GameObject? o, bool includeInactive = false) where T : Component
     {
-        if (o == null)
+        if (o.IsNull())
             return null;
         return o.GetComponentInChildren<T>(includeInactive);
     }
@@ -392,7 +394,7 @@ public static class GameObjectHelper
     /// <returns>The first component of type <typeparamref name="T"/> found, or <see langword="null"/> if none is found.</returns>
     public static T? SafeGetComponentInChildren<T>(this Component? c, bool includeInactive = false) where T : Component
     {
-        if (c == null)
+        if (c.IsNull())
             return null;
         return c.GetComponentInChildren<T>(includeInactive);
     }
@@ -406,7 +408,7 @@ public static class GameObjectHelper
     /// <returns>Requested component or null</returns>
     public static T? SafeGetComponent<T>(this Component? c) where T : Component
     {
-        if (c == null)
+        if (c.IsNull())
             return null;
         return c.GetComponent<T>();
     }
@@ -422,7 +424,7 @@ public static class GameObjectHelper
     /// langword="null"/> if <paramref name="go"/> is <see langword="null"/>.</returns>
     public static T? SafeGetComponent<T>(this GameObject? go) where T : Component
     {
-        if (go == null)
+        if (go.IsNull())
             return null;
         return go.GetComponent<T>();
     }
@@ -435,7 +437,7 @@ public static class GameObjectHelper
     /// <returns>The parent <see cref="Transform"/>, or <see langword="null"/> if <paramref name="t"/> is <see langword="null"/>.</returns>
     public static Transform? SafeGetParent(this Transform? t)
     {
-        if (t == null)
+        if (t.IsNull())
             return null;
         return t.parent;
     }
@@ -452,7 +454,7 @@ public static class GameObjectHelper
     /// </returns>
     public static T? SafeGetVehicle<T>(this Player? player) where T : Vehicle
     {
-        if (player == null)
+        if (player.IsNull())
             return null;
         return player.GetVehicle() as T;
     }
@@ -466,7 +468,7 @@ public static class GameObjectHelper
     /// <param name="value">The active state to set.</param>
     public static void SafeSetActive(this GameObject? gameObject, bool value)
     {
-        if (gameObject == null)
+        if (gameObject.IsNull())
             return;
         gameObject.SetActive(value);
     }
@@ -482,7 +484,7 @@ public static class GameObjectHelper
     /// <param name="action">The action to execute if <paramref name="item"/> is not null.</param>
     public static void SafeDo<T>(this T? item, Action<T> action) where T : Object
     {
-        if (item == null)
+        if (item.IsNull())
             return;
         action(item);
     }
@@ -499,7 +501,7 @@ public static class GameObjectHelper
     public static TValue SafeGet<TObject, TValue>(this TObject? item, Func<TObject, TValue> getter, TValue fallback)
         where TObject : Object
     {
-        if (item == null)
+        if (item.IsNull())
             return fallback;
         return getter(item);
     }
@@ -511,7 +513,7 @@ public static class GameObjectHelper
     /// <returns>The <see cref="PrefabIdentifier"/> component if found; otherwise, <see langword="null"/>.</returns>
     public static PrefabIdentifier? PrefabId(this Component? c)
     {
-        if (c == null)
+        if (c.IsNull())
             return null;
         return c.GetComponent<PrefabIdentifier>();
     }
@@ -523,7 +525,7 @@ public static class GameObjectHelper
     /// <returns>The <see cref="PrefabIdentifier"/> component if found; otherwise, <see langword="null"/>.</returns>
     public static PrefabIdentifier? PrefabId(this GameObject? o)
     {
-        if (o == null)
+        if (o.IsNull())
             return null;
         return o.GetComponent<PrefabIdentifier>();
     }
@@ -532,36 +534,28 @@ public static class GameObjectHelper
     /// <summary>
     /// Extension method to write reflected data associated with a prefab identifier to a JSON file of the current save game slot.
     /// </summary>
-    public static bool WriteReflected<T>(this PrefabIdentifier? prefabID, string prefix, T data, LogWriter writer)
-    {
-        return SaveFiles.Current.WritePrefabReflected(prefabID, prefix, data, writer);
-    }
+    public static bool WriteReflected<T>(this PrefabIdentifier? prefabID, string prefix, T data, LogWriter writer) =>
+        SaveFiles.Current.WritePrefabReflected(prefabID, prefix, data, writer);
 
     /// <summary>
     /// Extension method to write data associated with a prefab identifier to a JSON file of the current save game slot.
     /// </summary>
-    public static bool WriteData(this PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer)
-    {
-        return SaveFiles.Current.WritePrefabData(prefabID, prefix, data, writer);
-    }
+    public static bool WriteData(this PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer) =>
+        SaveFiles.Current.WritePrefabData(prefabID, prefix, data, writer);
 
     /// <summary>
     /// Extension method to read data via reflection from a JSON file in the current save game slot.
     /// </summary>
     public static bool ReadReflected<T>(this PrefabIdentifier? prefabID, string prefix, [NotNullWhen(true)] out T? data,
         LogWriter writer)
-        where T : class
-    {
-        return SaveFiles.Current.ReadPrefabReflected(prefabID, prefix, out data, writer);
-    }
+        where T : class =>
+        SaveFiles.Current.ReadPrefabReflected(prefabID, prefix, out data, writer);
 
     /// <summary>
     /// Extension method to read data associated with a prefab identifier from a JSON file in the current save game slot.
     /// </summary>
-    public static bool ReadData(this PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer)
-    {
-        return SaveFiles.Current.ReadPrefabData(prefabID, prefix, data, writer);
-    }
+    public static bool ReadData(this PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer) =>
+        SaveFiles.Current.ReadPrefabData(prefabID, prefix, data, writer);
 
     /// <summary>
     /// Resolves the vehicle name of a vehicle.
@@ -570,8 +564,9 @@ public static class GameObjectHelper
     /// <returns>Vehicle name or "&lt;null&gt;"</returns>
     public static string GetVehicleName(this Vehicle? vehicle)
     {
-        if (vehicle == null) return "<null>";
-        return vehicle.subName != null ? vehicle.subName.GetName() : vehicle.vehicleName;
+        if (vehicle.IsNull())
+            return "<null>";
+        return vehicle.subName.IsNotNull() ? vehicle.subName.GetName() : vehicle.vehicleName;
     }
 
     /// <summary>
@@ -582,7 +577,7 @@ public static class GameObjectHelper
     /// <param name="material">The material to set</param>
     public static void ReplaceMaterial(this Renderer? renderer, int index, Material material)
     {
-        if (renderer == null)
+        if (renderer.IsNull())
         {
             Logger.Error("Renderer is null, cannot set material.");
             return;
@@ -614,4 +609,20 @@ public static class GameObjectHelper
             Object.Destroy(tran.gameObject);
         }
     }
+
+    /// <summary>
+    /// Safely checks if a Unity object is null
+    /// </summary>
+    /// <param name="o">Object to check</param>
+    /// <returns>True if null, false if not null</returns>
+    public static bool IsNull([NotNullWhen(false)] this Object? o)
+        => !o;
+
+    /// <summary>
+    /// Safely checks if a Unity object is not null
+    /// </summary>
+    /// <param name="o">Object to check</param>
+    /// <returns>True if not null, false if null</returns>
+    public static bool IsNotNull([NotNullWhen(true)] this Object? o)
+        => (bool)o;
 }

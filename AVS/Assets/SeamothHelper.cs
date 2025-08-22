@@ -23,7 +23,7 @@ public static class SeamothHelper
 
     private static PrefabLoader GetOrCreateLoader()
     {
-        if (loader == null)
+        if (loader is null)
         {
             LogWriter.Default.Write($"Loading Seamoth prefab...");
             loader = PrefabLoader.Request(TechType.Seamoth, LogWriter.Default, true);
@@ -36,10 +36,7 @@ public static class SeamothHelper
     /// Returns an awaitable object that completes once the Seamoth has successfully been loaded or
     /// loading has failed persistently for one minute
     /// </summary>
-    public static object WaitUntilLoaded()
-    {
-        return GetOrCreateLoader().WaitUntilLoaded();
-    }
+    public static object WaitUntilLoaded() => GetOrCreateLoader().WaitUntilLoaded();
 
 
     /// <summary>
