@@ -37,6 +37,7 @@ internal class AvsBatteryIdentifier : MonoBehaviour, IProtoTreeEventListener
     private IEnumerator LoadBattery()
     {
         yield return new WaitUntil(() => mv != null);
+        var log = mv.Log.Tag(nameof(LoadBattery));
         var thisBattery = mv.ReadBatteryData(SaveFileName);
         if (thisBattery == default)
             SaveFiles.Current.ReadPrefabReflected(mv.PrefabID, SaveFileName, out thisBattery, mv.Log);
@@ -45,6 +46,12 @@ internal class AvsBatteryIdentifier : MonoBehaviour, IProtoTreeEventListener
         yield return
             AvsCraftData.InstantiateFromPrefabAsync(mv.Log.Tag(nameof(LoadBattery)), thisBattery.Item1, result, false);
         var thisItem = result.Get();
+        if (thisItem == null)
+        {
+            log.Error($"AvsCraftData.InstantiateFromPrefabAsync returned null for {thisBattery.Item1}");
+            yield break;
+        }
+
         try
         {
             thisItem.GetComponent<Battery>().charge = thisBattery.Item2;
@@ -55,7 +62,7 @@ internal class AvsBatteryIdentifier : MonoBehaviour, IProtoTreeEventListener
         }
         catch (Exception e)
         {
-            Logger.LogException(
+            log.Error(
                 $"Failed to load battery : {thisBattery.Item1} for {mv.name} on GameObject {gameObject.name} : {mv.subName.hullName.text}",
                 e);
         }
