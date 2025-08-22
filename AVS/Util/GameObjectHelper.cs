@@ -139,6 +139,7 @@ public static class GameObjectHelper
     /// </remarks>
     /// <param name="gameObject">Game object being manipulated</param>
     /// <param name="toEnabled">New enabled state</param>
+    /// <param name="log">Out logging facilities</param>
     public static void LoggedSetActive(this GameObject gameObject, bool toEnabled, LogWriter log)
     {
         if (!gameObject)

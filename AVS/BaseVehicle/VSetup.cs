@@ -108,8 +108,14 @@ public abstract partial class AvsVehicle
             // give us an AI battery please
             var result = new TaskResult<GameObject>();
             yield return AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(OnCraftEnd)), TechType.PowerCell,
-                result, false);
+                result);
             var newAIBattery = result.Get();
+            if (newAIBattery == null)
+            {
+                Log.Error($"Could not find PowerCell prefab for {techType}");
+                yield break;
+            }
+
             newAIBattery.GetComponent<Battery>().charge = 200;
             newAIBattery.transform.SetParent(Com.StorageRootObject.transform);
             if (aiEnergyInterface != null)
@@ -122,14 +128,21 @@ public abstract partial class AvsVehicle
             if (!energyInterface.hasCharge)
             {
                 yield return AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(OnCraftEnd)), TechType.PowerCell,
-                    result, false);
+                    result);
                 var newPowerCell = result.Get();
-                newPowerCell.GetComponent<Battery>().charge = 200;
-                newPowerCell.transform.SetParent(Com.StorageRootObject.transform);
-                var mixin = Com.Batteries[0].Root.gameObject.GetComponent<EnergyMixin>();
-                mixin.battery = newPowerCell.GetComponent<Battery>();
-                mixin.batterySlot.AddItem(newPowerCell.GetComponent<Pickupable>());
-                newPowerCell.SetActive(false);
+                if (newPowerCell != null)
+                {
+                    newPowerCell.GetComponent<Battery>().charge = 200;
+                    newPowerCell.transform.SetParent(Com.StorageRootObject.transform);
+                    var mixin = Com.Batteries[0].Root.gameObject.GetComponent<EnergyMixin>();
+                    mixin.battery = newPowerCell.GetComponent<Battery>();
+                    mixin.batterySlot.AddItem(newPowerCell.GetComponent<Pickupable>());
+                    newPowerCell.SetActive(false);
+                }
+                else
+                {
+                    Log.Error($"Could not find PowerCell prefab for {techType}");
+                }
             }
         }
 
