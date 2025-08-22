@@ -84,7 +84,7 @@ internal class ModuleBuilder : MonoBehaviour
             if (!AllVehicleSlots.ContainsKey(pair.Key))
             {
                 AllVehicleSlots.Add(pair.Key, pair.Value);
-                Log.Write($"Loaded slot {pair.Key}: {pair.Value.NiceName()}");
+                //Log.Write($"Loaded slot {pair.Key}: {pair.Value.NiceName()}");
                 added++;
             }
 
@@ -188,9 +188,7 @@ internal class ModuleBuilder : MonoBehaviour
         log.Write($"Waiting for PDA to be initialized...");
         yield return new WaitUntil(() => Main.isEquipmentInit);
         foreach (var pair in AllVehicleSlots)
-        {
-            log.Write($"Processing slot {pair.Key}: {pair.Value.NiceName()}");
-
+            //log.Write($"Processing slot {pair.Key}: {pair.Value.NiceName()}");
             switch (pair.Key)
             {
                 case "ExosuitModule1":
@@ -313,7 +311,6 @@ internal class ModuleBuilder : MonoBehaviour
                 default:
                     break;
             }
-        }
 
         BuildVehicleModuleSlots(log, MaxNumModules);
         Main.areModulesReady = true;
