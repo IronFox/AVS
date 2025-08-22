@@ -64,11 +64,13 @@ internal static class SaveLoadUtils
 
     internal static IEnumerator ReloadBatteryPower(GameObject thisItem, float thisCharge, TechType innerBatteryTT)
     {
+        var log = LogWriter.Default.Tag(nameof(ReloadBatteryPower));
+        var existing = thisItem.GetComponentInChildren<Battery>();
         // check whether we *are* a battery xor we *have* a battery
-        if (thisItem.GetComponent<Battery>() != null)
+        if (existing != null)
         {
             // we are a battery
-            thisItem.GetComponentInChildren<Battery>().charge = thisCharge;
+            existing.charge = thisCharge;
         }
         else
         {
@@ -77,26 +79,25 @@ internal static class SaveLoadUtils
             var batSlot = thisItem.transform.Find("BatterySlot");
             if (batSlot == null)
             {
-                Logger.Error($"Failed to find battery slot for tool in innate storage: {thisItem.name}");
+                log.Error($"Failed to find battery slot for tool in innate storage: {thisItem.name}");
                 yield break;
             }
 
             var result = new TaskResult<GameObject>();
             yield return AvsCraftData.InstantiateFromPrefabAsync(LogWriter.Default.Tag(nameof(ReloadBatteryPower)),
-                innerBatteryTT, result, false);
+                innerBatteryTT, result);
             var newBat = result.Get();
-            if (newBat.GetComponent<Battery>() != null)
+            var bat = newBat.SafeGetComponent<Battery>();
+            if (bat != null)
             {
-                newBat.GetComponent<Battery>().charge = thisCharge;
+                bat.charge = thisCharge;
+                newBat.transform.SetParent(batSlot);
+                newBat.SetActive(false);
             }
             else
             {
-                Logger.Error($"Failed to find battery component for tool in innate storage: {thisItem.name}");
-                yield break;
+                log.Error($"Failed to find battery component for tool in innate storage: {thisItem.name}");
             }
-
-            newBat.transform.SetParent(batSlot);
-            newBat.SetActive(false);
         }
     }
 }

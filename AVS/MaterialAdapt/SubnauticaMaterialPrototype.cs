@@ -365,7 +365,7 @@ public class SubnauticaMaterialPrototype
     /// if the respective material is not found</returns>
     public static bool GlassMaterialFromAquarium(out Material? result, MaterialLog logConfig = default)
     {
-        var sm = PrefabLoader.Request(TechType.Aquarium, logConfig.Writer);
+        var sm = PrefabLoader.Request(TechType.Aquarium, logConfig.Writer, true);
         if (sm.Prefab == null)
         {
             result = null;

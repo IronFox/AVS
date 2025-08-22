@@ -8,7 +8,7 @@ namespace AVS.Assets;
 /// <summary>
 /// Global helper for loading the Seamoth prefab.
 /// </summary>
-public class SeamothHelper
+public static class SeamothHelper
 {
     private static PrefabLoader? loader;
 
@@ -18,30 +18,36 @@ public class SeamothHelper
     /// </summary>
     public static void Request()
     {
+        GetOrCreateLoader();
+    }
+
+    private static PrefabLoader GetOrCreateLoader()
+    {
         if (loader == null)
         {
             LogWriter.Default.Write($"Loading Seamoth prefab...");
-            loader = PrefabLoader.Request(TechType.Seamoth, LogWriter.Default);
-            ;
+            loader = PrefabLoader.Request(TechType.Seamoth, LogWriter.Default, true);
         }
-    }
 
-    public static object WaitUntilLoaded()
-    {
-        if (loader == null)
-            Request();
-        return loader!.WaitUntilLoaded();
+        return loader;
     }
 
     /// <summary>
+    /// Returns an awaitable object that completes once the Seamoth has successfully been loaded or
+    /// loading has failed persistently for one minute
+    /// </summary>
+    public static object WaitUntilLoaded()
+    {
+        return GetOrCreateLoader().WaitUntilLoaded();
+    }
+
+
+    /// <summary>
     /// Tries to access the Seamoth prefab.
-    /// If <see cref="Coroutine" /> was never accessed, it will throw an <see cref="InvalidOperationException"/>.
-    /// Ohterwise it may return null if the prefab is not yet loaded.
+    /// May return null if the prefab is not yet loaded.
     /// </summary>
     public static GameObject? Seamoth
-        => (loader ??
-            throw new InvalidOperationException($"Trying to access Seamoth before it has even started loading"))
-            .Prefab;
+        => GetOrCreateLoader().Prefab;
 
     /// <summary>
     /// Access to the Seamoth prefab, guaranteed to be non-null.

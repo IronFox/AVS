@@ -231,15 +231,38 @@ public abstract partial class AvsVehicle
     {
         if (loadedBatteryData == null)
             PrefabID.ReadReflected(BatterySaveName, out loadedBatteryData, Log);
+        var log = Log.Tag(nameof(ReadBatteryData));
         if (loadedBatteryData == null)
+        {
+            log.Error(
+                $"Failed to load battery data for {path}: Unable to deserialize loaded battery data from save file");
             return default;
+        }
+
         if (loadedBatteryData.TryGetValue(path, out var rs))
         {
-            if (!string.IsNullOrEmpty(rs.Item3) && TechTypeExtensions.FromString(rs.Item3, out var tt, true))
-                return Tuple.Create(tt, rs.Item2);
+            if (!string.IsNullOrEmpty(rs.Item3))
+            {
+                if (TechTypeExtensions.FromString(rs.Item3, out var tt, true))
+                {
+                    log.Debug($"Decoded tech type {tt} from '{rs.Item3}' for '{path}'");
+
+                    return Tuple.Create(tt, rs.Item2);
+                }
+                else
+                {
+                    log.Error($"Failed to decode given tech type string '{rs.Item3}' for '{path}'");
+                    return default;
+                }
+            }
+
+            log.Warn(
+                $"Save data did not provide a parsable tech type string for {rs.Item1} for '{path}'. Using numeric value instead.");
             return Tuple.Create(rs.Item1, rs.Item2);
         }
 
+        log.Error(
+            $"Vehicle is requesting battery path '{path}' but this path is not present in the loaded battery data.");
         return default;
     }
 

@@ -45,6 +45,7 @@ internal class AvsInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListen
     {
         yield return new WaitUntil(() => mv != null);
 
+        var log = mv.Log.Tag(nameof(LoadInnateStorage));
         var thisStorage = mv.ReadInnateStorage(SaveFileName);
         if (thisStorage == null)
             if (!mv.PrefabID.ReadReflected(SaveFileName, out thisStorage, mv.Log))
@@ -54,8 +55,13 @@ internal class AvsInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListen
         foreach (var item in thisStorage)
         {
             yield return AvsCraftData.InstantiateFromPrefabAsync(mv.Log.Tag(nameof(AvsInnateStorageIdentifier)),
-                item.Item1, result, false);
+                item.Item1, result);
             var thisItem = result.Get();
+            if (thisItem == null)
+            {
+                log.Error($"AvsCraftData.InstantiateFromPrefabAsync returned null for {item.Item1}");
+                continue;
+            }
 
             thisItem.transform.SetParent(mv.Com.StorageRootObject.transform);
             try
@@ -63,7 +69,7 @@ internal class AvsInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListen
                 var ic = GetComponent<InnateStorageContainer>();
                 if (ic == null)
                 {
-                    Logger.Error(
+                    log.Error(
                         $"InnateStorageContainer not found on {gameObject.name} for {mv.name} : {mv.subName.hullName.text}");
                     continue;
                 }
@@ -72,7 +78,7 @@ internal class AvsInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListen
             }
             catch (Exception e)
             {
-                Logger.LogException(
+                log.Error(
                     $"Failed to add storage item {thisItem.name} to innate storage on GameObject {gameObject.name} for {mv.name} : {mv.subName.hullName.text}",
                     e);
             }
@@ -87,7 +93,7 @@ internal class AvsInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListen
                 }
                 catch (Exception e)
                 {
-                    Logger.LogException(
+                    log.Error(
                         $"Failed to reload battery power for innate storage item {thisItem.name} in innate storage on GameObject {gameObject.name} for {mv.name} : {mv.subName.hullName.text}",
                         e);
                 }

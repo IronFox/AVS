@@ -44,7 +44,7 @@ internal class AvsBatteryIdentifier : MonoBehaviour, IProtoTreeEventListener
         if (thisBattery == default || thisBattery.Item1 == TechType.None) yield break;
         var result = new TaskResult<GameObject>();
         yield return
-            AvsCraftData.InstantiateFromPrefabAsync(mv.Log.Tag(nameof(LoadBattery)), thisBattery.Item1, result, false);
+            AvsCraftData.InstantiateFromPrefabAsync(mv.Log.Tag(nameof(LoadBattery)), thisBattery.Item1, result);
         var thisItem = result.Get();
         if (thisItem == null)
         {

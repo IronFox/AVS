@@ -107,7 +107,7 @@ public abstract class MainPatcher : BaseUnityPlugin
         //NautilusConfig = Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions<AVSNautilusConfig>();
         PrePatch();
         PrefabLoader.SignalCanLoad();
-        PrefabLoader.Request(TechType.Exosuit, LogWriter.Default);
+        PrefabLoader.Request(TechType.Exosuit, LogWriter.Default, true);
         SeamothHelper.Request();
         //PrefabLoader.Request(TechType.Aquarium);
     }
