@@ -109,8 +109,13 @@ internal static class AvsModularStorageSaveLoad
                     continue;
                 }
 
-                yield return AvsCraftData.InstantiateFromPrefabAsync(log, tt, result, false);
+                yield return AvsCraftData.InstantiateFromPrefabAsync(log, tt, result);
                 var thisItem = result.Get();
+                if (thisItem == null)
+                {
+                    log.Error($"AvsCraftData.InstantiateFromPrefabAsync returned null for {tt}");
+                    continue;
+                }
 
                 thisItem.transform.SetParent(mv.Com.StorageRootObject.transform);
                 try
