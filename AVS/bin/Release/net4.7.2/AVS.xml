@@ -836,27 +836,44 @@
             Helper class for loading prefabs asynchronously.
             </summary>
         </member>
+        <member name="P:AVS.Assets.PrefabLoader.CustomOnly">
+            <summary>
+            True if this loader was instantiated with the customOnly flag
+            </summary>
+        </member>
         <member name="P:AVS.Assets.PrefabLoader.Techtype">
             <summary>
             The tech type of the prefab being loaded.
             </summary>
         </member>
-        <member name="P:AVS.Assets.PrefabLoader.Coroutine">
+        <member name="P:AVS.Assets.PrefabLoader.SingleAwaitableCoroutine">
             <summary>
             The coroutine that is responsible for loading the prefab.
             </summary>
         </member>
-        <member name="M:AVS.Assets.PrefabLoader.Request(TechType)">
+        <member name="M:AVS.Assets.PrefabLoader.WaitUntilLoaded">
+            <summary>
+            Returns an awaitable object that completes ones the local prefab has successfully loaded
+            </summary>
+        </member>
+        <member name="M:AVS.Assets.PrefabLoader.Request(TechType,AVS.Log.LogWriter,System.Boolean)">
             <summary>
             Requests a <see cref="T:AVS.Assets.PrefabLoader"/> instance for the specified <see cref="T:TechType"/>.
             </summary>
             <param name="techtype">The <see cref="T:TechType"/> for which to request a <see cref="T:AVS.Assets.PrefabLoader"/>.</param>
+            <param name="customOnly">If true, Subnautica will not load a custom instance if the tech type is not found</param>
+            <param name="outLog">Out log writer. Effective only if this is the first request</param>
             <returns>A <see cref="T:AVS.Assets.PrefabLoader"/> instance associated with the specified <paramref name="techtype"/>. If an
             instance already exists, it returns the existing instance; otherwise, it creates a new one and starts the loading process.</returns>
         </member>
-        <member name="P:AVS.Assets.PrefabLoader.Instance">
+        <member name="P:AVS.Assets.PrefabLoader.Prefab">
             <summary>
-            Queries the latest known instance of the requested resource.
+            Queries the latest known prefab instance of the requested resource.
+            </summary>
+        </member>
+        <member name="M:AVS.Assets.PrefabLoader.Instantiate">
+            <summary>
+            Instantiates a new game object from the prefab instance
             </summary>
         </member>
         <member name="P:AVS.Assets.PrefabLoader.CanLoad">
@@ -869,7 +886,7 @@
             Global helper for loading the Seamoth prefab.
             </summary>
         </member>
-        <member name="P:AVS.Assets.SeamothHelper.Coroutine">
+        <member name="M:AVS.Assets.SeamothHelper.Request">
             <summary>
             Access to the coroutine that loads the Seamoth prefab.
             Allocated on first access, so it is safe to call this property multiple times.
@@ -878,7 +895,7 @@
         <member name="P:AVS.Assets.SeamothHelper.Seamoth">
             <summary>
             Tries to access the Seamoth prefab.
-            If <see cref="P:AVS.Assets.SeamothHelper.Coroutine" /> was never accessed, it will throw an <see cref="T:System.InvalidOperationException"/>.
+            If <see cref="T:UnityEngine.Coroutine" /> was never accessed, it will throw an <see cref="T:System.InvalidOperationException"/>.
             Ohterwise it may return null if the prefab is not yet loaded.
             </summary>
         </member>
