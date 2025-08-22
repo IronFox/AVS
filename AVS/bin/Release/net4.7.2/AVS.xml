@@ -836,49 +836,72 @@
             Helper class for loading prefabs asynchronously.
             </summary>
         </member>
-        <member name="P:AVS.Assets.PrefabLoader.CustomOnly">
+        <member name="P:AVS.Assets.PrefabLoader.IfNotFoundLeaveEmpty">
             <summary>
-            True if this loader was instantiated with the customOnly flag
+            Specifies what to do if the tech type could not be found. <ul>
+            <li>If true, <see cref="P:AVS.Assets.PrefabLoader.Prefab"/> will be left empty (null). Loading the prefab will terminate after 1 minute of
+            repeated retrying and set <see cref="P:AVS.Assets.PrefabLoader.TerminalFailure"/> to true.
+            <see cref="M:AVS.Assets.PrefabLoader.WaitUntilLoaded"/> will return.</li>
+            <li>If false, <see cref="P:AVS.Assets.PrefabLoader.Prefab"/> will be filled with a new generic loot item that has the requested tech type attached
+            but no other components. Loading will retry forever until an instance is returned.</li>
+            </ul>
             </summary>
         </member>
-        <member name="P:AVS.Assets.PrefabLoader.Techtype">
+        <member name="M:AVS.Assets.PrefabLoader.SignalCanLoad">
+            <summary>
+            Signals that prefabs can now be loaded. Until this call is done, no prefabs can be loaded
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.PrefabLoader.TechType">
             <summary>
             The tech type of the prefab being loaded.
             </summary>
         </member>
-        <member name="P:AVS.Assets.PrefabLoader.SingleAwaitableCoroutine">
-            <summary>
-            The coroutine that is responsible for loading the prefab.
-            </summary>
-        </member>
         <member name="M:AVS.Assets.PrefabLoader.WaitUntilLoaded">
             <summary>
-            Returns an awaitable object that completes ones the local prefab has successfully loaded
+            Returns an awaitable object that completes once the local prefab has successfully loaded or
+            <see cref="P:AVS.Assets.PrefabLoader.IfNotFoundLeaveEmpty"/> is true and loading has failed persistently for one minute
             </summary>
         </member>
         <member name="M:AVS.Assets.PrefabLoader.Request(TechType,AVS.Log.LogWriter,System.Boolean)">
             <summary>
-            Requests a <see cref="T:AVS.Assets.PrefabLoader"/> instance for the specified <see cref="T:TechType"/>.
+            Requests a <see cref="T:AVS.Assets.PrefabLoader"/> instance for the specified <see cref="P:AVS.Assets.PrefabLoader.TechType"/>.
             </summary>
-            <param name="techtype">The <see cref="T:TechType"/> for which to request a <see cref="T:AVS.Assets.PrefabLoader"/>.</param>
-            <param name="customOnly">If true, Subnautica will not load a custom instance if the tech type is not found</param>
+            <remarks>
+            Concurrent requests will receive the same instance. Loading will be done only once
+            </remarks>
+            <param name="techType">The <see cref="P:AVS.Assets.PrefabLoader.TechType"/> for which to request a <see cref="T:AVS.Assets.PrefabLoader"/>.</param>
+            <param name="ifNotFoundLeaveEmpty">Specifies what to do if the tech type could not be found.
+            If true, <see cref="P:AVS.Assets.PrefabLoader.Prefab"/> will be left empty (null).
+            If false, <see cref="P:AVS.Assets.PrefabLoader.Prefab"/> is filled with a new generic loot item that has the requested tech type attached
+            but no other components.</param>
             <param name="outLog">Out log writer. Effective only if this is the first request</param>
-            <returns>A <see cref="T:AVS.Assets.PrefabLoader"/> instance associated with the specified <paramref name="techtype"/>. If an
+            <returns>A <see cref="T:AVS.Assets.PrefabLoader"/> instance associated with the specified <paramref name="techType"/>. If an
             instance already exists, it returns the existing instance; otherwise, it creates a new one and starts the loading process.</returns>
         </member>
         <member name="P:AVS.Assets.PrefabLoader.Prefab">
             <summary>
-            Queries the latest known prefab instance of the requested resource.
+            Loaded prefab or null if loading is not yet done, or <see cref="P:AVS.Assets.PrefabLoader.IfNotFoundLeaveEmpty"/> is true
+            and loading has persistently failed.
             </summary>
+            <remarks>
+            Singleton instance set to never expire. Do <b>NOT</b> destroy this object
+            </remarks>
         </member>
         <member name="M:AVS.Assets.PrefabLoader.Instantiate">
             <summary>
             Instantiates a new game object from the prefab instance
+            Null if the prefab has not (yet) been loaded
             </summary>
         </member>
         <member name="P:AVS.Assets.PrefabLoader.CanLoad">
             <summary>
             True if the prefab can be loaded, false if any ongoing loading operation should be delayed.
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.PrefabLoader.TerminalFailure">
+            <summary>
+            Loading of the requested prefab has persistently failed and <see cref="P:AVS.Assets.PrefabLoader.IfNotFoundLeaveEmpty"/> is true.
             </summary>
         </member>
         <member name="T:AVS.Assets.SeamothHelper">
@@ -892,11 +915,16 @@
             Allocated on first access, so it is safe to call this property multiple times.
             </summary>
         </member>
+        <member name="M:AVS.Assets.SeamothHelper.WaitUntilLoaded">
+            <summary>
+            Returns an awaitable object that completes once the Seamoth has successfully been loaded or
+            loading has failed persistently for one minute
+            </summary>
+        </member>
         <member name="P:AVS.Assets.SeamothHelper.Seamoth">
             <summary>
             Tries to access the Seamoth prefab.
-            If <see cref="T:UnityEngine.Coroutine" /> was never accessed, it will throw an <see cref="T:System.InvalidOperationException"/>.
-            Ohterwise it may return null if the prefab is not yet loaded.
+            May return null if the prefab is not yet loaded.
             </summary>
         </member>
         <member name="P:AVS.Assets.SeamothHelper.RequireSeamoth">
@@ -8594,6 +8622,19 @@
             based on the current configuration.</remarks>
             <returns>An enumerator that can be used to iterate through the coroutine execution process.</returns>
         </member>
+        <member name="M:AVS.Util.AvsCraftData.InstantiateFromPrefabAsync(AVS.Log.LogWriter,TechType,TaskResult{UnityEngine.GameObject},System.Boolean)">
+            <summary>
+            Asynchronously instantiates a GameObject from a prefab based on a specified TechType.
+            </summary>
+            <param name="log">The log writer instance for handling logging activities.</param>
+            <param name="techType">The type of technology for which the prefab is being instantiated.</param>
+            <param name="result">The result wrapper that will hold the instantiated GameObject.</param>
+            <param name="ifNotFoundLeaveEmpty">Specifies what to do if the tech type could not be found.
+            If true, <paramref name="result"/> will be left empty (null).
+            If false, <paramref name="result"/> is filled with a new generic loot item that has the requested tech type attached
+            but no other components.</param>
+            <returns>An enumerator allowing for asynchronous operation during the prefab instantiation process.</returns>
+        </member>
         <member name="T:AVS.Util.Character">
             <summary>
             Helper for the player character.
@@ -8818,6 +8859,7 @@
             </remarks>
             <param name="gameObject">Game object being manipulated</param>
             <param name="toEnabled">New enabled state</param>
+            <param name="log">Out logging facilities</param>
         </member>
         <member name="M:AVS.Util.GameObjectHelper.SafeGetTransform(UnityEngine.GameObject)">
             <summary>
