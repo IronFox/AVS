@@ -73,18 +73,12 @@
             List of all registered vehicle types.
             </summary>
         </member>
-        <member name="M:AVS.AvsVehicleManager.RegisterPingType(PingType)">
-            <summary>
-            Registers a new <see cref="T:PingType"/> for a vehicle, ensuring it is unique and above the minimum value.
-            </summary>
-            <param name="pt">The initial ping type to register.</param>
-            <returns>The registered, unique ping type.</returns>
-        </member>
-        <member name="M:AVS.AvsVehicleManager.RegisterPingType(PingType,System.Boolean)">
+        <member name="M:AVS.AvsVehicleManager.RegisterPingType(AVS.BaseVehicle.AvsVehicle,PingType,System.Boolean)">
             <summary>
             Registers a new <see cref="T:PingType"/> for a vehicle, ensuring it is unique and above the minimum value.
             Optionally logs the registration process.
             </summary>
+            <param name="v">The vehicle for which the ping type is being registered</param>
             <param name="pt">The initial ping type to register.</param>
             <param name="verbose">If true, logs detailed registration steps.</param>
             <returns>The registered, unique ping type.</returns>
@@ -508,13 +502,14 @@
             Warning log message.
             </summary>
         </member>
-        <member name="M:AVS.VehicleRegistrar.VerboseLog(AVS.VehicleRegistrar.LogType,System.Boolean,System.String)">
+        <member name="M:AVS.VehicleRegistrar.VerboseLog(AVS.Log.LogWriter,AVS.VehicleRegistrar.LogType,System.Boolean,System.String)">
             <summary>
             Logs a message if verbose logging is enabled, using the specified log type.
             </summary>
-            <param name="type">The type of log message.</param>
+            <param name="type">The type of the log message.</param>
             <param name="verbose">Whether verbose logging is enabled.</param>
             <param name="message">The message to log.</param>
+            <param name="log">Out logger</param>
         </member>
         <member name="M:AVS.VehicleRegistrar.RegisterVehicleLater(AVS.BaseVehicle.AvsVehicle,System.Boolean)">
             <summary>
@@ -2626,10 +2621,22 @@
             <inheritdoc />
         </member>
         <member name="M:AVS.Configuration.Recipe.op_Equality(AVS.Configuration.Recipe,AVS.Configuration.Recipe)">
-            <inheritdoc />
+            <summary>
+            Determines whether two <see cref="T:AVS.Configuration.Recipe"/> instances are equal.
+            </summary>
+            <param name="left">The first <see cref="T:AVS.Configuration.Recipe"/> instance to compare.</param>
+            <param name="right">The second <see cref="T:AVS.Configuration.Recipe"/> instance to compare.</param>
+            <returns><c>true</c> if the specified <see cref="T:AVS.Configuration.Recipe"/> instances are equal; otherwise, <c>false</c>.</returns>
         </member>
         <member name="M:AVS.Configuration.Recipe.op_Inequality(AVS.Configuration.Recipe,AVS.Configuration.Recipe)">
-            <inheritdoc />
+            <summary>
+            Determines whether two <see cref="T:AVS.Configuration.Recipe"/> instances are not equal.
+            </summary>
+            <param name="left">The first <see cref="T:AVS.Configuration.Recipe"/> instance to compare.</param>
+            <param name="right">The second <see cref="T:AVS.Configuration.Recipe"/> instance to compare.</param>
+            <returns>
+            <c>true</c> if the two <see cref="T:AVS.Configuration.Recipe"/> instances are not equal; otherwise, <c>false</c>.
+            </returns>
         </member>
         <member name="M:AVS.Configuration.Recipe.ToString">
             <inheritdoc />
@@ -3155,10 +3162,20 @@
             <inheritdoc/>
         </member>
         <member name="M:AVS.Crafting.CraftPath.op_Equality(AVS.Crafting.CraftPath,AVS.Crafting.CraftPath)">
-            <inheritdoc/>
+            <summary>
+            Determines if two <see cref="T:AVS.Crafting.CraftPath"/> instances are equal.
+            </summary>
+            <param name="left">The first <see cref="T:AVS.Crafting.CraftPath"/> to compare.</param>
+            <param name="right">The second <see cref="T:AVS.Crafting.CraftPath"/> to compare.</param>
+            <returns>True if the two <see cref="T:AVS.Crafting.CraftPath"/> instances are equal; otherwise, false.</returns>
         </member>
         <member name="M:AVS.Crafting.CraftPath.op_Inequality(AVS.Crafting.CraftPath,AVS.Crafting.CraftPath)">
-            <inheritdoc/>
+            <summary>
+            Determines whether two <see cref="T:AVS.Crafting.CraftPath"/> instances are not equal.
+            </summary>
+            <param name="left">The first <see cref="T:AVS.Crafting.CraftPath"/> to compare.</param>
+            <param name="right">The second <see cref="T:AVS.Crafting.CraftPath"/> to compare.</param>
+            <returns>True if the two <see cref="T:AVS.Crafting.CraftPath"/> instances are not equal; otherwise, false.</returns>
         </member>
         <member name="M:AVS.Crafting.CraftPath.Equals(System.Object)">
             <inheritdoc/>
@@ -8622,7 +8639,17 @@
             based on the current configuration.</remarks>
             <returns>An enumerator that can be used to iterate through the coroutine execution process.</returns>
         </member>
-        <member name="M:AVS.Util.AvsCraftData.InstantiateFromPrefabAsync(AVS.Log.LogWriter,TechType,TaskResult{UnityEngine.GameObject},System.Boolean)">
+        <member name="T:AVS.Util.InstanceContainer">
+            <summary>
+            Container for the result of <see cref="M:AVS.Util.AvsCraftData.InstantiateFromPrefabAsync(AVS.Log.LogWriter,TechType,AVS.Util.InstanceContainer,System.Boolean)"/>
+            </summary>
+        </member>
+        <member name="P:AVS.Util.InstanceContainer.Instance">
+            <summary>
+            Created instance or null if none could be created
+            </summary>
+        </member>
+        <member name="M:AVS.Util.AvsCraftData.InstantiateFromPrefabAsync(AVS.Log.LogWriter,TechType,AVS.Util.InstanceContainer,System.Boolean)">
             <summary>
             Asynchronously instantiates a GameObject from a prefab based on a specified TechType.
             </summary>
@@ -9095,6 +9122,20 @@
             </remarks>
             <param name="transform">Parent transform to destroy all children of</param>
         </member>
+        <member name="M:AVS.Util.GameObjectHelper.IsNull(UnityEngine.Object)">
+            <summary>
+            Safely checks if a Unity object is null
+            </summary>
+            <param name="o">Object to check</param>
+            <returns>True if null, false if not null</returns>
+        </member>
+        <member name="M:AVS.Util.GameObjectHelper.IsNotNull(UnityEngine.Object)">
+            <summary>
+            Safely checks if a Unity object is not null
+            </summary>
+            <param name="o">Object to check</param>
+            <returns>True if not null, false if null</returns>
+        </member>
         <member name="T:AVS.Util.HierarchyAnalyzer">
             <summary>
             Game object/component hierarchy analyzer
@@ -9200,6 +9241,16 @@
             <param name="selector">A function to extract a float value from each element for comparison.</param>
             <returns>The element in the source sequence with the least value as determined by the selector function.</returns>
             <exception cref="T:System.InvalidOperationException">Thrown if the source sequence contains no elements.</exception>
+        </member>
+        <member name="T:AVS.Util.INullTestableType">
+            <summary>
+            Declares a type to be testable for null via "is null";
+            </summary>
+        </member>
+        <member name="T:AVS.Util.OtherTypeExtensions">
+            <summary>
+            Various null testing extensions for non-Unity types
+            </summary>
         </member>
         <member name="T:AVS.Util.Shaders">
             <summary>
@@ -9657,17 +9708,22 @@
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="intensity"/> is negative, <paramref name="range"/> is less than or equal to zero,
             or <paramref name="angle"/> is outside the range 0 to 179 degrees.</exception>
         </member>
-        <member name="T:AVS.PositiveValueThresholdTracker">
+        <member name="T:AVS.VehicleComponents.PositiveValueThresholdTracker">
             <summary>
             Tracker for statuses where high values indicate worse status.
             </summary>
         </member>
-        <member name="T:AVS.NegativeValueThresholdTracker">
+        <member name="M:AVS.VehicleComponents.PositiveValueThresholdTracker.#ctor(AVS.Interfaces.AutopilotStatus[])">
+            <summary>
+            Tracker for statuses where high values indicate worse status.
+            </summary>
+        </member>
+        <member name="T:AVS.VehicleComponents.NegativeValueThresholdTracker">
             <summary>
             Tracker for statuses where lower values indicate worse status.
             </summary>
         </member>
-        <member name="T:AVS.Autopilot">
+        <member name="T:AVS.VehicleComponents.Autopilot">
             <summary>
             The Autopilot class manages various autonomous functionalities for a vehicle,
             including monitoring and responding to power status, health, lights status,
@@ -9675,7 +9731,7 @@
             multiple listener interfaces for vehicle, player, power, lights, and scuttle events.
             </summary>
         </member>
-        <member name="P:AVS.Autopilot.HealthStatus">
+        <member name="P:AVS.VehicleComponents.Autopilot.HealthStatus">
             <summary>
             Gets the current health status of the autopilot system.
             </summary>
@@ -9689,7 +9745,7 @@
             of the autopilot system.
             </value>
         </member>
-        <member name="P:AVS.Autopilot.PowerStatus">
+        <member name="P:AVS.VehicleComponents.Autopilot.PowerStatus">
             <summary>
             Gets the current power status of the autopilot system.
             </summary>
@@ -9702,7 +9758,7 @@
             A value of type <see cref="T:AVS.Interfaces.AutopilotStatus"/> representing the current power status of the autopilot system.
             </value>
         </member>
-        <member name="P:AVS.Autopilot.DepthStatus">
+        <member name="P:AVS.VehicleComponents.Autopilot.DepthStatus">
             <summary>
             Gets the current depth status of the vehicle in relation to predefined safety thresholds.
             </summary>
@@ -9717,7 +9773,7 @@
             or <see cref="F:AVS.Interfaces.AutopilotStatus.DepthBeyondCrush"/>.
             </value>
         </member>
-        <member name="P:AVS.Autopilot.DangerStatus">
+        <member name="P:AVS.VehicleComponents.Autopilot.DangerStatus">
             <summary>
             Gets the current danger status as determined by the proximity of nearby threats or hazardous environmental conditions.
             </summary>
@@ -9730,13 +9786,13 @@
             A value of type <see cref="T:AVS.Interfaces.AutopilotStatus"/> representing the current danger status of the autopilot system.
             </value>
         </member>
-        <member name="M:AVS.Autopilot.Awake">
+        <member name="M:AVS.VehicleComponents.Autopilot.Awake">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.Autopilot.Start">
+        <member name="M:AVS.VehicleComponents.Autopilot.Start">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.Autopilot.Update">
+        <member name="M:AVS.VehicleComponents.Autopilot.Update">
             <inheritdoc/>
         </member>
         <member name="T:AVS.VehicleComponents.ForeverBattery">
