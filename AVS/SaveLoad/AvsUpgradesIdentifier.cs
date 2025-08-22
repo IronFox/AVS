@@ -5,6 +5,7 @@ using AVS.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS.SaveLoad;
@@ -60,6 +61,7 @@ internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
             yield break;
         }
 
+        var log = mv.Log.Tag(nameof(LoadUpgrades));
         foreach (var upgrade in theseUpgrades)
         {
             var result = new TaskResult<GameObject>();
@@ -70,84 +72,98 @@ internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
                 techType = TechTypeExtensions.DecodeKey(upgrade.Value.Substring(5));
                 if (techType == TechType.None)
                 {
-                    mv.Log.Tag("Modules")
-                        .Error(
-                            $"Failed to parse TechType from '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}");
+                    log.Error(
+                        $"Failed to parse TechType from '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}");
                     continue;
                 }
 
-                mv.Log.Tag("Modules")
-                    .Write(
-                        $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {techType.AsString()} / {techType.EncodeKey()}");
+                log.Write(
+                    $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {techType.AsString()} / {techType.EncodeKey()}");
             }
             else if (upgrade.Value.StartsWith($"TS:"))
             {
                 if (!TechTypeExtensions.FromString(upgrade.Value.Substring(3), out techType, true))
                 {
-                    mv.Log.Tag("Modules")
-                        .Error(
-                            $"Failed to parse TechType from '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}");
+                    log.Error(
+                        $"Failed to parse TechType from '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}");
                     continue;
                 }
 
-                mv.Log.Tag("Modules")
-                    .Write(
-                        $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {techType.AsString()} / {techType.EncodeKey()}");
+                log.Write(
+                    $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {techType.AsString()} / {techType.EncodeKey()}");
             }
             else if (upgrade.Value.StartsWith($"Class:"))
             {
                 if (!UpgradeRegistrar.UpgradeClassIdMap.TryGetValue(upgrade.Value.Substring(6), out var upgradePrefab))
                 {
-                    mv.Log.Tag("Modules")
-                        .Error(
-                            $"Failed to find upgrade prefab for '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}");
+                    log.Error(
+                        $"Failed to find upgrade prefab for '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}");
                     continue;
                 }
 
-                mv.Log.Tag("Modules")
-                    .Write(
-                        $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {upgradePrefab.DisplayName} / {upgradePrefab.TechTypes.ForAvsVehicle}");
+                log.Write(
+                    $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {upgradePrefab.DisplayName} / {upgradePrefab.TechTypes.ForAvsVehicle}");
                 techType = upgradePrefab.TechTypes.ForAvsVehicle;
             }
             else
             {
                 if (UpgradeRegistrar.UpgradeClassIdMap.TryGetValue(upgrade.Value, out var upgradePrefab))
                 {
-                    mv.Log.Tag("Modules")
-                        .Write(
-                            $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {upgradePrefab.DisplayName} / {upgradePrefab.TechTypes.ForAvsVehicle}");
+                    log.Write(
+                        $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {upgradePrefab.DisplayName} / {upgradePrefab.TechTypes.ForAvsVehicle}");
                     techType = upgradePrefab.TechTypes.ForAvsVehicle;
                 }
                 else
                 {
-                    mv.Log.Tag("Modules")
-                        .Error(
-                            $"Invalid upgrade format '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}");
+                    log.Error(
+                        $"Invalid upgrade format '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}");
+                    continue;
+                }
+            }
+
+            var slotName = upgrade.Key;
+
+            if (!ModuleBuilder.IsModuleName(slotName))
+            {
+                var moduleAt = slotName.IndexOf("Module", StringComparison.Ordinal);
+                if (moduleAt >= 0 && int.TryParse(slotName.Substring(moduleAt + 6), out var moduleIndex))
+                {
+                    slotName = mv.slotIDs[moduleIndex];
+                    log.Warn($"Slot name '{upgrade.Key}' is invalid, remapped to slot name '{slotName}'");
+                }
+                else
+                {
+                    log.Error($"Slot name '{upgrade.Key}' is invalid, unable to remap. Skipping upgrade");
+                    ;
                     continue;
                 }
             }
 
 
-            mv.Log.Tag($"Modules")
-                .Write(
-                    $"Loading upgrade '{techType}' in slot {upgrade.Key} for {mv.NiceName()} : {techType.AsString()} / {techType.EncodeKey()}");
+            log.Write(
+                $"Loading upgrade {techType} in slot '{slotName}' for {mv.NiceName()} : {techType.AsString()} / {techType.EncodeKey()}");
             yield return AvsCraftData.InstantiateFromPrefabAsync(mv.Log.Tag(nameof(AvsUpgradesIdentifier)), techType,
-                result, false);
+                result);
             try
             {
                 var thisUpgrade = result.Get();
+                if (!thisUpgrade)
+                {
+                    log.Error(
+                        $"Failed to load upgrade {techType} in slot '{slotName}' for {mv.NiceName()} : {mv.VehicleName}");
+                    continue;
+                }
+
                 thisUpgrade.transform.SetParent(mv.modulesRoot.transform);
                 thisUpgrade.SetActive(false);
                 var thisItem = new InventoryItem(thisUpgrade.GetComponent<Pickupable>());
-                mv.modules.AddItem(upgrade.Key, thisItem, true);
+                mv.modules.AddItem(slotName, thisItem, true);
             }
             catch (Exception e)
             {
-                mv.Log.Tag("Modules")
-                    .Error(
-                        $"Failed to load upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}",
-                        e);
-                continue;
+                log.Error(
+                    $"Failed to load upgrade {upgrade.Value} in slot '{upgrade.Key}' for {mv.NiceName()} : {mv.VehicleName}",
+                    e);
             }
         }
 
