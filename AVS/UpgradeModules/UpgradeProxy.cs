@@ -46,7 +46,7 @@ public class UpgradeProxy : MonoBehaviour
         var log = LogWriter.Default.Tag(nameof(UpgradeProxy));
 
         log.Write("Waiting for Seamoth to be ready...");
-        yield return SeamothHelper.Coroutine;
+        yield return SeamothHelper.WaitUntilLoaded();
 
         log.Write("Seamoth is ready, setting up upgrade slots...");
 

@@ -241,10 +241,10 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
             spentMaterialIndex.Add(reagent.InputTechType, reagent.OutputTechType);
         }
 
-        gameObject.LoggedSetActive(false);
+        gameObject.LoggedSetActive(false, Log);
         var eMix = gameObject.AddComponent<EnergyMixin>();
         eMix.batterySlot = new StorageSlot(transform);
-        gameObject.LoggedSetActive(true);
+        gameObject.LoggedSetActive(true, Log);
         var batteryObj = new GameObject("ReactorBattery");
         batteryObj.transform.SetParent(transform);
         reactorBattery = batteryObj.AddComponent<ReactorBattery>();
@@ -326,7 +326,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
 
         yield return AvsCraftData.InstantiateFromPrefabAsync(Log, toAdd, result, false);
         var spentMaterial = result.Get();
-        spentMaterial.LoggedSetActive(false);
+        spentMaterial.LoggedSetActive(false, Log);
         try
         {
             container.AddItem(spentMaterial.GetComponent<Pickupable>());

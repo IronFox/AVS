@@ -84,7 +84,7 @@ internal class ModuleBuilder : MonoBehaviour
             if (!AllVehicleSlots.ContainsKey(pair.Key))
             {
                 AllVehicleSlots.Add(pair.Key, pair.Value);
-                Log.Write($"Loaded slot {pair.Key}: {pair.Value.NiceName()}");
+                //Log.Write($"Loaded slot {pair.Key}: {pair.Value.NiceName()}");
                 added++;
             }
 
@@ -188,9 +188,7 @@ internal class ModuleBuilder : MonoBehaviour
         log.Write($"Waiting for PDA to be initialized...");
         yield return new WaitUntil(() => Main.isEquipmentInit);
         foreach (var pair in AllVehicleSlots)
-        {
-            log.Write($"Processing slot {pair.Key}: {pair.Value.NiceName()}");
-
+            //log.Write($"Processing slot {pair.Key}: {pair.Value.NiceName()}");
             switch (pair.Key)
             {
                 case "ExosuitModule1":
@@ -313,7 +311,6 @@ internal class ModuleBuilder : MonoBehaviour
                 default:
                     break;
             }
-        }
 
         BuildVehicleModuleSlots(log, MaxNumModules);
         Main.areModulesReady = true;
@@ -434,6 +431,7 @@ internal class ModuleBuilder : MonoBehaviour
 
     internal void SignalOpened(VehicleUpgradeConsoleInput instance, AvsVehicle mv)
     {
+        var log = mv.Log.Tag(nameof(ModuleBuilder)).Prefixed(nameof(SignalOpened));
         Sprite? setSprite;
         if (mv.Config.ModuleBackgroundImage == null)
             setSprite = MainPatcher.Instance.Images.ModulesBackground;
@@ -447,36 +445,36 @@ internal class ModuleBuilder : MonoBehaviour
             if (img != null)
             {
                 img.sprite = setSprite;
-                mv.Log.Tag("ModuleBuilder").Write($"Background set to {setSprite.NiceName()}");
+                log.Write($"Background set to {setSprite.NiceName()}");
             }
             else
             {
-                mv.Log.Tag("ModuleBuilder").Error("Failed to set background sprite, Image component not found.");
+                log.Error("Failed to set background sprite, Image component not found.");
             }
 
             foreach (var child in equipment.transform.SafeGetChildren())
                 if (!child.name.Contains(ModulePrefix) && child.gameObject.activeInHierarchy)
                 {
-                    Log.Write($"Disabling module {child.NiceName()}");
+                    log.Write($"Disabling module {child.NiceName()}");
                     child.gameObject.SetActive(false);
                 }
         }
         else
         {
-            mv.Log.Tag("ModuleBuilder").Error("Equipment is null, cannot set background sprite.");
+            log.Error("Equipment is null, cannot set background sprite.");
         }
 
 
-        if (!haveFixed) mv.StartCoroutine(FixModules(instance, mv));
+        if (!haveFixed) mv.StartCoroutine(FixModules(instance, mv, log));
     }
 
-    private IEnumerator FixModules(VehicleUpgradeConsoleInput instance, AvsVehicle mv)
+    private IEnumerator FixModules(VehicleUpgradeConsoleInput instance, AvsVehicle mv, LogWriter log)
     {
         var pda = Player.main.GetPDA();
-        mv.Log.Tag("ModuleBuilder").Write("Fixing modules...");
+        log.Write("Fixing modules in one second...");
         yield return new WaitForSeconds(1);
         {
-            mv.Log.Tag("ModuleBuilder").Write("PDA still open. Closing, reopening");
+            log.Write("PDA still open. Closing, reopening");
             pda.Close();
             pda.isInUse = false;
             //yield return new WaitForEndOfFrame();

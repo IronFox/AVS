@@ -139,11 +139,11 @@ public static class GameObjectHelper
     /// </remarks>
     /// <param name="gameObject">Game object being manipulated</param>
     /// <param name="toEnabled">New enabled state</param>
-    public static void LoggedSetActive(this GameObject gameObject, bool toEnabled)
+    public static void LoggedSetActive(this GameObject gameObject, bool toEnabled, LogWriter log)
     {
         if (!gameObject)
         {
-            Logger.Error("GameObject is null, cannot set active state.");
+            log.Error("GameObject is null, cannot set active state.");
             return;
         }
 
@@ -151,15 +151,14 @@ public static class GameObjectHelper
         {
             if (gameObject.activeSelf != toEnabled)
             {
-                Logger.DebugLog($"Setting active state of {gameObject.NiceName()} to {toEnabled}");
+                log.Debug($"Setting active state of {gameObject.NiceName()} to {toEnabled}");
                 gameObject.SetActive(toEnabled);
-                Logger.DebugLog($"Set active state of {gameObject.NiceName()} to {toEnabled}");
+                log.Debug($"Set active state of {gameObject.NiceName()} to {toEnabled}");
             }
         }
         catch (Exception e)
         {
-            Logger.Error($"Failed to set active state of {gameObject.NiceName()}: {e.Message}");
-            Logger.LogException("Exception details:", e);
+            log.Error($"Failed to set active state of {gameObject.NiceName()}: {e.Message}", e);
         }
     }
 

@@ -68,7 +68,7 @@ internal static class AvsVehicleBuilder
     {
         mv.OnAwakeOrPrefabricate();
         VehicleRegistrar.VerboseLog(VehicleRegistrar.LogType.Log, verbose, "Prefabricating the " + mv.gameObject.name);
-        yield return SeamothHelper.Coroutine;
+        yield return SeamothHelper.WaitUntilLoaded();
         var seamoth = SeamothHelper.RequireSeamoth;
         if (!Instrument(mv, pingType, seamoth))
         {
