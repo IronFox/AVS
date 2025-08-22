@@ -2,99 +2,96 @@
 using System.Collections;
 using UnityEngine;
 
-namespace AVS.StorageComponents
-{
-    internal class BatteryProxy : MonoBehaviour
-    {
-        public Transform? proxy = null;
-        public EnergyMixin? mixin = null;
+namespace AVS.StorageComponents;
 
-        public void Awake()
+internal class BatteryProxy : MonoBehaviour
+{
+    public Transform? proxy = null;
+    public EnergyMixin? mixin = null;
+
+    public void Awake()
+    {
+        MainPatcher.Instance.StartCoroutine(GetSeamothBitsASAP());
+    }
+
+    public IEnumerator GetSeamothBitsASAP()
+    {
+        if (proxy is null || mixin is null)
+            // reload reload condition ?
+            // no...
+            yield break;
+        //var seamothLoader = PrefabLoader.Request(TechType.Seamoth);
+        var seamothEnergyMixin = SeamothHelper.RequireSeamoth.GetComponent<EnergyMixin>();
+        mixin.batteryModels = new EnergyMixin.BatteryModels[seamothEnergyMixin.batteryModels.Length];
+        for (var i = 0; i < seamothEnergyMixin.batteryModels.Length; i++)
         {
-            MainPatcher.Instance.StartCoroutine(GetSeamothBitsASAP());
+            var but = seamothEnergyMixin.batteryModels[i];
+            var mod = new EnergyMixin.BatteryModels
+            {
+                model = Instantiate(but.model),
+                techType = but.techType
+            };
+            mixin.batteryModels[i] = mod;
         }
-        public IEnumerator GetSeamothBitsASAP()
+
+        //LogWriter.Default.Write($"Destroying {proxy.childCount} child(ren) in {proxy.NiceName()}");
+        foreach (Transform tran in proxy)
         {
-            if (proxy is null || mixin is null)
-            {
-                // reload reload condition ?
-                // no...
-                yield break;
-            }
-            //var seamothLoader = PrefabLoader.Request(TechType.Seamoth);
-            yield return SeamothHelper.Coroutine;
-            var seamothEnergyMixin = SeamothHelper.RequireSeamoth.GetComponent<EnergyMixin>();
-            mixin.batteryModels = new EnergyMixin.BatteryModels[seamothEnergyMixin.batteryModels.Length];
-            for (int i = 0; i < seamothEnergyMixin.batteryModels.Length; i++)
-            {
-                var but = seamothEnergyMixin.batteryModels[i];
-                EnergyMixin.BatteryModels mod = new EnergyMixin.BatteryModels
-                {
-                    model = GameObject.Instantiate(but.model),
-                    techType = but.techType
-                };
-                mixin.batteryModels[i] = mod;
-            }
-            //LogWriter.Default.Write($"Destroying {proxy.childCount} child(ren) in {proxy.NiceName()}");
-            foreach (Transform tran in proxy)
-            {
-                tran.parent = null; // detach from parent
-                GameObject.Destroy(tran.gameObject);
-            }
-            for (int i = 0; i < mixin.batteryModels.Length; i++)
-            {
-                mixin.batteryModels[i].model.SetActive(true);
-                //LogWriter.Default.Write($"Instantiating battery model #{i}/{mixin.batteryModels.Length} {mixin.batteryModels[i].techType.AsString()} in {proxy.NiceName()}");
-                var model = GameObject.Instantiate(mixin.batteryModels[i].model, proxy);
-                model.transform.localPosition = Vector3.zero;
-                model.transform.localRotation = Quaternion.identity;
-                model.transform.localScale = Vector3.one;
-                if (!model.name.ToLower().Contains("ion"))
-                {
-                    model.transform.localScale *= 100f;
-                }
-                mixin.batteryModels[i].model = model;
-            }
-            //foreach (Transform tran in proxy)
-            //    LogWriter.Default.Write($"BatteryProxy child: {tran.NiceName()} in {proxy.NiceName()}");
+            tran.parent = null; // detach from parent
+            Destroy(tran.gameObject);
         }
-        /*
-        public void Awake()
+
+        for (var i = 0; i < mixin.batteryModels.Length; i++)
         {
-            if (battery is null)
-            {
-                if (proxy.childCount == 0)
-                {
-                    battery = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-                    battery.transform.SetParent(proxy);
-                    battery.transform.localScale = Vector3.one * 0.001f;
-                    battery.transform.localPosition = Vector3.zero;
-                    battery.transform.localRotation = Quaternion.identity;
-                }
-                else
-                {
-                    battery = proxy.GetChild(0).gameObject;
-                }
-            }
+            mixin.batteryModels[i].model.SetActive(true);
+            //LogWriter.Default.Write($"Instantiating battery model #{i}/{mixin.batteryModels.Length} {mixin.batteryModels[i].techType.AsString()} in {proxy.NiceName()}");
+            var model = Instantiate(mixin.batteryModels[i].model, proxy);
+            model.transform.localPosition = Vector3.zero;
+            model.transform.localRotation = Quaternion.identity;
+            model.transform.localScale = Vector3.one;
+            if (!model.name.ToLower().Contains("ion"))
+                model.transform.localScale *= 100f;
+            mixin.batteryModels[i].model = model;
         }
-        public void Register()
+        //foreach (Transform tran in proxy)
+        //    LogWriter.Default.Write($"BatteryProxy child: {tran.NiceName()} in {proxy.NiceName()}");
+    }
+    /*
+    public void Awake()
+    {
+        if (battery is null)
         {
-            for (int i = 0; i < mixin.batteryModels.Length; i++)
+            if (proxy.childCount == 0)
             {
-                var model = GameObject.Instantiate(mixin.batteryModels[i].model, proxy);
+                battery = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                battery.transform.SetParent(proxy);
+                battery.transform.localScale = Vector3.one * 0.001f;
                 battery.transform.localPosition = Vector3.zero;
                 battery.transform.localRotation = Quaternion.identity;
-                mixin.batteryModels[i].model = model;
+            }
+            else
+            {
+                battery = proxy.GetChild(0).gameObject;
             }
         }
-        public void ShowBattery()
-        {
-            battery.SetActive(true);
-        }
-        public void HideBattery()
-        {
-            battery.SetActive(false);
-        }
-        */
     }
+    public void Register()
+    {
+        for (int i = 0; i < mixin.batteryModels.Length; i++)
+        {
+            var model = GameObject.Instantiate(mixin.batteryModels[i].model, proxy);
+            battery.transform.localPosition = Vector3.zero;
+            battery.transform.localRotation = Quaternion.identity;
+            mixin.batteryModels[i].model = model;
+        }
+    }
+    public void ShowBattery()
+    {
+        battery.SetActive(true);
+    }
+    public void HideBattery()
+    {
+        battery.SetActive(false);
+    }
+    */
 }
