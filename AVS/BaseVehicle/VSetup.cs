@@ -313,9 +313,9 @@ public abstract partial class AvsVehicle
             LogWriter.Default.Debug($"Setting up {Com.WaterParks.Count} Mobile Water Parks");
             foreach (var vp in Com.WaterParks)
             {
-                vp.Container.SetActive(false);
+                vp.Root.SetActive(false);
 
-                var cont = vp.Container.EnsureComponent<MobileWaterPark>();
+                var cont = vp.ContentContainer.gameObject.EnsureComponent<MobileWaterPark>();
                 LogWriter.Default.Debug("Setting up Mobile Water Park " + cont.NiceName() + $" '{cont.DisplayName}'");
                 var name = vp.DisplayName ?? Text.Untranslated("Innate Vehicle Storage " + iter);
                 cont.Setup(this, name, vp, iter + 1);
@@ -323,19 +323,19 @@ public abstract partial class AvsVehicle
                     .GetComponent<SeamothStorageInput>().closeSound;
                 var storageOpenSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1")
                     .GetComponent<SeamothStorageInput>().openSound;
-                var inp = vp.Container.EnsureComponent<WaterParkStorageInput>();
+                var inp = vp.Root.EnsureComponent<WaterParkStorageInput>();
                 inp.displayName = name;
                 inp.mv = this;
                 inp.slotID = iter;
                 iter++;
-                inp.model = vp.Container;
-                if (vp.Container.GetComponentInChildren<Collider>() is null)
-                    inp.collider = vp.Container.EnsureComponent<BoxCollider>();
+                inp.model = vp.Root;
+                if (vp.Root.GetComponentInChildren<Collider>() is null)
+                    inp.collider = vp.Root.EnsureComponent<BoxCollider>();
                 inp.openSound = storageOpenSound;
                 inp.closeSound = storageCloseSound;
-                vp.Container.SetActive(true);
+                vp.Root.SetActive(true);
 
-                SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vp.Container.transform);
+                SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vp.Root.transform);
             }
 
             return true;

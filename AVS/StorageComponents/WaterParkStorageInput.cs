@@ -19,7 +19,7 @@ internal class WaterParkStorageInput : StorageInput
             return;
         }
 
-        var mwp = mv.Com.WaterParks[slotID].Container.GetComponent<MobileWaterPark>();
+        var mwp = mv.Com.WaterParks[slotID].ContentContainer.GetComponent<MobileWaterPark>();
         if (mwp.IsNull())
         {
             mv.Log.Error("MobileWaterPark is null in WaterParkStorageInput.OpenFromExternal");
@@ -49,7 +49,7 @@ internal class WaterParkStorageInput : StorageInput
             return;
         }
 
-        var mwp = mv.Com.WaterParks[slotID].Container.GetComponent<MobileWaterPark>();
+        var mwp = mv.Com.WaterParks[slotID].ContentContainer.GetComponent<MobileWaterPark>();
         if (mwp.IsNull())
         {
             mv.Log.Error("MobileWaterPark is null in WaterParkStorageInput.OpenFromExternal");

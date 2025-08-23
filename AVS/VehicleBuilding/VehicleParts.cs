@@ -224,9 +224,14 @@ public readonly struct VehicleHatchDefinition
 public readonly struct MobileWaterPark
 {
     /// <summary>
-    /// The game object that represents the fish tank.
+    /// The game object that will contain the fish.
     /// </summary>
-    public GameObject Container { get; }
+    public Transform ContentContainer { get; }
+
+    /// <summary>
+    /// The park root object
+    /// </summary>
+    public GameObject Root { get; }
 
     /// <summary>
     /// The grid height of the total tank storage capacity.
@@ -257,18 +262,20 @@ public readonly struct MobileWaterPark
     /// Initializes a new instance of the <see cref="MobileWaterPark"/> class with the specified container, display name,
     /// dimensions, and behavior settings.
     /// </summary>
-    /// <param name="container">The <see cref="GameObject"/> that represents the physical container for the fish tank.  This parameter
+    /// <param name="root">The <see cref="GameObject"/> that represents the entire water park. This parameter
     /// cannot be <see langword="null"/>.</param>
+    /// <param name="contentContainer">The transform to contain the actual fish. Cannot be null</param>
     /// <param name="displayName">An optional display name for the fish tank, which may be translated.  If <see langword="null"/>, no display
     /// name is assigned.</param>
     /// <param name="height">The height of the fish tank, measured in arbitrary units.  Must be greater than zero. Defaults to 4.</param>
     /// <param name="width">The width of the fish tank, measured in arbitrary units.  Must be greater than zero. Defaults to 4.</param>
     /// <param name="allowReproduction">A value indicating whether fish in the tank are allowed to reproduce.  Defaults to <see langword="true"/>.</param>
     /// <param name="hatchEggs">A value indicating whether fish eggs in the tank are allowed to hatch.  Defaults to <see langword="true"/>.</param>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="container"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="root"/> or <paramref name="contentContainer"/> are <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="height"/> or <paramref name="width"/> is less than or equal to zero.</exception>
     public MobileWaterPark(
-        GameObject container,
+        GameObject root,
+        Transform contentContainer,
         MaybeTranslate? displayName,
         int height = 4,
         int width = 4,
@@ -276,13 +283,17 @@ public readonly struct MobileWaterPark
         bool hatchEggs = true
     )
     {
-        if (container.IsNull())
-            throw new ArgumentNullException(nameof(container), "Fish tank container cannot be null.");
+        if (root.IsNull())
+            throw new ArgumentNullException(nameof(root), "Mobile water park root cannot be null.");
+        if (contentContainer.IsNull())
+            throw new ArgumentNullException(nameof(contentContainer),
+                "Mobile water park contentContainer cannot be null.");
         if (height <= 0)
             throw new ArgumentOutOfRangeException(nameof(height), "Fish tank height must be greater than zero.");
         if (width <= 0)
             throw new ArgumentOutOfRangeException(nameof(width), "Fish tank width must be greater than zero.");
-        Container = container;
+        Root = root;
+        ContentContainer = contentContainer;
         DisplayName = displayName;
         Height = height;
         Width = width;
