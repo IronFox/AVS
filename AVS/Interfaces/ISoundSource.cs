@@ -6,7 +6,7 @@ namespace AVS.Interfaces;
 /// <summary>
 /// Instantiated sound source
 /// </summary>
-public interface ISoundSource : IDisposable
+public interface ISoundSource : IDisposable, INullTestableType
 {
     /// <summary>
     /// The sound source has been destroyed. It is no longer playing
