@@ -39,7 +39,8 @@ public static class SpriteHelper
         if (!File.Exists(fullPath))
             throw new FileNotFoundException(
                 $"Image file not found at {fullPath}. Ensure the file exists in the Sprites directory.");
-        LogWriter.Default.Debug($"Loading image from {fullPath}");
+        //LogWriter.Default.Debug($"Loading image from {fullPath}");
+
         var sprite = GetSpriteGenericRaw(fullPath);
         if (sprite.IsNull())
             throw new IOException($"Sprite {fullPath} could not be loaded.");
@@ -47,7 +48,7 @@ public static class SpriteHelper
         if (sprite.texture.IsNull())
             throw new IOException($"Sprite {fullPath} has no texture.");
         sprite.texture.name = sprite.name;
-        LogWriter.Default.Debug($"Done loading image {sprite.texture.name}");
+        //LogWriter.Default.Debug($"Done loading image {sprite.texture.name}");
         return new Image(sprite);
     }
 

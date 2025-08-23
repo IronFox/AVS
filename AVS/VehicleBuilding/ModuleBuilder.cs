@@ -120,7 +120,7 @@ internal class ModuleBuilder : MonoBehaviour
                 }
 
                 var slot = mod.GetComponent<uGUI_EquipmentSlot>();
-                Log.Write($"Mapping slot {slotName}: {slot.NiceName()}");
+                //Log.Write($"Mapping slot {slotName}: {slot.NiceName()}");
 
                 AllVehicleSlots.Add(slotName, slot);
             }
@@ -143,7 +143,7 @@ internal class ModuleBuilder : MonoBehaviour
                     continue;
                 }
 
-                Log.Write($"Mapping slot {slotName}: {slot.NiceName()}");
+                //Log.Write($"Mapping slot {slotName}: {slot.NiceName()}");
                 AllVehicleSlots[slotName] = slot;
             }
         }
@@ -349,7 +349,7 @@ internal class ModuleBuilder : MonoBehaviour
 
     public void LinkModule(LogWriter log, ref GameObject thisModule)
     {
-        log.Write(nameof(LinkModule) + $" ({thisModule.NiceName()}) called.");
+        //log.Write(nameof(LinkModule) + $" ({thisModule.NiceName()}) called.");
         // add background
         var backgroundTop = thisModule.transform.Find("Background").SafeGetGameObject();
         if (backgroundTop.IsNull() || genericModuleObject.IsNull())
@@ -370,7 +370,7 @@ internal class ModuleBuilder : MonoBehaviour
 
     public void DistributeModule(LogWriter log, ref GameObject thisModule, int position)
     {
-        log.Write(nameof(DistributeModule) + $" ({thisModule.NiceName()}, {position}) called.");
+        //log.Write(nameof(DistributeModule) + $" ({thisModule.NiceName()}, {position}) called.");
         var row_size = 4;
         var arrayX = position % row_size;
         var arrayY = position / row_size;

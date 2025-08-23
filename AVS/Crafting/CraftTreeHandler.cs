@@ -35,8 +35,7 @@ internal static class CraftTreeHandler
         var folder = folderFactory();
         var parentPath = parent?.GetPath() ?? CraftPath.Empty;
 
-        LogWriter.Default.Write(
-            $"CraftTreeHandler: Adding crafting tab {name} with display name {folder.DisplayName} in path {parentPath}");
+        //LogWriter.Default.Write($"CraftTreeHandler: Adding crafting tab {name} with display name {folder.DisplayName} in path {parentPath}");
         Nautilus.Handlers.CraftTreeHandler.AddTabNode(AvsFabricator.TreeType, name, folder.DisplayName, folder.Icon,
             parentPath.Segments);
 

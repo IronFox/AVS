@@ -154,9 +154,11 @@ public static class GameObjectHelper
         {
             if (gameObject.activeSelf != toEnabled)
             {
-                log.Debug($"Setting active state of {gameObject.NiceName()} to {toEnabled}");
+                //log.Debug($"Setting active state of {gameObject.NiceName()} to {toEnabled}");
                 gameObject.SetActive(toEnabled);
-                log.Debug($"Set active state of {gameObject.NiceName()} to {toEnabled}");
+                if (gameObject.activeSelf != toEnabled)
+                    log.Warn($"Failed to set state of {gameObject.NiceName()} to {toEnabled}");
+                //log.Debug($"Set active state of {gameObject.NiceName()} to {toEnabled}");
             }
         }
         catch (Exception e)

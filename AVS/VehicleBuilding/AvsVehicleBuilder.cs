@@ -403,7 +403,7 @@ internal static class AvsVehicleBuilder
             if (thisCE.name == "crushDamageSound")
             {
                 ce.asset = thisCE.asset;
-                LogWriter.Default.Write("Found crush damage sound for " + mv.name);
+                //LogWriter.Default.Write("Found crush damage sound for " + mv.name);
             }
 
         if (ce.asset.IsNull()) LogWriter.Default.Error("Failed to find crush damage sound for " + mv.name);
