@@ -5,6 +5,9 @@ using HarmonyLib;
 using Nautilus.Handlers;
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using AVS.Patches.CompatibilityPatches;
 using AVS.Util;
 using AVS.VehicleBuilding;
 using UnityEngine;
@@ -114,7 +117,16 @@ public abstract class MainPatcher : BaseUnityPlugin
     /// <inheritdoc/>
     public virtual void Start()
     {
-        Patch();
+        try
+        {
+            Patch();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+            throw;
+        }
+
         PostPatch();
         CompatChecker.CheckAll();
         StartCoroutine(AVS.Logger.MakeAlerts());
@@ -162,10 +174,12 @@ public abstract class MainPatcher : BaseUnityPlugin
     /// state changes during loading and unloading of scenes.</remarks>
     public virtual void Patch()
     {
-        LogWriter.Default.Write("Patch started.");
-        LogWriter.Default.Write("Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.SaveData>()");
-        var saveData = SaveDataHandler.RegisterSaveDataCache<SaveLoad.ZeroSaveData>();
+        var log = LogWriter.Default.Tag("Patch");
 
+        log.Write("Starting");
+        log.Write("Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.SaveData>()");
+        var saveData = SaveDataHandler.RegisterSaveDataCache<SaveLoad.ZeroSaveData>();
+        log.Write($"Registering OnStartedSaving");
         // Update the player position before saving it
         saveData.OnStartedSaving += (object sender, Nautilus.Json.JsonFileEventArgs e) =>
         {
@@ -216,52 +230,104 @@ public abstract class MainPatcher : BaseUnityPlugin
         {
         }
 
-        LogWriter.Default.Write("Registering SaveUtils events.");
+        log.Write("Registering SaveUtils events.");
         Nautilus.Utility.SaveUtils.RegisterOnQuitEvent(SetWorldNotLoaded);
         WaitScreenHandler.RegisterLateLoadTask(nameof(SetWorldLoaded), t => SetWorldLoaded());
         //Nautilus.Utility.SaveUtils.RegisterOnFinishLoadingEvent(SetWorldLoaded);
         Nautilus.Utility.SaveUtils.RegisterOneTimeUseOnLoadEvent(OnLoadOnce);
 
-        LogWriter.Default.Write("Patching...");
+        log.Write("Patching...");
         var harmony = new Harmony(PluginId);
-        harmony.PatchAll();
+        var assembly = typeof(MainPatcher).Assembly;
 
-        // Patch SubnauticaMap with appropriate ping sprites, lest it crash.
-        var type = Type.GetType("SubnauticaMap.PingMapIcon, SubnauticaMap", false, false);
-        if (type.IsNotNull())
+        var patches =
+            AccessTools
+                .GetTypesFromAssembly(assembly)
+                .Select(x => (Type: x, Processor: harmony.CreateClassProcessor(x)))
+                .ToList();
+        log.Write($"Identified {patches.Count} types to potentially patch. Patching...");
+        foreach (var patch in patches)
+            //log.Write($"Executing patch {patch.Type}...");
+            try
+            {
+                patch.Processor.Patch();
+            }
+            catch (Exception e)
+            {
+                log.Error($"Failed to patch {patch.Type}.", e);
+            }
+
+        log.Write($"Patching PingMapIcon.Refresh()...");
+        try
         {
-            var pingOriginal = AccessTools.Method(type, "Refresh");
-            var pingPrefix =
-                new HarmonyMethod(AccessTools.Method(typeof(Patches.CompatibilityPatches.MapModPatcher), "Prefix"));
-            harmony.Patch(pingOriginal, pingPrefix);
+            // Patch SubnauticaMap with appropriate ping sprites, lest it crash.
+            var type = Type.GetType("SubnauticaMap.PingMapIcon, SubnauticaMap", false, false);
+            if (type.IsNotNull())
+            {
+                var pingOriginal = AccessTools.Method(type, "Refresh");
+                if (pingOriginal.IsNull())
+                {
+                    log.Warn($"Failed to find method {type.FullName}.Refresh() to patch.");
+                }
+                else
+                {
+                    var pingPrefix =
+                        new HarmonyMethod(AccessTools.Method(
+                            typeof(MapModPatcher),
+                            nameof(MapModPatcher.Prefix)));
+                    harmony.Patch(pingOriginal, pingPrefix);
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            log.Error($"Failed to patch PingMapIcon.Refresh()", e);
         }
 
-        // Patch SlotExtender, lest it break or break us
-        var type2 = Type.GetType("SlotExtender.Patches.uGUI_Equipment_Awake_Patch, SlotExtender", false, false);
-        if (type2.IsNotNull())
+        log.Write($"Patching SlotExtender...");
+        try
         {
-            var awakePreOriginal = AccessTools.Method(type2, "Prefix");
-            var awakePrefix =
-                new HarmonyMethod(AccessTools.Method(typeof(Patches.CompatibilityPatches.SlotExtenderPatcher),
-                    "PrePrefix"));
-            harmony.Patch(awakePreOriginal, awakePrefix);
+            // Patch SlotExtender, lest it break or break us
+            var type2 = Type.GetType("SlotExtender.Patches.uGUI_Equipment_Awake_Patch, SlotExtender", false, false);
+            if (type2.IsNotNull())
+            {
+                var awakePreOriginal = AccessTools.Method(type2, "Prefix");
+                var awakePrefix =
+                    new HarmonyMethod(AccessTools.Method(typeof(SlotExtenderPatcher),
+                        "PrePrefix"));
+                harmony.Patch(awakePreOriginal, awakePrefix);
 
-            var awakePostOriginal = AccessTools.Method(type2, "Postfix");
-            var awakePostfix =
-                new HarmonyMethod(AccessTools.Method(typeof(Patches.CompatibilityPatches.SlotExtenderPatcher),
-                    "PrePostfix"));
-            harmony.Patch(awakePostOriginal, awakePostfix);
+                var awakePostOriginal = AccessTools.Method(type2, "Postfix");
+                var awakePostfix =
+                    new HarmonyMethod(AccessTools.Method(typeof(SlotExtenderPatcher),
+                        "PrePostfix"));
+                harmony.Patch(awakePostOriginal, awakePostfix);
+            }
+        }
+        catch (Exception e)
+        {
+            log.Error($"Failed to patch SlotExtender", e);
         }
 
-        // Patch BetterVehicleStorage to add AvsVehicle compat
-        var type3 = Type.GetType("BetterVehicleStorage.Managers.StorageModuleMgr, BetterVehicleStorage", false, false);
-        if (type3.IsNotNull())
+        log.Write($"Patching BetterVehicleStorage...");
+        try
         {
-            var AllowedToAddOriginal = AccessTools.Method(type3, "AllowedToAdd");
-            var AllowedToAddPrefix =
-                new HarmonyMethod(AccessTools.Method(typeof(Patches.CompatibilityPatches.BetterVehicleStoragePatcher),
-                    "Prefix"));
-            harmony.Patch(AllowedToAddOriginal, AllowedToAddPrefix);
+            // Patch BetterVehicleStorage to add AvsVehicle compat
+            var type3 = Type.GetType("BetterVehicleStorage.Managers.StorageModuleMgr, BetterVehicleStorage", false,
+                false);
+            if (type3.IsNotNull())
+            {
+                var AllowedToAddOriginal = AccessTools.Method(type3, "AllowedToAdd");
+                var AllowedToAddPrefix =
+                    new HarmonyMethod(AccessTools.Method(
+                        typeof(BetterVehicleStoragePatcher),
+                        "Prefix"));
+                harmony.Patch(AllowedToAddOriginal, AllowedToAddPrefix);
+            }
+        }
+        catch (Exception e)
+        {
+            log.Error($"Failed to patch BetterVehicleStorage", e);
         }
         /*
         var type2 = Type.GetType("SlotExtender.Patches.uGUI_Equipment_Awake_Patch, SlotExtender", false, false);
@@ -280,6 +346,7 @@ public abstract class MainPatcher : BaseUnityPlugin
         }
         */
 
+        log.Write("Registering SceneManager events.");
         // do this here because it happens only once
         SceneManager.sceneUnloaded += Admin.GameStateWatcher.SignalSceneUnloaded;
     }
