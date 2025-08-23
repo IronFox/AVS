@@ -3907,6 +3907,12 @@
             </summary>
             <param name="statusChange">Change that was detected</param>
         </member>
+        <member name="T:AVS.Interfaces.INullTestableType">
+            <summary>
+            Declares that a type does <b>NOT</b> inherit from <b><see cref="T:UnityEngine.Object"/></b> and can safely be null-tested
+            by is null / is not null
+            </summary>
+        </member>
         <member name="T:AVS.Interfaces.ISoundSource">
             <summary>
             Instantiated sound source
@@ -9159,6 +9165,16 @@
             <param name="t">Transform to log</param>
             <param name="filename">Filename to write to</param>
         </member>
+        <member name="T:AVS.Util.IsNotNullExtensions">
+            <summary>
+            Various null testing extensions for non-Unity types
+            </summary>
+        </member>
+        <member name="T:AVS.Util.IsNullExtensions">
+            <summary>
+            Various null testing extensions for non-Unity types
+            </summary>
+        </member>
         <member name="T:AVS.Util.ListExt">
             <summary>
             Provides a set of extension methods for operations on collections and lists.
@@ -9241,16 +9257,6 @@
             <param name="selector">A function to extract a float value from each element for comparison.</param>
             <returns>The element in the source sequence with the least value as determined by the selector function.</returns>
             <exception cref="T:System.InvalidOperationException">Thrown if the source sequence contains no elements.</exception>
-        </member>
-        <member name="T:AVS.Util.INullTestableType">
-            <summary>
-            Declares a type to be testable for null via "is null";
-            </summary>
-        </member>
-        <member name="T:AVS.Util.OtherTypeExtensions">
-            <summary>
-            Various null testing extensions for non-Unity types
-            </summary>
         </member>
         <member name="T:AVS.Util.Shaders">
             <summary>
