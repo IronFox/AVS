@@ -246,7 +246,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         gameObject.AddComponent<ChildObjectIdentifier>();
         isInitialized = true;
         mv.Log.Debug(
-            $"MaterialReactor {label} initialized with width {width}, height {height}, and capacity {capacity}.");
+            $"MaterialReactor {label} initialized with width {width}, height {height}, and battery capacity {capacity}.");
     }
 
     /// <inheritdoc/>
