@@ -1,6 +1,7 @@
 ﻿using AVS.Log;
 using AVS.Util;
 using System;
+using AVS.Interfaces;
 using UnityEngine;
 
 namespace AVS.MaterialAdapt;

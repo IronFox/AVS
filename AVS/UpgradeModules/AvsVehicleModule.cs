@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using AVS.Interfaces;
 using UnityEngine;
 
 namespace AVS.UpgradeModules;
