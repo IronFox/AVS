@@ -73,18 +73,12 @@
             List of all registered vehicle types.
             </summary>
         </member>
-        <member name="M:AVS.AvsVehicleManager.RegisterPingType(PingType)">
-            <summary>
-            Registers a new <see cref="T:PingType"/> for a vehicle, ensuring it is unique and above the minimum value.
-            </summary>
-            <param name="pt">The initial ping type to register.</param>
-            <returns>The registered, unique ping type.</returns>
-        </member>
-        <member name="M:AVS.AvsVehicleManager.RegisterPingType(PingType,System.Boolean)">
+        <member name="M:AVS.AvsVehicleManager.RegisterPingType(AVS.BaseVehicle.AvsVehicle,PingType,System.Boolean)">
             <summary>
             Registers a new <see cref="T:PingType"/> for a vehicle, ensuring it is unique and above the minimum value.
             Optionally logs the registration process.
             </summary>
+            <param name="v">The vehicle for which the ping type is being registered</param>
             <param name="pt">The initial ping type to register.</param>
             <param name="verbose">If true, logs detailed registration steps.</param>
             <returns>The registered, unique ping type.</returns>
@@ -508,13 +502,14 @@
             Warning log message.
             </summary>
         </member>
-        <member name="M:AVS.VehicleRegistrar.VerboseLog(AVS.VehicleRegistrar.LogType,System.Boolean,System.String)">
+        <member name="M:AVS.VehicleRegistrar.VerboseLog(AVS.Log.LogWriter,AVS.VehicleRegistrar.LogType,System.Boolean,System.String)">
             <summary>
             Logs a message if verbose logging is enabled, using the specified log type.
             </summary>
-            <param name="type">The type of log message.</param>
+            <param name="type">The type of the log message.</param>
             <param name="verbose">Whether verbose logging is enabled.</param>
             <param name="message">The message to log.</param>
+            <param name="log">Out logger</param>
         </member>
         <member name="M:AVS.VehicleRegistrar.RegisterVehicleLater(AVS.BaseVehicle.AvsVehicle,System.Boolean)">
             <summary>
@@ -836,27 +831,62 @@
             Helper class for loading prefabs asynchronously.
             </summary>
         </member>
-        <member name="P:AVS.Assets.PrefabLoader.Techtype">
+        <member name="P:AVS.Assets.PrefabLoader.IfNotFoundLeaveEmpty">
+            <summary>
+            Specifies what to do if the tech type could not be found. <ul>
+            <li>If true, <see cref="P:AVS.Assets.PrefabLoader.Prefab"/> will be left empty (null). Loading the prefab will terminate after 1 minute of
+            repeated retrying and set <see cref="P:AVS.Assets.PrefabLoader.TerminalFailure"/> to true.
+            <see cref="M:AVS.Assets.PrefabLoader.WaitUntilLoaded"/> will return.</li>
+            <li>If false, <see cref="P:AVS.Assets.PrefabLoader.Prefab"/> will be filled with a new generic loot item that has the requested tech type attached
+            but no other components. Loading will retry forever until an instance is returned.</li>
+            </ul>
+            </summary>
+        </member>
+        <member name="M:AVS.Assets.PrefabLoader.SignalCanLoad">
+            <summary>
+            Signals that prefabs can now be loaded. Until this call is done, no prefabs can be loaded
+            </summary>
+        </member>
+        <member name="P:AVS.Assets.PrefabLoader.TechType">
             <summary>
             The tech type of the prefab being loaded.
             </summary>
         </member>
-        <member name="P:AVS.Assets.PrefabLoader.Coroutine">
+        <member name="M:AVS.Assets.PrefabLoader.WaitUntilLoaded">
             <summary>
-            The coroutine that is responsible for loading the prefab.
+            Returns an awaitable object that completes once the local prefab has successfully loaded or
+            <see cref="P:AVS.Assets.PrefabLoader.IfNotFoundLeaveEmpty"/> is true and loading has failed persistently for one minute
             </summary>
         </member>
-        <member name="M:AVS.Assets.PrefabLoader.Request(TechType)">
+        <member name="M:AVS.Assets.PrefabLoader.Request(TechType,AVS.Log.LogWriter,System.Boolean)">
             <summary>
-            Requests a <see cref="T:AVS.Assets.PrefabLoader"/> instance for the specified <see cref="T:TechType"/>.
+            Requests a <see cref="T:AVS.Assets.PrefabLoader"/> instance for the specified <see cref="P:AVS.Assets.PrefabLoader.TechType"/>.
             </summary>
-            <param name="techtype">The <see cref="T:TechType"/> for which to request a <see cref="T:AVS.Assets.PrefabLoader"/>.</param>
-            <returns>A <see cref="T:AVS.Assets.PrefabLoader"/> instance associated with the specified <paramref name="techtype"/>. If an
+            <remarks>
+            Concurrent requests will receive the same instance. Loading will be done only once
+            </remarks>
+            <param name="techType">The <see cref="P:AVS.Assets.PrefabLoader.TechType"/> for which to request a <see cref="T:AVS.Assets.PrefabLoader"/>.</param>
+            <param name="ifNotFoundLeaveEmpty">Specifies what to do if the tech type could not be found.
+            If true, <see cref="P:AVS.Assets.PrefabLoader.Prefab"/> will be left empty (null).
+            If false, <see cref="P:AVS.Assets.PrefabLoader.Prefab"/> is filled with a new generic loot item that has the requested tech type attached
+            but no other components.</param>
+            <param name="outLog">Out log writer. Effective only if this is the first request</param>
+            <returns>A <see cref="T:AVS.Assets.PrefabLoader"/> instance associated with the specified <paramref name="techType"/>. If an
             instance already exists, it returns the existing instance; otherwise, it creates a new one and starts the loading process.</returns>
         </member>
-        <member name="P:AVS.Assets.PrefabLoader.Instance">
+        <member name="P:AVS.Assets.PrefabLoader.Prefab">
             <summary>
-            Queries the latest known instance of the requested resource.
+            Loaded prefab or null if loading is not yet done, or <see cref="P:AVS.Assets.PrefabLoader.IfNotFoundLeaveEmpty"/> is true
+            and loading has persistently failed.
+            </summary>
+            <remarks>
+            Singleton instance set to never expire. Do <b>NOT</b> destroy this object
+            </remarks>
+        </member>
+        <member name="M:AVS.Assets.PrefabLoader.Instantiate">
+            <summary>
+            Instantiates a new game object from the prefab instance
+            Null if the prefab has not (yet) been loaded
             </summary>
         </member>
         <member name="P:AVS.Assets.PrefabLoader.CanLoad">
@@ -864,22 +894,32 @@
             True if the prefab can be loaded, false if any ongoing loading operation should be delayed.
             </summary>
         </member>
+        <member name="P:AVS.Assets.PrefabLoader.TerminalFailure">
+            <summary>
+            Loading of the requested prefab has persistently failed and <see cref="P:AVS.Assets.PrefabLoader.IfNotFoundLeaveEmpty"/> is true.
+            </summary>
+        </member>
         <member name="T:AVS.Assets.SeamothHelper">
             <summary>
             Global helper for loading the Seamoth prefab.
             </summary>
         </member>
-        <member name="P:AVS.Assets.SeamothHelper.Coroutine">
+        <member name="M:AVS.Assets.SeamothHelper.Request">
             <summary>
             Access to the coroutine that loads the Seamoth prefab.
             Allocated on first access, so it is safe to call this property multiple times.
             </summary>
         </member>
+        <member name="M:AVS.Assets.SeamothHelper.WaitUntilLoaded">
+            <summary>
+            Returns an awaitable object that completes once the Seamoth has successfully been loaded or
+            loading has failed persistently for one minute
+            </summary>
+        </member>
         <member name="P:AVS.Assets.SeamothHelper.Seamoth">
             <summary>
             Tries to access the Seamoth prefab.
-            If <see cref="P:AVS.Assets.SeamothHelper.Coroutine" /> was never accessed, it will throw an <see cref="T:System.InvalidOperationException"/>.
-            Ohterwise it may return null if the prefab is not yet loaded.
+            May return null if the prefab is not yet loaded.
             </summary>
         </member>
         <member name="P:AVS.Assets.SeamothHelper.RequireSeamoth">
@@ -2574,10 +2614,22 @@
             <inheritdoc />
         </member>
         <member name="M:AVS.Configuration.Recipe.op_Equality(AVS.Configuration.Recipe,AVS.Configuration.Recipe)">
-            <inheritdoc />
+            <summary>
+            Determines whether two <see cref="T:AVS.Configuration.Recipe"/> instances are equal.
+            </summary>
+            <param name="left">The first <see cref="T:AVS.Configuration.Recipe"/> instance to compare.</param>
+            <param name="right">The second <see cref="T:AVS.Configuration.Recipe"/> instance to compare.</param>
+            <returns><c>true</c> if the specified <see cref="T:AVS.Configuration.Recipe"/> instances are equal; otherwise, <c>false</c>.</returns>
         </member>
         <member name="M:AVS.Configuration.Recipe.op_Inequality(AVS.Configuration.Recipe,AVS.Configuration.Recipe)">
-            <inheritdoc />
+            <summary>
+            Determines whether two <see cref="T:AVS.Configuration.Recipe"/> instances are not equal.
+            </summary>
+            <param name="left">The first <see cref="T:AVS.Configuration.Recipe"/> instance to compare.</param>
+            <param name="right">The second <see cref="T:AVS.Configuration.Recipe"/> instance to compare.</param>
+            <returns>
+            <c>true</c> if the two <see cref="T:AVS.Configuration.Recipe"/> instances are not equal; otherwise, <c>false</c>.
+            </returns>
         </member>
         <member name="M:AVS.Configuration.Recipe.ToString">
             <inheritdoc />
@@ -3103,10 +3155,20 @@
             <inheritdoc/>
         </member>
         <member name="M:AVS.Crafting.CraftPath.op_Equality(AVS.Crafting.CraftPath,AVS.Crafting.CraftPath)">
-            <inheritdoc/>
+            <summary>
+            Determines if two <see cref="T:AVS.Crafting.CraftPath"/> instances are equal.
+            </summary>
+            <param name="left">The first <see cref="T:AVS.Crafting.CraftPath"/> to compare.</param>
+            <param name="right">The second <see cref="T:AVS.Crafting.CraftPath"/> to compare.</param>
+            <returns>True if the two <see cref="T:AVS.Crafting.CraftPath"/> instances are equal; otherwise, false.</returns>
         </member>
         <member name="M:AVS.Crafting.CraftPath.op_Inequality(AVS.Crafting.CraftPath,AVS.Crafting.CraftPath)">
-            <inheritdoc/>
+            <summary>
+            Determines whether two <see cref="T:AVS.Crafting.CraftPath"/> instances are not equal.
+            </summary>
+            <param name="left">The first <see cref="T:AVS.Crafting.CraftPath"/> to compare.</param>
+            <param name="right">The second <see cref="T:AVS.Crafting.CraftPath"/> to compare.</param>
+            <returns>True if the two <see cref="T:AVS.Crafting.CraftPath"/> instances are not equal; otherwise, false.</returns>
         </member>
         <member name="M:AVS.Crafting.CraftPath.Equals(System.Object)">
             <inheritdoc/>
@@ -3837,6 +3899,12 @@
             Signals that a status change has occurred in the autopilot system.
             </summary>
             <param name="statusChange">Change that was detected</param>
+        </member>
+        <member name="T:AVS.Interfaces.INullTestableType">
+            <summary>
+            Declares that a type does <b>NOT</b> inherit from <b><see cref="T:UnityEngine.Object"/></b> and can safely be null-tested
+            by is null / is not null
+            </summary>
         </member>
         <member name="T:AVS.Interfaces.ISoundSource">
             <summary>
@@ -5189,7 +5257,14 @@
             <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         </member>
         <member name="M:AVS.MaterialAdapt.ColorVariable.Set(UnityEngine.Material,System.String,UnityEngine.Color,AVS.Log.MaterialLog,System.String)">
-            <inheritdoc/>
+            <summary>
+            Sets the color property of a material with the given value and logs the change.
+            </summary>
+            <param name="m">The material on which the color property will be set.</param>
+            <param name="name">The name of the color property to set.</param>
+            <param name="value">The new color value to assign to the property.</param>
+            <param name="logConfig">The log configuration used to log the operation.</param>
+            <param name="materialName">Optional custom material name for logging purposes.</param>
         </member>
         <member name="T:AVS.MaterialAdapt.SubnauticaMaterialPrototype">
             <summary>
@@ -8563,6 +8638,29 @@
             based on the current configuration.</remarks>
             <returns>An enumerator that can be used to iterate through the coroutine execution process.</returns>
         </member>
+        <member name="T:AVS.Util.InstanceContainer">
+            <summary>
+            Container for the result of <see cref="M:AVS.Util.AvsCraftData.InstantiateFromPrefabAsync(AVS.Log.LogWriter,TechType,AVS.Util.InstanceContainer,System.Boolean)"/>
+            </summary>
+        </member>
+        <member name="P:AVS.Util.InstanceContainer.Instance">
+            <summary>
+            Created instance or null if none could be created
+            </summary>
+        </member>
+        <member name="M:AVS.Util.AvsCraftData.InstantiateFromPrefabAsync(AVS.Log.LogWriter,TechType,AVS.Util.InstanceContainer,System.Boolean)">
+            <summary>
+            Asynchronously instantiates a GameObject from a prefab based on a specified TechType.
+            </summary>
+            <param name="log">The log writer instance for handling logging activities.</param>
+            <param name="techType">The type of technology for which the prefab is being instantiated.</param>
+            <param name="result">The result wrapper that will hold the instantiated GameObject.</param>
+            <param name="ifNotFoundLeaveEmpty">Specifies what to do if the tech type could not be found.
+            If true, <paramref name="result"/> will be left empty (null).
+            If false, <paramref name="result"/> is filled with a new generic loot item that has the requested tech type attached
+            but no other components.</param>
+            <returns>An enumerator allowing for asynchronous operation during the prefab instantiation process.</returns>
+        </member>
         <member name="T:AVS.Util.Character">
             <summary>
             Helper for the player character.
@@ -8778,7 +8876,7 @@
             <param name="exceptionFactory">Factory that produces the exception to throw. Can throw itself</param>
             <returns>Non-null <paramref name="item"/></returns>
         </member>
-        <member name="M:AVS.Util.GameObjectHelper.LoggedSetActive(UnityEngine.GameObject,System.Boolean)">
+        <member name="M:AVS.Util.GameObjectHelper.LoggedSetActive(UnityEngine.GameObject,System.Boolean,AVS.Log.LogWriter)">
             <summary>
             Changes the active state of a GameObject and logs the action, including any exceptions that occur.
             </summary>
@@ -8787,6 +8885,7 @@
             </remarks>
             <param name="gameObject">Game object being manipulated</param>
             <param name="toEnabled">New enabled state</param>
+            <param name="log">Out logging facilities</param>
         </member>
         <member name="M:AVS.Util.GameObjectHelper.SafeGetTransform(UnityEngine.GameObject)">
             <summary>
@@ -9022,6 +9121,20 @@
             </remarks>
             <param name="transform">Parent transform to destroy all children of</param>
         </member>
+        <member name="M:AVS.Util.GameObjectHelper.IsNull(UnityEngine.Object)">
+            <summary>
+            Safely checks if a Unity object is null
+            </summary>
+            <param name="o">Object to check</param>
+            <returns>True if null, false if not null</returns>
+        </member>
+        <member name="M:AVS.Util.GameObjectHelper.IsNotNull(UnityEngine.Object)">
+            <summary>
+            Safely checks if a Unity object is not null
+            </summary>
+            <param name="o">Object to check</param>
+            <returns>True if not null, false if null</returns>
+        </member>
         <member name="T:AVS.Util.HierarchyAnalyzer">
             <summary>
             Game object/component hierarchy analyzer
@@ -9044,6 +9157,16 @@
             </summary>
             <param name="t">Transform to log</param>
             <param name="filename">Filename to write to</param>
+        </member>
+        <member name="T:AVS.Util.IsNotNullExtensions">
+            <summary>
+            Various null testing extensions for non-Unity types
+            </summary>
+        </member>
+        <member name="T:AVS.Util.IsNullExtensions">
+            <summary>
+            Various null testing extensions for non-Unity types
+            </summary>
         </member>
         <member name="T:AVS.Util.ListExt">
             <summary>
@@ -9363,9 +9486,14 @@
             Eggs will hatch eventually and fish may reproduce.
             </summary>
         </member>
-        <member name="P:AVS.VehicleBuilding.MobileWaterPark.Container">
+        <member name="P:AVS.VehicleBuilding.MobileWaterPark.ContentContainer">
             <summary>
-            The game object that represents the fish tank.
+            The game object that will contain the fish.
+            </summary>
+        </member>
+        <member name="P:AVS.VehicleBuilding.MobileWaterPark.Root">
+            <summary>
+            The park root object
             </summary>
         </member>
         <member name="P:AVS.VehicleBuilding.MobileWaterPark.Height">
@@ -9393,20 +9521,21 @@
             True if eggs in the tank can hatch.
             </summary>
         </member>
-        <member name="M:AVS.VehicleBuilding.MobileWaterPark.#ctor(UnityEngine.GameObject,System.Nullable{AVS.Localization.MaybeTranslate},System.Int32,System.Int32,System.Boolean,System.Boolean)">
+        <member name="M:AVS.VehicleBuilding.MobileWaterPark.#ctor(UnityEngine.GameObject,UnityEngine.Transform,System.Nullable{AVS.Localization.MaybeTranslate},System.Int32,System.Int32,System.Boolean,System.Boolean)">
             <summary>
             Initializes a new instance of the <see cref="T:AVS.VehicleBuilding.MobileWaterPark"/> class with the specified container, display name,
             dimensions, and behavior settings.
             </summary>
-            <param name="container">The <see cref="T:UnityEngine.GameObject"/> that represents the physical container for the fish tank.  This parameter
+            <param name="root">The <see cref="T:UnityEngine.GameObject"/> that represents the entire water park. This parameter
             cannot be <see langword="null"/>.</param>
+            <param name="contentContainer">The transform to contain the actual fish. Cannot be null</param>
             <param name="displayName">An optional display name for the fish tank, which may be translated.  If <see langword="null"/>, no display
             name is assigned.</param>
             <param name="height">The height of the fish tank, measured in arbitrary units.  Must be greater than zero. Defaults to 4.</param>
             <param name="width">The width of the fish tank, measured in arbitrary units.  Must be greater than zero. Defaults to 4.</param>
             <param name="allowReproduction">A value indicating whether fish in the tank are allowed to reproduce.  Defaults to <see langword="true"/>.</param>
             <param name="hatchEggs">A value indicating whether fish eggs in the tank are allowed to hatch.  Defaults to <see langword="true"/>.</param>
-            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="container"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="root"/> or <paramref name="contentContainer"/> are <see langword="null"/>.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="height"/> or <paramref name="width"/> is less than or equal to zero.</exception>
         </member>
         <member name="T:AVS.VehicleBuilding.VehicleStorage">
@@ -9584,17 +9713,22 @@
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="intensity"/> is negative, <paramref name="range"/> is less than or equal to zero,
             or <paramref name="angle"/> is outside the range 0 to 179 degrees.</exception>
         </member>
-        <member name="T:AVS.PositiveValueThresholdTracker">
+        <member name="T:AVS.VehicleComponents.PositiveValueThresholdTracker">
             <summary>
             Tracker for statuses where high values indicate worse status.
             </summary>
         </member>
-        <member name="T:AVS.NegativeValueThresholdTracker">
+        <member name="M:AVS.VehicleComponents.PositiveValueThresholdTracker.#ctor(AVS.Interfaces.AutopilotStatus[])">
+            <summary>
+            Tracker for statuses where high values indicate worse status.
+            </summary>
+        </member>
+        <member name="T:AVS.VehicleComponents.NegativeValueThresholdTracker">
             <summary>
             Tracker for statuses where lower values indicate worse status.
             </summary>
         </member>
-        <member name="T:AVS.Autopilot">
+        <member name="T:AVS.VehicleComponents.Autopilot">
             <summary>
             The Autopilot class manages various autonomous functionalities for a vehicle,
             including monitoring and responding to power status, health, lights status,
@@ -9602,7 +9736,7 @@
             multiple listener interfaces for vehicle, player, power, lights, and scuttle events.
             </summary>
         </member>
-        <member name="P:AVS.Autopilot.HealthStatus">
+        <member name="P:AVS.VehicleComponents.Autopilot.HealthStatus">
             <summary>
             Gets the current health status of the autopilot system.
             </summary>
@@ -9616,7 +9750,7 @@
             of the autopilot system.
             </value>
         </member>
-        <member name="P:AVS.Autopilot.PowerStatus">
+        <member name="P:AVS.VehicleComponents.Autopilot.PowerStatus">
             <summary>
             Gets the current power status of the autopilot system.
             </summary>
@@ -9629,7 +9763,7 @@
             A value of type <see cref="T:AVS.Interfaces.AutopilotStatus"/> representing the current power status of the autopilot system.
             </value>
         </member>
-        <member name="P:AVS.Autopilot.DepthStatus">
+        <member name="P:AVS.VehicleComponents.Autopilot.DepthStatus">
             <summary>
             Gets the current depth status of the vehicle in relation to predefined safety thresholds.
             </summary>
@@ -9644,7 +9778,7 @@
             or <see cref="F:AVS.Interfaces.AutopilotStatus.DepthBeyondCrush"/>.
             </value>
         </member>
-        <member name="P:AVS.Autopilot.DangerStatus">
+        <member name="P:AVS.VehicleComponents.Autopilot.DangerStatus">
             <summary>
             Gets the current danger status as determined by the proximity of nearby threats or hazardous environmental conditions.
             </summary>
@@ -9657,13 +9791,13 @@
             A value of type <see cref="T:AVS.Interfaces.AutopilotStatus"/> representing the current danger status of the autopilot system.
             </value>
         </member>
-        <member name="M:AVS.Autopilot.Awake">
+        <member name="M:AVS.VehicleComponents.Autopilot.Awake">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.Autopilot.Start">
+        <member name="M:AVS.VehicleComponents.Autopilot.Start">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.Autopilot.Update">
+        <member name="M:AVS.VehicleComponents.Autopilot.Update">
             <inheritdoc/>
         </member>
         <member name="T:AVS.VehicleComponents.ForeverBattery">
