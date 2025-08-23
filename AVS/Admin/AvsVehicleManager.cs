@@ -42,11 +42,11 @@ internal static class AvsVehicleManager
     {
         var log = v.Log.Tag(nameof(RegisterPingType));
         var ret = pt;
-        if ((int)ret < 121)
+        if ((int)ret < 1000)
         {
             VehicleRegistrar.VerboseLog(log, VehicleRegistrar.LogType.Log, verbose,
-                "PingType " + pt + " was too small. Trying 121.");
-            ret = (PingType)121;
+                "PingType " + pt + " was too small. Trying 1000.");
+            ret = (PingType)1000;
         }
 
         while (MvPings.Any(x => x.pingType == ret))
