@@ -1,6 +1,9 @@
-﻿using HarmonyLib;
+﻿using System;
+using System.Collections.Generic;
+using HarmonyLib;
 using System.Reflection;
 using AVS.Assets;
+using AVS.Log;
 using AVS.Util;
 using UnityEngine;
 
@@ -34,31 +37,51 @@ public static class MapModPatcher
     [HarmonyPrefix]
     public static bool Prefix(object __instance)
     {
-        var field = __instance.GetType().GetField("ping");
-        var ping = field.GetValue(__instance) as PingInstance;
-        if (ping.IsNull())
-            return true;
-        foreach (var mvPIs in AvsVehicleManager.MvPings)
-            if (mvPIs.pingType == ping.pingType)
-            {
-                var field2 = __instance.GetType().GetField("icon");
-                var icon = field2?.GetValue(__instance) as uGUI_Icon;
-                if (icon.IsNull())
-                    continue; // If we don't have an icon, we can't modify it
-                icon.sprite = SpriteManager.Get(TechType.Exosuit);
-                foreach (var mvType in AvsVehicleManager.VehicleTypes)
-                    if (mvType.pt == ping.pingType)
-                    {
-                        icon.sprite = mvType.ping_sprite;
-                        break;
-                    }
+        try
+        {
+            var field = __instance.GetType().GetField("ping");
+            var ping = field.GetValue(__instance) as PingInstance;
+            if (ping.IsNull())
+                return true;
+            foreach (var mvPIs in AvsVehicleManager.MvPings)
+                if (mvPIs.pingType == ping.pingType)
+                {
+                    var field2 = __instance.GetType().GetField("icon");
+                    var icon = field2?.GetValue(__instance) as uGUI_Icon;
+                    if (icon.IsNull())
+                        continue; // If we don't have an icon, we can't modify it
+                    icon.sprite = SpriteManager.Get(TechType.Exosuit);
+                    foreach (var mvType in AvsVehicleManager.VehicleTypes)
+                        if (mvType.pt == ping.pingType)
+                        {
+                            icon.sprite = new Atlas.Sprite(mvType.ping_sprite);
+                            break;
+                        }
 
-                var rectTransform = icon.rectTransform;
-                rectTransform.sizeDelta = Vector2.one * 28f;
-                rectTransform.localPosition = Vector3.zero;
-                return false;
-            }
+                    var rectTransform = icon.rectTransform;
+                    rectTransform.sizeDelta = Vector2.one * 28f;
+                    rectTransform.localPosition = Vector3.zero;
+                    return false;
+                }
+        }
+        catch (Exception e)
+        {
+            LogWriter.Default.Error("Error in MapModPatcher.Prefix", e);
+        }
 
         return true;
+    }
+
+
+    internal static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
+    {
+        var log = LogWriter.Default.Tag(nameof(MapModPatcher));
+        ;
+        var codes = new List<CodeInstruction>(instructions);
+
+        foreach (var code in codes)
+            log.Debug(code.ToStr());
+
+        return codes;
     }
 }

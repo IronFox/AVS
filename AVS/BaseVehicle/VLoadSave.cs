@@ -277,10 +277,10 @@ public abstract partial class AvsVehicle
         ReSetupWaterParks();
         foreach (var wp in Com.WaterParks)
         {
-            var waterPark = wp.Container.GetComponent<StorageComponents.MobileWaterPark>();
+            var waterPark = wp.ContentContainer.GetComponent<StorageComponents.MobileWaterPark>();
             if (waterPark.IsNull())
             {
-                Log.Error($"WaterPark {wp.Container.name} has no MobileWaterPark component!");
+                Log.Error($"WaterPark {wp.ContentContainer.name} has no MobileWaterPark component!");
                 continue;
             }
 

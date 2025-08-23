@@ -279,7 +279,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     internal void Setup(AvsVehicle vehicle, MaybeTranslate name, VehicleBuilding.MobileWaterPark vp, int index)
     {
-        waterPark = vp.Container.transform;
+        waterPark = vp.ContentContainer.transform;
         DisplayName = name;
         this.index = index;
         height = vp.Height;
