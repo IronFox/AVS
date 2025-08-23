@@ -130,7 +130,7 @@ public static class VehicleRegistrar
         var log = mv.Log.Tag(nameof(InternalRegisterVehicle));
         RegistrySemaphore = true;
         VerboseLog(log, LogType.Log, verbose, $"The {mv.gameObject.name} is beginning Registration.");
-        var registeredPingType = AvsVehicleManager.RegisterPingType(mv, (PingType)121, verbose);
+        var registeredPingType = AvsVehicleManager.RegisterPingType(mv, (PingType)1536, verbose);
         yield return MainPatcher.Instance.StartCoroutine(
             AvsVehicleBuilder.Prefabricate(mv, registeredPingType, verbose));
         RegistrySemaphore = false;
