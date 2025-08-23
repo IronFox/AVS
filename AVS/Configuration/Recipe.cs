@@ -252,7 +252,7 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
             return fallback ?? throw new ArgumentNullException(nameof(fallback), "fallback must not be null");
         }
 
-        if (recipeData.linkedItemCount != 1)
+        if (recipeData.linkedItemCount != 0)
         {
             LogWriter.Default.Error("RecipeData has non-empty linked item count. Returning fallback Recipe.");
             return fallback ?? throw new ArgumentNullException(nameof(fallback), "fallback must not be null");

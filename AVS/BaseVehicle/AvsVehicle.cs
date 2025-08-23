@@ -131,7 +131,7 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
         //playerPosition = GetMainHelm().PlayerControlLocation;
         playerPosition = null;
         if (SubRoot.IsNull())
-            Log.Warn("SubRoot not found during OnAwakeOrPrefabricate");
+            Log.Write("SubRoot not (yet) found during OnAwakeOrPrefabricate");
         else
             Log.Write("SubRoot found during OnAwakeOrPrefabricate");
     }

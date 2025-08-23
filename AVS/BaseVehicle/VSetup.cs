@@ -194,7 +194,7 @@ public abstract partial class AvsVehicle
         foreach (var vb in Com.Batteries)
         {
             Log.Debug(this,
-                $"Setting up Vehicle Power Cell {vb.DisplayName?.Text ?? vb.Root.name} for {this.NiceName()}");
+                $"Setting up vehicle battery '{vb.DisplayName?.Text ?? vb.Root.name}' for {this.NiceName()}");
             // Configure energy mixin for this battery slot
             //vb.Root.GetComponents<EnergyMixin>().ForEach(em => GameObject.Destroy(em)); // remove old energy mixins
             var energyMixin = vb.Root.EnsureComponent<EnergyMixin>();
@@ -249,7 +249,7 @@ public abstract partial class AvsVehicle
     /// <param name="pingType"></param>
     internal void PrefabSetupHudPing(PingType pingType)
     {
-        Log.Write($"Setting up HudPingInstance for {nameof(AvsVehicle)} #{Id}");
+        Log.Write($"Setting up HudPingInstance for {GetType().Name}");
         hudPingInstance = gameObject.EnsureComponent<PingInstance>();
         hudPingInstance.origin = transform;
         hudPingInstance.pingType = pingType;
@@ -264,23 +264,23 @@ public abstract partial class AvsVehicle
         {
             foreach (var vs in Com.ModularStorages)
             {
-                LogWriter.Default.Debug("Setting up Modular Storage " + vs.Container.NiceName() + " for " +
-                                        this.NiceName());
+                Log.Debug("Setting up Modular Storage " + vs.Container.NiceName() + " for " +
+                          this.NiceName());
                 vs.Container.SetActive(false);
 
-                LogWriter.Default.Debug("Scanning seamoth");
+                //LogWriter.Default.Debug("Scanning seamoth");
                 var sm = SeamothHelper.RequireSeamoth;
-                LogWriter.Default.Debug("Found seamoth: " + sm.NiceName());
+                //LogWriter.Default.Debug("Found seamoth: " + sm.NiceName());
                 var storage = sm.transform.Find("Storage/Storage1");
                 if (storage.IsNull())
                 {
-                    LogWriter.Default.Error("Could not find Storage/Storage1 in the Seamoth prefab");
+                    Log.Error("Could not find Storage/Storage1 in the Seamoth prefab");
                     return false;
                 }
 
                 var storageCloseSound = storage.GetComponent<SeamothStorageInput>().closeSound;
                 var storageOpenSound = storage.GetComponent<SeamothStorageInput>().openSound;
-                LogWriter.Default.Debug("Setting up");
+                //LogWriter.Default.Debug("Setting up");
                 var inp = vs.Container.EnsureComponent<ModularStorageInput>();
                 var name = vs.DisplayName ?? Text.Untranslated("Modular Vehicle Storage " + iter);
                 inp.displayName = name;
@@ -459,19 +459,20 @@ public abstract partial class AvsVehicle
         foreach (var fmod in fmods)
             if (fmod.asset.name == "seamoth_light_on")
             {
-                Log.Debug("Found light on sound for " + name);
+                //Log.Debug("Found light on sound for " + name);
                 var ce = gameObject.AddComponent<FMOD_CustomEmitter>();
                 ce.asset = fmod.asset;
                 lightsOnSound = ce;
             }
             else if (fmod.asset.name == "seamoth_light_off")
             {
-                Log.Debug("Found light off sound for " + name);
+                //Log.Debug("Found light off sound for " + name);
                 var ce = gameObject.AddComponent<FMOD_CustomEmitter>();
                 ce.asset = fmod.asset;
                 lightsOffSound = ce;
             }
 
-        if (lightsOnSound.IsNull() || lightsOffSound.IsNull()) Log.Error("Failed to find light sounds for " + name);
+        if (lightsOnSound.IsNull() || lightsOffSound.IsNull())
+            Log.Error("Failed to find light sounds for " + name);
     }
 }

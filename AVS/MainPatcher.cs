@@ -144,25 +144,19 @@ public abstract class MainPatcher : BaseUnityPlugin
             CoroutineTask<GameObject> request = CraftData.GetPrefabForTechTypeAsync(TechType.BaseUpgradeConsole, true);
             yield return request;
             AvsVehicleBuilder.UpgradeConsole = request.GetResult();
-            yield break;
         }
 
-        LogWriter.Default.Write("CollectPrefabsForBuilderReference started.");
         StartCoroutine(CollectPrefabsForBuilderReference());
-        //LogWriter.Default.Write("Assets.StaticAssets.GetSprites()");
-        //Assets.StaticAssets.GetSprites();
-        LogWriter.Default.Write("Assets.AvsFabricator.CreateAndRegister()");
-        AvsFabricator.CreateAndRegister(Images.FabricatorIcon);
-        //LogWriter.Default.Write("Admin.CraftTreeHandler.AddFabricatorMenus()");
-        //CraftTreeHandler.AddFabricatorMenus();
-
-        LogWriter.Default.Write("Admin.Utils.RegisterDepthModules()");
-        Admin.Utils.RegisterDepthModules();
-        //AVS.Logger.Log("MainPatcher.Instance.StartCoroutine(VoiceManager.LoadAllVoices())");
-        //GetVoices = MainPatcher.Instance.StartCoroutine(VoiceManager.LoadAllVoices());
-        //AVS.Logger.Log("MainPatcher.Instance.StartCoroutine(EngineSoundsManager.LoadAllVoices())");
-        //GetEngineSounds = MainPatcher.Instance.StartCoroutine(DynamicClipLoader.LoadAllVoices());
-        LogWriter.Default.Write("PrePatch finished.");
+        try
+        {
+            AvsFabricator.CreateAndRegister(Images.FabricatorIcon);
+            Admin.Utils.RegisterDepthModules();
+            LogWriter.Default.Write("PrePatch finished.");
+        }
+        catch (Exception e)
+        {
+            LogWriter.Default.Error("PrePatch failed.", e);
+        }
     }
 
     /// <summary>

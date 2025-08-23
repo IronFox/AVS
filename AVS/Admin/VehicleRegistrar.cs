@@ -242,7 +242,7 @@ public static class VehicleRegistrar
             }
 
             if (mv.Com.InnateStorages.Count == 0)
-                VerboseLog(log, LogType.Warn, verbose,
+                VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"No {nameof(AvsVehicle)}.InnateStorages were provided. These are lockers the vehicle always has.");
             if (mv.Com.ModularStorages.Count == 0)
@@ -260,7 +260,7 @@ public static class VehicleRegistrar
                     thisName +
                     $"No {nameof(AvsVehicle)}.BackupBatteries were provided. This collection of batteries belong to the AI and will be used exclusively for life support, auto-leveling, and other AI tasks. The AI will use the main batteries instead.");
             if (mv.Com.Headlights.Count == 0)
-                VerboseLog(log, LogType.Warn, verbose,
+                VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"No {nameof(AvsVehicle)}.Headlights were provided. These lights would be activated when the player right clicks while piloting.");
             if (mv.Com.WaterClipProxies.Count == 0)
@@ -268,7 +268,7 @@ public static class VehicleRegistrar
                     thisName +
                     $"No {nameof(AvsVehicle)}.WaterClipProxies were provided. These are necessary to keep the ocean surface out of the vehicle.");
             if (mv.Com.CanopyWindows.Count == 0)
-                VerboseLog(log, LogType.Warn, verbose,
+                VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"No {nameof(AvsVehicle)}.CanopyWindows were provided. These must be specified to handle window transparencies.");
             if (!mv.Com.BoundingBoxCollider)
@@ -277,7 +277,7 @@ public static class VehicleRegistrar
                     "No BoundingBox BoxCollider was provided. If a BoundingBox GameObject was provided, it did not have a BoxCollider. Tether range is 10 meters. This vehicle will not be able to dock in the Moonpool. The build bots will assume this vehicle is 6m x 8m x 12m.");
             if (mv.Com.CollisionModel.IsNull() || mv.Com.CollisionModel.Length == 0)
             {
-                VerboseLog(log, LogType.Warn, verbose,
+                VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"A null {nameof(AvsVehicle)}.CollisionModel was provided. This is necessary for leviathans to grab the vehicle.");
                 return false;
@@ -328,7 +328,7 @@ public static class VehicleRegistrar
             }
 
             if (!mv.Com.LeviathanGrabPoint)
-                VerboseLog(log, LogType.Warn, verbose,
+                VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"A null {nameof(AvsVehicle)}.LeviathanGrabPoint was provided. This is where leviathans attach to the vehicle. The root object will be used instead.");
             if (!mv.Com.Engine)
@@ -347,7 +347,7 @@ public static class VehicleRegistrar
         }
 
         VerboseLog(log, LogType.Log, verbose,
-            $"The Registration of the '{mv.name}' as a {nameof(AvsVehicle)} has been Validated.");
+            $"The Registration of the '{mv.name}' as an {nameof(AvsVehicle)} has been validated successfully.");
         return true;
     }
 
@@ -381,19 +381,19 @@ public static class VehicleRegistrar
             }
 
             if (mv.Com.Floodlights.Count == 0)
-                VerboseLog(log, LogType.Warn, verbose,
+                VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"No {nameof(AvsVehicle)}.Com.Floodlights were provided. These lights would be activated on the control panel.");
             if (mv.Com.NavigationPortLights.Count == 0)
-                VerboseLog(log, LogType.Log, verbose, thisName + "Some navigation lights were missing.");
+                VerboseLog(log, LogType.Log, verbose, thisName + "Navigation port lights were not provided.");
             if (mv.Com.NavigationStarboardLights.Count == 0)
-                VerboseLog(log, LogType.Log, verbose, thisName + "Some navigation lights were missing.");
+                VerboseLog(log, LogType.Log, verbose, thisName + "Navigation starboard lights were not provided.");
             if (mv.Com.NavigationPositionLights.Count == 0)
-                VerboseLog(log, LogType.Log, verbose, thisName + "Some navigation lights were missing.");
+                VerboseLog(log, LogType.Log, verbose, thisName + "Navigation position lights were not provided.");
             if (mv.Com.NavigationWhiteStrobeLights.Count == 0)
-                VerboseLog(log, LogType.Log, verbose, thisName + "Some navigation lights were missing.");
+                VerboseLog(log, LogType.Log, verbose, thisName + "White strobe navigation lights were not provided.");
             if (mv.Com.NavigationRedStrobeLights.Count == 0)
-                VerboseLog(log, LogType.Log, verbose, thisName + "Some navigation lights were missing.");
+                VerboseLog(log, LogType.Log, verbose, thisName + "Red strobe navigation lights were not provided.");
             if (mv.Com.TetherSources.Count == 0)
             {
                 log.Error(thisName +
@@ -406,11 +406,11 @@ public static class VehicleRegistrar
                     thisName +
                     $"A null {nameof(Submarine)}.Com.ColorPicker was provided. You only need this if you implement the necessary painting functions.");
             if (mv.Com.Fabricator.IsNull())
-                VerboseLog(log, LogType.Warn, verbose,
+                VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"A null {nameof(Submarine)}.Com.Fabricator was provided. The Submarine will not come with a fabricator at construction-time.");
             if (mv.Com.ControlPanel.IsNull())
-                VerboseLog(log, LogType.Warn, verbose,
+                VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"A null {nameof(Submarine)}.Com.ControlPanel was provided. This is necessary to toggle floodlights.");
             foreach (var ps in mv.Com.Helms)
@@ -435,7 +435,7 @@ public static class VehicleRegistrar
         }
 
         VerboseLog(log, LogType.Log, verbose,
-            "The Registration of the " + mv.name + " as a Submarine has been Validated.");
+            "The Registration of the " + mv.name + " as a Submarine has been validated successfully.");
         return true;
     }
 
@@ -479,7 +479,7 @@ public static class VehicleRegistrar
         }
 
         VerboseLog(log, LogType.Log, verbose,
-            "The Registration of the " + mv.name + " as a Submersible has been Validated.");
+            "The Registration of the " + mv.name + " as a Submersible has been validated successfully.");
         return true;
     }
 }
