@@ -7,6 +7,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using AVS.Admin;
 using AVS.Patches.CompatibilityPatches;
 using AVS.Util;
 using AVS.VehicleBuilding;
@@ -80,6 +81,11 @@ public abstract class MainPatcher : BaseUnityPlugin
     /// Prefix used for registered identifiers so to not collide with other mods.
     /// </summary>
     public abstract string ModName { get; }
+
+    /// <summary>
+    /// If true, debug messages will be logged, otherwise omitted.
+    /// </summary>
+    public bool LogDebugMessages { get; set; }
 
 
     //internal static VFConfig VFConfig { get; private set; }
@@ -209,7 +215,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
         void SetWorldNotLoaded()
         {
-            Admin.GameStateWatcher.IsWorldLoaded = false;
+            GameStateWatcher.IsWorldLoaded = false;
             ModuleBuilder.haveWeCalledBuildAllSlots = false;
             ModuleBuilder.slotExtenderIsPatched = false;
             ModuleBuilder.SlotExtenderHasGreenLight = false;
@@ -217,7 +223,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
         void SetWorldLoaded()
         {
-            Admin.GameStateWatcher.IsWorldLoaded = true;
+            GameStateWatcher.IsWorldLoaded = true;
         }
 
         void OnLoadOnce()
@@ -342,7 +348,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
         log.Write("Registering SceneManager events.");
         // do this here because it happens only once
-        SceneManager.sceneUnloaded += Admin.GameStateWatcher.SignalSceneUnloaded;
+        SceneManager.sceneUnloaded += GameStateWatcher.SignalSceneUnloaded;
     }
 
     /// <summary>
