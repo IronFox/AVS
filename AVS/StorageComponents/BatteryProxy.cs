@@ -17,7 +17,7 @@ internal class BatteryProxy : MonoBehaviour
     public IEnumerator GetSeamothBitsASAP()
     {
         if (proxy is null || mixin is null)
-            // reload reload condition ?
+            // reload racing condition ?
             // no...
             yield break;
         //var seamothLoader = PrefabLoader.Request(TechType.Seamoth);
