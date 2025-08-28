@@ -6,9 +6,7 @@ using AVS.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
-using Logger = AVS.Logger;
 
 /// <summary>
 /// Various utility methods for AVS.
@@ -58,16 +56,16 @@ public static class AvsUtils
     /// <param name="param">The parameters containing the vehicle to evaluate and its associated data.</param>
     public static void EvaluateDepthModules(AddActionParams param)
     {
-        var mv = param.Vehicle.SafeGetComponent<AvsVehicle>();
-        if (mv.IsNull())
+        var av = param.Vehicle.SafeGetComponent<AvsVehicle>();
+        if (av.IsNull())
         {
             Subtitles.Add("This upgrade is not compatible with this vehicle.");
             return;
         }
 
-        var depthModule1Count = DepthModule1.Registered.CountSumIn(mv.modules);
-        var depthModule2Count = DepthModule2.Registered.CountSumIn(mv.modules);
-        var depthModule3Count = DepthModule3.Registered.CountSumIn(mv.modules);
+        var depthModule1Count = DepthModule1.Registered.CountSumIn(av.modules);
+        var depthModule2Count = DepthModule2.Registered.CountSumIn(av.modules);
+        var depthModule3Count = DepthModule3.Registered.CountSumIn(av.modules);
 
 
         // Iterate over all upgrade modules,
@@ -80,36 +78,12 @@ public static class AvsUtils
             );
 
         var extraDepthToAdd = 0;
-        extraDepthToAdd = maxDepthModuleLevel > 0 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade1 : extraDepthToAdd;
-        extraDepthToAdd = maxDepthModuleLevel > 1 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade2 : extraDepthToAdd;
-        extraDepthToAdd = maxDepthModuleLevel > 2 ? extraDepthToAdd += mv.Config.CrushDepthUpgrade3 : extraDepthToAdd;
-        mv.GetComponent<CrushDamage>().SetExtraCrushDepth(extraDepthToAdd);
+        extraDepthToAdd = maxDepthModuleLevel > 0 ? extraDepthToAdd += av.Config.CrushDepthUpgrade1 : extraDepthToAdd;
+        extraDepthToAdd = maxDepthModuleLevel > 1 ? extraDepthToAdd += av.Config.CrushDepthUpgrade2 : extraDepthToAdd;
+        extraDepthToAdd = maxDepthModuleLevel > 2 ? extraDepthToAdd += av.Config.CrushDepthUpgrade3 : extraDepthToAdd;
+        av.GetComponent<CrushDamage>().SetExtraCrushDepth(extraDepthToAdd);
     }
 
-
-    /// <summary>
-    /// Retrieves the <see cref="TechType"/> associated with a vehicle based on its name.
-    /// </summary>
-    /// <remarks>If no vehicle with the specified name is found, an error is logged, and the method
-    /// returns <see cref="TechType.None"/>.</remarks>
-    /// <param name="name">The name of the vehicle to search for. This parameter is case-sensitive and must not be null or empty.</param>
-    /// <returns>The <see cref="TechType"/> of the vehicle if a match is found; otherwise, returns <see
-    /// cref="TechType.None"/>.</returns>
-    public static TechType GetTechTypeFromVehicleName(string name)
-    {
-        try
-        {
-            var ve = AvsVehicleManager.VehicleTypes.Where(x => x.name.Contains(name)).First();
-            return ve.techType;
-        }
-        catch
-        {
-            Logger.Error("GetTechTypeFromVehicleName Error. Could not find a vehicle by the name: " + name +
-                         ". Here are all vehicle names:");
-            AvsVehicleManager.VehicleTypes.ForEach(x => Logger.Log(x.name));
-            return 0;
-        }
-    }
 
 
     /// <summary>
@@ -118,9 +92,10 @@ public static class AvsUtils
     /// <remarks>This method ensures that the entry is added or updated only after the PDA
     /// Encyclopedia mapping is initialized.  If an entry with the same key already exists, it will be replaced with
     /// the provided data.</remarks>
+    /// <param name="mp">The <see cref="MainPatcher"/> instance owning the process.</param>
     /// <param name="data">The encyclopedia entry data to add or update. The <see cref="PDAEncyclopedia.EntryData.key"/> property must
     /// be unique and non-null.</param>
-    public static void AddEncyclopediaEntry(PDAEncyclopedia.EntryData data)
+    public static void AddEncyclopediaEntry(MainPatcher mp, PDAEncyclopedia.EntryData data)
     {
         IEnumerator AddEncyclopediaEntryInternal()
         {
@@ -131,6 +106,6 @@ public static class AvsUtils
                 PDAEncyclopedia.mapping.Add(data.key, data);
         }
 
-        MainPatcher.Instance.StartCoroutine(AddEncyclopediaEntryInternal());
+        mp.StartCoroutine(AddEncyclopediaEntryInternal());
     }
 }

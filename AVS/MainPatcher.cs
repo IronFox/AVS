@@ -1,5 +1,9 @@
-﻿using AVS.Assets;
+﻿using AVS.Admin;
+using AVS.Assets;
 using AVS.Log;
+using AVS.Patches.CompatibilityPatches;
+using AVS.Util;
+using AVS.VehicleBuilding;
 using BepInEx;
 using HarmonyLib;
 using Nautilus.Handlers;
@@ -7,10 +11,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.Admin;
-using AVS.Patches.CompatibilityPatches;
-using AVS.Util;
-using AVS.VehicleBuilding;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -21,7 +21,7 @@ namespace AVS;
 /// </summary>
 public abstract class MainPatcher : BaseUnityPlugin
 {
-    private static MainPatcher? _instance;
+    //private static MainPatcher? _instance;
     private PatcherImages? images;
 
     /// <summary>
@@ -37,6 +37,8 @@ public abstract class MainPatcher : BaseUnityPlugin
             return images;
         }
     }
+
+
 
     /// <summary>
     /// The icon for the Depth Module 1 upgrade.
@@ -58,11 +60,11 @@ public abstract class MainPatcher : BaseUnityPlugin
     /// </summary>
     public Sprite DepthModuleNodeIcon => Images.DepthModuleNodeIcon;
 
-    /// <summary>
-    /// Queries the main singleton instance of <see cref="MainPatcher"/>.
-    /// </summary>
-    public static MainPatcher Instance => _instance.OrThrow(() => new InvalidOperationException(
-        "MainPatcher instance is not set. Ensure that the Awake method is called before accessing Instance."));
+    ///// <summary>
+    ///// Queries the main singleton instance of <see cref="MainPatcher"/>.
+    ///// </summary>
+    //public static MainPatcher Instance => _instance.OrThrow(() => new InvalidOperationException(
+    //    "MainPatcher instance is not set. Ensure that the Awake method is called before accessing Instance."));
 
     /// <summary>
     /// Loads the images used by AVS.
@@ -91,6 +93,19 @@ public abstract class MainPatcher : BaseUnityPlugin
     //internal static VFConfig VFConfig { get; private set; }
     //internal static AVSNautilusConfig NautilusConfig { get; private set; }
 
+    private static Dictionary<int, MainPatcher> Instances { get; } = [];
+
+    internal static MainPatcher AnyInstance
+    {
+        get
+        {
+            if (Instances.Count > 0)
+                return Instances.Values.First();
+            throw new InvalidOperationException("No MainPatcher instances are registered.");
+        }
+    }
+
+    internal static IEnumerable<MainPatcher> AllInstances => Instances.Values;
 
     /// <summary>
     /// Begins plugin patching and initialization.
@@ -106,7 +121,9 @@ public abstract class MainPatcher : BaseUnityPlugin
         LogWriter.Default.Write("AVS MainPatcher Awake started.");
 
         LanguageHandler.RegisterLocalizationFolder();
-        SetupInstance();
+
+        Instances[GetInstanceID()] = this;
+
         LogWriter.Default.Write("AVS MainPatcher Awake: SetupInstance completed. Loading images...");
         images = LoadImages();
 
@@ -118,6 +135,12 @@ public abstract class MainPatcher : BaseUnityPlugin
         PrefabLoader.Request(TechType.Exosuit, LogWriter.Default, true);
         SeamothHelper.Request();
         //PrefabLoader.Request(TechType.Aquarium);
+    }
+
+    /// <inheritdoc/>
+    public virtual void OnDestroy()
+    {
+        Instances.Remove(GetInstanceID());
     }
 
     /// <inheritdoc/>
@@ -134,7 +157,7 @@ public abstract class MainPatcher : BaseUnityPlugin
         }
 
         PostPatch();
-        CompatChecker.CheckAll();
+        CompatChecker.CheckAll(this);
         StartCoroutine(AVS.Logger.MakeAlerts());
     }
 
@@ -155,8 +178,8 @@ public abstract class MainPatcher : BaseUnityPlugin
         StartCoroutine(CollectPrefabsForBuilderReference());
         try
         {
-            AvsFabricator.CreateAndRegister(Images.FabricatorIcon);
-            Admin.Utils.RegisterDepthModules();
+            AvsFabricator.CreateAndRegister(this, Images.FabricatorIcon);
+            Admin.Utils.RegisterDepthModules(this);
             LogWriter.Default.Write("PrePatch finished.");
         }
         catch (Exception e)
@@ -194,7 +217,7 @@ public abstract class MainPatcher : BaseUnityPlugin
             //}
             try
             {
-                AvsVehicleManager.CreateSpritesFile(sender, e);
+                AvsVehicleManager.CreateSpritesFile(this, e);
                 LogWriter.Default.Write("Sprites file created successfully.");
             }
             catch (Exception ex)
@@ -362,18 +385,11 @@ public abstract class MainPatcher : BaseUnityPlugin
         //VehicleBuilder.ScatterDataBoxes(craftables);
     }
 
-    private void SetupInstance()
+    internal static MainPatcher GetInstance(int mainPatcherInstanceId)
     {
-        if (_instance.IsNull())
-        {
-            _instance = this;
-            return;
-        }
-
-        if (_instance != this)
-        {
-            Destroy(this);
-            return;
-        }
+        if (Instances.TryGetValue(mainPatcherInstanceId, out var instance))
+            return instance;
+        throw new InvalidOperationException(
+            $"No MainPatcher instance with ID {mainPatcherInstanceId} is registered. Known IDs: {string.Join(", ", Instances.Keys)}");
     }
 }

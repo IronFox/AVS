@@ -69,10 +69,10 @@ public static class PowerRelayPatcher
     [HarmonyPatch(nameof(PowerRelay.Start))]
     public static bool StartPrefix(PowerRelay __instance)
     {
-        var mv = __instance.gameObject.SafeGetComponent<AvsVehicle>();
-        if (mv.IsNotNull())
+        var av = __instance.gameObject.SafeGetComponent<AvsVehicle>();
+        if (av.IsNotNull())
         {
-            LogOf(mv).Debug("PowerRelay.Start");
+            LogOf(av).Debug("PowerRelay.Start");
             __instance.InvokeRepeating("UpdatePowerState", UnityEngine.Random.value, 0.5f);
             return false;
         }
@@ -98,19 +98,19 @@ public static class PowerRelayPatcher
     [HarmonyPatch(nameof(PowerRelay.GetPower))]
     public static bool GetPowerPrefix(PowerRelay __instance, ref float __result)
     {
-        var mv = __instance
+        var av = __instance
             .SafeGetGameObject()
             .SafeGetComponent<AvsVehicle>();
-        if (mv.IsNotNull())
+        if (av.IsNotNull())
         {
-            if (mv.energyInterface.IsNotNull())
+            if (av.energyInterface.IsNotNull())
             {
-                __result = mv.energyInterface.TotalCanProvide(out _);
-                //LogOf(mv).Debug("EnergyInterface.TotalCanProvide: " + __result);
+                __result = av.energyInterface.TotalCanProvide(out _);
+                //LogOf(av).Debug("EnergyInterface.TotalCanProvide: " + __result);
             }
             else
             {
-                LogOf(mv).Error("EnergyInterface is null");
+                LogOf(av).Error("EnergyInterface is null");
                 __result = 0;
             }
 
@@ -136,17 +136,17 @@ public static class PowerRelayPatcher
     {
         if (__instance.IsNull() || __instance.gameObject.IsNull())
             return true;
-        var mv = __instance.gameObject.GetComponent<AvsVehicle>();
-        if (mv.IsNull()) return true;
-        if (mv.energyInterface.IsNull() || mv.energyInterface.sources.IsNull())
+        var av = __instance.gameObject.GetComponent<AvsVehicle>();
+        if (av.IsNull()) return true;
+        if (av.energyInterface.IsNull() || av.energyInterface.sources.IsNull())
         {
-            LogOf(mv).Error("EnergyInterface is null");
+            LogOf(av).Error("EnergyInterface is null");
             __result = 0;
             return false;
         }
 
-        __result = mv.energyInterface.sources.Where(x => x.IsNotNull()).Select(x => x.capacity).Sum();
-        //LogOf(mv).Debug("EnergyInterface.sources.Sum: " + __result);
+        __result = av.energyInterface.sources.Where(x => x.IsNotNull()).Select(x => x.capacity).Sum();
+        //LogOf(av).Debug("EnergyInterface.sources.Sum: " + __result);
         return false;
     }
 }

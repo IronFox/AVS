@@ -1,9 +1,9 @@
 ﻿using AVS.Crafting;
 using AVS.UpgradeModules;
+using AVS.Util;
 using HarmonyLib;
 using System.Collections;
 using System.Collections.Generic;
-using AVS.Util;
 using UnityEngine;
 
 namespace AVS.Patches;
@@ -51,7 +51,7 @@ internal class AvsUpgradesListener : MonoBehaviour
                 true
             );
             UpgradeRegistrar.OnAddActions.ForEach(x => x(addedParams));
-            MainPatcher.Instance.StartCoroutine(BroadcastMessageSoon());
+            MainPatcher.AnyInstance.StartCoroutine(BroadcastMessageSoon());
         }
     }
 
@@ -73,7 +73,7 @@ internal class AvsUpgradesListener : MonoBehaviour
                 false
             );
             UpgradeRegistrar.OnAddActions.ForEach(x => x(addedParams));
-            MainPatcher.Instance.StartCoroutine(BroadcastMessageSoon());
+            MainPatcher.AnyInstance.StartCoroutine(BroadcastMessageSoon());
         }
     }
 

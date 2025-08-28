@@ -3,10 +3,10 @@ using AVS.Localization;
 using AVS.UpgradeModules;
 using AVS.UpgradeModules.Variations;
 using AVS.Util;
+using AVS.VehicleBuilding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS.BaseVehicle;
@@ -136,25 +136,25 @@ public abstract partial class AvsVehicle
     {
         get
         {
-            if (_slotIDs.IsNull()) _slotIDs = GenerateSlotIDs(Config.NumModules);
+            if (_slotIDs.IsNull()) _slotIDs = GenerateSlotIDs(Owner, Config.NumModules);
             return _slotIDs;
         }
     }
 
-    private static string[] GenerateModuleSlots(int modules)
+    private static string[] GenerateModuleSlots(MainPatcher mp, int modules)
     {
         string[] retIDs;
         retIDs = new string[modules];
-        for (var i = 0; i < modules; i++) retIDs[i] = ModuleBuilder.ModuleName(i);
+        for (var i = 0; i < modules; i++) retIDs[i] = ModuleBuilder.ModuleName(mp, i);
         return retIDs;
     }
 
-    private static string[] GenerateSlotIDs(int modules)
+    private static string[] GenerateSlotIDs(MainPatcher mp, int modules)
     {
         string[] retIDs;
         var numUpgradesTotal = modules;
         retIDs = new string[numUpgradesTotal];
-        for (var i = 0; i < modules; i++) retIDs[i] = ModuleBuilder.ModuleName(i);
+        for (var i = 0; i < modules; i++) retIDs[i] = ModuleBuilder.ModuleName(mp, i);
         return retIDs;
     }
 
@@ -175,7 +175,7 @@ public abstract partial class AvsVehicle
         = new();
 
 
-    internal List<string> VehicleModuleSlots => GenerateModuleSlots(Config.NumModules).ToList();
+    internal List<string> VehicleModuleSlots => GenerateModuleSlots(Owner, Config.NumModules).ToList();
 
     internal Dictionary<EquipmentType, List<string>> VehicleTypeToSlots => new()
     {
@@ -323,21 +323,21 @@ public abstract partial class AvsVehicle
         switch (techType)
         {
             case TechType.VehicleStorageModule:
-            {
-                var component = GetSeamothStorageContainer(slotID);
-                if (component.IsNull())
                 {
-                    Log.Warn("Warning: failed to get storage-container for that slotID: " + slotID.ToString());
+                    var component = GetSeamothStorageContainer(slotID);
+                    if (component.IsNull())
+                    {
+                        Log.Warn("Warning: failed to get storage-container for that slotID: " + slotID.ToString());
+                        return null;
+                    }
+
+                    return component.container;
+                }
+            default:
+                {
+                    Log.Error("Error: tried to get storage for unsupported TechType");
                     return null;
                 }
-
-                return component.container;
-            }
-            default:
-            {
-                Log.Error("Error: tried to get storage for unsupported TechType");
-                return null;
-            }
         }
     }
 }

@@ -1,8 +1,8 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Util;
 using HarmonyLib;
 using System.Collections;
 using System.Linq;
-using AVS.Util;
 using UnityEngine;
 
 // PURPOSE: allow the spawn console command to work for AvsVehicle
@@ -34,16 +34,16 @@ public static class SpawnConsoleCommandPatcher
         {
             var text = (string)n.data[0];
             if (UWE.Utils.TryParseEnum<TechType>(text, out var techType))
-                MainPatcher.Instance.StartCoroutine(CheckSpawnForMVs(techType));
+                MainPatcher.AnyInstance.StartCoroutine(CheckSpawnForMVs(techType));
         }
     }
 
     private static void FinishAnySpawningVehicles()
     {
-        void FinishHim(AvsVehicle mv)
+        void FinishHim(AvsVehicle av)
         {
-            mv.GetComponentInChildren<VFXConstructing>(true).constructed = 90f;
-            mv.GetComponentInChildren<VFXConstructing>(true).delay = 0f;
+            av.GetComponentInChildren<VFXConstructing>(true).constructed = 90f;
+            av.GetComponentInChildren<VFXConstructing>(true).delay = 0f;
         }
 
         AvsVehicleManager.VehiclesInPlay

@@ -24,7 +24,7 @@ namespace AVS.VehicleComponents;
 /// </remarks>
 internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
 {
-    public Submarine? mv = null;
+    public Submarine? av = null;
     private bool isLive = true;
     public bool isSimple;
 
@@ -32,9 +32,9 @@ internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
     {
         get
         {
-            if (mv.IsNull() || mv.isScuttled)
+            if (av.IsNull() || av.isScuttled)
                 return new Bounds(Vector3.zero, Vector3.zero);
-            var collider = mv.Com.BoundingBoxCollider;
+            var collider = av.Com.BoundingBoxCollider;
             if (collider.IsNull())
                 return new Bounds(Vector3.zero, Vector3.zero);
             collider.gameObject.SetActive(true);
@@ -56,7 +56,7 @@ internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
                         Logger.Warn(
                             "TetherSource Error: BoundingBoxCollider was not active in its hierarchy. One of its parents must be inactive. Trying to set them active...");
                         var iterator = collider.transform;
-                        while (iterator != mv.transform)
+                        while (iterator != av.transform)
                         {
                             if (!iterator.gameObject.activeSelf)
                             {
@@ -87,16 +87,16 @@ internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
 
     public void Start()
     {
-        if (mv.IsNull() || mv.Com.BoundingBoxCollider.IsNull() || mv.Com.TetherSources.Count == 0)
+        if (av.IsNull() || av.Com.BoundingBoxCollider.IsNull() || av.Com.TetherSources.Count == 0)
         {
             isSimple = true;
         }
         else
         {
             isSimple = false;
-            mv.Com.BoundingBoxCollider.gameObject.SetActive(true);
-            mv.Com.BoundingBoxCollider.enabled = false;
-            mv.Com.TetherSources.ForEach(x => x.SetActive(false));
+            av.Com.BoundingBoxCollider.gameObject.SetActive(true);
+            av.Com.BoundingBoxCollider.enabled = false;
+            av.Com.TetherSources.ForEach(x => x.SetActive(false));
         }
 
         Player.main.StartCoroutine(ManageTether());
@@ -104,7 +104,7 @@ internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
 
     public void TryToDropLeash()
     {
-        if (mv.IsNull() || mv.IsPlayerControlling())
+        if (av.IsNull() || av.IsPlayerControlling())
             return;
         if (isSimple)
         {
@@ -122,9 +122,9 @@ internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
 
     private void MVExit(string reason)
     {
-        mv!.Log.Write("TetherSource: Player exiting vehicle because " + reason);
-        mv.ExitHelmControl();
-        mv.ClosestPlayerExit(false);
+        av!.Log.Write("TetherSource: Player exiting vehicle because " + reason);
+        av.ExitHelmControl();
+        av.ClosestPlayerExit(false);
 
         //// the following block is just for the gargantuan leviathan
         //// that mod disables all vehicle colliders in GargantuanGrab.GrabVehicle
@@ -132,9 +132,9 @@ internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
         //// I don't know why it rips the player out of its position anyways.
         //IEnumerator PleaseEnableColliders()
         //{
-        //    var effectedColliders = mv.GetComponentsInChildren<Collider>(true)
+        //    var effectedColliders = av.GetComponentsInChildren<Collider>(true)
         //        .Where(x => !x.enabled) // collisionModel is set active again
-        //        .Where(x => x != mv.Com.BoundingBoxCollider) // want this to remain disabled
+        //        .Where(x => x != av.Com.BoundingBoxCollider) // want this to remain disabled
         //        .ToList();
         //    while (effectedColliders.Any(x => !x.enabled))
         //    {
@@ -148,7 +148,7 @@ internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
 
     public void TryToEstablishLeash()
     {
-        if (mv.IsNull())
+        if (av.IsNull())
             return;
 
         bool PlayerWithinLeash(GameObject tetherSrc)
@@ -165,25 +165,25 @@ internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
             {
                 if (Vector3.Distance(Player.main.transform.position, transform.position) < 1f)
                 {
-                    mv.Log.Write(
+                    av.Log.Write(
                         "TetherSource: Player is close enough to simple tether source. Registering player entry.");
-                    mv.RegisterTetherEntry(this);
+                    av.RegisterTetherEntry(this);
                 }
                 else if (Vector3.Distance(Player.main.transform.position,
-                             mv.Com.Helms.First().Root.transform.position) < 1f)
+                             av.Com.Helms.First().Root.transform.position) < 1f)
                 {
-                    mv.Log.Write("TetherSource: Player is close enough to helms root. Registering player entry.");
-                    mv.RegisterTetherEntry(this);
+                    av.Log.Write("TetherSource: Player is close enough to helms root. Registering player entry.");
+                    av.RegisterTetherEntry(this);
                 }
             }
             else
             {
-                var closest = mv.Com.TetherSources.FirstOrDefault(PlayerWithinLeash);
+                var closest = av.Com.TetherSources.FirstOrDefault(PlayerWithinLeash);
                 if (closest.IsNotNull())
                 {
-                    mv.Log.Write(
+                    av.Log.Write(
                         $"TetherSource: Player is close enough to tether source {closest.NiceName()}. Registering player entry.");
-                    mv.RegisterTetherEntry(this);
+                    av.RegisterTetherEntry(this);
                 }
             }
         }
@@ -194,11 +194,11 @@ internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
         yield return new WaitForSeconds(3f);
         while (true)
         {
-            if (mv.IsNull())
+            if (av.IsNull())
                 yield break;
             if (isLive)
             {
-                if (mv.IsPlayerInside())
+                if (av.IsPlayerInside())
                     TryToDropLeash();
                 else
                     TryToEstablishLeash();

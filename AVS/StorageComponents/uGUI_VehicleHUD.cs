@@ -16,24 +16,24 @@ internal class uGUI_VehicleHUD : MonoBehaviour
     public HUDChoice HUDType = HUDChoice.Normal;
     private bool IsStorageHUD() => textStorage.IsNotNull();
 
-    private bool HasMvStorage(AvsVehicle mv) => mv.Com.InnateStorages.IsNotNull() ||
-                                                ModularStorageInput.GetAllModularStorageContainers(mv).Count > 0;
+    private bool HasMvStorage(AvsVehicle av) => av.Com.InnateStorages.IsNotNull() ||
+                                                ModularStorageInput.GetAllModularStorageContainers(av).Count > 0;
 
     private void DeactivateAll()
     {
         root!.SetActive(false);
     }
 
-    private bool ShouldIDie(AvsVehicle? mv, PDA? pda)
+    private bool ShouldIDie(AvsVehicle? av, PDA? pda)
     {
-        if (mv.IsNull() || pda.IsNull())
+        if (av.IsNull() || pda.IsNull())
             // show nothing if we're not in an MV
             // or if PDA isn't available
             return true;
 
         if (IsStorageHUD())
         {
-            if (HasMvStorage(mv))
+            if (HasMvStorage(av))
                 switch (HUDType)
                 {
                     case HUDChoice.Normal:
@@ -56,7 +56,7 @@ internal class uGUI_VehicleHUD : MonoBehaviour
                     return false;
                 case HUDChoice.Storage:
                     // I'm the normal HUD, but the user wants storage. I should die if it is available.
-                    return HasMvStorage(mv);
+                    return HasMvStorage(av);
             }
         }
 
@@ -71,9 +71,9 @@ internal class uGUI_VehicleHUD : MonoBehaviour
             return;
         }
 
-        var mv = Player.main.GetAvsVehicle();
+        var av = Player.main.GetAvsVehicle();
         var pda = Player.main.GetPDA();
-        if (ShouldIDie(mv, pda))
+        if (ShouldIDie(av, pda))
         {
             DeactivateAll();
             return;
@@ -95,10 +95,10 @@ internal class uGUI_VehicleHUD : MonoBehaviour
 
     public void UpdateHealth()
     {
-        var mv = Player.main.GetAvsVehicle();
-        if (mv.IsNotNull())
+        var av = Player.main.GetAvsVehicle();
+        if (av.IsNotNull())
         {
-            mv.GetHUDValues(out var num, out var num2);
+            av.GetHUDValues(out var num, out var num2);
             var num3 = Mathf.CeilToInt(num * 100f);
             if (lastHealth != num3)
             {
@@ -110,15 +110,15 @@ internal class uGUI_VehicleHUD : MonoBehaviour
 
     public void UpdateTemperature()
     {
-        var mv = Player.main.GetAvsVehicle();
-        if (mv.IsNotNull())
+        var av = Player.main.GetAvsVehicle();
+        if (av.IsNotNull())
         {
-            var temperature = mv.GetTemperature();
+            var temperature = av.GetTemperature();
             temperatureSmoothValue = temperatureSmoothValue < -10000f
                 ? temperature
                 : Mathf.SmoothDamp(temperatureSmoothValue, temperature, ref temperatureVelocity, 1f);
             int tempNum;
-            if (mv.Config.HudTemperatureIsFahrenheit)
+            if (av.Config.HudTemperatureIsFahrenheit)
                 tempNum = Mathf.CeilToInt(temperatureSmoothValue * 1.8f + 32);
             else
                 tempNum = Mathf.CeilToInt(temperatureSmoothValue);
@@ -127,7 +127,7 @@ internal class uGUI_VehicleHUD : MonoBehaviour
                 lastTemperature = tempNum;
                 textTemperature!.text = IntStringCache.GetStringForInt(lastTemperature);
                 textTemperatureSuffix!.color = new Color32(byte.MaxValue, 220, 0, byte.MaxValue);
-                if (mv.Config.HudTemperatureIsFahrenheit)
+                if (av.Config.HudTemperatureIsFahrenheit)
                     textTemperatureSuffix.text = "°F";
                 else
                     textTemperatureSuffix.text = "°C";
@@ -137,10 +137,10 @@ internal class uGUI_VehicleHUD : MonoBehaviour
 
     public void UpdatePower()
     {
-        var mv = Player.main.GetAvsVehicle();
-        if (mv.IsNotNull())
+        var av = Player.main.GetAvsVehicle();
+        if (av.IsNotNull())
         {
-            mv.GetHUDValues(out var num, out var num2);
+            av.GetHUDValues(out var num, out var num2);
             var num4 = Mathf.CeilToInt(num2 * 100f);
             if (lastPower != num4)
             {
@@ -154,10 +154,10 @@ internal class uGUI_VehicleHUD : MonoBehaviour
     {
         if (textStorage.IsNull())
             return;
-        var mv = Player.main.GetAvsVehicle();
-        if (mv.IsNotNull())
+        var av = Player.main.GetAvsVehicle();
+        if (av.IsNotNull())
         {
-            mv.GetStorageValues(out var stored, out var capacity);
+            av.GetStorageValues(out var stored, out var capacity);
             if (capacity > 0)
             {
                 var ratio = 100 * stored / capacity;

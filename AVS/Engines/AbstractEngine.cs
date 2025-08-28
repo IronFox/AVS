@@ -10,7 +10,7 @@ namespace AVS.Engines;
 /// </summary>
 public abstract class AbstractEngine : MonoBehaviour, IScuttleListener
 {
-    private AvsVehicle? mv = null;
+    private AvsVehicle? av = null;
     private Rigidbody? rb = null;
     //private EngineSounds _sounds = default;
 
@@ -31,13 +31,13 @@ public abstract class AbstractEngine : MonoBehaviour, IScuttleListener
     {
         get
         {
-            if (mv.IsNotNull())
-                return mv;
-            mv = GetComponentInParent<AvsVehicle>();
-            if (mv.IsNull())
+            if (av.IsNotNull())
+                return av;
+            av = GetComponentInParent<AvsVehicle>();
+            if (av.IsNull())
                 throw new System.Exception(
                     $"AvsVehicle component not found on {gameObject.name}. Please ensure this engine is attached to a AvsVehicle or its parent.");
-            return mv;
+            return av;
         }
     }
 
@@ -238,7 +238,7 @@ public abstract class AbstractEngine : MonoBehaviour, IScuttleListener
     /// </summary>
     public virtual void Awake()
     {
-        mv = GetComponent<AvsVehicle>();
+        av = GetComponent<AvsVehicle>();
         rb = GetComponent<Rigidbody>();
         // register self with mainpatcher, for on-the-fly voice selection updating
         //DynamicClipLoader.engines.Add(this);

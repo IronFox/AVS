@@ -1,7 +1,7 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Util;
 using HarmonyLib;
 using System.Collections;
-using AVS.Util;
 using UnityEngine;
 
 // PURPOSE: Resolve an out-of-time error
@@ -43,7 +43,7 @@ public static class CellManagerPatcher
             // Sometimes this function is called when streamer.globalRoot is null.
             // Not sure why or by whom.
             // All it does is set the parent, so we'll do that as soon as we possibly can.
-            MainPatcher.Instance.StartCoroutine(SetParentEventually(__instance, ent));
+            v.Owner.StartCoroutine(SetParentEventually(__instance, ent));
             return false;
         }
 

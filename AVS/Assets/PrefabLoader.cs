@@ -1,7 +1,7 @@
 ﻿using AVS.Log;
+using AVS.Util;
 using System.Collections;
 using System.Collections.Generic;
-using AVS.Util;
 using UnityEngine;
 
 namespace AVS.Assets;
@@ -19,7 +19,7 @@ public class PrefabLoader
         Log = outLog.Tag(nameof(PrefabLoader)).Tag(techType.AsString());
         TechType = techType;
         IfNotFoundLeaveEmpty = ifNotFoundLeaveEmpty;
-        _ = MainPatcher.Instance.StartCoroutine(LoadResource());
+        _ = MainPatcher.AnyInstance.StartCoroutine(LoadResource());
     }
 
     /// <summary>
@@ -56,6 +56,7 @@ public class PrefabLoader
         return new WaitUntil(() => Prefab || TerminalFailure);
     }
 
+
     /// <summary>
     /// Requests a <see cref="PrefabLoader"/> instance for the specified <see cref="TechType"/>.
     /// </summary>
@@ -72,10 +73,11 @@ public class PrefabLoader
     /// instance already exists, it returns the existing instance; otherwise, it creates a new one and starts the loading process.</returns>
     public static PrefabLoader Request(TechType techType, LogWriter outLog, bool ifNotFoundLeaveEmpty)
     {
-        if (_loaders.TryGetValue((techType, ifNotFoundLeaveEmpty), out var instance))
+        var key = (techType, ifNotFoundLeaveEmpty);
+        if (_loaders.TryGetValue(key, out var instance))
             return instance;
 
-        _loaders[(techType, ifNotFoundLeaveEmpty)] =
+        _loaders[key] =
             instance = new PrefabLoader(techType, ifNotFoundLeaveEmpty, outLog);
         return instance;
     }
@@ -117,9 +119,9 @@ public class PrefabLoader
 
             Log.Write($"Requesting prefab for {TechType}.");
             TaskResult<GameObject> result = new();
-            var cor = MainPatcher.Instance.StartCoroutine(
+            var nested = MainPatcher.AnyInstance.StartCoroutine(
                 CraftData.InstantiateFromPrefabAsync(TechType, result, IfNotFoundLeaveEmpty));
-            yield return cor;
+            yield return nested;
             var prefab = result.Get();
             if (prefab.IsNull())
             {

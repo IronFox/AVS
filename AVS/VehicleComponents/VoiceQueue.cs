@@ -1,12 +1,11 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Configuration;
+using AVS.Interfaces;
 using AVS.Util;
-using AVS.VehicleTypes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.Interfaces;
 using UnityEngine;
 
 namespace AVS;
@@ -150,7 +149,7 @@ internal readonly struct Queued
 /// subtitles for voice lines when enabled.</remarks>
 public class VoiceQueue : MonoBehaviour, IScuttleListener
 {
-    private AvsVehicle? mv;
+    private AvsVehicle? av;
     private EnergyInterface? aiEI;
     private List<AudioSource> speakers = new();
 
@@ -179,11 +178,11 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
     public void Awake()
     {
         isReadyToSpeak = false;
-        mv = GetComponent<AvsVehicle>();
-        if (mv.Com.BackupBatteries.Count > 0)
-            aiEI = mv.Com.BackupBatteries[0].Root.GetComponent<EnergyInterface>();
+        av = GetComponent<AvsVehicle>();
+        if (av.Com.BackupBatteries.Count > 0)
+            aiEI = av.Com.BackupBatteries[0].Root.GetComponent<EnergyInterface>();
         else
-            aiEI = mv.energyInterface;
+            aiEI = av.energyInterface;
 
         // register self with mainpatcher, for on-the-fly voice selection updating
         //VoiceManager.voices.Add(this);
@@ -194,14 +193,14 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
             yield break;
         }
 
-        MainPatcher.Instance.StartCoroutine(WaitUntilReadyToSpeak());
+        av.Owner.StartCoroutine(WaitUntilReadyToSpeak());
     }
 
     private void SetupSpeakers()
     {
         speakers.Add(gameObject.EnsureComponent<AudioSource>().Register());
-        //speakers.Add(mv.VehicleModel.EnsureComponent<AudioSource>());
-        // if (mv is Submarine sub)
+        //speakers.Add(av.VehicleModel.EnsureComponent<AudioSource>());
+        // if (av is Submarine sub)
         // {
         //     foreach (var ps in sub.Com.Helms)
         //     {
@@ -216,7 +215,7 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
         //         speakers.Add(ps.EnsureComponent<AudioSource>().Register());
         //     }
         // }
-        // if (mv is Submersible sub2)
+        // if (av is Submersible sub2)
         // {
         //     speakers.Add(sub2.Com.PilotSeat.Root.EnsureComponent<AudioSource>().Register());
         //     foreach (var ps in sub2.Com.Hatches)
@@ -250,10 +249,10 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
     /// <inheritdoc/>
     public void Update()
     {
-        if (mv.IsNull() || aiEI.IsNull())
+        if (av.IsNull() || aiEI.IsNull())
             return;
         foreach (var speaker in speakers)
-            if (mv.IsBoarded)
+            if (av.IsBoarded)
                 speaker.GetComponent<AudioLowPassFilter>().enabled = false;
             else
                 speaker.GetComponent<AudioLowPassFilter>().enabled = true;
@@ -296,13 +295,13 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
                 {
                     if (!speaker.enabled)
                         continue;
-                    speaker.volume = part.Volume * mv!.Config.GetVoiceSoundVolume() * SoundSystem.GetVoiceVolume() *
+                    speaker.volume = part.Volume * av!.Config.GetVoiceSoundVolume() * SoundSystem.GetVoiceVolume() *
                                      SoundSystem.GetMasterVolume();
                     speaker.clip = part.Clip;
                     speaker.Play();
                 }
 
-            if ((!part.HasClips || mv!.Config.GetVoiceSubtitlesEnabled())
+            if ((!part.HasClips || av!.Config.GetVoiceSubtitlesEnabled())
                 && part.IsFirst && part.Line.TextTranslationKey.IsNotNull())
                 CreateSubtitle(part.Line.TextTranslationKey);
         }
@@ -319,7 +318,7 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
     /// <param name="line">Line to play</param>
     public void Play(VoiceLine line)
     {
-        if (mv && aiEI.IsNotNull() && aiEI.hasCharge)
+        if (av && aiEI.IsNotNull() && aiEI.hasCharge)
             if (Playing is null || Playing.Priority < line.Priority)
             {
                 Playing = line;
@@ -344,6 +343,6 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
 
     private void CreateSubtitle(string textTranslationKey)
     {
-        Logger.PDANote($"{mv!.subName.hullName.text}: {Language.main.Get(textTranslationKey)}");
+        Logger.PDANote($"{av!.subName.hullName.text}: {Language.main.Get(textTranslationKey)}");
     }
 }

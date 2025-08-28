@@ -411,7 +411,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     {
                         Log.Write($"Loading inhabitant {tt} for water park {index}");
                         var load = CraftData.GetPrefabForTechTypeAsync(tt);
-                        MainPatcher.Instance.StartCoroutine(load);
+                        MainPatcher.AnyInstance.StartCoroutine(load);
 
                         itemsToAdd.Add(new LoadingInhabitant
                         (

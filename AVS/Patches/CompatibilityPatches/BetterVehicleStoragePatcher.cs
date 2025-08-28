@@ -27,7 +27,7 @@ public static class BetterVehicleStoragePatcher
         return true;
     }
 
-    internal static void TryUseBetterVehicleStorage(AvsVehicle mv, int slotID, TechType techType)
+    internal static void TryUseBetterVehicleStorage(AvsVehicle av, int slotID, TechType techType)
     {
         var type3 = Type.GetType("BetterVehicleStorage.Managers.StorageModuleMgr, BetterVehicleStorage", false, false);
         if (type3.IsNotNull())
@@ -38,7 +38,7 @@ public static class BetterVehicleStoragePatcher
 
             if (isBetterVehicleStorageModule)
             {
-                var slotItem = mv.GetSlotItem(slotID);
+                var slotItem = av.GetSlotItem(slotID);
                 if (slotItem.IsNull())
                     return; // No item in the slot, nothing to do.
 

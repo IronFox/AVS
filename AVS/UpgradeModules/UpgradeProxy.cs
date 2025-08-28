@@ -1,9 +1,11 @@
 ﻿using AVS.Assets;
+using AVS.BaseVehicle;
 using AVS.Log;
 using AVS.Util;
+using AVS.VehicleBuilding;
+using System;
 using System.Collections;
 using System.Collections.Generic;
-using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS;
@@ -27,11 +29,13 @@ public class UpgradeProxy : MonoBehaviour
     /// Slot list passed on to the VehicleUpgradeConsoleInput.
     /// </summary>
     public List<VehicleUpgradeConsoleInput.Slot>? slots = null;
+    [SerializeField]
+    internal AvsVehicle? av;
 
     /// <inheritdoc />
     public void Awake()
     {
-        MainPatcher.Instance.StartCoroutine(GetSeamothBitsASAP());
+        av.OrThrow(() => new InvalidOperationException("UpgradeProxy.av not set")).Owner.StartCoroutine(GetSeamothBitsASAP());
     }
 
     /// <summary>
@@ -44,6 +48,8 @@ public class UpgradeProxy : MonoBehaviour
     public IEnumerator GetSeamothBitsASAP()
     {
         var log = LogWriter.Default.Tag(nameof(UpgradeProxy));
+
+        var mp = av.OrThrow(() => new InvalidOperationException("UpgradeProxy.av not set")).Owner;
 
         log.Write("Waiting for Seamoth to be ready...");
         yield return SeamothHelper.WaitUntilLoaded();
@@ -76,7 +82,7 @@ public class UpgradeProxy : MonoBehaviour
             LogWriter.Default.Write(
                 $"Instantiating upgrade module #{i}/{proxies.Length} in {proxies[i].NiceName()}: {model.NiceName()} using scale {model.transform.localScale}");
             VehicleUpgradeConsoleInput.Slot slot;
-            slot.id = ModuleBuilder.ModuleName(i);
+            slot.id = ModuleBuilder.ModuleName(mp, i);
             slot.model = model;
             slots.Add(slot);
         }

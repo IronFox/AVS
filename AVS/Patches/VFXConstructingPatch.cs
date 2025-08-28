@@ -25,30 +25,30 @@ public static class VFXConstructingPatch
     /// Manages the visual effects (VFX) colors for a construction process, including ghost and wireframe colors.
     /// </summary>
     /// <remarks>This method updates the ghost material and wireframe colors of the provided <paramref
-    /// name="vfx"/> instance based on the configuration settings in the <paramref name="mv"/> instance. If the
+    /// name="vfx"/> instance based on the configuration settings in the <paramref name="av"/> instance. If the
     /// ghost or wireframe colors in the configuration are set to <see cref="Color.black"/>, the corresponding
     /// visual effect will not be updated. The method waits until the ghost material of the <paramref name="vfx"/>
     /// instance is initialized before applying any updates.</remarks>
     /// <param name="vfx">The <see cref="VFXConstructing"/> instance representing the visual effects to be updated. Must not be null.</param>
-    /// <param name="mv">The <see cref="AvsVehicle"/> instance containing configuration settings for the construction process. Must
+    /// <param name="av">The <see cref="AvsVehicle"/> instance containing configuration settings for the construction process. Must
     /// not be null.</param>
     /// <returns>An enumerator that can be used to control the execution of the color management process.</returns>
-    public static IEnumerator ManageColor(VFXConstructing vfx, AvsVehicle mv)
+    public static IEnumerator ManageColor(VFXConstructing vfx, AvsVehicle av)
     {
         if (vfx.IsNotNull())
         {
             yield return new WaitUntil(() => vfx.ghostMaterial.IsNotNull());
-            if (mv.Config.ConstructionGhostColor != Color.black)
+            if (av.Config.ConstructionGhostColor != Color.black)
             {
                 var customGhostMat = new Material(Shaders.FindMainShader());
                 customGhostMat.CopyPropertiesFromMaterial(vfx.ghostMaterial);
                 vfx.ghostMaterial = customGhostMat;
-                vfx.ghostMaterial.color = mv.Config.ConstructionGhostColor;
-                vfx.ghostOverlay.material.color = mv.Config.ConstructionGhostColor;
+                vfx.ghostMaterial.color = av.Config.ConstructionGhostColor;
+                vfx.ghostOverlay.material.color = av.Config.ConstructionGhostColor;
             }
 
-            if (mv.Config.ConstructionWireframeColor != Color.black)
-                vfx.wireColor = mv.Config.ConstructionWireframeColor;
+            if (av.Config.ConstructionWireframeColor != Color.black)
+                vfx.wireColor = av.Config.ConstructionWireframeColor;
         }
     }
 
@@ -65,13 +65,13 @@ public static class VFXConstructingPatch
     [HarmonyPatch(nameof(VFXConstructing.StartConstruction))]
     public static void StartConstructionPostfix(VFXConstructing __instance)
     {
-        var mv = __instance.GetComponent<AvsVehicle>();
-        if (mv.IsNotNull())
+        var av = __instance.GetComponent<AvsVehicle>();
+        if (av.IsNotNull())
         {
-            __instance.timeToConstruct = mv.Config.TimeToConstruct;
+            __instance.timeToConstruct = av.Config.TimeToConstruct;
             __instance.BroadcastMessage(nameof(AvsVehicle.SubConstructionBeginning), null, (SendMessageOptions)1);
             __instance.SendMessageUpwards(nameof(AvsVehicle.SubConstructionBeginning), null, (SendMessageOptions)1);
-            MainPatcher.Instance.StartCoroutine(ManageColor(__instance, mv));
+            av.Owner.StartCoroutine(ManageColor(__instance, av));
         }
     }
 }

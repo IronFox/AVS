@@ -32,11 +32,11 @@ internal class VehicleUpgradeConsoleInputPatcher
     [HarmonyPatch(nameof(VehicleUpgradeConsoleInput.UpdateVisuals))]
     public static void UpdateVisualsPostfix(VehicleUpgradeConsoleInput __instance)
     {
-        var mv = __instance.GetComponentInParent<AvsVehicle>();
-        if (mv.IsNotNull() && __instance.GetComponentInChildren<UpgradeProxy>().IsNotNull() &&
+        var av = __instance.GetComponentInParent<AvsVehicle>();
+        if (av.IsNotNull() && __instance.GetComponentInChildren<UpgradeProxy>().IsNotNull() &&
             __instance.GetComponentInChildren<UpgradeProxy>().slots.IsNotNull())
         {
-            var log = mv.Log.Tag(nameof(UpdateVisualsPostfix));
+            var log = av.Log.Tag(nameof(UpdateVisualsPostfix));
             var proxy = __instance.GetComponentInChildren<UpgradeProxy>();
             if (proxy.IsNull() || proxy.slots.IsNull())
             {
@@ -72,10 +72,10 @@ internal class VehicleUpgradeConsoleInputPatcher
     [HarmonyPatch(nameof(VehicleUpgradeConsoleInput.OnHandClick))]
     public static void VehicleUpgradeConsoleInputOnHandClickHarmonyPostfix(VehicleUpgradeConsoleInput __instance)
     {
-        foreach (var mv in AvsVehicleManager.VehiclesInPlay.Where(x => x.IsNotNull()))
-            if (mv.upgradesInput == __instance)
+        foreach (var av in AvsVehicleManager.VehiclesInPlay.Where(x => x.IsNotNull()))
+            if (av.upgradesInput == __instance)
             {
-                ModuleBuilder.Main.SignalOpened(__instance, mv);
+                ModuleBuilder.Main.SignalOpened(__instance, av);
 
                 break;
             }

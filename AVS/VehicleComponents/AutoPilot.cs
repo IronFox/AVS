@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections;
-using AVS.BaseVehicle;
+﻿using AVS.BaseVehicle;
 using AVS.Interfaces;
 using AVS.Log;
 using AVS.Util;
+using System;
+using System.Collections;
 using UnityEngine;
 
 namespace AVS.VehicleComponents;
@@ -155,10 +155,10 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
     IScuttleListener
 {
     internal EnergyInterface? aiEI;
-    internal AvsVehicle mv => GetComponent<AvsVehicle>();
-    internal LiveMixin liveMixin => mv.liveMixin;
-    internal EnergyInterface eInterf => mv.energyInterface;
-    internal LogWriter Log => mv.Log.Prefixed("Autopilot");
+    internal AvsVehicle av => GetComponent<AvsVehicle>();
+    internal LiveMixin liveMixin => av.liveMixin;
+    internal EnergyInterface eInterf => av.energyInterface;
+    internal LogWriter Log => av.Log.Prefixed("Autopilot");
 
     private PositiveValueThresholdTracker DepthTracker { get; }
         = new(
@@ -244,20 +244,20 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
     /// <inheritdoc/>
     public void Awake()
     {
-        //mv.voice = apVoice = mv.gameObject.EnsureComponent<VoiceQueue>();
-        //mv.voice = apVoice = mv.gameObject.EnsureComponent<VoiceQueue>();
-        //mv.voice.voice = VoiceManager.GetDefaultVoice(mv);
-        //mv.gameObject.EnsureComponent<AutopilotNavigator>();
+        //av.voice = apVoice = av.gameObject.EnsureComponent<VoiceQueue>();
+        //av.voice = apVoice = av.gameObject.EnsureComponent<VoiceQueue>();
+        //av.voice.voice = VoiceManager.GetDefaultVoice(av);
+        //av.gameObject.EnsureComponent<AutopilotNavigator>();
         DangerStatus = AutopilotStatus.LeviathanSafe;
     }
 
     /// <inheritdoc/>
     public void Start()
     {
-        if (mv.Com.BackupBatteries.Count > 0)
-            aiEI = mv.Com.BackupBatteries[0].Root.GetComponent<EnergyInterface>();
+        if (av.Com.BackupBatteries.Count > 0)
+            aiEI = av.Com.BackupBatteries[0].Root.GetComponent<EnergyInterface>();
         else
-            aiEI = mv.energyInterface;
+            aiEI = av.energyInterface;
     }
 
     /// <inheritdoc/>
@@ -265,9 +265,9 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
     {
         MaybeRefillOxygen();
 
-        if (!mv.VehicleIsReady)
+        if (!av.VehicleIsReady)
             return;
-        var listeners = mv.GetComponentsInChildren<IAutopilotEventListener>();
+        var listeners = av.GetComponentsInChildren<IAutopilotEventListener>();
         if (listeners.Length == 0)
             return;
 
@@ -275,24 +275,24 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
         UpdatePowerState(listeners);
         UpdateDepthState(listeners);
 
-        //if (mv is Submarine s && s.DoesAutolevel && mv.VFEngine is Engines.AvsVehicleEngine)
+        //if (av is Submarine s && s.DoesAutolevel && av.VFEngine is Engines.AvsVehicleEngine)
         //{
         //    MaybeAutoLevel(s);
         //    CheckForDoubleTap(s);
         //}
     }
 
-    //public void MaybeAutoLevel(Submarine mv)
+    //public void MaybeAutoLevel(Submarine av)
     //{
     //    Vector2 lookDir = GameInput.GetLookDelta();
-    //    if (autoLeveling && (10f < lookDir.magnitude || !mv.GetIsUnderwater()))
+    //    if (autoLeveling && (10f < lookDir.magnitude || !av.GetIsUnderwater()))
     //    {
     //        autoLeveling = false;
     //        return;
     //    }
-    //    if ((!isDead || aiEI.hasCharge) && (autoLeveling || !mv.IsPlayerControlling()) && mv.GetIsUnderwater())
+    //    if ((!isDead || aiEI.hasCharge) && (autoLeveling || !av.IsPlayerControlling()) && av.GetIsUnderwater())
     //    {
-    //        if (RollDelta < 0.4f && PitchDelta < 0.4f && mv.useRigidbody.velocity.magnitude < mv.ExitVelocityLimit)
+    //        if (RollDelta < 0.4f && PitchDelta < 0.4f && av.useRigidbody.velocity.magnitude < av.ExitVelocityLimit)
     //        {
     //            autoLeveling = false;
     //            return;
@@ -302,24 +302,24 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
     //            Quaternion desiredRotation = Quaternion.Euler(new Vector3(0, transform.rotation.eulerAngles.y, 0));
     //            // Smoothly move towards target rotation using physics
     //            Quaternion smoothedRotation = Quaternion.RotateTowards(
-    //                mv.useRigidbody.rotation,
+    //                av.useRigidbody.rotation,
     //                desiredRotation,
     //                smoothTime * Time.deltaTime * autoLevelRate
     //            );
-    //            mv.useRigidbody.MoveRotation(smoothedRotation);
+    //            av.useRigidbody.MoveRotation(smoothedRotation);
     //        }
     //    }
     //}
-    //private void CheckForDoubleTap(Submarine mv)
+    //private void CheckForDoubleTap(Submarine av)
     //{
-    //    if ((!isDead || aiEI.hasCharge) && GameInput.GetButtonDown(GameInput.Button.Exit) && mv.IsPlayerControlling())
+    //    if ((!isDead || aiEI.hasCharge) && GameInput.GetButtonDown(GameInput.Button.Exit) && av.IsPlayerControlling())
     //    {
     //        if (Time.time - timeOfLastLevelTap < doubleTapWindow)
     //        {
     //            autoLeveling = true;
     //            var smoothTime1 = 5f * PitchDelta / 90f;
     //            var smoothTime2 = 5f * RollDelta / 90f;
-    //            var smoothTime3 = mv.GetComponent<AVS.Engines.AvsVehicleEngine>().GetTimeToStop();
+    //            var smoothTime3 = av.GetComponent<AVS.Engines.AvsVehicleEngine>().GetTimeToStop();
     //            smoothTime = Mathf.Max(smoothTime1, smoothTime2, smoothTime3);
     //        }
     //        else
@@ -351,7 +351,7 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
     {
         try
         {
-            mv.GetEnergyValues(out var totalPower, out var totalCapacity);
+            av.GetEnergyValues(out var totalPower, out var totalCapacity);
             //Log.Debug($"Total power: {totalPower}, Total capacity: {totalCapacity}");
             if (totalCapacity <= 0)
                 //Log.Error("Total capacity is zero, cannot update power state.");
@@ -395,17 +395,17 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
 
     private void MaybeRefillOxygen()
     {
-        var totalPower = mv.energyInterface.TotalCanProvide(out _);
+        var totalPower = av.energyInterface.TotalCanProvide(out _);
         var totalAIPower = eInterf.TotalCanProvide(out _);
-        if (totalPower < 0.1 && totalAIPower >= 0.1 && mv.IsBoarded)
+        if (totalPower < 0.1 && totalAIPower >= 0.1 && av.IsBoarded)
         {
             // The main batteries are out, so the AI will take over life support.
             var oxygenMgr = Player.main.oxygenMgr;
             oxygenMgr.GetTotal(out var num, out var num2);
-            var amount = Mathf.Min(num2 - num, mv.oxygenPerSecond * Time.deltaTime) * mv.oxygenEnergyCost;
-            if (mv.aiEnergyInterface.IsNotNull())
+            var amount = Mathf.Min(num2 - num, av.oxygenPerSecond * Time.deltaTime) * av.oxygenEnergyCost;
+            if (av.aiEnergyInterface.IsNotNull())
             {
-                var secondsToAdd = mv.aiEnergyInterface.ConsumeEnergy(amount) / mv.oxygenEnergyCost;
+                var secondsToAdd = av.aiEnergyInterface.ConsumeEnergy(amount) / av.oxygenEnergyCost;
                 oxygenMgr.AddOxygen(secondsToAdd);
             }
         }
@@ -461,9 +461,9 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
         Log.Debug("OnPowerUp");
         isDead = false;
         //apVoice.EnqueueClip(apVoice.voice.EnginePoweringUp);
-        var listeners = mv.GetComponentsInChildren<IAutopilotEventListener>();
+        var listeners = av.GetComponentsInChildren<IAutopilotEventListener>();
         listeners.ForEach(l => l.Signal(AutopilotEvent.PowerUp));
-        if (mv.IsBoarded)
+        if (av.IsBoarded)
         {
             IEnumerator ShakeCamera()
             {
@@ -471,7 +471,7 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
                 MainCameraControl.main.ShakeCamera(1f, 0.5f);
             }
 
-            MainPatcher.Instance.StartCoroutine(ShakeCamera());
+            MainPatcher.AnyInstance.StartCoroutine(ShakeCamera());
             MainCameraControl.main.ShakeCamera(0.15f, 4.5f);
         }
     }
@@ -480,7 +480,7 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
     {
         Log.Debug("OnPowerDown");
         isDead = true;
-        mv.GetComponentsInChildren<IAutopilotEventListener>()
+        av.GetComponentsInChildren<IAutopilotEventListener>()
             .ForEach(l => l.Signal(AutopilotEvent.PowerDown));
     }
 
@@ -507,14 +507,14 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
     void IPlayerListener.OnPlayerEntry()
     {
         Log.Debug("OnPlayerEntry");
-        mv.GetComponentsInChildren<IAutopilotEventListener>()
+        av.GetComponentsInChildren<IAutopilotEventListener>()
             .ForEach(l => l.Signal(AutopilotEvent.PlayerEntry));
     }
 
     void IPlayerListener.OnPlayerExit()
     {
         Log.Debug("OnPlayerExit");
-        mv.GetComponentsInChildren<IAutopilotEventListener>()
+        av.GetComponentsInChildren<IAutopilotEventListener>()
             .ForEach(l => l.Signal(AutopilotEvent.PlayerExit));
     }
 
@@ -533,7 +533,7 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
         Log.Debug("OnBatteryDead");
         var was = PowerTracker.CurrentStatus;
         PowerTracker.SetLevel(AutopilotStatus.PowerDead); // Reset power tracker to dead state
-        mv.GetComponentsInChildren<IAutopilotEventListener>()
+        av.GetComponentsInChildren<IAutopilotEventListener>()
             .ForEach(l => l.Signal(new AutopilotStatusChange(was, AutopilotStatus.PowerDead)));
     }
 
@@ -556,19 +556,19 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
             var was = DangerStatus;
             DangerStatus = AutopilotStatus.LeviathanSafe;
             if (was != DangerStatus)
-                mv.GetComponentsInChildren<IAutopilotEventListener>()
+                av.GetComponentsInChildren<IAutopilotEventListener>()
                     .ForEach(l => l.Signal(new AutopilotStatusChange(was, DangerStatus)));
         }
 
         StopAllCoroutines();
         timeWeStartedWaiting = Time.time;
-        MainPatcher.Instance.StartCoroutine(ResetDangerStatusEventually());
+        MainPatcher.AnyInstance.StartCoroutine(ResetDangerStatusEventually());
         if (DangerStatus == AutopilotStatus.LeviathanSafe)
         {
             var was = DangerStatus;
             DangerStatus = AutopilotStatus.LeviathanNearby;
             if (was != DangerStatus)
-                mv.GetComponentsInChildren<IAutopilotEventListener>()
+                av.GetComponentsInChildren<IAutopilotEventListener>()
                     .ForEach(l => l.Signal(new AutopilotStatusChange(was, DangerStatus)));
         }
     }

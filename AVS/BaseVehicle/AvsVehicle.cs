@@ -1,4 +1,5 @@
-﻿using AVS.Composition;
+﻿using AVS.Admin;
+using AVS.Composition;
 using AVS.Configuration;
 using AVS.Localization;
 using AVS.Log;
@@ -194,7 +195,9 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
 
         base.Awake();
 
-        AvsVehicleManager.EnrollVehicle(this); // Register our new vehicle with AVS
+        var mp = Owner;
+
+        AvsVehicleManager.EnrollVehicle(mp, this); // Register our new vehicle with AVS
         UpgradeOnAddedActions.Add(StorageModuleAction);
         UpgradeOnAddedActions.Add(ArmorPlatingModuleAction);
         UpgradeOnAddedActions.Add(PowerUpgradeModuleAction);
@@ -490,7 +493,7 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
             StabilizeRoll();
         prevVelocity = useRigidbody.velocity;
         var shouldSetKinematic = teleporting || (!constructionFallOverride && !GetPilotingMode() &&
-                                                 (!Admin.GameStateWatcher.IsWorldSettled || docked ||
+                                                 (!GameStateWatcher.IsWorldSettled || docked ||
                                                   !vfxConstructing.IsConstructed()));
         UWE.Utils.SetIsKinematicAndUpdateInterpolation(useRigidbody, shouldSetKinematic, true);
     }
@@ -603,16 +606,16 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
 
     internal static void MaybeControlRotation(Vehicle veh)
     {
-        if (veh is AvsVehicle mv)
+        if (veh is AvsVehicle av)
         {
-            if (!mv.GetPilotingMode()
-                || !mv.IsBoarded
-                || !mv.Com.Engine.enabled
+            if (!av.GetPilotingMode()
+                || !av.IsBoarded
+                || !av.Com.Engine.enabled
                 || Player.main.GetPDA().isOpen
                 || (AvatarInputHandler.main && !AvatarInputHandler.main.IsEnabled())
-                || !mv.energyInterface.hasCharge)
+                || !av.energyInterface.hasCharge)
                 return;
-            mv.Com.Engine.ControlRotation();
+            av.Com.Engine.ControlRotation();
         }
     }
 

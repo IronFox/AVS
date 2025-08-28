@@ -21,23 +21,23 @@ internal static class SaveManager
      * List<Tuple<Dictionary<Vector3, Vector3>, TechType>>
      * List<TechType>
      */
-    internal static bool MatchMv(AvsVehicle mv, Vector3 location) =>
+    internal static bool MatchMv(AvsVehicle av, Vector3 location) =>
         // the following floats we compare should in reality be the same
         // but anyways there's probably no closer mod vehicle than 1 meter
-        Vector3.Distance(mv.transform.position, location) < 2;
+        Vector3.Distance(av.transform.position, location) < 2;
 
     internal static List<Tuple<Vector3, Dictionary<string, techtype>>> SerializeUpgrades() => new();
 
-    //internal static IEnumerator DeserializeUpgrades(SaveData data, AvsVehicle mv)
+    //internal static IEnumerator DeserializeUpgrades(SaveData data, AvsVehicle av)
     //{
-    //    if (data.IsNull() || mv.IsNull() || data.UpgradeLists.IsNull())
+    //    if (data.IsNull() || av.IsNull() || data.UpgradeLists.IsNull())
     //    {
     //        yield break;
     //    }
     //    // try to match against a saved vehicle in our list
     //    foreach (Tuple<Vector3, Dictionary<string, techtype>> tup in data.UpgradeLists)
     //    {
-    //        if (MatchMv(mv, tup.Item1))
+    //        if (MatchMv(av, tup.Item1))
     //        {
     //            foreach (KeyValuePair<string, techtype> pair in tup.Item2)
     //            {
@@ -51,16 +51,16 @@ internal static class SaveManager
     //                try
     //                {
     //                    GameObject thisUpgrade = result.Get();
-    //                    thisUpgrade.transform.SetParent(mv.modulesRoot.transform);
+    //                    thisUpgrade.transform.SetParent(av.modulesRoot.transform);
     //                    thisUpgrade.SetActive(false);
     //                    InventoryItem thisItem = new InventoryItem(thisUpgrade.GetComponent<Pickupable>());
-    //                    mv.modules.AddItem(pair.Key, thisItem, true);
+    //                    av.modules.AddItem(pair.Key, thisItem, true);
     //                    // try calling OnUpgradeModulesChanged now
-    //                    mv.UpdateModuleSlots();
+    //                    av.UpdateModuleSlots();
     //                }
     //                catch (Exception e)
     //                {
-    //                    Logger.LogException($"Failed to load upgrades for {mv.GetName()}", e);
+    //                    Logger.LogException($"Failed to load upgrades for {av.GetName()}", e);
     //                }
     //            }
     //        }
@@ -68,21 +68,21 @@ internal static class SaveManager
     //}
     internal static List<Tuple<Vector3, List<Tuple<int, batteries>>>> SerializeModularStorage() => new();
 
-    //internal static IEnumerator DeserializeModularStorage(SaveData data, AvsVehicle mv)
+    //internal static IEnumerator DeserializeModularStorage(SaveData data, AvsVehicle av)
     //{
-    //    if (data.IsNull() || mv.IsNull() || data.ModularStorages.IsNull())
+    //    if (data.IsNull() || av.IsNull() || data.ModularStorages.IsNull())
     //    {
     //        yield break;
     //    }
     //    // try to match against a saved vehicle in our list
     //    foreach (Tuple<Vector3, List<Tuple<int, batteries>>> vehicle in data.ModularStorages)
     //    {
-    //        if (MatchMv(mv, vehicle.Item1))
+    //        if (MatchMv(av, vehicle.Item1))
     //        {
     //            // we've matched the vehicle
     //            foreach (var container in vehicle.Item2)
     //            {
-    //                var thisContainer = mv.ModGetStorageInSlot(container.Item1, TechType.VehicleStorageModule);
+    //                var thisContainer = av.ModGetStorageInSlot(container.Item1, TechType.VehicleStorageModule);
     //                if (thisContainer.IsNotNull())
     //                {
     //                    foreach (var techtype in container.Item2)
@@ -110,7 +110,7 @@ internal static class SaveManager
     //                                Transform batSlot = thisItem.transform.Find("BatterySlot");
     //                                if (batSlot.IsNull())
     //                                {
-    //                                    Logger.Warn($"Failed to load modular storage item {thisItem.name} to modular storage in vehicle {mv.GetName()}.");
+    //                                    Logger.Warn($"Failed to load modular storage item {thisItem.name} to modular storage in vehicle {av.GetName()}.");
     //                                    continue;
     //                                }
     //                                result = new TaskResult<GameObject>();
@@ -119,20 +119,20 @@ internal static class SaveManager
     //                                if (newBat.GetComponent<Battery>().IsNotNull())
     //                                {
     //                                    newBat.GetComponent<Battery>().charge = techtype.Item2;
-    //                                    Logger.Warn($"Failed to load modular storage battery {thisItem.name} to modular storage in vehicle {mv.GetName()}.");
+    //                                    Logger.Warn($"Failed to load modular storage battery {thisItem.name} to modular storage in vehicle {av.GetName()}.");
     //                                }
     //                                newBat.transform.SetParent(batSlot);
     //                                newBat.SetActive(false);
     //                            }
     //                        }
-    //                        thisItem.transform.SetParent(mv.Com.StorageRootObject.transform);
+    //                        thisItem.transform.SetParent(av.Com.StorageRootObject.transform);
     //                        try
     //                        {
     //                            thisContainer.AddItem(thisItem.GetComponent<Pickupable>());
     //                        }
     //                        catch (Exception e)
     //                        {
-    //                            Logger.LogException($"Failed to add storage item {thisItem.name} to modular storage in vehicle {mv.GetName()}.", e);
+    //                            Logger.LogException($"Failed to add storage item {thisItem.name} to modular storage in vehicle {av.GetName()}.", e);
     //                        }
     //                        thisItem.SetActive(false);
     //                    }
@@ -147,46 +147,46 @@ internal static class SaveManager
     //}
     internal static List<Tuple<Vector3, List<Tuple<Vector3, batteries>>>> SerializeInnateStorage() => new();
 
-    //internal static IEnumerator DeserializeInnateStorage(SaveData data, AvsVehicle mv)
+    //internal static IEnumerator DeserializeInnateStorage(SaveData data, AvsVehicle av)
     //{
-    //    if (data.IsNull() || mv.IsNull() || data.InnateStorages.IsNull())
+    //    if (data.IsNull() || av.IsNull() || data.InnateStorages.IsNull())
     //    {
     //        yield break;
     //    }
     //    // try to match against a saved vehicle in our list
     //    foreach (Tuple<Vector3, List<Tuple<Vector3, batteries>>> vehicle in data.InnateStorages)
     //    {
-    //        if (MatchMv(mv, vehicle.Item1))
+    //        if (MatchMv(av, vehicle.Item1))
     //        {
     //            foreach (var thisStorage in vehicle.Item2)
     //            {
     //                bool isStorageMatched = false;
-    //                if (mv.GetComponentsInChildren<InnateStorageContainer>().Count() == 0)
+    //                if (av.GetComponentsInChildren<InnateStorageContainer>().Count() == 0)
     //                {
     //                    continue;
     //                }
     //                // load up the storages
-    //                foreach (var isc in mv.GetComponentsInChildren<InnateStorageContainer>())
+    //                foreach (var isc in av.GetComponentsInChildren<InnateStorageContainer>())
     //                {
     //                    isStorageMatched = false;
-    //                    Vector3 thisLocalPos = mv.transform.InverseTransformPoint(isc.transform.position);
+    //                    Vector3 thisLocalPos = av.transform.InverseTransformPoint(isc.transform.position);
     //                    if (Vector3.Distance(thisLocalPos, thisStorage.Item1) < 0.05f) // this is a weird amount of drift, but I'm afraid to use ==
     //                    {
     //                        isStorageMatched = true;
-    //                        yield return MainPatcher.Instance.StartCoroutine(LoadThisStorage(mv, thisStorage.Item2, isc));
+    //                        yield return MainPatcher.Instance.StartCoroutine(LoadThisStorage(av, thisStorage.Item2, isc));
     //                        break;
     //                    }
     //                }
     //                if (!isStorageMatched)
     //                {
-    //                    Logger.Warn($"Failed to normally restore the contents of the {mv.GetName()}. Trying the old method.");
-    //                    foreach (var isc in mv.GetComponentsInChildren<InnateStorageContainer>())
+    //                    Logger.Warn($"Failed to normally restore the contents of the {av.GetName()}. Trying the old method.");
+    //                    foreach (var isc in av.GetComponentsInChildren<InnateStorageContainer>())
     //                    {
     //                        isStorageMatched = false;
     //                        if (Vector3.Distance(isc.transform.position, thisStorage.Item1) < 0.1f) // this is a weird amount of drift, but I'm afraid to use ==
     //                        {
     //                            isStorageMatched = true;
-    //                            yield return MainPatcher.Instance.StartCoroutine(LoadThisStorage(mv, thisStorage.Item2, isc));
+    //                            yield return MainPatcher.Instance.StartCoroutine(LoadThisStorage(av, thisStorage.Item2, isc));
     //                            break;
     //                        }
     //                    }
@@ -197,7 +197,7 @@ internal static class SaveManager
     //                }
     //                if (!isStorageMatched)
     //                {
-    //                    Logger.Error($"Failed to restore the contents of the {mv.GetName()}.");
+    //                    Logger.Error($"Failed to restore the contents of the {av.GetName()}.");
     //                }
     //            }
     //        }
@@ -206,16 +206,16 @@ internal static class SaveManager
     //}
     internal static List<Tuple<Vector3, batteries>> SerializeBatteries() => new();
 
-    //internal static IEnumerator DeserializeBatteries(SaveData data, AvsVehicle mv)
+    //internal static IEnumerator DeserializeBatteries(SaveData data, AvsVehicle av)
     //{
-    //    if (data.IsNull() || mv.IsNull() || data.Batteries.IsNull())
+    //    if (data.IsNull() || av.IsNull() || data.Batteries.IsNull())
     //    {
     //        yield break;
     //    }
     //    // try to match against a saved vehicle in our list
     //    foreach (Tuple<Vector3, batteries> vehicle in data.Batteries)
     //    {
-    //        if (MatchMv(mv, vehicle.Item1))
+    //        if (MatchMv(av, vehicle.Item1))
     //        {
     //            foreach (var battery in vehicle.Item2.Select((value, i) => (value, i)))
     //            {
@@ -230,14 +230,14 @@ internal static class SaveManager
     //                try
     //                {
     //                    thisItem.GetComponent<Battery>().charge = battery.value.Item2;
-    //                    thisItem.transform.SetParent(mv.Com.StorageRootObject.transform);
-    //                    mv.Com.Batteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().battery = thisItem.GetComponent<Battery>();
-    //                    mv.Com.Batteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().batterySlot.AddItem(thisItem.GetComponent<Pickupable>());
+    //                    thisItem.transform.SetParent(av.Com.StorageRootObject.transform);
+    //                    av.Com.Batteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().battery = thisItem.GetComponent<Battery>();
+    //                    av.Com.Batteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().batterySlot.AddItem(thisItem.GetComponent<Pickupable>());
     //                    thisItem.SetActive(false);
     //                }
     //                catch (Exception e)
     //                {
-    //                    Logger.LogException($"Failed to load battery {thisItem.name} into vehicle : {mv.GetName()}.", e);
+    //                    Logger.LogException($"Failed to load battery {thisItem.name} into vehicle : {av.GetName()}.", e);
     //                }
     //            }
     //        }
@@ -246,18 +246,18 @@ internal static class SaveManager
     //}
     internal static List<Tuple<Vector3, batteries>> SerializeBackupBatteries() => new();
 
-    //internal static IEnumerator DeserializeBackupBatteries(SaveData data, Submarine mv)
+    //internal static IEnumerator DeserializeBackupBatteries(SaveData data, Submarine av)
     //{
-    //    if (data.IsNull() || mv.IsNull() || data.BackupBatteries.IsNull())
+    //    if (data.IsNull() || av.IsNull() || data.BackupBatteries.IsNull())
     //    {
     //        yield break;
     //    }
     //    // try to match against a saved vehicle in our list
     //    foreach (Tuple<Vector3, batteries> slot in data.BackupBatteries)
     //    {
-    //        if (MatchMv(mv, slot.Item1))
+    //        if (MatchMv(av, slot.Item1))
     //        {
-    //            if (mv.Com.BackupBatteries.Count == 0)
+    //            if (av.Com.BackupBatteries.Count == 0)
     //            {
     //                continue;
     //            }
@@ -274,14 +274,14 @@ internal static class SaveManager
     //                try
     //                {
     //                    thisItem.GetComponent<Battery>().charge = battery.value.Item2;
-    //                    thisItem.transform.SetParent(mv.Com.StorageRootObject.transform);
-    //                    mv.Com.BackupBatteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().battery = thisItem.GetComponent<Battery>();
-    //                    mv.Com.BackupBatteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().batterySlot.AddItem(thisItem.GetComponent<Pickupable>());
+    //                    thisItem.transform.SetParent(av.Com.StorageRootObject.transform);
+    //                    av.Com.BackupBatteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().battery = thisItem.GetComponent<Battery>();
+    //                    av.Com.BackupBatteries[battery.i].BatterySlot.gameObject.GetComponent<EnergyMixin>().batterySlot.AddItem(thisItem.GetComponent<Pickupable>());
     //                    thisItem.SetActive(false);
     //                }
     //                catch (Exception e)
     //                {
-    //                    Logger.LogException($"Failed to load battery {thisItem.name} into vehicle : {mv.GetName()}.", e);
+    //                    Logger.LogException($"Failed to load battery {thisItem.name} into vehicle : {av.GetName()}.", e);
     //                }
     //            }
     //        }
@@ -290,32 +290,32 @@ internal static class SaveManager
     //}
     internal static List<Tuple<Vector3, bool>> SerializePlayerInside() => new();
 
-    //internal static IEnumerator DeserializePlayerInside(SaveData data, AvsVehicle mv)
+    //internal static IEnumerator DeserializePlayerInside(SaveData data, AvsVehicle av)
     //{
-    //    if (data.IsNull() || mv.IsNull() || data.IsPlayerInside.IsNull())
+    //    if (data.IsNull() || av.IsNull() || data.IsPlayerInside.IsNull())
     //    {
     //        yield break;
     //    }
     //    foreach (Tuple<Vector3, bool> vehicle in data.IsPlayerInside)
     //    {
-    //        if (MatchMv(mv, vehicle.Item1) && vehicle.Item2)
+    //        if (MatchMv(av, vehicle.Item1) && vehicle.Item2)
     //        {
     //            try
     //            {
-    //                mv.PlayerEntry();
+    //                av.PlayerEntry();
     //            }
     //            catch (Exception e)
     //            {
-    //                Logger.LogException($"Failed to load player into vehicle : {mv.GetName()}.", e);
+    //                Logger.LogException($"Failed to load player into vehicle : {av.GetName()}.", e);
     //            }
     //            yield break;
     //        }
     //    }
     //}
     internal static List<Tuple<Vector3, string, color, color, color, color, bool>> SerializeAesthetics() => new();
-    //internal static IEnumerator DeserializeAesthetics(SaveData data, AvsVehicle mv)
+    //internal static IEnumerator DeserializeAesthetics(SaveData data, AvsVehicle av)
     //{
-    //    if (data.IsNull() || mv.IsNull() || data.AllVehiclesAesthetics.IsNull())
+    //    if (data.IsNull() || av.IsNull() || data.AllVehiclesAesthetics.IsNull())
     //    {
     //        yield break;
     //    }
@@ -325,11 +325,11 @@ internal static class SaveManager
     //    }
     //    foreach (Tuple<Vector3, string, color, color, color, color, bool> vehicle in data.AllVehiclesAesthetics)
     //    {
-    //        if (MatchMv(mv, vehicle.Item1))
+    //        if (MatchMv(av, vehicle.Item1))
     //        {
     //            try
     //            {
-    //                if (mv is Submarine mvSub && mvSub.Com.ColorPicker.IsNotNull())
+    //                if (av is Submarine mvSub && mvSub.Com.ColorPicker.IsNotNull())
     //                {
     //                    var active = mvSub.Com.ColorPicker.transform.Find("EditScreen/Active");
     //                    if (active is null)
@@ -365,73 +365,73 @@ internal static class SaveManager
     //                }
     //                else
     //                {
-    //                    mv.SetBaseColor(SynthesizeColor(vehicle.Item3));
-    //                    mv.SetInteriorColor(SynthesizeColor(vehicle.Item4));
-    //                    mv.SetStripeColor(SynthesizeColor(vehicle.Item5));
-    //                    mv.SetNameColor(SynthesizeColor(vehicle.Item6));
+    //                    av.SetBaseColor(SynthesizeColor(vehicle.Item3));
+    //                    av.SetInteriorColor(SynthesizeColor(vehicle.Item4));
+    //                    av.SetStripeColor(SynthesizeColor(vehicle.Item5));
+    //                    av.SetNameColor(SynthesizeColor(vehicle.Item6));
 
-    //                    mv.subName.SetColor(0, Vector3.zero, mv.BaseColor.RGB);
-    //                    mv.subName.SetColor(1, Vector3.zero, mv.NameColor.RGB);
-    //                    mv.subName.SetColor(2, Vector3.zero, mv.InteriorColor.RGB);
-    //                    mv.subName.SetColor(3, Vector3.zero, mv.StripeColor.RGB);
+    //                    av.subName.SetColor(0, Vector3.zero, av.BaseColor.RGB);
+    //                    av.subName.SetColor(1, Vector3.zero, av.NameColor.RGB);
+    //                    av.subName.SetColor(2, Vector3.zero, av.InteriorColor.RGB);
+    //                    av.subName.SetColor(3, Vector3.zero, av.StripeColor.RGB);
     //                }
     //                break;
     //            }
     //            catch (Exception e)
     //            {
-    //                Logger.LogException($"Failed to load color details for vehicle : {mv.GetName()}.", e);
+    //                Logger.LogException($"Failed to load color details for vehicle : {av.GetName()}.", e);
     //            }
     //        }
     //    }
     //}
     internal static List<Tuple<Vector3, bool>> SerializePlayerControlling() => new();
 
-    //internal static IEnumerator DeserializePlayerControlling(SaveData data, AvsVehicle mv)
+    //internal static IEnumerator DeserializePlayerControlling(SaveData data, AvsVehicle av)
     //{
-    //    if (data.IsNull() || mv.IsNull() || data.IsPlayerControlling.IsNull())
+    //    if (data.IsNull() || av.IsNull() || data.IsPlayerControlling.IsNull())
     //    {
     //        yield break;
     //    }
     //    foreach (Tuple<Vector3, bool> vehicle in data.IsPlayerControlling)
     //    {
-    //        if (MatchMv(mv, vehicle.Item1) && vehicle.Item2)
+    //        if (MatchMv(av, vehicle.Item1) && vehicle.Item2)
     //        {
     //            try
     //            {
-    //                mv.BeginHelmControl();
+    //                av.BeginHelmControl();
     //            }
     //            catch (Exception e)
     //            {
-    //                Logger.LogException($"Failed to load player into vehicle : {mv.GetName()}.", e);
+    //                Logger.LogException($"Failed to load player into vehicle : {av.GetName()}.", e);
     //            }
     //            yield break;
     //        }
     //    }
     //}
     internal static List<Tuple<Vector3, string>> SerializeSubName() => new();
-    //internal static IEnumerator DeserializeSubName(SaveData data, AvsVehicle mv)
+    //internal static IEnumerator DeserializeSubName(SaveData data, AvsVehicle av)
     //{
-    //    if (data.IsNull() || mv.IsNull() || data.SubNames.IsNull())
+    //    if (data.IsNull() || av.IsNull() || data.SubNames.IsNull())
     //    {
     //        yield break;
     //    }
     //    foreach (Tuple<Vector3, string> vehicle in data.SubNames)
     //    {
-    //        if (MatchMv(mv, vehicle.Item1))
+    //        if (MatchMv(av, vehicle.Item1))
     //        {
     //            try
     //            {
-    //                mv.subName.SetName(vehicle.Item2);
+    //                av.subName.SetName(vehicle.Item2);
     //            }
     //            catch (Exception e)
     //            {
-    //                Logger.LogException($"Failed to load SubName for vehicle : {mv.GetName()}.", e);
+    //                Logger.LogException($"Failed to load SubName for vehicle : {av.GetName()}.", e);
     //            }
     //            yield break;
     //        }
     //    }
     //}
-    // internal static IEnumerator LoadThisStorage(AvsVehicle mv, batteries thisStorage, InnateStorageContainer matchedContainer)
+    // internal static IEnumerator LoadThisStorage(AvsVehicle av, batteries thisStorage, InnateStorageContainer matchedContainer)
     // {
     //     foreach (var techtype in thisStorage)
     //     {
@@ -459,7 +459,7 @@ internal static class SaveManager
     //                 Transform batSlot = thisItem.transform.Find("BatterySlot");
     //                 if (batSlot.IsNull())
     //                 {
-    //                     Logger.Warn($"Failed to load innate storage item {thisItem.name} to modular storage for {mv.name} : {mv.GetName()}.");
+    //                     Logger.Warn($"Failed to load innate storage item {thisItem.name} to modular storage for {av.name} : {av.GetName()}.");
     //                     continue;
     //                 }
     //                 result = new TaskResult<GameObject>();
@@ -468,20 +468,20 @@ internal static class SaveManager
     //                 if (newBat.GetComponent<Battery>().IsNotNull())
     //                 {
     //                     newBat.GetComponent<Battery>().charge = techtype.Item2;
-    //                     Logger.Warn($"Failed to load innate storage battery {thisItem.name} to modular storage for {mv.name} : {mv.GetName()}.");
+    //                     Logger.Warn($"Failed to load innate storage battery {thisItem.name} to modular storage for {av.name} : {av.GetName()}.");
     //                 }
     //                 newBat.transform.SetParent(batSlot);
     //                 newBat.SetActive(false);
     //             }
     //         }
-    //         thisItem.transform.SetParent(mv.Com.StorageRootObject.transform);
+    //         thisItem.transform.SetParent(av.Com.StorageRootObject.transform);
     //         try
     //         {
     //             matchedContainer.Container.AddItem(thisItem.GetComponent<Pickupable>());
     //         }
     //         catch (Exception e)
     //         {
-    //             Logger.LogException($"Failed to add storage item {thisItem.name} to modular storage for {mv.name} : {mv.GetName()}.", e);
+    //             Logger.LogException($"Failed to add storage item {thisItem.name} to modular storage for {av.name} : {av.GetName()}.", e);
     //         }
     //         thisItem.SetActive(false);
     //     }

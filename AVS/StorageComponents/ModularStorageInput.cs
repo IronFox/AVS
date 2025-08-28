@@ -10,9 +10,9 @@ internal class ModularStorageInput : StorageInput
 {
     public override void OpenFromExternal()
     {
-        if (mv.IsNull())
+        if (av.IsNull())
             return;
-        var storageInSlot = mv.ModGetStorageInSlot(slotID, TechType.VehicleStorageModule);
+        var storageInSlot = av.ModGetStorageInSlot(slotID, TechType.VehicleStorageModule);
         if (storageInSlot.IsNotNull())
         {
             var pda = Player.main.GetPDA();
@@ -23,9 +23,9 @@ internal class ModularStorageInput : StorageInput
 
     protected override void OpenPDA()
     {
-        if (mv.IsNull())
+        if (av.IsNull())
             return;
-        var storageInSlot = mv.ModGetStorageInSlot(slotID, TechType.VehicleStorageModule);
+        var storageInSlot = av.ModGetStorageInSlot(slotID, TechType.VehicleStorageModule);
         if (storageInSlot.IsNull())
             storageInSlot = gameObject.GetComponent<SeamothStorageContainer>().container;
 
@@ -45,12 +45,12 @@ internal class ModularStorageInput : StorageInput
         }
     }
 
-    public static List<ItemsContainer> GetAllModularStorageContainers(AvsVehicle mv)
+    public static List<ItemsContainer> GetAllModularStorageContainers(AvsVehicle av)
     {
         var result = new List<ItemsContainer>();
-        if (mv.IsNull())
+        if (av.IsNull())
             return result;
-        var containerList = mv.Com.ModulesRootObject.GetComponentsInChildren<SeamothStorageContainer>(true);
+        var containerList = av.Com.ModulesRootObject.GetComponentsInChildren<SeamothStorageContainer>(true);
         if (!containerList.Any())
             return result;
         return containerList.Select(x => x.container).ToList();

@@ -33,23 +33,14 @@
             a message is displayed to the user.</remarks>
             <param name="param">The parameters containing the vehicle to evaluate and its associated data.</param>
         </member>
-        <member name="M:AvsUtils.GetTechTypeFromVehicleName(System.String)">
-            <summary>
-            Retrieves the <see cref="T:TechType"/> associated with a vehicle based on its name.
-            </summary>
-            <remarks>If no vehicle with the specified name is found, an error is logged, and the method
-            returns <see cref="F:TechType.None"/>.</remarks>
-            <param name="name">The name of the vehicle to search for. This parameter is case-sensitive and must not be null or empty.</param>
-            <returns>The <see cref="T:TechType"/> of the vehicle if a match is found; otherwise, returns <see
-            cref="F:TechType.None"/>.</returns>
-        </member>
-        <member name="M:AvsUtils.AddEncyclopediaEntry(PDAEncyclopedia.EntryData)">
+        <member name="M:AvsUtils.AddEncyclopediaEntry(AVS.MainPatcher,PDAEncyclopedia.EntryData)">
             <summary>
             Adds a new entry to the PDA Encyclopedia or updates an existing one if the key already exists.
             </summary>
             <remarks>This method ensures that the entry is added or updated only after the PDA
             Encyclopedia mapping is initialized.  If an entry with the same key already exists, it will be replaced with
             the provided data.</remarks>
+            <param name="mp">The <see cref="T:AVS.MainPatcher"/> instance owning the process.</param>
             <param name="data">The encyclopedia entry data to add or update. The <see cref="F:PDAEncyclopedia.EntryData.key"/> property must
             be unique and non-null.</param>
         </member>
@@ -83,11 +74,12 @@
             <param name="verbose">If true, logs detailed registration steps.</param>
             <returns>The registered, unique ping type.</returns>
         </member>
-        <member name="M:AVS.AvsVehicleManager.EnrollVehicle(AVS.BaseVehicle.AvsVehicle)">
+        <member name="M:AVS.AvsVehicleManager.EnrollVehicle(AVS.MainPatcher,AVS.BaseVehicle.AvsVehicle)">
             <summary>
             Enrolls a vehicle into the <see cref="P:AVS.AvsVehicleManager.VehiclesInPlay"/> list and starts loading it if constructed.
             </summary>
             <param name="mv">The vehicle to enroll.</param>
+            <param name="mp">The main patcher instance used to start coroutines.</param>
         </member>
         <member name="M:AVS.AvsVehicleManager.DeregisterVehicle(AVS.BaseVehicle.AvsVehicle)">
             <summary>
@@ -165,18 +157,19 @@
             langword="bool"/>, <see langword="float"/>,  and <see cref="T:BepInEx.Configuration.KeyboardShortcut"/>. Configuration changes can
             trigger optional callbacks for custom handling.</remarks>
         </member>
-        <member name="M:AVS.Admin.ConfigRegistrar.LogAllVehicleNames">
+        <member name="M:AVS.Admin.ConfigRegistrar.LogAllVehicleNames(AVS.MainPatcher)">
             <summary>
             Logs the names of all vehicles currently present in the game.
             </summary>
             <remarks>This method initiates an asynchronous operation to retrieve and log vehicle names. 
             It does not block the calling thread and relies on the game's coroutine system to execute.</remarks>
         </member>
-        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForAllAvsVehicles``1(System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{TechType,``0},BepInEx.Configuration.ConfigFile)">
+        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForAllAvsVehicles``1(AVS.MainPatcher,System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{TechType,``0},BepInEx.Configuration.ConfigFile)">
             <summary>
             Registers a configuration option for all modded vehicles in the game.
             </summary>
             <typeparam name="T">The type of the configuration value.</typeparam>
+            <param name="mp">The owning main patcher.</param>
             <param name="name">The name of the configuration option.</param>
             <param name="description">A description of the configuration option, including its purpose and usage.</param>
             <param name="defaultValue">The default value for the configuration option.</param>
@@ -184,7 +177,7 @@
             cref="T:TechType"/> of the vehicle and the new value.</param>
             <param name="configFile">An optional configuration file to store the setting. If not provided, a default configuration file is used.</param>
         </member>
-        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForAvsVehicle``1(System.String,System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{TechType,``0},BepInEx.Configuration.ConfigFile)">
+        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForAvsVehicle``1(AVS.MainPatcher,System.String,System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{TechType,``0},BepInEx.Configuration.ConfigFile)">
             <summary>
             Registers a configuration option for a specific modded vehicle.
             </summary>
@@ -192,6 +185,7 @@
             option will be associated with the specified modded vehicle and can be accessed or modified through the
             configuration system.</remarks>
             <typeparam name="T">The type of the configuration value. Must be a type supported by the configuration system.</typeparam>
+            <param name="mp">The owning main patcher.</param>
             <param name="vehicleName">The name of the modded vehicle for which the configuration option is being registered.</param>
             <param name="name">The name of the configuration option.</param>
             <param name="description">A description of the configuration option, including details such as its purpose or valid range.</param>
@@ -201,7 +195,7 @@
             <param name="configFile">An optional <see cref="T:BepInEx.Configuration.ConfigFile"/> instance to store the configuration option. If not provided, the
             default configuration file is used.</param>
         </member>
-        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForSeamoth``1(System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{``0},BepInEx.Configuration.ConfigFile)">
+        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForSeamoth``1(AVS.MainPatcher,System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{``0},BepInEx.Configuration.ConfigFile)">
             <summary>
             Registers a configuration option for the Seamoth vehicle.
             </summary>
@@ -209,6 +203,7 @@
             option will be associated with the Seamoth vehicle and can be used to customize its behavior or
             settings.</remarks>
             <typeparam name="T">The type of the configuration value.</typeparam>
+            <param name="mp">The main patcher instance used to start the coroutine for registration.</param>
             <param name="name">The unique name of the configuration option.</param>
             <param name="description">A description of the configuration option, including its purpose and constraints.</param>
             <param name="defaultValue">The default value for the configuration option.</param>
@@ -216,7 +211,7 @@
             parameter.</param>
             <param name="configFile">An optional configuration file to store the setting. If not provided, a default configuration file is used.</param>
         </member>
-        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForPrawn``1(System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{``0},BepInEx.Configuration.ConfigFile)">
+        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForPrawn``1(AVS.MainPatcher,System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{``0},BepInEx.Configuration.ConfigFile)">
             <summary>
             Registers a configuration option for the Prawn with the specified name, description, and default
             value.
@@ -225,6 +220,7 @@
             registration ensures that the configuration option is properly integrated with the Prawn and its
             associated systems.</remarks>
             <typeparam name="T">The type of the configuration value. Must be a type supported by the configuration system.</typeparam>
+            <param name="mp">The owning main patcher.</param>
             <param name="name">The unique name of the configuration option. This name is used to identify the option.</param>
             <param name="description">A description of the configuration option, including details such as its purpose or valid range of values.</param>
             <param name="defaultValue">The default value for the configuration option. This value is used if no other value is provided.</param>
@@ -233,7 +229,7 @@
             <param name="configFile">An optional configuration file object where the configuration option will be stored. If not provided, a
             default configuration file is used.</param>
         </member>
-        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForCyclops``1(System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{``0},BepInEx.Configuration.ConfigFile)">
+        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForCyclops``1(AVS.MainPatcher,System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{``0},BepInEx.Configuration.ConfigFile)">
             <summary>
             Registers a configuration option for the Cyclops submarine with the specified name, description, and default
             value.
@@ -241,6 +237,7 @@
             <remarks>This method starts a coroutine to handle the registration process asynchronously. The
             configuration option will be available for use after the coroutine completes.</remarks>
             <typeparam name="T">The type of the configuration value.</typeparam>
+            <param name="mp">The owning main patcher.</param>
             <param name="name">The unique name of the configuration option. This name is used to identify the option.</param>
             <param name="description">A description of the configuration option, including details such as its purpose or valid range.</param>
             <param name="defaultValue">The default value for the configuration option.</param>
@@ -363,28 +360,19 @@
             <returns><see langword="true"/> if the specified transform or one of its ancestors is the vehicle currently mounted
             by the player; otherwise, <see langword="false"/>.</returns>
         </member>
-        <member name="M:AVS.Admin.Utils.RegisterDepthModules">
+        <member name="M:AVS.Admin.Utils.RegisterDepthModules(AVS.MainPatcher)">
             <summary>
             Registers the common depth modules for vehicles.
             </summary>
         </member>
-        <member name="M:AVS.Admin.Utils.GetTechTypeFromVehicleName(System.String)">
-            <summary>
-            Retrieves the <see cref="T:TechType"/> associated with a vehicle based on its name.
-            </summary>
-            <remarks>If no vehicle with the specified name is found, an error is logged, and the method
-            returns <see cref="F:TechType.None"/>.</remarks>
-            <param name="name">The name of the vehicle to search for. This parameter is case-sensitive and must not be null or empty.</param>
-            <returns>The <see cref="T:TechType"/> of the vehicle if a match is found; otherwise, returns <see
-            cref="F:TechType.None"/>.</returns>
-        </member>
-        <member name="M:AVS.Admin.Utils.AddEncyclopediaEntry(PDAEncyclopedia.EntryData)">
+        <member name="M:AVS.Admin.Utils.AddEncyclopediaEntry(AVS.MainPatcher,PDAEncyclopedia.EntryData)">
             <summary>
             Adds a new entry to the PDA Encyclopedia or updates an existing one if the key already exists.
             </summary>
             <remarks>This method ensures that the entry is added or updated only after the PDA
             Encyclopedia mapping is initialized.  If an entry with the same key already exists, it will be replaced with
             the provided data.</remarks>
+            <param name="mp">The <see cref="T:AVS.MainPatcher"/> instance owning the process.</param>
             <param name="data">The encyclopedia entry data to add or update. The <see cref="F:PDAEncyclopedia.EntryData.key"/> property must
             be unique and non-null.</param>
         </member>
@@ -511,27 +499,30 @@
             <param name="message">The message to log.</param>
             <param name="log">Out logger</param>
         </member>
-        <member name="M:AVS.VehicleRegistrar.RegisterVehicleLater(AVS.BaseVehicle.AvsVehicle,System.Boolean)">
+        <member name="M:AVS.VehicleRegistrar.RegisterVehicleLater(AVS.MainPatcher,AVS.BaseVehicle.AvsVehicle,System.Boolean)">
             <summary>
             Registers a vehicle asynchronously by starting a coroutine.
             </summary>
-            <remarks>Calls <see cref="M:AVS.VehicleRegistrar.RegisterVehicle(AVS.BaseVehicle.AvsVehicle,System.Boolean)"/></remarks>
-            <param name="mv">The mod vehicle to register.</param>
+            <remarks>Calls <see cref="M:AVS.VehicleRegistrar.RegisterVehicle(AVS.MainPatcher,AVS.BaseVehicle.AvsVehicle,System.Boolean)"/> as a new coroutine</remarks>
+            <param name="mp">The owning main patcher instance.</param>
+            <param name="av">The mod vehicle to register.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
         </member>
-        <member name="M:AVS.VehicleRegistrar.RegisterVehicle(AVS.BaseVehicle.AvsVehicle,System.Boolean)">
+        <member name="M:AVS.VehicleRegistrar.RegisterVehicle(AVS.MainPatcher,AVS.BaseVehicle.AvsVehicle,System.Boolean)">
             <summary>
             Coroutine for registering a mod vehicle, including validation and queuing if necessary.
             </summary>
-            <param name="mv">The mod vehicle to register.</param>
+            <param name="mp">The owning main patcher instance.</param>
+            <param name="av">The mod vehicle to register.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
             <returns>IEnumerator for coroutine execution.</returns>
         </member>
-        <member name="M:AVS.VehicleRegistrar.InternalRegisterVehicle(AVS.BaseVehicle.AvsVehicle,System.Boolean)">
+        <member name="M:AVS.VehicleRegistrar.InternalRegisterVehicle(AVS.MainPatcher,AVS.BaseVehicle.AvsVehicle,System.Boolean)">
             <summary>
             Internal coroutine for registering a mod vehicle, including prefab creation and queue management.
             </summary>
-            <param name="mv">The mod vehicle to register.</param>
+            <param name="mp">The owning main patcher instance.</param>
+            <param name="av">The mod vehicle to register.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
             <returns>IEnumerator for coroutine execution.</returns>
         </member>
@@ -539,7 +530,7 @@
             <summary>
             Validates a mod vehicle and its specific type (Submarine, Submersible, Skimmer).
             </summary>
-            <param name="mv">The mod vehicle to validate.</param>
+            <param name="av">The mod vehicle to validate.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
             <returns>True if the vehicle is valid; otherwise, false.</returns>
         </member>
@@ -547,7 +538,7 @@
             <summary>
             Validates the registration of a mod vehicle, checking required fields and configuration.
             </summary>
-            <param name="mv">The mod vehicle to validate.</param>
+            <param name="av">The mod vehicle to validate.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
             <returns>True if the vehicle is valid; otherwise, false.</returns>
         </member>
@@ -555,7 +546,7 @@
             <summary>
             Validates the registration of a Submarine, including submarine-specific requirements.
             </summary>
-            <param name="mv">The submarine to validate.</param>
+            <param name="av">The submarine to validate.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
             <returns>True if the submarine is valid; otherwise, false.</returns>
         </member>
@@ -563,7 +554,7 @@
             <summary>
             Validates the registration of a Submersible, including submersible-specific requirements.
             </summary>
-            <param name="mv">The submersible to validate.</param>
+            <param name="av">The submersible to validate.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
             <returns>True if the submersible is valid; otherwise, false.</returns>
         </member>
@@ -1016,11 +1007,12 @@
             Caches promises for audio clips by file path.
             </summary>
         </member>
-        <member name="M:AVS.Audio.DynamicClipLoader.GetAudioClipAsync(System.String)">
+        <member name="M:AVS.Audio.DynamicClipLoader.GetAudioClipAsync(AVS.MainPatcher,System.String)">
             <summary>
             Asynchronously gets an <see cref="T:UnityEngine.AudioClip"/> from the specified file path.
             If the clip is already being loaded, returns the existing promise.
             </summary>
+            <param name="mp">The <see cref="T:AVS.MainPatcher"/> owning the process.</param>
             <param name="filePath">The file path to the audio clip.</param>
             <returns>An <see cref="T:AVS.Audio.AsyncPromise`1"/> representing the loading operation.</returns>
         </member>
@@ -2924,7 +2916,7 @@
             Implements listeners for vehicle status, power, lights, and autopilot events.
             </summary>
         </member>
-        <member name="F:AVS.ControlPanel.mv">
+        <member name="F:AVS.ControlPanel.av">
             <summary>
             The submarine instance this control panel is associated with.
             </summary>
@@ -4880,11 +4872,6 @@
             The icon to use for the parent node of all depth modules in the crafting tree.
             </summary>
         </member>
-        <member name="P:AVS.MainPatcher.Instance">
-            <summary>
-            Queries the main singleton instance of <see cref="T:AVS.MainPatcher"/>.
-            </summary>
-        </member>
         <member name="M:AVS.MainPatcher.LoadImages">
             <summary>
             Loads the images used by AVS.
@@ -4903,11 +4890,19 @@
             Prefix used for registered identifiers so to not collide with other mods.
             </summary>
         </member>
+        <member name="P:AVS.MainPatcher.LogDebugMessages">
+            <summary>
+            If true, debug messages will be logged, otherwise omitted.
+            </summary>
+        </member>
         <member name="M:AVS.MainPatcher.Awake">
             <summary>
             Begins plugin patching and initialization.
             Also initializes the logger. Before this method is called, the logger will not work.
             </summary>
+        </member>
+        <member name="M:AVS.MainPatcher.OnDestroy">
+            <inheritdoc/>
         </member>
         <member name="M:AVS.MainPatcher.Start">
             <inheritdoc/>
@@ -7459,12 +7454,12 @@
             Manages the visual effects (VFX) colors for a construction process, including ghost and wireframe colors.
             </summary>
             <remarks>This method updates the ghost material and wireframe colors of the provided <paramref
-            name="vfx"/> instance based on the configuration settings in the <paramref name="mv"/> instance. If the
+            name="vfx"/> instance based on the configuration settings in the <paramref name="av"/> instance. If the
             ghost or wireframe colors in the configuration are set to <see cref="P:UnityEngine.Color.black"/>, the corresponding
             visual effect will not be updated. The method waits until the ghost material of the <paramref name="vfx"/>
             instance is initialized before applying any updates.</remarks>
             <param name="vfx">The <see cref="T:VFXConstructing"/> instance representing the visual effects to be updated. Must not be null.</param>
-            <param name="mv">The <see cref="T:AVS.BaseVehicle.AvsVehicle"/> instance containing configuration settings for the construction process. Must
+            <param name="av">The <see cref="T:AVS.BaseVehicle.AvsVehicle"/> instance containing configuration settings for the construction process. Must
             not be null.</param>
             <returns>An enumerator that can be used to control the execution of the color management process.</returns>
         </member>
@@ -8695,13 +8690,14 @@
             </remarks>
             <param name="destination">Target location</param>
         </member>
-        <member name="M:AVS.Util.Character.GrantInvincibility(System.Single)">
+        <member name="M:AVS.Util.Character.GrantInvincibility(AVS.MainPatcher,System.Single)">
             <summary>
             Grants the player invincibility for a specified duration.
             </summary>
             <param name="time">Time in seconds to become invincible</param>
+            <param name="mp">Main patcher instance to run the coroutine</param>
         </member>
-        <member name="M:AVS.Util.Character.SitDown">
+        <member name="M:AVS.Util.Character.SitDown(AVS.MainPatcher)">
             <summary>
             Asynchronously animates the character to sit down in a chair.
             </summary>
@@ -8714,7 +8710,7 @@
             <param name="rightHandTarget">Right hand target</param>
             <param name="ikArmToggleTime">Time to toggle IK arms</param>
         </member>
-        <member name="M:AVS.Util.Character.StandUp">
+        <member name="M:AVS.Util.Character.StandUp(AVS.MainPatcher)">
             <summary>
             Makes the player stand up from a seated position.
             </summary>
@@ -9250,6 +9246,145 @@
             <param name="selector">A function to extract a float value from each element for comparison.</param>
             <returns>The element in the source sequence with the least value as determined by the selector function.</returns>
             <exception cref="T:System.InvalidOperationException">Thrown if the source sequence contains no elements.</exception>
+        </member>
+        <member name="T:AVS.Util.OrderedSet`1">
+            <summary>
+            Represents a collection of unique elements that maintains the order in which items are added.
+            </summary>
+            <typeparam name="T">The type of elements in the set.</typeparam>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.#ctor">
+            <summary>
+            Constructs an empty set.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.#ctor(System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Constructs an empty set with a customer comparer.
+            </summary>
+            <param name="comparer">The comparer to use</param>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Constructs a new set from a given set of items
+            </summary>
+            <param name="items">Items to fill into the new set</param>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.#ctor(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Constructs a new set with a customer comparer from a given set of items
+            </summary>
+            <param name="items">Items to fill into the new set</param>
+            <param name="comparer">The comparer to use</param>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.ToHashSet">
+            <summary>
+            Converts the <see cref="T:AVS.Util.OrderedSet`1"/> to a <see cref="T:System.Collections.Generic.HashSet`1"/> containing the same elements.
+            </summary>
+            <remarks>
+            The order of elements will be lost in the process
+            </remarks>
+            <returns>A <see cref="T:System.Collections.Generic.HashSet`1"/> containing all elements of the <see cref="T:AVS.Util.OrderedSet`1"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.ToList">
+            <summary>
+            Converts the local set to a list
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.ToArray">
+            <summary>
+            Converts the elements of the set to an array.
+            </summary>
+            <returns>An array containing all elements in the set, preserving their order.</returns>
+        </member>
+        <member name="P:AVS.Util.OrderedSet`1.Count">
+            <summary>
+            Gets the number of elements contained in the <see cref="T:AVS.Util.OrderedSet`1"/>.
+            </summary>
+            <value>The total count of elements in the set.</value>
+        </member>
+        <member name="P:AVS.Util.OrderedSet`1.IsReadOnly">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.AddRange(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Adds a range of items to the <see cref="T:AVS.Util.OrderedSet`1"/>.
+            </summary>
+            <param name="items">The collection of elements to add to the set.</param>
+            <returns>The updated <see cref="T:AVS.Util.OrderedSet`1"/> instance.</returns>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.UnionWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.IntersectWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.ExceptWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.SymmetricExceptWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.ContainsAll(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Determines whether the current set contains all elements from the specified collection.
+            </summary>
+            <param name="other">The collection of elements to check against the current set.</param>
+            <returns>True if the current set contains all elements from the specified collection; otherwise, false.</returns>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.ContainsAny(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Determines whether the current set contains any elements from the specified collection.
+            </summary>
+            <param name="other">The collection of elements to check against the current set.</param>
+            <returns>True if the current set contains at least one element from the specified collection; otherwise, false.</returns>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.IsSubsetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.IsSupersetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.IsProperSupersetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.IsProperSubsetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.Overlaps(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.SetEquals(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.Clear">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.RemoveAll(System.Predicate{`0})">
+            <summary>
+            Removes all elements from the set that match the given predicate.
+            </summary>
+            <param name="match">The predicate function that determines whether an element should be removed.</param>
+            <returns>The current set with the elements removed.</returns>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.Remove(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.Contains(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.CopyTo(`0[],System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.Add(`0)">
+            <inheritdoc />
         </member>
         <member name="T:AVS.Util.Shaders">
             <summary>
@@ -10108,7 +10243,7 @@
             Hand target added to the pilot seat
             </summary>
         </member>
-        <member name="F:AVS.PilotingTrigger.mv">
+        <member name="F:AVS.PilotingTrigger.av">
             <summary>
             The owning vehicle. Assigned during instantiation
             </summary>

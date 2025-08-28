@@ -11,11 +11,11 @@ namespace AVS.VehicleComponents;
 
 internal class VehicleHatch : HandTarget, IHandTarget, IDockListener
 {
-    public AvsVehicle? mv;
+    public AvsVehicle? av;
     public int hatchIndex; // Index of the hatch in the vehicle's list of hatches
     private bool isLive = true;
-    public string EnterHint => Translator.GetFormatted(TranslationKey.HandHover_Vehicle_Enter, mv.GetVehicleName());
-    public string ExitHint => Translator.GetFormatted(TranslationKey.HandHover_Vehicle_Exit, mv.GetVehicleName());
+    public string EnterHint => Translator.GetFormatted(TranslationKey.HandHover_Vehicle_Enter, av.GetVehicleName());
+    public string ExitHint => Translator.GetFormatted(TranslationKey.HandHover_Vehicle_Exit, av.GetVehicleName());
 
 
     void IDockListener.OnDock()
@@ -33,14 +33,14 @@ internal class VehicleHatch : HandTarget, IHandTarget, IDockListener
     {
         if (!isLive) return;
         HandReticle.main.SetIcon(HandReticle.IconType.Hand);
-        if (mv is Submarine sub)
+        if (av is Submarine sub)
         {
             if (sub.IsPlayerInside())
                 HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, ExitHint);
             else
                 HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, EnterHint);
         }
-        else if (mv is Submersible || mv is Skimmer)
+        else if (av is Submersible || av is Skimmer)
         {
             HandReticle.main.SetTextRaw(HandReticle.TextType.Hand, EnterHint);
         }
@@ -48,11 +48,11 @@ internal class VehicleHatch : HandTarget, IHandTarget, IDockListener
 
     public void OnHandClick(GUIHand hand)
     {
-        LogWriter.Default.Write($"VehicleHatch.OnHandClick: {mv?.NiceName()}");
+        LogWriter.Default.Write($"VehicleHatch.OnHandClick: {av?.NiceName()}");
         if (!isLive) return;
         Player.main.rigidBody.velocity = Vector3.zero;
         Player.main.rigidBody.angularVelocity = Vector3.zero;
-        if (mv is Submarine sub)
+        if (av is Submarine sub)
         {
             if (hatchIndex < 0 || hatchIndex >= sub.Com.Hatches.Count)
             {
@@ -61,11 +61,11 @@ internal class VehicleHatch : HandTarget, IHandTarget, IDockListener
             }
 
             if (sub.IsPlayerInside())
-                mv.PlayerExit(mv.Com.Hatches[hatchIndex], true);
+                av.PlayerExit(av.Com.Hatches[hatchIndex], true);
             else
-                sub.PlayerEntry(mv.Com.Hatches[hatchIndex]);
+                sub.PlayerEntry(av.Com.Hatches[hatchIndex]);
         }
-        else if (mv is Submersible sub2 && !mv.isScuttled)
+        else if (av is Submersible sub2 && !av.isScuttled)
         {
             sub2.ClosestPlayerEntry();
         }
@@ -73,17 +73,17 @@ internal class VehicleHatch : HandTarget, IHandTarget, IDockListener
         LogWriter.Default.Write("VehicleHatch.OnHandClick: end");
 
         /*
-        if (mv as Walker.IsNotNull())
+        if (av as Walker.IsNotNull())
         {
-            Player.main.transform.position = (mv as Walker).PilotSeat.SitLocation.transform.position;
-            Player.main.transform.rotation = (mv as Walker).PilotSeat.SitLocation.transform.rotation;
-            mv.PlayerEntry();
+            Player.main.transform.position = (av as Walker).PilotSeat.SitLocation.transform.position;
+            Player.main.transform.rotation = (av as Walker).PilotSeat.SitLocation.transform.rotation;
+            av.PlayerEntry();
         }
-        if (mv as Skimmer.IsNotNull())
+        if (av as Skimmer.IsNotNull())
         {
-            Player.main.transform.position = (mv as Skimmer).PilotSeats.First().SitLocation.transform.position;
-            Player.main.transform.rotation = (mv as Skimmer).PilotSeats.First().SitLocation.transform.rotation;
-            mv.PlayerEntry();
+            Player.main.transform.position = (av as Skimmer).PilotSeats.First().SitLocation.transform.position;
+            Player.main.transform.rotation = (av as Skimmer).PilotSeats.First().SitLocation.transform.rotation;
+            av.PlayerEntry();
         }
         */
     }

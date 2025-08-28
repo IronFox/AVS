@@ -1,13 +1,12 @@
-﻿using AVS.BaseVehicle;
+﻿using AVS.Assets;
+using AVS.BaseVehicle;
 using AVS.Log;
+using AVS.Util;
 using AVS.VehicleTypes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.Assets;
-using AVS.Util;
-using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS;
@@ -73,48 +72,50 @@ public static class VehicleRegistrar
     /// <summary>
     /// Registers a vehicle asynchronously by starting a coroutine.
     /// </summary>
-    /// <remarks>Calls <see cref="RegisterVehicle(AvsVehicle, bool)"/></remarks>
-    /// <param name="mv">The mod vehicle to register.</param>
+    /// <remarks>Calls <see cref="RegisterVehicle"/> as a new coroutine</remarks>
+    /// <param name="mp">The owning main patcher instance.</param>
+    /// <param name="av">The mod vehicle to register.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
-    public static void RegisterVehicleLater(AvsVehicle mv, bool verbose = false)
+    public static void RegisterVehicleLater(MainPatcher mp, AvsVehicle av, bool verbose = false)
     {
-        MainPatcher.Instance.StartCoroutine(RegisterVehicle(mv, verbose));
+        mp.StartCoroutine(RegisterVehicle(mp, av, verbose));
     }
 
     /// <summary>
     /// Coroutine for registering a mod vehicle, including validation and queuing if necessary.
     /// </summary>
-    /// <param name="mv">The mod vehicle to register.</param>
+    /// <param name="mp">The owning main patcher instance.</param>
+    /// <param name="av">The mod vehicle to register.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
     /// <returns>IEnumerator for coroutine execution.</returns>
-    public static IEnumerator RegisterVehicle(AvsVehicle mv, bool verbose = false)
+    public static IEnumerator RegisterVehicle(MainPatcher mp, AvsVehicle av, bool verbose = false)
     {
-        var log = mv.Log.Tag(nameof(RegisterVehicle));
-        mv.OnAwakeOrPrefabricate();
+        var log = av.Log.Tag(nameof(RegisterVehicle));
+        av.OnAwakeOrPrefabricate();
         yield return SeamothHelper.WaitUntilLoaded();
-        if (AvsVehicleManager.VehicleTypes.Any(x => x.name == mv.gameObject.name))
+        if (AvsVehicleManager.VehicleTypes.Any(x => x.Name == av.gameObject.name))
         {
-            VerboseLog(log, LogType.Warn, verbose, $"{mv.gameObject.name} was already registered.");
+            VerboseLog(log, LogType.Warn, verbose, $"{av.gameObject.name} was already registered.");
             yield break;
         }
 
-        VerboseLog(log, LogType.Log, verbose, $"The {mv.gameObject.name} is beginning validation.");
-        if (!ValidateAll(mv, verbose))
+        VerboseLog(log, LogType.Log, verbose, $"The {av.gameObject.name} is beginning validation.");
+        if (!ValidateAll(av, verbose))
         {
-            log.Error($"{mv.gameObject.name} failed validation. Not registered.");
-            Logger.LoopMainMenuError($"Failed validation. Not registered. See log.", mv.gameObject.name);
+            log.Error($"{av.gameObject.name} failed validation. Not registered.");
+            Logger.LoopMainMenuError($"Failed validation. Not registered. See log.", av.gameObject.name);
             yield break;
         }
 
         if (RegistrySemaphore)
         {
-            VerboseLog(log, LogType.Log, verbose, $"Enqueueing the {mv.gameObject.name} for Registration.");
-            RegistrationQueue.Enqueue(() => MainPatcher.Instance.StartCoroutine(InternalRegisterVehicle(mv, verbose)));
-            yield return new WaitUntil(() => AvsVehicleManager.VehicleTypes.Select(x => x.mv).Contains(mv));
+            VerboseLog(log, LogType.Log, verbose, $"Enqueueing the {av.gameObject.name} for Registration.");
+            RegistrationQueue.Enqueue(() => mp.StartCoroutine(InternalRegisterVehicle(mp, av, verbose)));
+            yield return new WaitUntil(() => AvsVehicleManager.VehicleTypes.Select(x => x.av).Contains(av));
         }
         else
         {
-            yield return MainPatcher.Instance.StartCoroutine(InternalRegisterVehicle(mv, verbose));
+            yield return mp.StartCoroutine(InternalRegisterVehicle(mp, av, verbose));
         }
     }
 
@@ -122,20 +123,22 @@ public static class VehicleRegistrar
     /// <summary>
     /// Internal coroutine for registering a mod vehicle, including prefab creation and queue management.
     /// </summary>
-    /// <param name="mv">The mod vehicle to register.</param>
+    /// <param name="mp">The owning main patcher instance.</param>
+    /// <param name="av">The mod vehicle to register.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
     /// <returns>IEnumerator for coroutine execution.</returns>
-    private static IEnumerator InternalRegisterVehicle(AvsVehicle mv, bool verbose)
+    private static IEnumerator InternalRegisterVehicle(MainPatcher mp, AvsVehicle av, bool verbose)
     {
-        var log = mv.Log.Tag(nameof(InternalRegisterVehicle));
+        var log = av.Log.Tag(nameof(InternalRegisterVehicle));
+        av.mainPatcherInstanceId = mp.GetInstanceID();
         RegistrySemaphore = true;
-        VerboseLog(log, LogType.Log, verbose, $"The {mv.gameObject.name} is beginning Registration.");
-        var registeredPingType = AvsVehicleManager.RegisterPingType(mv,
-            (PingType)(0xFF + (MainPatcher.Instance.ModName.GetHashCode() & 0x7FFFFF)), verbose);
-        yield return MainPatcher.Instance.StartCoroutine(
-            AvsVehicleBuilder.Prefabricate(mv, registeredPingType, verbose));
+        VerboseLog(log, LogType.Log, verbose, $"The {av.gameObject.name} is beginning Registration.");
+        var registeredPingType = AvsVehicleManager.RegisterPingType(av,
+            (PingType)(0xFF + (mp.ModName.GetHashCode() & 0x7FFFFF)), verbose);
+        yield return mp.StartCoroutine(
+            AvsVehicleBuilder.Prefabricate(mp, av, registeredPingType, verbose));
         RegistrySemaphore = false;
-        log.Write($"Finished {mv.gameObject.name} registration for ping type {registeredPingType}.");
+        log.Write($"Finished {av.gameObject.name} registration for ping type {registeredPingType}.");
         VehiclesRegistered++;
         if (RegistrationQueue.Count > 0)
             RegistrationQueue.Dequeue().Invoke();
@@ -144,30 +147,30 @@ public static class VehicleRegistrar
     /// <summary>
     /// Validates a mod vehicle and its specific type (Submarine, Submersible, Skimmer).
     /// </summary>
-    /// <param name="mv">The mod vehicle to validate.</param>
+    /// <param name="av">The mod vehicle to validate.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
     /// <returns>True if the vehicle is valid; otherwise, false.</returns>
-    public static bool ValidateAll(AvsVehicle mv, bool verbose)
+    public static bool ValidateAll(AvsVehicle av, bool verbose)
     {
-        var log = mv.Log.Tag(nameof(ValidateAll));
-        if (mv is Submarine sub1)
+        var log = av.Log.Tag(nameof(ValidateAll));
+        if (av is Submarine sub1)
             if (!ValidateRegistration(sub1, verbose))
             {
-                log.Error("Invalid Submarine Registration for the " + mv.gameObject.name + ". Next.");
+                log.Error("Invalid Submarine Registration for the " + av.gameObject.name + ". Next.");
                 return false;
             }
 
-        if (mv is Submersible sub2)
+        if (av is Submersible sub2)
             if (!ValidateRegistration(sub2, verbose))
             {
-                log.Error("Invalid Submersible Registration for the " + mv.gameObject.name + ". Next.");
+                log.Error("Invalid Submersible Registration for the " + av.gameObject.name + ". Next.");
                 return false;
             }
 
-        if (mv is Skimmer sk)
+        if (av is Skimmer sk)
             if (!ValidateRegistration(sk, verbose))
             {
-                log.Error("Invalid Submersible Registration for the " + mv.gameObject.name + ". Next.");
+                log.Error("Invalid Submersible Registration for the " + av.gameObject.name + ". Next.");
                 return false;
             }
 
@@ -177,105 +180,105 @@ public static class VehicleRegistrar
     /// <summary>
     /// Validates the registration of a mod vehicle, checking required fields and configuration.
     /// </summary>
-    /// <param name="mv">The mod vehicle to validate.</param>
+    /// <param name="av">The mod vehicle to validate.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
     /// <returns>True if the vehicle is valid; otherwise, false.</returns>
-    public static bool ValidateRegistration(AvsVehicle mv, bool verbose)
+    public static bool ValidateRegistration(AvsVehicle av, bool verbose)
     {
         var thisName = "";
-        var log = mv.Log.Tag(nameof(ValidateRegistration));
+        var log = av.Log.Tag(nameof(ValidateRegistration));
         try
         {
-            if (mv.IsNull())
+            if (av.IsNull())
             {
                 log.Error("An null mod vehicle was passed for registration.");
                 return false;
             }
 
-            if (mv.name == "")
+            if (av.name == "")
             {
                 log.Error(thisName + "An empty name was provided for this vehicle.");
                 return false;
             }
 
-            if (mv.Com.CollisionModel.IsNull())
+            if (av.Com.CollisionModel.IsNull())
             {
                 log.Error(thisName + "A null VehicleComposition.CollisionModel was passed for registration." +
                           " This would lead to null reference exceptions in the Subnautica vehicle system");
                 return false;
             }
 
-            if (mv.Com.CollisionModel.Contains(mv.gameObject))
+            if (av.Com.CollisionModel.Contains(av.gameObject))
             {
                 log.Error(thisName + "Collision model must not be same as the vehicle root." +
                           " Subnautica would disable the entire vehicle on dock.");
                 return false;
             }
 
-            VerboseLog(log, LogType.Log, verbose, "Validating the Registration of the " + mv.name);
-            thisName = mv.name + ": ";
-            if (!mv.VehicleRoot)
+            VerboseLog(log, LogType.Log, verbose, "Validating the Registration of the " + av.name);
+            thisName = av.name + ": ";
+            if (!av.VehicleRoot)
             {
                 log.Error(thisName +
                           $"A null {nameof(AvsVehicle)}.{nameof(AvsVehicle.VehicleRoot)} was passed for registration.");
                 return false;
             }
 
-            if (mv.Config.BaseCrushDepth < 0)
+            if (av.Config.BaseCrushDepth < 0)
             {
                 log.Error(thisName +
                           "A negative crush depth was passed for registration. This vehicle would take crush damage even out of water.");
                 return false;
             }
 
-            if (mv.Config.MaxHealth <= 0)
+            if (av.Config.MaxHealth <= 0)
             {
                 log.Error(thisName +
                           "A non-positive max health was passed for registration. This vehicle would be destroyed as soon as it awakens.");
                 return false;
             }
 
-            if (mv.Config.Mass <= 0)
+            if (av.Config.Mass <= 0)
             {
                 log.Error(thisName + "A non-positive mass was passed for registration. Don't do that.");
                 return false;
             }
 
-            if (mv.Com.InnateStorages.Count == 0)
+            if (av.Com.InnateStorages.Count == 0)
                 VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"No {nameof(AvsVehicle)}.InnateStorages were provided. These are lockers the vehicle always has.");
-            if (mv.Com.ModularStorages.Count == 0)
+            if (av.Com.ModularStorages.Count == 0)
                 VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"No {nameof(AvsVehicle)}.ModularStorages were provided. These are lockers that can be unlocked with upgrades.");
-            if (mv.Com.Upgrades.Count == 0)
+            if (av.Com.Upgrades.Count == 0)
                 log.Warn(thisName +
                          $"No {nameof(AvsVehicle)}.Upgrades were provided. These specify interfaces the player can click to insert and remove upgrades.");
-            if (mv.Com.Batteries.Count == 0)
+            if (av.Com.Batteries.Count == 0)
                 log.Warn(thisName +
                          $"No {nameof(AvsVehicle)}.Batteries were provided. These are necessary to power the engines. This vehicle will be always powered.");
-            if (mv.Com.BackupBatteries.Count == 0)
+            if (av.Com.BackupBatteries.Count == 0)
                 VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"No {nameof(AvsVehicle)}.BackupBatteries were provided. This collection of batteries belong to the AI and will be used exclusively for life support, auto-leveling, and other AI tasks. The AI will use the main batteries instead.");
-            if (mv.Com.Headlights.Count == 0)
+            if (av.Com.Headlights.Count == 0)
                 VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"No {nameof(AvsVehicle)}.Headlights were provided. These lights would be activated when the player right clicks while piloting.");
-            if (mv.Com.WaterClipProxies.Count == 0)
+            if (av.Com.WaterClipProxies.Count == 0)
                 VerboseLog(log, LogType.Warn, verbose,
                     thisName +
                     $"No {nameof(AvsVehicle)}.WaterClipProxies were provided. These are necessary to keep the ocean surface out of the vehicle.");
-            if (mv.Com.CanopyWindows.Count == 0)
+            if (av.Com.CanopyWindows.Count == 0)
                 VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"No {nameof(AvsVehicle)}.CanopyWindows were provided. These must be specified to handle window transparencies.");
-            if (!mv.Com.BoundingBoxCollider)
+            if (!av.Com.BoundingBoxCollider)
                 VerboseLog(log, LogType.Warn, verbose,
                     thisName +
                     "No BoundingBox BoxCollider was provided. If a BoundingBox GameObject was provided, it did not have a BoxCollider. Tether range is 10 meters. This vehicle will not be able to dock in the Moonpool. The build bots will assume this vehicle is 6m x 8m x 12m.");
-            if (mv.Com.CollisionModel.IsNull() || mv.Com.CollisionModel.Length == 0)
+            if (av.Com.CollisionModel.IsNull() || av.Com.CollisionModel.Length == 0)
             {
                 VerboseLog(log, LogType.Log, verbose,
                     thisName +
@@ -283,59 +286,59 @@ public static class VehicleRegistrar
                 return false;
             }
 
-            foreach (var vs in mv.Com.InnateStorages.Concat(mv.Com.ModularStorages))
+            foreach (var vs in av.Com.InnateStorages.Concat(av.Com.ModularStorages))
                 if (!vs.CheckValidity(log, thisName))
                     return false;
 
-            foreach (var vu in mv.Com.Upgrades)
+            foreach (var vu in av.Com.Upgrades)
                 if (!vu.CheckValidity(log, thisName, verbose))
                     return false;
 
-            foreach (var vb in mv.Com.Batteries.Concat(mv.Com.BackupBatteries))
+            foreach (var vb in av.Com.Batteries.Concat(av.Com.BackupBatteries))
                 if (!vb.CheckValidity(log, thisName, verbose))
                     return false;
 
-            foreach (var vfl in mv.Com.Headlights)
+            foreach (var vfl in av.Com.Headlights)
                 if (!vfl.CheckValidity(log, thisName))
                     return false;
 
-            if (mv.Com.StorageRootObject.IsNull())
+            if (av.Com.StorageRootObject.IsNull())
             {
                 log.Error(thisName +
                           $"A null {nameof(AvsVehicle)}.StorageRootObject was provided. There would be no way to store things in this vehicle.");
                 return false;
             }
 
-            if (mv.Com.ModulesRootObject.IsNull())
+            if (av.Com.ModulesRootObject.IsNull())
             {
                 log.Error(thisName +
                           $"A null {nameof(AvsVehicle)}.ModulesRootObject was provided. There would be no way to upgrade this vehicle.");
                 return false;
             }
 
-            if (mv.Com.StorageRootObject == mv.gameObject)
+            if (av.Com.StorageRootObject == av.gameObject)
             {
                 log.Error(thisName +
                           "The StorageRootObject was the same as the Vehicle itself. These must be uniquely identifiable objects!");
                 return false;
             }
 
-            if (mv.Com.ModulesRootObject == mv.gameObject)
+            if (av.Com.ModulesRootObject == av.gameObject)
             {
                 log.Error(thisName +
                           "The ModulesRootObject was the same as the Vehicle itself. These must be uniquely identifiable objects!");
                 return false;
             }
 
-            if (!mv.Com.LeviathanGrabPoint)
+            if (!av.Com.LeviathanGrabPoint)
                 VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"A null {nameof(AvsVehicle)}.LeviathanGrabPoint was provided. This is where leviathans attach to the vehicle. The root object will be used instead.");
-            if (!mv.Com.Engine)
+            if (!av.Com.Engine)
                 VerboseLog(log, LogType.Warn, verbose,
                     thisName +
                     $"A null {nameof(AvsVehicle)}.Com.Engine was passed for registration. A default engine will be chosen.");
-            if (!mv.Config.Recipe.CheckValidity(mv.name))
+            if (!av.Config.Recipe.CheckValidity(av.name))
                 return false;
         }
         catch (Exception e)
@@ -347,82 +350,82 @@ public static class VehicleRegistrar
         }
 
         VerboseLog(log, LogType.Log, verbose,
-            $"The Registration of the '{mv.name}' as an {nameof(AvsVehicle)} has been validated successfully.");
+            $"The Registration of the '{av.name}' as an {nameof(AvsVehicle)} has been validated successfully.");
         return true;
     }
 
     /// <summary>
     /// Validates the registration of a Submarine, including submarine-specific requirements.
     /// </summary>
-    /// <param name="mv">The submarine to validate.</param>
+    /// <param name="av">The submarine to validate.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
     /// <returns>True if the submarine is valid; otherwise, false.</returns>
-    public static bool ValidateRegistration(Submarine mv, bool verbose)
+    public static bool ValidateRegistration(Submarine av, bool verbose)
     {
-        if (!ValidateRegistration(mv as AvsVehicle, verbose))
+        if (!ValidateRegistration(av as AvsVehicle, verbose))
             return false;
-        var log = mv.Log.Tag(nameof(ValidateRegistration));
+        var log = av.Log.Tag(nameof(ValidateRegistration));
         var thisName = "";
         try
         {
-            thisName = mv.name + ": ";
-            if (mv.Com.Helms.Count == 0)
+            thisName = av.name + ": ";
+            if (av.Com.Helms.Count == 0)
             {
                 log.Error(thisName +
                           $"No {nameof(Submarine)}.Com.Helms were provided. These specify what the player will click on to begin piloting the vehicle.");
                 return false;
             }
 
-            if (mv.Com.Hatches.Count == 0)
+            if (av.Com.Hatches.Count == 0)
             {
                 log.Error(thisName +
                           $"No {nameof(AvsVehicle)}.Com.Hatches were provided. These specify how the player will enter and exit the vehicle.");
                 return false;
             }
 
-            if (mv.Com.Floodlights.Count == 0)
+            if (av.Com.Floodlights.Count == 0)
                 VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"No {nameof(AvsVehicle)}.Com.Floodlights were provided. These lights would be activated on the control panel.");
-            if (mv.Com.NavigationPortLights.Count == 0)
+            if (av.Com.NavigationPortLights.Count == 0)
                 VerboseLog(log, LogType.Log, verbose, thisName + "Navigation port lights were not provided.");
-            if (mv.Com.NavigationStarboardLights.Count == 0)
+            if (av.Com.NavigationStarboardLights.Count == 0)
                 VerboseLog(log, LogType.Log, verbose, thisName + "Navigation starboard lights were not provided.");
-            if (mv.Com.NavigationPositionLights.Count == 0)
+            if (av.Com.NavigationPositionLights.Count == 0)
                 VerboseLog(log, LogType.Log, verbose, thisName + "Navigation position lights were not provided.");
-            if (mv.Com.NavigationWhiteStrobeLights.Count == 0)
+            if (av.Com.NavigationWhiteStrobeLights.Count == 0)
                 VerboseLog(log, LogType.Log, verbose, thisName + "White strobe navigation lights were not provided.");
-            if (mv.Com.NavigationRedStrobeLights.Count == 0)
+            if (av.Com.NavigationRedStrobeLights.Count == 0)
                 VerboseLog(log, LogType.Log, verbose, thisName + "Red strobe navigation lights were not provided.");
-            if (mv.Com.TetherSources.Count == 0)
+            if (av.Com.TetherSources.Count == 0)
             {
                 log.Error(thisName +
                           $"No {nameof(Submarine)}.Com.TetherSources were provided. These are necessary to keep the player 'grounded' within the vehicle.");
                 return false;
             }
 
-            if (mv.Com.ColorPicker.IsNull())
+            if (av.Com.ColorPicker.IsNull())
                 VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"A null {nameof(Submarine)}.Com.ColorPicker was provided. You only need this if you implement the necessary painting functions.");
-            if (mv.Com.Fabricator.IsNull())
+            if (av.Com.Fabricator.IsNull())
                 VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"A null {nameof(Submarine)}.Com.Fabricator was provided. The Submarine will not come with a fabricator at construction-time.");
-            if (mv.Com.ControlPanel.IsNull())
+            if (av.Com.ControlPanel.IsNull())
                 VerboseLog(log, LogType.Log, verbose,
                     thisName +
                     $"A null {nameof(Submarine)}.Com.ControlPanel was provided. This is necessary to toggle floodlights.");
-            foreach (var ps in mv.Com.Helms)
+            foreach (var ps in av.Com.Helms)
                 if (!ps.CheckValidity(log, thisName, verbose))
                     return false;
-            foreach (var vhs in mv.Com.Hatches)
+            foreach (var vhs in av.Com.Hatches)
                 if (!vhs.CheckValidity(log, thisName, verbose))
                     return false;
-            foreach (var vs in mv.Com.ModularStorages)
+            foreach (var vs in av.Com.ModularStorages)
                 if (!vs.CheckValidity(log, thisName))
                     return false;
-            foreach (var vfl in mv.Com.Floodlights)
+            foreach (var vfl in av.Com.Floodlights)
                 if (!vfl.CheckValidity(log, thisName))
                     return false;
         }
@@ -435,38 +438,38 @@ public static class VehicleRegistrar
         }
 
         VerboseLog(log, LogType.Log, verbose,
-            "The Registration of the " + mv.name + " as a Submarine has been validated successfully.");
+            "The Registration of the " + av.name + " as a Submarine has been validated successfully.");
         return true;
     }
 
     /// <summary>
     /// Validates the registration of a Submersible, including submersible-specific requirements.
     /// </summary>
-    /// <param name="mv">The submersible to validate.</param>
+    /// <param name="av">The submersible to validate.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
     /// <returns>True if the submersible is valid; otherwise, false.</returns>
-    public static bool ValidateRegistration(Submersible mv, bool verbose)
+    public static bool ValidateRegistration(Submersible av, bool verbose)
     {
-        if (!ValidateRegistration(mv as AvsVehicle, verbose))
+        if (!ValidateRegistration(av as AvsVehicle, verbose))
             return false;
-        var log = mv.Log.Tag(nameof(ValidateRegistration));
+        var log = av.Log.Tag(nameof(ValidateRegistration));
         var thisName = "";
         try
         {
-            thisName = mv.name + ": ";
-            if (mv.Com.Hatches.Count == 0)
+            thisName = av.name + ": ";
+            if (av.Com.Hatches.Count == 0)
             {
                 log.Error(thisName +
                           $"No {nameof(AvsVehicle)}.Com.Hatches were provided. These specify how the player will enter and exit the vehicle.");
                 return false;
             }
 
-            if (!mv.Com.PilotSeat.CheckValidity(log, thisName, verbose))
+            if (!av.Com.PilotSeat.CheckValidity(log, thisName, verbose))
                 return false;
-            foreach (var vhs in mv.Com.Hatches)
+            foreach (var vhs in av.Com.Hatches)
                 if (!vhs.CheckValidity(log, thisName, verbose))
                     return false;
-            foreach (var vs in mv.Com.ModularStorages)
+            foreach (var vs in av.Com.ModularStorages)
                 if (!vs.CheckValidity(log, thisName))
                     return false;
         }
@@ -479,7 +482,7 @@ public static class VehicleRegistrar
         }
 
         VerboseLog(log, LogType.Log, verbose,
-            "The Registration of the " + mv.name + " as a Submersible has been validated successfully.");
+            "The Registration of the " + av.name + " as a Submersible has been validated successfully.");
         return true;
     }
 }

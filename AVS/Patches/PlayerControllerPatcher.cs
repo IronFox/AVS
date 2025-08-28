@@ -35,8 +35,8 @@ public class PlayerControllerPatcher
     [HarmonyPatch(nameof(PlayerController.HandleUnderWaterState))]
     public static bool HandleUnderWaterStatePrefix(PlayerController __instance)
     {
-        var mv = Player.main.GetVehicle() as VehicleTypes.Submarine;
-        if (mv.IsNotNull() && !mv.IsPlayerControlling())
+        var av = Player.main.GetVehicle() as VehicleTypes.Submarine;
+        if (av.IsNotNull() && !av.IsPlayerControlling())
         {
             __instance.inVehicle = true;
             __instance.underWater = false;

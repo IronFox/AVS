@@ -9,7 +9,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.VehicleBuilding;
 using UnityEngine;
 using MobileWaterPark = AVS.StorageComponents.MobileWaterPark;
 
@@ -17,6 +16,20 @@ namespace AVS.BaseVehicle;
 
 public abstract partial class AvsVehicle
 {
+    [SerializeField]
+    internal int mainPatcherInstanceId;
+    private MainPatcher? owner;
+    internal MainPatcher Owner
+    {
+        get
+        {
+            if (owner.IsNull())
+                owner = MainPatcher.GetInstance(mainPatcherInstanceId);
+            return owner;
+        }
+    }
+
+
     internal void SetupVolumetricLights()
     {
         if (SeamothHelper.Seamoth.IsNull())
@@ -216,6 +229,7 @@ public abstract partial class AvsVehicle
             tmp.displayNameLocalized = vb.DisplayName?.Localize ?? false;
 
             var model = vb.Root.gameObject.EnsureComponent<BatteryProxy>();
+            model.av = this;
             model.proxy = vb.BatteryProxy;
             model.mixin = energyMixin;
 
@@ -284,7 +298,7 @@ public abstract partial class AvsVehicle
                 var inp = vs.Container.EnsureComponent<ModularStorageInput>();
                 var name = vs.DisplayName ?? Text.Untranslated("Modular Vehicle Storage " + iter);
                 inp.displayName = name;
-                inp.mv = this;
+                inp.av = this;
                 inp.slotID = iter;
                 iter++;
                 inp.model = vs.Container;
@@ -325,7 +339,7 @@ public abstract partial class AvsVehicle
                     .GetComponent<SeamothStorageInput>().openSound;
                 var inp = vp.Root.EnsureComponent<WaterParkStorageInput>();
                 inp.displayName = name;
-                inp.mv = this;
+                inp.av = this;
                 inp.slotID = iter;
                 iter++;
                 inp.model = vp.Root;
@@ -376,7 +390,7 @@ public abstract partial class AvsVehicle
                     .GetComponent<SeamothStorageInput>().openSound;
                 var inp = vs.Container.EnsureComponent<InnateStorageInput>();
                 inp.displayName = name;
-                inp.mv = this;
+                inp.av = this;
                 inp.slotID = iter;
                 iter++;
                 inp.model = vs.Container;

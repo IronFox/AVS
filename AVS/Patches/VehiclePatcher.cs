@@ -1,11 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Emit;
-using AVS.BaseVehicle;
+﻿using AVS.BaseVehicle;
 using AVS.Localization;
 using AVS.Util;
 using HarmonyLib;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection.Emit;
 using UnityEngine;
 
 // PURPOSE: generally ensures AvsVehicles behave like normal Vehicles
@@ -49,8 +49,8 @@ public class VehiclePatcher
     [HarmonyPatch(nameof(Vehicle.OnHandHover))]
     public static bool OnHandHoverPrefix(Vehicle __instance)
     {
-        var mv = __instance as AvsVehicle;
-        if (mv.IsNull())
+        var av = __instance as AvsVehicle;
+        if (av.IsNull())
         {
             //if (VehicleTypes.Drone.mountedDrone.IsNotNull())
             //{
@@ -59,22 +59,22 @@ public class VehiclePatcher
         }
         else
         {
-            if (mv.isScuttled)
+            if (av.isScuttled)
             {
-                var now = mv.GetComponent<Sealed>().openedAmount;
-                var max = mv.GetComponent<Sealed>().maxOpenedAmount;
+                var now = av.GetComponent<Sealed>().openedAmount;
+                var max = av.GetComponent<Sealed>().maxOpenedAmount;
                 var percent = now.Percentage(max);
                 HandReticle.main.SetText(HandReticle.TextType.Hand,
                     Translator.GetFormatted(TranslationKey.HandHover_Vehicle_DeconstructionPercent, percent), true,
                     GameInput.Button.None);
             }
-            else if (mv.IsBoarded)
+            else if (av.IsBoarded)
             {
                 HandReticle.main.SetText(HandReticle.TextType.Hand, "", true, GameInput.Button.None);
             }
             else
             {
-                HandReticle.main.SetText(HandReticle.TextType.Hand, mv.GetName(), true, GameInput.Button.None);
+                HandReticle.main.SetText(HandReticle.TextType.Hand, av.GetName(), true, GameInput.Button.None);
             }
 
             return false;
@@ -100,8 +100,8 @@ public class VehiclePatcher
     private static bool ApplyPhysicsMovePrefix(Vehicle __instance, ref bool ___wasAboveWater,
         ref VehicleAccelerationModifier[] ___accelerationModifiers)
     {
-        var mv = __instance as AvsVehicle;
-        if (mv.IsNotNull())
+        var av = __instance as AvsVehicle;
+        if (av.IsNotNull())
             return false;
         return true;
     }
@@ -120,8 +120,8 @@ public class VehiclePatcher
     [HarmonyPatch(nameof(Vehicle.LazyInitialize))]
     public static bool LazyInitializePrefix(Vehicle __instance, ref EnergyInterface ___energyInterface)
     {
-        var mv = __instance as AvsVehicle;
-        if (mv.IsNull())
+        var av = __instance as AvsVehicle;
+        if (av.IsNull())
             return true;
 
         ___energyInterface = __instance.gameObject.GetComponent<EnergyInterface>();
@@ -139,8 +139,8 @@ public class VehiclePatcher
     [HarmonyPatch(nameof(Vehicle.GetAllStorages))]
     public static void GetAllStoragesPostfix(Vehicle __instance, ref List<IItemsContainer> containers)
     {
-        var mv = __instance as AvsVehicle;
-        if (mv.IsNull())
+        var av = __instance as AvsVehicle;
+        if (av.IsNull())
             return;
 
         foreach (var tmp in ((AvsVehicle)__instance).Com.InnateStorages)
@@ -164,10 +164,10 @@ public class VehiclePatcher
     public static void IsPoweredPostfix(Vehicle __instance, ref EnergyInterface ___energyInterface,
         ref bool __result)
     {
-        var mv = __instance as AvsVehicle;
-        if (mv.IsNull())
+        var av = __instance as AvsVehicle;
+        if (av.IsNull())
             return;
-        if (!mv.IsPoweredOn)
+        if (!av.IsPoweredOn)
             __result = false;
     }
 
@@ -235,7 +235,7 @@ public class VehiclePatcher
             }
         }
 
-        MainPatcher.Instance.StartCoroutine(NotifyDockingBay(__instance.transform.parent.Find("BaseCell(Clone)")));
+        MainPatcher.AnyInstance.StartCoroutine(NotifyDockingBay(__instance.transform.parent.Find("BaseCell(Clone)")));
         return true;
     }
 

@@ -1,11 +1,11 @@
 ﻿using AVS.BaseVehicle;
+using AVS.StorageComponents;
+using AVS.Util;
 using HarmonyLib;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using AVS.StorageComponents;
-using AVS.Util;
 
 // PURPOSE: allow the Cyclops dock terminal to display AvsVehicle data. 
 // VALUE: High.
@@ -60,7 +60,7 @@ public static class CyclopsPatcher
     [HarmonyPatch(nameof(CyclopsVehicleStorageTerminalManager.VehicleDocked))]
     private static void VehicleDockedPrefix(CyclopsVehicleStorageTerminalManager __instance, Vehicle vehicle)
     {
-        if (vehicle is AvsVehicle)
+        if (vehicle is AvsVehicle av)
         {
             // TODO: make custom DockedVehicleType and associated HUD
             __instance.dockedVehicleType = CyclopsVehicleStorageTerminalManager.DockedVehicleType.Seamoth;
@@ -76,7 +76,7 @@ public static class CyclopsPatcher
                 }
             }
 
-            MainPatcher.Instance.StartCoroutine(EnsureSubRootSet());
+            av.Owner.StartCoroutine(EnsureSubRootSet());
         }
     }
 
@@ -90,12 +90,12 @@ public static class CyclopsPatcher
     [HarmonyPatch(nameof(CyclopsVehicleStorageTerminalManager.VehicleDocked))]
     private static void VehicleDockedPostfix(CyclopsVehicleStorageTerminalManager __instance, Vehicle vehicle)
     {
-        if (vehicle is AvsVehicle mv)
+        if (vehicle is AvsVehicle av)
         {
             __instance.dockedVehicleType = CyclopsVehicleStorageTerminalManager.DockedVehicleType.Seamoth;
             __instance.usingModulesUIHolder = __instance.seamothModulesUIHolder;
             __instance.currentScreen = __instance.seamothVehicleScreen;
-            __instance.vehicleUpgradeConsole = mv.upgradesInput;
+            __instance.vehicleUpgradeConsole = av.upgradesInput;
             if (__instance.vehicleUpgradeConsole && __instance.vehicleUpgradeConsole.equipment.IsNotNull())
             {
                 //__instance.vehicleUpgradeConsole.equipment.onEquip += __instance.OnEquip;

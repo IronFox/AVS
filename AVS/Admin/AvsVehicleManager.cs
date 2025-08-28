@@ -1,11 +1,11 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Log;
 using AVS.SaveLoad;
+using AVS.Util;
 using Nautilus.Json;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.Util;
 using UnityEngine;
 
 namespace AVS;
@@ -65,14 +65,15 @@ internal static class AvsVehicleManager
     /// Enrolls a vehicle into the <see cref="VehiclesInPlay"/> list and starts loading it if constructed.
     /// </summary>
     /// <param name="mv">The vehicle to enroll.</param>
-    public static void EnrollVehicle(AvsVehicle mv)
+    /// <param name="mp">The main patcher instance used to start coroutines.</param>
+    public static void EnrollVehicle(MainPatcher mp, AvsVehicle mv)
     {
         if (mv.name.Contains("Clone") && !VehiclesInPlay.Contains(mv))
         {
             VehiclesInPlay.Add(mv);
             Logger.Log("Enrolled the " + mv.name + " : " + mv.GetName() + " : " + mv.subName);
             if (!mv.GetComponent<VFXConstructing>() || mv.GetComponent<VFXConstructing>().constructed > 3f)
-                MainPatcher.Instance
+                mp
                     .StartCoroutine(
                         LoadVehicle(
                             mv)); // I wish I knew a good way to optionally NOT do this if this sub is being constructed rn
@@ -108,10 +109,10 @@ internal static class AvsVehicleManager
         mv.OnFinishedLoading();
     }
 
-    internal static void CreateSpritesFile(object sender, JsonFileEventArgs e)
+    internal static void CreateSpritesFile(MainPatcher mp, JsonFileEventArgs e)
     {
         SaveFiles.Current.WriteReflected(
-            Patches.SaveLoadManagerPatcher.SaveFileSpritesFileName,
+            Patches.SaveLoadManagerPatcher.GetSaveFileSpritesFileName(mp),
             VehicleTypes.Select(x => x.techType).Where(GameInfoIcon.Has).Select(x => x.AsString()).ToList(),
             LogWriter.Default
         );

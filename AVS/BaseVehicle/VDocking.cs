@@ -1,7 +1,7 @@
 ﻿using AVS.MaterialAdapt;
+using AVS.Util;
 using System;
 using System.Collections;
-using AVS.Util;
 using UnityEngine;
 
 namespace AVS.BaseVehicle;
@@ -169,7 +169,7 @@ public abstract partial class AvsVehicle
                 useRigidbody.detectCollisions = true;
             }
 
-            MainPatcher.Instance.StartCoroutine(EnsureCollisionsEnabledEventually());
+            Owner.StartCoroutine(EnsureCollisionsEnabledEventually());
         }
 
         SafeSignal(OnVehicleUndocked, nameof(OnVehicleUndocked));

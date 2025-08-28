@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using AVS.Log;
+﻿using AVS.Log;
+using System.Collections;
 using UnityEngine;
 
 namespace AVS.Util;
@@ -39,7 +39,7 @@ public static class Character
     /// <param name="destination">Target location</param>
     public static void TeleportTo(Vector3 destination)
     {
-        var mv = Player.main.GetAvsVehicle();
+        var av = Player.main.GetAvsVehicle();
         UWE.Utils.EnterPhysicsSyncSection();
         Player.main.SetCurrentSub(null, true);
         Player.main.playerController.SetEnabled(false);
@@ -48,22 +48,23 @@ public static class Character
         {
             yield return null;
             Player.main.SetPosition(destination);
-            Player.main.SetCurrentSub(mv.SafeGetComponent<SubRoot>(), true);
+            Player.main.SetCurrentSub(av.SafeGetComponent<SubRoot>(), true);
             Player.main.playerController.SetEnabled(true);
             yield return null;
             UWE.Utils.ExitPhysicsSyncSection();
         }
 
-        MainPatcher.Instance.StartCoroutine(waitForTeleport());
+        MainPatcher.AnyInstance.StartCoroutine(waitForTeleport());
     }
 
     /// <summary>
     /// Grants the player invincibility for a specified duration.
     /// </summary>
     /// <param name="time">Time in seconds to become invincible</param>
-    public static void GrantInvincibility(float time)
+    /// <param name="mp">Main patcher instance to run the coroutine</param>
+    public static void GrantInvincibility(MainPatcher mp, float time)
     {
-        MainPatcher.Instance.StartCoroutine(IntlGrantPlayerInvincibility(3f));
+        mp.StartCoroutine(IntlGrantPlayerInvincibility(3f));
     }
 
     private static IEnumerator IntlGrantPlayerInvincibility(float time)
@@ -76,10 +77,10 @@ public static class Character
     /// <summary>
     /// Asynchronously animates the character to sit down in a chair.
     /// </summary>
-    public static void SitDown()
+    public static void SitDown(MainPatcher mp)
     {
         Player.main.EnterSittingMode();
-        MainPatcher.Instance.StartCoroutine(SitDownInChair());
+        mp.StartCoroutine(SitDownInChair());
     }
 
     /// <summary>
@@ -132,9 +133,9 @@ public static class Character
     /// This method initiates an animation sequence to transition the player character from sitting to standing.
     /// The process is managed asynchronously and may involve resetting player animator states.
     /// </remarks>
-    public static void StandUp()
+    public static void StandUp(MainPatcher mp)
     {
-        MainPatcher.Instance.StartCoroutine(StandUpFromChair());
+        mp.StartCoroutine(StandUpFromChair());
     }
 
     /// <summary>

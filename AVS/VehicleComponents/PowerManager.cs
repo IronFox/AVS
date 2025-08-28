@@ -56,12 +56,12 @@ namespace AVS
         private bool isFloodlightsOn = false;
         private bool isNavLightsOn = false;
         private bool isInteriorLightsOn = false;
-        private AvsVehicle mv => GetComponent<AvsVehicle>();
+        private AvsVehicle av => GetComponent<AvsVehicle>();
         private EnergyInterface ei => GetComponent<EnergyInterface>();
 
         private PowerEvent EvaluatePowerEvent()
         {
-            mv.energyInterface.GetValues(out float charge, out _);
+            av.energyInterface.GetValues(out float charge, out _);
             if (charge < 5)
             {
                 return PowerEvent.OnBatteryDepleted;
@@ -88,10 +88,10 @@ namespace AVS
         /// including whether it has charge and whether it is powered on.</returns>
         public PowerStatus EvaluatePowerStatus()
         {
-            mv.energyInterface.GetValues(out float charge, out _);
+            av.energyInterface.GetValues(out float charge, out _);
             return new PowerStatus
             (
-                IsPowered: mv.IsPoweredOn,
+                IsPowered: av.IsPoweredOn,
                 HasCharge: charge > 0
             );
         }
@@ -141,14 +141,14 @@ namespace AVS
             // {
             //     float scalarFactor = 1.0f;
             //     float basePowerConsumptionPerSecond = .15f;
-            //     float upgradeModifier = Mathf.Pow(0.85f, mv.NumEfficiencyModules);
+            //     float upgradeModifier = Mathf.Pow(0.85f, av.NumEfficiencyModules);
             //     TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.deltaTime);
             // }
             // if (isAutopiloting)
             // {
             //     float scalarFactor = 1.0f;
             //     float basePowerConsumptionPerSecond = 3f;
-            //     float upgradeModifier = Mathf.Pow(0.85f, mv.NumEfficiencyModules);
+            //     float upgradeModifier = Mathf.Pow(0.85f, av.NumEfficiencyModules);
             //     TrySpendEnergy(scalarFactor * basePowerConsumptionPerSecond * upgradeModifier * Time.deltaTime);
             // }
         }

@@ -29,36 +29,36 @@ public class SubNamePatcher
     [HarmonyPatch(nameof(SubName.SetName))]
     public static void SubNameSetNamePostfix(SubName __instance)
     {
-        var mv = __instance.GetComponent<AvsVehicle>();
-        if (mv.IsNull())
+        var av = __instance.GetComponent<AvsVehicle>();
+        if (av.IsNull())
             return;
-        if (mv.Com.SubNameDecals.Count > 0)
-            SetSubNameDecals(mv);
-        if (mv is VehicleTypes.Submarine sub)
-            sub.PaintVehicleName(mv.subName.GetName(), mv.NameColor.RGB, mv.BaseColor.RGB);
+        if (av.Com.SubNameDecals.Count > 0)
+            SetSubNameDecals(av);
+        if (av is VehicleTypes.Submarine sub)
+            sub.PaintVehicleName(av.subName.GetName(), av.NameColor.RGB, av.BaseColor.RGB);
     }
 
-    private static void SetSubNameDecals(AvsVehicle mv)
+    private static void SetSubNameDecals(AvsVehicle av)
     {
-        foreach (var tmprougui in mv.Com.SubNameDecals)
+        foreach (var tmprougui in av.Com.SubNameDecals)
         {
             tmprougui.font = Nautilus.Utility.FontUtils.Aller_Rg;
-            tmprougui.text = mv.subName.GetName();
+            tmprougui.text = av.subName.GetName();
         }
     }
 
-    private static void SetSubNameDecalsWithColor(AvsVehicle mv, Vector3 hsb, Color color)
+    private static void SetSubNameDecalsWithColor(AvsVehicle av, Vector3 hsb, Color color)
     {
-        if (mv.IsNull())
+        if (av.IsNull())
             return;
 
         var col = new VehicleComponents.VehicleColor(color, hsb);
-        mv.SetNameColor(col);
-        SetSubNameDecals(mv);
-        foreach (var tmprougui in mv.Com.SubNameDecals)
+        av.SetNameColor(col);
+        SetSubNameDecals(av);
+        foreach (var tmprougui in av.Com.SubNameDecals)
             tmprougui.color = color;
-        if (mv is VehicleTypes.Submarine sub)
-            sub.PaintVehicleName(mv.subName.GetName(), mv.NameColor.RGB, mv.BaseColor.RGB);
+        if (av is VehicleTypes.Submarine sub)
+            sub.PaintVehicleName(av.subName.GetName(), av.NameColor.RGB, av.BaseColor.RGB);
     }
 
     /// <summary>
@@ -74,26 +74,26 @@ public class SubNamePatcher
     [HarmonyPatch(nameof(SubName.SetColor))]
     public static void SubNameSetColorPostfix(SubName __instance, int index, Vector3 hsb, Color color)
     {
-        var mv = __instance.GetComponent<AvsVehicle>();
-        if (mv.IsNull())
+        var av = __instance.GetComponent<AvsVehicle>();
+        if (av.IsNull())
             return;
         var col = new VehicleComponents.VehicleColor(color, hsb);
         if (index == 0)
         {
-            mv.SetBaseColor(col);
+            av.SetBaseColor(col);
         }
         else if (index == 1)
         {
-            if (mv.Com.SubNameDecals.Count > 0)
-                SetSubNameDecalsWithColor(mv, hsb, color);
+            if (av.Com.SubNameDecals.Count > 0)
+                SetSubNameDecalsWithColor(av, hsb, color);
         }
         else if (index == 2)
         {
-            mv.SetInteriorColor(col);
+            av.SetInteriorColor(col);
         }
         else if (index == 3)
         {
-            mv.SetStripeColor(col);
+            av.SetStripeColor(col);
         }
         else
         {

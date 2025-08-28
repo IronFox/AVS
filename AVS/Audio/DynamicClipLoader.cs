@@ -66,16 +66,17 @@ namespace AVS.Audio
         /// Asynchronously gets an <see cref="AudioClip"/> from the specified file path.
         /// If the clip is already being loaded, returns the existing promise.
         /// </summary>
+        /// <param name="mp">The <see cref="MainPatcher"/> owning the process.</param>
         /// <param name="filePath">The file path to the audio clip.</param>
         /// <returns>An <see cref="AsyncPromise{AudioClip}"/> representing the loading operation.</returns>
-        public static AsyncPromise<AudioClip> GetAudioClipAsync(string filePath)
+        public static AsyncPromise<AudioClip> GetAudioClipAsync(MainPatcher mp, string filePath)
         {
             if (AudioClipPromises.TryGetValue(filePath, out AsyncPromise<AudioClip> existingPromise))
             {
                 return existingPromise;
             }
             AsyncPromise<AudioClip> promise = new AsyncPromise<AudioClip>();
-            MainPatcher.Instance.StartCoroutine(LoadAudioClip(filePath, promise.Resolve, promise.Reject));
+            mp.StartCoroutine(LoadAudioClip(filePath, promise.Resolve, promise.Reject));
             AudioClipPromises[filePath] = promise;
             return promise;
         }

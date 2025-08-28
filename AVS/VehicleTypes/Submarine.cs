@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using AVS.BaseVehicle;
+﻿using AVS.BaseVehicle;
 using AVS.Composition;
 using AVS.Configuration;
 using AVS.Localization;
@@ -10,6 +6,10 @@ using AVS.SaveLoad;
 using AVS.Util;
 using AVS.VehicleBuilding;
 using AVS.VehicleComponents;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -97,7 +97,7 @@ public abstract class Submarine : AvsVehicle
         Floodlights = gameObject.AddComponent<FloodlightsController>();
         Interiorlights = gameObject.AddComponent<InteriorLightsController>();
         NavLights = gameObject.AddComponent<NavigationLightsController>();
-        gameObject.EnsureComponent<TetherSource>().mv = this;
+        gameObject.EnsureComponent<TetherSource>().av = this;
         controlPanelLogic.SafeDo(x => x.Init());
     }
 
@@ -112,7 +112,7 @@ public abstract class Submarine : AvsVehicle
         if (Com.ColorPicker.IsNotNull())
         {
             if (Com.ColorPicker.transform.Find("EditScreen").IsNull())
-                MainPatcher.Instance.StartCoroutine(SetupColorPicker(Com.ColorPicker));
+                StartCoroutine(SetupColorPicker(Com.ColorPicker));
             else
                 EnsureColorPickerEnabled();
         }
@@ -243,7 +243,8 @@ public abstract class Submarine : AvsVehicle
             }
         }
 
-        if (isScuttled) Character.GrantInvincibility(3f);
+        if (isScuttled)
+            Character.GrantInvincibility(Owner, 3f);
         Player.main.SetCurrentSub(GetComponent<SubRoot>());
     }
 
@@ -333,7 +334,7 @@ public abstract class Submarine : AvsVehicle
                 active.transform.Find("InputField/Text").GetComponent<TextMeshProUGUI>().text = GetName();
             }
 
-            MainPatcher.Instance.StartCoroutine(TrySpawnFabricator());
+            Owner.StartCoroutine(TrySpawnFabricator());
         }
 
         base.SubConstructionComplete();
@@ -356,14 +357,14 @@ public abstract class Submarine : AvsVehicle
                 // This fabricator blueprint has already been fulfilled.
                 yield break;
 
-        yield return SpawnFabricator(Com.Fabricator.transform);
+        yield return SpawnFabricator(Owner, Com.Fabricator.transform);
     }
 
-    private IEnumerator SpawnFabricator(Transform location)
+    private IEnumerator SpawnFabricator(MainPatcher mp, Transform location)
     {
         var log = Log.Tag(nameof(SpawnFabricator));
         var result = new InstanceContainer();
-        yield return MainPatcher.Instance.StartCoroutine(
+        yield return mp.StartCoroutine(
             AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(SpawnFabricator)), TechType.Fabricator, result));
         fabricator = result.Instance;
         if (fabricator.IsNull())
@@ -576,7 +577,7 @@ public abstract class Submarine : AvsVehicle
 
         if (console.IsNull())
         {
-            yield return MainPatcher.Instance.StartCoroutine(Builder.BeginAsync(TechType.BaseUpgradeConsole));
+            yield return Owner.StartCoroutine(Builder.BeginAsync(TechType.BaseUpgradeConsole));
             Builder.ghostModel.GetComponentInChildren<BaseGhost>().OnPlace();
             console = Resources.FindObjectsOfTypeAll<BaseUpgradeConsoleGeometry>().ToList()
                 .Find(x => x.gameObject.name.Contains("Short")).gameObject;

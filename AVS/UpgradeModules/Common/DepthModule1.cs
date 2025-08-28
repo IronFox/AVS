@@ -13,8 +13,12 @@ namespace AVS.UpgradeModules.Common
     /// under the "Depth Modules" tab in the crafting interface.</remarks>
     internal class DepthModule1 : DepthModuleBase<DepthModule1>
     {
+        public DepthModule1(MainPatcher mp) : base(mp)
+        {
+        }
+
         /// <inheritdoc/>
-        public override string ClassId => MainPatcher.Instance.ModName + "DepthModule1";
+        public override string ClassId => MainPatcher.ModName + "DepthModule1";
         /// <inheritdoc/>
         public override string DisplayName => Translator.Get(TranslationKey.Module_Depth1_DisplayName);
         /// <inheritdoc/>
@@ -27,7 +31,7 @@ namespace AVS.UpgradeModules.Common
                 .Add(TechType.AluminumOxide, 3)
                 .Done();
         /// <inheritdoc/>
-        public override Sprite Icon => MainPatcher.Instance.DepthModule1Icon;
+        public override Sprite Icon => MainPatcher.DepthModule1Icon;
 
         /// <inheritdoc/>
         public override void OnAdded(AddActionParams param)

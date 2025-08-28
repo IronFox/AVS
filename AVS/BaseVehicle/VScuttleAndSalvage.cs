@@ -1,6 +1,5 @@
-﻿using System.Collections;
-using AVS.Log;
-using AVS.Util;
+﻿using AVS.Util;
+using System.Collections;
 using UnityEngine;
 
 namespace AVS.BaseVehicle;
@@ -53,7 +52,7 @@ public abstract partial class AvsVehicle
             (component as IScuttleListener).OnScuttle();
         Com.WaterClipProxies.ForEach(x => x.SetActive(false));
         IsPoweredOn = false;
-        gameObject.EnsureComponent<Scuttler>().Scuttle();
+        gameObject.EnsureComponent<Scuttler>().Scuttle(Owner);
         var sealedThing = gameObject.EnsureComponent<Sealed>();
         sealedThing.openedAmount = 0;
         sealedThing.maxOpenedAmount = liveMixin.maxHealth / 5f;
@@ -69,7 +68,7 @@ public abstract partial class AvsVehicle
         foreach (var component in GetComponentsInChildren<IScuttleListener>()) component.OnUnscuttle();
         Com.WaterClipProxies.ForEach(x => x.SetActive(true));
         IsPoweredOn = true;
-        gameObject.EnsureComponent<Scuttler>().Unscuttle();
+        gameObject.EnsureComponent<Scuttler>().Unscuttle(Owner);
     }
 
     /// <summary>

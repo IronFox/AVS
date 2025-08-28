@@ -1,14 +1,15 @@
 ﻿using AVS.Localization;
 using AVS.Util;
+using AVS.VehicleBuilding;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS.BaseVehicle;
 
 public abstract partial class AvsVehicle
 {
+
     /// <summary>
     /// Executed when the PDA storage is opened or closed.
     /// </summary>

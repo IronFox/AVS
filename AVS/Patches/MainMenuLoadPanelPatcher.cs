@@ -27,12 +27,12 @@ public class MainMenuLoadPanelPatcher
     public static void AddLoadButtonSprites(MainMenuLoadButton lb)
     {
         foreach (var ve in AvsVehicleManager.VehicleTypes)
-            if (ve.mv.IsNotNull() && ve.mv.Config.SaveFileSprite)
+            if (ve.av.IsNotNull() && ve.av.Config.SaveFileSprite)
             {
                 var techType = ve.techType.AsString();
                 var imageObject = new GameObject(techType);
                 imageObject.transform.SetParent(lb.saveIcons.transform, false);
-                imageObject.AddComponent<UnityEngine.UI.Image>().sprite = ve.mv.Config.SaveFileSprite;
+                imageObject.AddComponent<UnityEngine.UI.Image>().sprite = ve.av.Config.SaveFileSprite;
                 imageObject.EnsureComponent<RectTransform>().sizeDelta = new Vector2(24, 24);
                 imageObject.SetActive(false);
             }

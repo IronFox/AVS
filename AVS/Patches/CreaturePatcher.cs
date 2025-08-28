@@ -59,7 +59,7 @@ namespace AVS.Patches
         [HarmonyPostfix]
         public static void Postfix(Creature __instance)
         {
-            if (!(Player.main.GetVehicle() is AvsVehicle mv)) return;
+            if (!(Player.main.GetVehicle() is AvsVehicle av)) return;
 
             if (Vector3.Distance(Player.main.transform.position, __instance.transform.position) > 150) return;
 

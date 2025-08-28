@@ -1,7 +1,7 @@
 ﻿using AVS.Configuration;
 using AVS.Util;
-using System;
 using AVS.VehicleBuilding;
+using System;
 using UnityEngine;
 
 namespace AVS.BaseVehicle;
@@ -230,7 +230,7 @@ public abstract partial class AvsVehicle
             uGUI.main.quickSlots.SetTarget(this);
             NotifyStatus(PlayerStatus.OnPilotBegin);
             if (helm.IsSeated)
-                Character.SitDown();
+                Character.SitDown(Owner);
             Character.SetArmsIKTargets(
                 helm.LeftHandTarget,
                 helm.RightHandTarget);
@@ -276,7 +276,7 @@ public abstract partial class AvsVehicle
         {
             if (playerSits)
             {
-                Character.StandUp();
+                Character.StandUp(Owner);
                 playerSits = false;
             }
 

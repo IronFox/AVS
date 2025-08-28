@@ -1,9 +1,9 @@
 ﻿using AVS.SaveLoad;
 using AVS.Util;
+using AVS.VehicleBuilding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS.BaseVehicle;
@@ -162,7 +162,7 @@ public abstract partial class AvsVehicle
         if (PrefabID.ReadData(BasicSaveFileNamePrefix, GetOrCreateData(), Log))
             OnDataLoaded();
 
-        StartCoroutine(AvsModularStorageSaveLoad.DeserializeAllModularStorage(this));
+        StartCoroutine(AvsModularStorageSaveLoad.DeserializeAllModularStorage(Owner, this));
     }
 
     /// <summary>

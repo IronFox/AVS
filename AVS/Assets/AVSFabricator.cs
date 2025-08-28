@@ -1,8 +1,8 @@
-﻿using System;
-using AVS.Localization;
+﻿using AVS.Localization;
 using AVS.Log;
 using AVS.Util;
 using Nautilus.Assets.Gadgets;
+using System;
 using UnityEngine;
 using static CraftData;
 
@@ -10,17 +10,17 @@ namespace AVS.Assets;
 
 internal static class AvsFabricator
 {
-    private static string ClassID => MainPatcher.Instance.ModName + "FabricatorClassID";
+    private static string GetClassID(MainPatcher mp) => mp.ModName + "FabricatorClassID";
     private static string DisplayName { get; } = Translator.Get(TranslationKey.Fabricator_DisplayName);
     private static string Description { get; } = Translator.Get(TranslationKey.Fabricator_Description);
     internal static CraftTree.Type TreeType { get; set; } = default;
 
-    internal static void CreateAndRegister(Sprite icon)
+    internal static void CreateAndRegister(MainPatcher mp, Sprite icon)
     {
         LogWriter.Default.Write(nameof(CreateAndRegister) + $" ({icon.NiceName()})");
         try
         {
-            var Info = Nautilus.Assets.PrefabInfo.WithTechType(ClassID, DisplayName, Description)
+            var Info = Nautilus.Assets.PrefabInfo.WithTechType(GetClassID(mp), DisplayName, Description)
                 .WithIcon(icon.OrRequired(() => SpriteManager.Get(TechType.Fabricator)));
 
             var prefab = new Nautilus.Assets.CustomPrefab(Info);

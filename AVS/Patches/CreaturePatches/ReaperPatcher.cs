@@ -38,8 +38,8 @@ internal class ReaperMeleeAttackPatcher
                 return;
         }
 
-        var mv = collider.gameObject.GetComponentInParent<AvsVehicle>();
-        if (mv.IsNotNull())
+        var av = collider.gameObject.GetComponentInParent<AvsVehicle>();
+        if (av.IsNotNull())
             if (__instance.liveMixin.IsAlive() && Time.time > __instance.timeLastBite + __instance.biteInterval)
             {
                 var component = __instance.GetComponent<Creature>();
@@ -48,8 +48,8 @@ internal class ReaperMeleeAttackPatcher
                     var component2 = __instance.GetComponent<ReaperLeviathan>();
                     if (!component2.IsHoldingVehicle() && !__instance.playerDeathCinematic.IsCinematicModeActive())
                     {
-                        if (component2.GetCanGrabVehicle() && mv.Config.CanLeviathanGrab)
-                            component2.GrabVehicle(mv, ReaperLeviathan.VehicleType.Seamoth);
+                        if (component2.GetCanGrabVehicle() && av.Config.CanLeviathanGrab)
+                            component2.GrabVehicle(av, ReaperLeviathan.VehicleType.Seamoth);
                         __instance.OnTouch(collider);
                         component.Aggression.Value -= 0.25f;
                     }
@@ -68,10 +68,10 @@ internal class ReaperMeleeAttackPatcher
     [HarmonyPatch(nameof(ReaperMeleeAttack.GetBiteDamage))]
     public static void GetBiteDamagePostfix(ReaperMeleeAttack __instance, ref float __result, GameObject target)
     {
-        var mv = target.GetComponent<AvsVehicle>();
-        if (mv.IsNull()) return;
+        var av = target.GetComponent<AvsVehicle>();
+        if (av.IsNull()) return;
 
-        __result = mv.Config.ReaperBiteDamage;
+        __result = av.Config.ReaperBiteDamage;
     }
 }
 

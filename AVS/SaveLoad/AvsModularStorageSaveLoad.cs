@@ -1,4 +1,5 @@
-﻿using AVS.BaseVehicle;
+﻿using AVS.Admin;
+using AVS.BaseVehicle;
 using AVS.Util;
 using System;
 using System.Collections;
@@ -23,23 +24,23 @@ internal static class AvsModularStorageSaveLoad
     internal static string GetSaveFileName(int idx) => $"{SaveFileNamePrefix}{idx}";
 
 
-    internal static void SerializeAllModularStorage(AvsVehicle mv)
+    internal static void SerializeAllModularStorage(AvsVehicle av)
     {
-        for (var i = 0; i < mv.slotIDs.Length; i++)
+        for (var i = 0; i < av.slotIDs.Length; i++)
         {
-            var slotID = mv.slotIDs[i];
-            if (mv.modules.equipment.TryGetValue(slotID, out var result))
+            var slotID = av.slotIDs[i];
+            if (av.modules.equipment.TryGetValue(slotID, out var result))
             {
                 var container = result?.item.SafeGetComponent<SeamothStorageContainer>();
                 if (container.IsNotNull() && container.container.IsNotNull())
-                    SaveThisModularStorage(mv, container.container, i);
+                    SaveThisModularStorage(av, container.container, i);
             }
         }
     }
 
-    public static void SaveThisModularStorage(AvsVehicle mv, ItemsContainer container, int slotID)
+    public static void SaveThisModularStorage(AvsVehicle av, ItemsContainer container, int slotID)
     {
-        var log = mv.Log.Tag("ModularStorage");
+        var log = av.Log.Tag("ModularStorage");
         var result = new List<StorageItem>();
         foreach (var item in container.ToList())
         {
@@ -61,34 +62,34 @@ internal static class AvsModularStorageSaveLoad
             });
         }
 
-        mv.PrefabID.WriteReflected(
+        av.PrefabID.WriteReflected(
             GetSaveFileName(slotID),
             result,
             log);
     }
 
-    internal static IEnumerator DeserializeAllModularStorage(AvsVehicle mv)
+    internal static IEnumerator DeserializeAllModularStorage(MainPatcher mp, AvsVehicle av)
     {
-        yield return new WaitUntil(() => Admin.GameStateWatcher.IsWorldLoaded);
-        yield return new WaitUntil(() => mv.upgradesInput.equipment.IsNotNull());
-        foreach (var upgradesLoader in mv.GetComponentsInChildren<AvsUpgradesIdentifier>())
+        yield return new WaitUntil(() => GameStateWatcher.IsWorldLoaded);
+        yield return new WaitUntil(() => av.upgradesInput.equipment.IsNotNull());
+        foreach (var upgradesLoader in av.GetComponentsInChildren<AvsUpgradesIdentifier>())
             yield return new WaitUntil(() => upgradesLoader.isFinished);
-        for (var i = 0; i < mv.slotIDs.Length; i++)
+        for (var i = 0; i < av.slotIDs.Length; i++)
         {
-            var slotID = mv.slotIDs[i];
-            if (mv.modules.equipment.TryGetValue(slotID, out var result))
+            var slotID = av.slotIDs[i];
+            if (av.modules.equipment.TryGetValue(slotID, out var result))
             {
                 var container = result?.item?.GetComponent<SeamothStorageContainer>();
                 if (container.IsNotNull() && container.container.IsNotNull())
-                    MainPatcher.Instance.StartCoroutine(LoadThisModularStorage(mv, container.container, i));
+                    mp.StartCoroutine(LoadThisModularStorage(mp, av, container.container, i));
             }
         }
     }
 
-    private static IEnumerator LoadThisModularStorage(AvsVehicle mv, ItemsContainer container, int slotID)
+    private static IEnumerator LoadThisModularStorage(MainPatcher mp, AvsVehicle av, ItemsContainer container, int slotID)
     {
-        var log = mv.Log.Tag(nameof(LoadThisModularStorage));
-        if (mv.PrefabID.ReadReflected(
+        var log = av.Log.Tag(nameof(LoadThisModularStorage));
+        if (av.PrefabID.ReadReflected(
                 GetSaveFileName(slotID),
                 out List<StorageItem>? thisStorage,
                 log))
@@ -99,7 +100,7 @@ internal static class AvsModularStorageSaveLoad
                 if (!TechTypeExtensions.FromString(item.techTypeAsString, out var tt, true))
                 {
                     log.Error(
-                        $"Failed to parse TechType '{item.techTypeAsString}' for modular storage item in slot {slotID} for {mv.NiceName()} : {mv.VehicleName}");
+                        $"Failed to parse TechType '{item.techTypeAsString}' for modular storage item in slot {slotID} for {av.NiceName()} : {av.VehicleName}");
                     continue;
                 }
 
@@ -111,7 +112,7 @@ internal static class AvsModularStorageSaveLoad
                     continue;
                 }
 
-                thisItem.transform.SetParent(mv.Com.StorageRootObject.transform);
+                thisItem.transform.SetParent(av.Com.StorageRootObject.transform);
                 try
                 {
                     container.AddItem(thisItem.EnsureComponent<Pickupable>());
@@ -119,7 +120,7 @@ internal static class AvsModularStorageSaveLoad
                 catch (Exception e)
                 {
                     log.Error(
-                        $"Failed to add storage item {thisItem.NiceName()} to modular storage in slot {slotID} for {mv.NiceName()} : {mv.VehicleName}",
+                        $"Failed to add storage item {thisItem.NiceName()} to modular storage in slot {slotID} for {av.NiceName()} : {av.VehicleName}",
                         e);
                 }
 
@@ -129,16 +130,16 @@ internal static class AvsModularStorageSaveLoad
                     try
                     {
                         if (TechTypeExtensions.FromString(item.innerBatteryTechTypeAsString, out var btt, true))
-                            MainPatcher.Instance.StartCoroutine(
+                            mp.StartCoroutine(
                                 SaveLoadUtils.ReloadBatteryPower(thisItem, item.batteryCharge, btt));
                         else
                             log.Error(
-                                $"Failed to parse inner battery TechType '{item.innerBatteryTechTypeAsString}' for item {thisItem.NiceName()} in modular storage slot {slotID} for {mv.NiceName()} : {mv.VehicleName}");
+                                $"Failed to parse inner battery TechType '{item.innerBatteryTechTypeAsString}' for item {thisItem.NiceName()} in modular storage slot {slotID} for {av.NiceName()} : {av.VehicleName}");
                     }
                     catch (Exception e)
                     {
                         log.Error(
-                            $"Failed to load reload battery power for modular storage item {thisItem.NiceName()} to modular storage in slot {slotID} for {mv.NiceName()} : {mv.VehicleName}",
+                            $"Failed to load reload battery power for modular storage item {thisItem.NiceName()} to modular storage in slot {slotID} for {av.NiceName()} : {av.VehicleName}",
                             e);
                     }
             }

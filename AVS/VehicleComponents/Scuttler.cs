@@ -1,5 +1,5 @@
-﻿using System.Collections;
-using AVS.Util;
+﻿using AVS.Util;
+using System.Collections;
 using UnityEngine;
 
 namespace AVS;
@@ -12,24 +12,24 @@ internal class Scuttler : MonoBehaviour
     private Coroutine? establish;
     private Coroutine? check;
 
-    public void Scuttle()
+    public void Scuttle(MainPatcher mp)
     {
-        scuttleCor = MainPatcher.Instance.StartCoroutine(DoScuttle());
+        scuttleCor = mp.StartCoroutine(DoScuttle(mp));
     }
 
-    public void Unscuttle()
+    public void Unscuttle(MainPatcher mp)
     {
-        MainPatcher.Instance.StopCoroutine(scuttleCor);
-        MainPatcher.Instance.StopCoroutine(establish);
-        MainPatcher.Instance.StopCoroutine(check);
+        mp.StopCoroutine(scuttleCor);
+        mp.StopCoroutine(establish);
+        mp.StopCoroutine(check);
         gameObject.GetComponent<Rigidbody>().isKinematic = false;
     }
 
-    public IEnumerator DoScuttle()
+    public IEnumerator DoScuttle(MainPatcher mp)
     {
-        establish = MainPatcher.Instance.StartCoroutine(EstablishScuttlePosition());
+        establish = mp.StartCoroutine(EstablishScuttlePosition());
         yield return establish;
-        check = MainPatcher.Instance.StartCoroutine(CheckScuttlePosition());
+        check = mp.StartCoroutine(CheckScuttlePosition());
         yield return check;
     }
 

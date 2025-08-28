@@ -1,11 +1,11 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Util;
 using BepInEx.Configuration;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AVS.Util;
 
 namespace AVS.Admin;
 
@@ -23,11 +23,11 @@ public class ExternalVehicleConfig<T>
     internal static ExternalVehicleConfig<T>? PrawnConfig = null;
     internal static ExternalVehicleConfig<T>? CyclopsConfig = null;
 
-    private static ExternalVehicleConfig<T> AddNew(AvsVehicle mv)
+    private static ExternalVehicleConfig<T> AddNew(AvsVehicle av)
     {
         var thisConf = new ExternalVehicleConfig<T>
         {
-            MyName = mv.GetType().ToString()
+            MyName = av.GetType().ToString()
         };
         main.Add(thisConf.MyName, thisConf);
         return thisConf;
@@ -60,11 +60,11 @@ public class ExternalVehicleConfig<T>
     public static ExternalVehicleConfig<T> GetAvsVehicleConfig(string vehicleName)
     {
         var MVs = AvsVehicleManager.VehicleTypes
-            .Where(x => x.name.Equals(vehicleName, StringComparison.OrdinalIgnoreCase)).ToList();
+            .Where(x => x.Name.Equals(vehicleName, StringComparison.OrdinalIgnoreCase)).ToList();
         if (MVs.Count == 0)
         {
             var sb = new StringBuilder();
-            AvsVehicleManager.VehicleTypes.ForEach(x => sb.AppendLine(x.name));
+            AvsVehicleManager.VehicleTypes.ForEach(x => sb.AppendLine(x.Name));
             throw new ArgumentException(
                 $"{nameof(GetAvsVehicleConfig)}: vehicle name does not identify a {nameof(AvsVehicle)}: {vehicleName}. Options are: {sb}");
         }
@@ -72,15 +72,15 @@ public class ExternalVehicleConfig<T>
         if (MVs.Count > 1)
         {
             var sb = new StringBuilder();
-            AvsVehicleManager.VehicleTypes.ForEach(x => sb.AppendLine(x.name));
+            AvsVehicleManager.VehicleTypes.ForEach(x => sb.AppendLine(x.Name));
             throw new ArgumentException(
                 $"{nameof(GetAvsVehicleConfig)}: vehicle name does not uniquely identify a {nameof(AvsVehicle)}: {vehicleName}. There were {MVs.Count()} matches: {sb}");
         }
 
-        var mv = MVs[0].mv;
-        if (!main.ContainsKey(mv.GetType().ToString()))
-            AddNew(mv);
-        return main[mv.GetType().ToString()];
+        var av = MVs[0].av;
+        if (!main.ContainsKey(av.GetType().ToString()))
+            AddNew(av);
+        return main[av.GetType().ToString()];
     }
 
     /// <summary>
@@ -153,9 +153,9 @@ public static class ConfigRegistrar
     /// </summary>
     /// <remarks>This method initiates an asynchronous operation to retrieve and log vehicle names. 
     /// It does not block the calling thread and relies on the game's coroutine system to execute.</remarks>
-    public static void LogAllVehicleNames()
+    public static void LogAllVehicleNames(MainPatcher mp)
     {
-        MainPatcher.Instance.StartCoroutine(LogAllVehicleNamesInternal());
+        mp.StartCoroutine(LogAllVehicleNamesInternal());
     }
 
     private static IEnumerator LogAllVehicleNamesInternal()
@@ -177,16 +177,17 @@ public static class ConfigRegistrar
     /// Registers a configuration option for all modded vehicles in the game.
     /// </summary>
     /// <typeparam name="T">The type of the configuration value.</typeparam>
+    /// <param name="mp">The owning main patcher.</param>
     /// <param name="name">The name of the configuration option.</param>
     /// <param name="description">A description of the configuration option, including its purpose and usage.</param>
     /// <param name="defaultValue">The default value for the configuration option.</param>
     /// <param name="OnChange">An optional callback invoked when the configuration value changes. The callback receives the <see
     /// cref="TechType"/> of the vehicle and the new value.</param>
     /// <param name="configFile">An optional configuration file to store the setting. If not provided, a default configuration file is used.</param>
-    public static void RegisterForAllAvsVehicles<T>(string name, ConfigDescription description, T defaultValue,
+    public static void RegisterForAllAvsVehicles<T>(MainPatcher mp, string name, ConfigDescription description, T defaultValue,
         Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
     {
-        MainPatcher.Instance.StartCoroutine(RegisterForAllInternal<T>(name, description, defaultValue, OnChange,
+        mp.StartCoroutine(RegisterForAllInternal<T>(mp, name, description, defaultValue, OnChange,
             configFile));
     }
 
@@ -197,6 +198,7 @@ public static class ConfigRegistrar
     /// option will be associated with the specified modded vehicle and can be accessed or modified through the
     /// configuration system.</remarks>
     /// <typeparam name="T">The type of the configuration value. Must be a type supported by the configuration system.</typeparam>
+    /// <param name="mp">The owning main patcher.</param>
     /// <param name="vehicleName">The name of the modded vehicle for which the configuration option is being registered.</param>
     /// <param name="name">The name of the configuration option.</param>
     /// <param name="description">A description of the configuration option, including details such as its purpose or valid range.</param>
@@ -205,10 +207,10 @@ public static class ConfigRegistrar
     /// cref="TechType"/> of the vehicle and the new value of the configuration option.</param>
     /// <param name="configFile">An optional <see cref="ConfigFile"/> instance to store the configuration option. If not provided, the
     /// default configuration file is used.</param>
-    public static void RegisterForAvsVehicle<T>(string vehicleName, string name, ConfigDescription description,
+    public static void RegisterForAvsVehicle<T>(MainPatcher mp, string vehicleName, string name, ConfigDescription description,
         T defaultValue, Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
     {
-        MainPatcher.Instance.StartCoroutine(RegisterForVehicleInternal<T>(vehicleName, name, description, defaultValue,
+        mp.StartCoroutine(RegisterForVehicleInternal<T>(mp, vehicleName, name, description, defaultValue,
             OnChange, configFile));
     }
 
@@ -219,16 +221,17 @@ public static class ConfigRegistrar
     /// option will be associated with the Seamoth vehicle and can be used to customize its behavior or
     /// settings.</remarks>
     /// <typeparam name="T">The type of the configuration value.</typeparam>
+    /// <param name="mp">The main patcher instance used to start the coroutine for registration.</param>
     /// <param name="name">The unique name of the configuration option.</param>
     /// <param name="description">A description of the configuration option, including its purpose and constraints.</param>
     /// <param name="defaultValue">The default value for the configuration option.</param>
     /// <param name="onChange">An optional callback that is invoked when the configuration value changes. The new value is passed as a
     /// parameter.</param>
     /// <param name="configFile">An optional configuration file to store the setting. If not provided, a default configuration file is used.</param>
-    public static void RegisterForSeamoth<T>(string name, ConfigDescription description, T defaultValue,
+    public static void RegisterForSeamoth<T>(MainPatcher mp, string name, ConfigDescription description, T defaultValue,
         Action<T>? onChange = null, ConfigFile? configFile = null)
     {
-        MainPatcher.Instance.StartCoroutine(RegisterForSeamothInternal<T>(name, description, defaultValue, onChange,
+        mp.StartCoroutine(RegisterForSeamothInternal<T>(mp, name, description, defaultValue, onChange,
             configFile));
     }
 
@@ -240,6 +243,7 @@ public static class ConfigRegistrar
     /// registration ensures that the configuration option is properly integrated with the Prawn and its
     /// associated systems.</remarks>
     /// <typeparam name="T">The type of the configuration value. Must be a type supported by the configuration system.</typeparam>
+    /// <param name="mp">The owning main patcher.</param>
     /// <param name="name">The unique name of the configuration option. This name is used to identify the option.</param>
     /// <param name="description">A description of the configuration option, including details such as its purpose or valid range of values.</param>
     /// <param name="defaultValue">The default value for the configuration option. This value is used if no other value is provided.</param>
@@ -247,10 +251,10 @@ public static class ConfigRegistrar
     /// parameter to the callback.</param>
     /// <param name="configFile">An optional configuration file object where the configuration option will be stored. If not provided, a
     /// default configuration file is used.</param>
-    public static void RegisterForPrawn<T>(string name, ConfigDescription description, T defaultValue,
+    public static void RegisterForPrawn<T>(MainPatcher mp, string name, ConfigDescription description, T defaultValue,
         Action<T>? onChange = null, ConfigFile? configFile = null)
     {
-        MainPatcher.Instance.StartCoroutine(RegisterForPrawnInternal<T>(name, description, defaultValue, onChange,
+        mp.StartCoroutine(RegisterForPrawnInternal<T>(mp, name, description, defaultValue, onChange,
             configFile));
     }
 
@@ -261,6 +265,7 @@ public static class ConfigRegistrar
     /// <remarks>This method starts a coroutine to handle the registration process asynchronously. The
     /// configuration option will be available for use after the coroutine completes.</remarks>
     /// <typeparam name="T">The type of the configuration value.</typeparam>
+    /// <param name="mp">The owning main patcher.</param>
     /// <param name="name">The unique name of the configuration option. This name is used to identify the option.</param>
     /// <param name="description">A description of the configuration option, including details such as its purpose or valid range.</param>
     /// <param name="defaultValue">The default value for the configuration option.</param>
@@ -268,14 +273,14 @@ public static class ConfigRegistrar
     /// parameter to the callback.</param>
     /// <param name="configFile">An optional configuration file where the option will be stored. If not provided, a default configuration
     /// file is used.</param>
-    public static void RegisterForCyclops<T>(string name, ConfigDescription description, T defaultValue,
+    public static void RegisterForCyclops<T>(MainPatcher mp, string name, ConfigDescription description, T defaultValue,
         Action<T>? OnChange = null, ConfigFile? configFile = null)
     {
-        MainPatcher.Instance.StartCoroutine(RegisterForCyclopsInternal<T>(name, description, defaultValue, OnChange,
+        mp.StartCoroutine(RegisterForCyclopsInternal<T>(mp, name, description, defaultValue, OnChange,
             configFile));
     }
 
-    private static IEnumerator RegisterForAllInternal<T>(string name, ConfigDescription description, T defaultValue,
+    private static IEnumerator RegisterForAllInternal<T>(MainPatcher mp, string name, ConfigDescription description, T defaultValue,
         Action<TechType, T>? OnChange = null, ConfigFile? configFile = null)
     {
         if (typeof(T) != typeof(bool) && typeof(T) != typeof(float) && typeof(T) != typeof(KeyboardShortcut))
@@ -289,7 +294,7 @@ public static class ConfigRegistrar
         yield return new UnityEngine.WaitUntil(() => Player.main.IsNotNull());
         foreach (var pair in ExternalVehicleConfig<T>.main)
         {
-            var config = configFile ?? MainPatcher.Instance.Config;
+            var config = configFile ?? mp.Config;
             var vConf = pair.Value;
             var vehicleName = pair.Key;
             ConfigEntry<T> thisConf;
@@ -308,7 +313,7 @@ public static class ConfigRegistrar
             {
                 void DoThisAction(object sender, EventArgs e)
                 {
-                    foreach (var innerMV in AvsVehicleManager.VehicleTypes.Select(x => x.mv))
+                    foreach (var innerMV in AvsVehicleManager.VehicleTypes.Select(x => x.av))
                         if (innerMV.GetType().ToString() == vehicleName)
                         {
                             OnChange(innerMV.TechType, thisConf.Value);
@@ -323,7 +328,7 @@ public static class ConfigRegistrar
         }
     }
 
-    private static IEnumerator RegisterForVehicleInternal<T>(string vehicleName, string name,
+    private static IEnumerator RegisterForVehicleInternal<T>(MainPatcher mp, string vehicleName, string name,
         ConfigDescription description, T defaultValue, Action<TechType, T>? onChange, ConfigFile? configFile)
     {
         if (typeof(T) != typeof(bool) && typeof(T) != typeof(float) && typeof(T) != typeof(KeyboardShortcut))
@@ -335,17 +340,17 @@ public static class ConfigRegistrar
 
         // wait until the player exists, so that we're sure every vehicle is done with registration
         yield return new UnityEngine.WaitUntil(() => Player.main.IsNotNull());
-        var MVs = AvsVehicleManager.VehicleTypes.Where(x => x.name.ToLower().Contains(vehicleName.ToLower()));
+        var MVs = AvsVehicleManager.VehicleTypes.Where(x => x.Name.ToLower().Contains(vehicleName.ToLower()));
         if (!MVs.Any())
             throw new ArgumentException(
                 $"{nameof(RegisterForVehicleInternal)}: vehicle name does not identify a {nameof(AvsVehicle)}: {vehicleName}");
         if (MVs.Count() > 1)
             throw new ArgumentException(
                 $"{nameof(RegisterForVehicleInternal)}: vehicle name does not uniquely identify a {nameof(AvsVehicle)}: {vehicleName}. There were {MVs.Count()} matches.");
-        var mv = MVs.First().mv;
+        var av = MVs.First().av;
         var config = configFile;
         if (config is null)
-            config = MainPatcher.Instance.Config;
+            config = mp.Config;
         var vConf = ExternalVehicleConfig<T>.GetAvsVehicleConfig(vehicleName);
         ConfigEntry<T> thisConf;
         try
@@ -363,7 +368,7 @@ public static class ConfigRegistrar
         {
             void DoThisAction(object sender, EventArgs e)
             {
-                onChange(mv.TechType, thisConf.Value);
+                onChange(av.TechType, thisConf.Value);
             }
 
             thisConf.SettingChanged += DoThisAction;
@@ -372,7 +377,7 @@ public static class ConfigRegistrar
         vConf.ExternalConfigs.Add(name, thisConf);
     }
 
-    private static IEnumerator RegisterForSeamothInternal<T>(string name, ConfigDescription description, T defaultValue,
+    private static IEnumerator RegisterForSeamothInternal<T>(MainPatcher mp, string name, ConfigDescription description, T defaultValue,
         Action<T>? onChange, ConfigFile? configFile)
     {
         if (typeof(T) != typeof(bool) && typeof(T) != typeof(float) && typeof(T) != typeof(KeyboardShortcut))
@@ -384,7 +389,7 @@ public static class ConfigRegistrar
 
         // wait until the player exists, so that we're sure every vehicle is done with registration
         yield return new UnityEngine.WaitUntil(() => Player.main.IsNotNull());
-        var config = configFile ?? MainPatcher.Instance.Config;
+        var config = configFile ?? mp.Config;
         var vConf = ExternalVehicleConfig<T>.GetSeamothConfig();
         ConfigEntry<T> thisConf;
         try
@@ -411,7 +416,7 @@ public static class ConfigRegistrar
         vConf.ExternalConfigs.Add(name, thisConf);
     }
 
-    private static IEnumerator RegisterForPrawnInternal<T>(string name, ConfigDescription description, T defaultValue,
+    private static IEnumerator RegisterForPrawnInternal<T>(MainPatcher mp, string name, ConfigDescription description, T defaultValue,
         Action<T>? onChange, ConfigFile? configFile)
     {
         if (typeof(T) != typeof(bool) && typeof(T) != typeof(float) && typeof(T) != typeof(KeyboardShortcut))
@@ -423,7 +428,7 @@ public static class ConfigRegistrar
 
         // wait until the player exists, so that we're sure every vehicle is done with registration
         yield return new UnityEngine.WaitUntil(() => Player.main.IsNotNull());
-        var config = configFile ?? MainPatcher.Instance.Config;
+        var config = configFile ?? mp.Config;
         var vConf = ExternalVehicleConfig<T>.GetPrawnConfig();
         ConfigEntry<T> thisConf;
         try
@@ -450,7 +455,7 @@ public static class ConfigRegistrar
         vConf.ExternalConfigs.Add(name, thisConf);
     }
 
-    private static IEnumerator RegisterForCyclopsInternal<T>(string name, ConfigDescription description, T defaultValue,
+    private static IEnumerator RegisterForCyclopsInternal<T>(MainPatcher mp, string name, ConfigDescription description, T defaultValue,
         Action<T>? onChange, ConfigFile? configFile)
     {
         if (typeof(T) != typeof(bool) && typeof(T) != typeof(float) && typeof(T) != typeof(KeyboardShortcut))
@@ -464,7 +469,7 @@ public static class ConfigRegistrar
         yield return new UnityEngine.WaitUntil(() => Player.main.IsNotNull());
         var config = configFile;
         if (config is null)
-            config = MainPatcher.Instance.Config;
+            config = mp.Config;
         var vConf = ExternalVehicleConfig<T>.GetCyclopsConfig();
         ConfigEntry<T> thisConf;
         try
