@@ -72,7 +72,8 @@ namespace AVS.Log
         /// <param name="tags">Optional additional tags to associate with this context to be set at creation time.</param>
         /// <param name="nameOverride">Optional name to use instead of the calling method's name.</param>
         /// <param name="domain">The domain name associated with the log. Typically AVS or Mod.</param>
-        public SmartLog(RootModController rmc, string? domain, int frameDelta = 0, bool isInterruptable = false, IReadOnlyList<string>? tags = null, string? nameOverride = null)
+        /// <param name="forceLazy">If true, logging of the start message is always deferred until the first actual log message.</param>
+        public SmartLog(RootModController rmc, string? domain, int frameDelta = 0, bool isInterruptable = false, IReadOnlyList<string>? tags = null, string? nameOverride = null, bool forceLazy = false)
         {
             Previous = Current;
             Parent = Current;
@@ -113,7 +114,7 @@ namespace AVS.Log
                 InterruptableIndex = Parent?.InterruptableIndex ?? 0;
             }
 
-            if (rmc.LogVerbosity == Verbosity.Verbose)
+            if (rmc.LogVerbosity == Verbosity.Verbose && !forceLazy)
             {
                 SignalLog();
             }

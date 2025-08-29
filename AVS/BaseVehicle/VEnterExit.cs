@@ -366,7 +366,7 @@ public abstract partial class AvsVehicle
 
     private bool SanitizePlayerForWalking(bool isBoarding)
     {
-        using var log = NewAvsLog();
+        using var log = NewLazyAvsLog();
         var anyIssues = false;
         if (Player.main.currentMountedVehicle != this)
         {

@@ -20,6 +20,7 @@ public abstract partial class AvsVehicle
     internal int mainPatcherInstanceId;
     private RootModController? owner;
 
+    internal SmartLog NewLazyAvsLog(params string[] tags) => new SmartLog(Owner, "AVS", frameDelta: 1, tags: [$"V{Id}", .. tags], forceLazy: true);
     internal SmartLog NewAvsLog(params string[] tags) => new SmartLog(Owner, "AVS", frameDelta: 1, tags: [$"V{Id}", .. tags]);
     /// <summary>
     /// Creates a new instance of <see cref="SmartLog"/> preconfigured with module-specific tags.
