@@ -1,10 +1,10 @@
-﻿using FMOD;
+﻿using AVS.Interfaces;
+using AVS.Log;
+using AVS.Util;
+using FMOD;
 using Nautilus.Utility;
 using System;
 using System.Collections.Generic;
-using AVS.Interfaces;
-using AVS.Log;
-using AVS.Util;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -21,10 +21,10 @@ public static class FModSoundCreator
     /// Attempts to instantiate a new FMOD sound source, based on the provided configuration.
     /// </summary>
     /// <param name="cfg">The sound configuration to instantiate</param>
-    /// <param name="log">The logging facilities to use for this sound source</param>
     /// <returns>Created sound source. Null if creation failed</returns>
-    public static ISoundSource? Play(SoundSetup cfg, LogWriter log)
+    public static ISoundSource? Play(SoundSetup cfg)
     {
+        using var log = SmartLog.ForAVS(cfg.RMC);
         try
         {
             cfg.Validate();
@@ -102,13 +102,13 @@ public static class FModSoundCreator
             }
 
             var component = cfg.Owner.AddComponent<FModComponent>();
-            component.Log = log;
+            component.RMC = cfg.RMC;
 
             channel.isPlaying(out var isPlaying);
             //                 channel.set3DDistanceFilter()
             log.Write(
-                $"Sound ({channel.handle}) created @{cfg.Owner.transform.position} for {cfg.AudioClip.NiceName()} (mode={mode},is3d={cfg.Is3D},min={cfg.MinDistance.ToStr()},max={cfg.MaxDistance.ToStr()},loop={cfg.Loop},isPlaying={isPlaying})");
-            var result = new FModSound(channel, sound, component, cfg.AudioClip.name, rolloffArray, log)
+                $"Sound ({channel.handle}) created @{cfg.Owner.transform.position} for {cfg.AudioClip.NiceName()} (mode={mode}, is3d={cfg.Is3D}, min={cfg.MinDistance.ToStr()}, max={cfg.MaxDistance.ToStr()}, loop={cfg.Loop}, isPlaying={isPlaying})");
+            var result = new FModSound(channel, sound, component, cfg.AudioClip.name, cfg.RMC, rolloffArray)
             {
                 Settings = cfg.Settings,
                 Is3D = cfg.Is3D
@@ -119,7 +119,7 @@ public static class FModSoundCreator
         catch (Exception ex)
         {
             log.Error(
-                $"Failed to create sound @{cfg.Owner.transform.position} for {cfg.AudioClip.NiceName()} (is3d={cfg.Is3D},loop={cfg.Loop}): ",
+                $"Failed to create sound @{cfg.Owner.transform.position} for {cfg.AudioClip.NiceName()} (is3d={cfg.Is3D}, loop={cfg.Loop}): ",
                 ex);
             return null;
         }
@@ -136,11 +136,14 @@ internal class FModComponent : MonoBehaviour
 {
     public FModSound? sound;
 
-    internal LogWriter Log { get; set; }
+    internal RootModController? RMC { get; set; }
+
+
 
     public void OnDestroy()
     {
-        Log.Write($"Disposing FModComponent ({sound?.Channel.handle})");
+        using var log = SmartLog.ForAVS(RMC.OrRequired(RootModController.AnyInstance));
+        log.Write($"Disposing FModComponent ({sound?.Channel.handle})");
         sound?.Dispose();
     }
 
@@ -148,14 +151,16 @@ internal class FModComponent : MonoBehaviour
     {
         if (sound is null)
         {
-            Log.Error($"sound is null. Self-destructing");
+            using var log = SmartLog.ForAVS(RMC.OrRequired(RootModController.AnyInstance));
+            log.Error($"sound is null. Self-destructing");
             Destroy(this);
             return;
         }
 
         if (!sound.Update(Time.deltaTime))
         {
-            Log.Error($"FModComponent.sound({sound?.Channel.handle}).Update() returned false. Self-destructing");
+            using var log = SmartLog.ForAVS(RMC.OrRequired(RootModController.AnyInstance));
+            log.Error($"FModComponent.sound({sound?.Channel.handle}).Update() returned false. Self-destructing");
             sound = null; //there is something going on in this case. better just unset and don't touch it
             Destroy(this);
         }
@@ -167,15 +172,17 @@ internal record FModSound(
     Sound Sound,
     FModComponent Component,
     string SoundName,
+    RootModController RMC,
     // ReSharper disable once NotAccessedPositionalProperty.Global
-    VECTOR[]? RolloffArray, //IT IS ABSOLUTELY MANDATORY THAT THIS PROPERTY IS NEVER EVER REMOVED, NO MATTER HOW USELESS IT MAY SEEM!
-    //IF THE GARBAGE COLLECTOR CLEANS THIS UP BEFORE THE SOUND SOURCE IS DONE, THE FMOD ARRAY REFERENCE IS LOST
-    //AND THE SOUND IS SILENCED
-    LogWriter Log)
+    VECTOR[]? RolloffArray //IT IS ABSOLUTELY MANDATORY THAT THIS PROPERTY IS NEVER EVER REMOVED, NO MATTER HOW USELESS IT MAY SEEM!
+                           //IF THE GARBAGE COLLECTOR CLEANS THIS UP BEFORE THE SOUND SOURCE IS DONE, THE FMOD ARRAY REFERENCE IS LOST
+                           //AND THE SOUND IS SILENCED
+    )
     : ISoundSource
 {
     private float Age { get; set; }
     private bool Recovered { get; set; }
+
 
     public SoundSettings Settings { get; internal set; }
     public bool Is3D { get; init; }
@@ -239,12 +246,14 @@ internal record FModSound(
         }
         catch (FModException ex)
         {
-            Log.Error($"FModSound.Update({timeDelta}) [{vpos},{velocity}] ", ex);
+            using var log = SmartLog.ForAVS(RMC);
+            log.Error($"FModSound.Update({timeDelta}) [{vpos},{velocity}] ", ex);
             return ex.Result != RESULT.ERR_INVALID_HANDLE && ex.Result != RESULT.ERR_CHANNEL_STOLEN;
         }
         catch (Exception ex)
         {
-            Log.Error($"FModSound.Update({timeDelta}) [{vpos},{velocity}] ", ex);
+            using var log = SmartLog.ForAVS(RMC);
+            log.Error($"FModSound.Update({timeDelta}) [{vpos},{velocity}] ", ex);
             return true;
         }
     }
@@ -309,7 +318,8 @@ internal record FModSound(
         }
         catch (Exception ex)
         {
-            Log.Error($"FModSound.Dispose()", ex);
+            using var log = SmartLog.ForAVS(RMC);
+            log.Error($"FModSound.Dispose()", ex);
         }
     }
 }

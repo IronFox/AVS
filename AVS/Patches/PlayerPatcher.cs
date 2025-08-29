@@ -42,7 +42,9 @@ public static class PlayerPatcher
         // Setup build bot paths.
         // We have to do this at game-start time,
         // because the new objects we create are wiped on scene-change.
-        MainPatcher.AnyInstance.StartCoroutine(BuildBotManager.SetupBuildBotPathsForAllMVs());
+        RootModController.AnyInstance.StartAvsCoroutine(
+            nameof(BuildBotManager) + '.' + nameof(BuildBotManager.SetupBuildBotPathsForAllMVs),
+            _ => BuildBotManager.SetupBuildBotPathsForAllMVs());
         return;
     }
 
@@ -273,7 +275,8 @@ public static class PlayerPatcher
         var av = __instance.GetAvsVehicle();
         if (av.IsNull())
             return;
-        av.Log.Write("PlayerOnKillPostfix: Player has died, exiting vehicle.");
+        using var log = av.NewAvsLog();
+        log.Write("PlayerOnKillPostfix: Player has died, exiting vehicle.");
         av.ExitHelmControl();
         av.ClosestPlayerExit(false);
     }

@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Log;
 using AVS.Util;
 using System;
 using System.Collections;
@@ -8,9 +9,13 @@ namespace AVS.SaveLoad;
 
 internal class AvsBatteryIdentifier : MonoBehaviour, IProtoTreeEventListener
 {
-    internal AvsVehicle av => GetComponentInParent<AvsVehicle>();
+    [SerializeField]
+    internal AvsVehicle? av;
+
+    private AvsVehicle AV => av.OrThrow(() => new InvalidOperationException(
+            $"AvsBatteryIdentifier on GameObject {gameObject.name} has null av reference"));
     private const string saveFileNameSuffix = "battery";
-    private string SaveFileName => SaveLoadUtils.GetSaveFileName(av.transform, transform, saveFileNameSuffix);
+    private string SaveFileName => SaveLoadUtils.GetSaveFileName(AV.transform, transform, saveFileNameSuffix);
 
     void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
     {
@@ -18,33 +23,34 @@ internal class AvsBatteryIdentifier : MonoBehaviour, IProtoTreeEventListener
         if (thisEM.batterySlot.storedItem.IsNull())
         {
             var emptyBattery = new Tuple<TechType, float>(0, 0);
-            av.SaveBatteryData(SaveFileName, emptyBattery);
+            AV.SaveBatteryData(SaveFileName, emptyBattery);
         }
         else
         {
             var thisTT = thisEM.batterySlot.storedItem.item.GetTechType();
             var thisEnergy = thisEM.battery.charge;
             var thisBattery = new Tuple<TechType, float>(thisTT, thisEnergy);
-            av.SaveBatteryData(SaveFileName, thisBattery);
+            AV.SaveBatteryData(SaveFileName, thisBattery);
         }
     }
 
     void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
     {
-        av.Owner.StartCoroutine(LoadBattery());
+        AV.Owner.StartAvsCoroutine(
+            nameof(AvsBatteryIdentifier) + '.' + nameof(LoadBattery),
+            LoadBattery);
     }
 
-    private IEnumerator LoadBattery()
+    private IEnumerator LoadBattery(SmartLog log)
     {
-        yield return new WaitUntil(() => av.IsNotNull());
-        var log = av.Log.Tag(nameof(LoadBattery));
+        var av = AV;
         var thisBattery = av.ReadBatteryData(SaveFileName);
         if (thisBattery == default)
-            SaveFiles.Current.ReadPrefabReflected(av.PrefabID, SaveFileName, out thisBattery, av.Log);
+            SaveFiles.Current.ReadPrefabReflected(av.PrefabID, SaveFileName, out thisBattery, av.Owner);
         if (thisBattery == default || thisBattery.Item1 == TechType.None) yield break;
         var result = new InstanceContainer();
         yield return
-            AvsCraftData.InstantiateFromPrefabAsync(av.Log.Tag(nameof(LoadBattery)), thisBattery.Item1, result);
+            AvsCraftData.InstantiateFromPrefabAsync(log, thisBattery.Item1, result);
         var thisItem = result.Instance;
         if (thisItem.IsNull())
         {

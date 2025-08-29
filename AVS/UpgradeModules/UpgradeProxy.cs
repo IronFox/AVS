@@ -35,7 +35,9 @@ public class UpgradeProxy : MonoBehaviour
     /// <inheritdoc />
     public void Awake()
     {
-        av.OrThrow(() => new InvalidOperationException("UpgradeProxy.av not set")).Owner.StartCoroutine(GetSeamothBitsASAP());
+        av.OrThrow(() => new InvalidOperationException("UpgradeProxy.av not set")).Owner.StartAvsCoroutine(
+            nameof(UpgradeProxy) + '.' + nameof(GetSeamothBitsASAP),
+            GetSeamothBitsASAP);
     }
 
     /// <summary>
@@ -45,11 +47,9 @@ public class UpgradeProxy : MonoBehaviour
     /// by instantiating the necessary models. It clears any existing proxies and assigns new models to each slot
     /// based on the current configuration.</remarks>
     /// <returns>An enumerator that can be used to iterate through the coroutine execution process.</returns>
-    public IEnumerator GetSeamothBitsASAP()
+    public IEnumerator GetSeamothBitsASAP(SmartLog log)
     {
-        var log = LogWriter.Default.Tag(nameof(UpgradeProxy));
-
-        var mp = av.OrThrow(() => new InvalidOperationException("UpgradeProxy.av not set")).Owner;
+        var rmc = av.OrThrow(() => new InvalidOperationException("UpgradeProxy.av not set")).Owner;
 
         log.Write("Waiting for Seamoth to be ready...");
         yield return SeamothHelper.WaitUntilLoaded();
@@ -79,15 +79,15 @@ public class UpgradeProxy : MonoBehaviour
             model.transform.localPosition = Vector3.zero;
             model.transform.localRotation = Quaternion.identity;
             model.transform.localScale = new Vector3(100, 100, 100);
-            LogWriter.Default.Write(
+            log.Write(
                 $"Instantiating upgrade module #{i}/{proxies.Length} in {proxies[i].NiceName()}: {model.NiceName()} using scale {model.transform.localScale}");
             VehicleUpgradeConsoleInput.Slot slot;
-            slot.id = ModuleBuilder.ModuleName(mp, i);
+            slot.id = ModuleBuilder.ModuleName(rmc, i);
             slot.model = model;
             slots.Add(slot);
         }
 
-        LogWriter.Default.Write($"UpgradeProxy: Created {slots.Count} upgrade slots.");
+        log.Write($"UpgradeProxy: Created {slots.Count} upgrade slots.");
         GetComponentInChildren<VehicleUpgradeConsoleInput>().slots = slots.ToArray();
     }
 }

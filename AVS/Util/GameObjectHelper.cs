@@ -1,11 +1,9 @@
 ﻿using AVS.Log;
 using AVS.SaveLoad;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -142,7 +140,7 @@ public static class GameObjectHelper
     /// <param name="gameObject">Game object being manipulated</param>
     /// <param name="toEnabled">New enabled state</param>
     /// <param name="log">Out logging facilities</param>
-    public static void LoggedSetActive(this GameObject gameObject, bool toEnabled, LogWriter log)
+    public static void LoggedSetActive(this GameObject gameObject, bool toEnabled, SmartLog log)
     {
         if (!gameObject)
         {
@@ -536,28 +534,28 @@ public static class GameObjectHelper
     /// <summary>
     /// Extension method to write reflected data associated with a prefab identifier to a JSON file of the current save game slot.
     /// </summary>
-    public static bool WriteReflected<T>(this PrefabIdentifier? prefabID, string prefix, T data, LogWriter writer) =>
-        SaveFiles.Current.WritePrefabReflected(prefabID, prefix, data, writer);
+    public static bool WriteReflected<T>(this PrefabIdentifier? prefabID, string prefix, T data, RootModController rmc) =>
+        SaveFiles.Current.WritePrefabReflected(prefabID, prefix, data, rmc);
 
     /// <summary>
     /// Extension method to write data associated with a prefab identifier to a JSON file of the current save game slot.
     /// </summary>
-    public static bool WriteData(this PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer) =>
-        SaveFiles.Current.WritePrefabData(prefabID, prefix, data, writer);
+    public static bool WriteData(this PrefabIdentifier? prefabID, string prefix, Data data, RootModController rmc) =>
+        SaveFiles.Current.WritePrefabData(prefabID, prefix, data, rmc);
 
     /// <summary>
     /// Extension method to read data via reflection from a JSON file in the current save game slot.
     /// </summary>
     public static bool ReadReflected<T>(this PrefabIdentifier? prefabID, string prefix, [NotNullWhen(true)] out T? data,
-        LogWriter writer)
+        RootModController rmc)
         where T : class =>
-        SaveFiles.Current.ReadPrefabReflected(prefabID, prefix, out data, writer);
+        SaveFiles.Current.ReadPrefabReflected(prefabID, prefix, out data, rmc);
 
     /// <summary>
     /// Extension method to read data associated with a prefab identifier from a JSON file in the current save game slot.
     /// </summary>
-    public static bool ReadData(this PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer) =>
-        SaveFiles.Current.ReadPrefabData(prefabID, prefix, data, writer);
+    public static bool ReadData(this PrefabIdentifier? prefabID, string prefix, Data data, RootModController rmc) =>
+        SaveFiles.Current.ReadPrefabData(prefabID, prefix, data, rmc);
 
     /// <summary>
     /// Resolves the vehicle name of a vehicle.

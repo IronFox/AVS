@@ -249,7 +249,8 @@ public abstract class AbstractEngine : MonoBehaviour, IScuttleListener
     /// </summary>
     public virtual void Start()
     {
-        Logger.Log($"Starting engine on {RB.NiceName()}");
+        using var log = MV.NewAvsLog();
+        log.Write($"Starting engine {this.NiceName()} on {RB.NiceName()}");
         RB.centerOfMass = CenterOfMass;
         RB.angularDrag = AngularDrag;
     }

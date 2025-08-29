@@ -92,7 +92,9 @@ public class NavigationLightsController : BaseLightController
 
         foreach (var lightObj in MV.Com.NavigationStarboardLights)
             starboardMats.Add(lightObj.GetComponent<MeshRenderer>().material);
-        MV.Owner.StartCoroutine(ControlLights());
+        MV.Owner.StartAvsCoroutine(
+            nameof(NavigationLightsController) + '.' + nameof(ControlLights),
+            _ => ControlLights());
     }
 
     private Rigidbody? rb = null;
@@ -197,11 +199,15 @@ public class NavigationLightsController : BaseLightController
                 break;
             case LightClass.Ports:
                 if (port.IsNull())
-                    port = MV.Owner.StartCoroutine(BlinkNarySequence(2, true));
+                    port = MV.Owner.StartAvsCoroutine(
+                        nameof(NavigationLightsController) + '.' + nameof(BlinkNarySequence),
+                        _ => BlinkNarySequence(2, true));
                 break;
             case LightClass.Starboards:
                 if (starboard.IsNull())
-                    starboard = MV.Owner.StartCoroutine(BlinkNarySequence(2, false));
+                    starboard = MV.Owner.StartAvsCoroutine(
+                        nameof(NavigationLightsController) + '.' + nameof(BlinkNarySequence),
+                        _ => BlinkNarySequence(2, false));
                 break;
         }
     }

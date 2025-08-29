@@ -43,7 +43,9 @@ public static class CellManagerPatcher
             // Sometimes this function is called when streamer.globalRoot is null.
             // Not sure why or by whom.
             // All it does is set the parent, so we'll do that as soon as we possibly can.
-            v.Owner.StartCoroutine(SetParentEventually(__instance, ent));
+            v.Owner.StartAvsCoroutine(
+                nameof(CellManagerPatcher) + '.' + nameof(SetParentEventually),
+                _ => SetParentEventually(__instance, ent));
             return false;
         }
 

@@ -170,8 +170,8 @@ public class EquipmentPatcher
     public static bool GetSlotTypePrefix(string slot, ref EquipmentType __result,
         Dictionary<EquipmentType, List<string>> ___typeToSlots)
     {
-        foreach (var mp in MainPatcher.AllInstances)
-            if (ModuleBuilder.IsModuleName(mp, slot))
+        foreach (var rmc in RootModController.AllInstances)
+            if (ModuleBuilder.IsModuleName(rmc, slot))
             {
                 __result = AvsVehicleBuilder.ModuleType;
                 return false;

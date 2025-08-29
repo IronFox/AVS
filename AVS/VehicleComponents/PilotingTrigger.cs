@@ -27,7 +27,8 @@ public class PilotingTrigger : HandTarget, IHandTarget, IScuttleListener, IDockL
 
     void IHandTarget.OnHandClick(GUIHand hand)
     {
-        LogWriter.Default.Write($"PilotingTrigger.OnHandClick: {av?.NiceName()}");
+        using var log = av.IsNotNull() ? av.NewAvsLog() : SmartLog.ForAVS(RootModController.AnyInstance);
+        log.Write($"PilotingTrigger.OnHandClick: {av?.NiceName()}");
         if (av.IsNotNull()
             && !av.GetPilotingMode()
             && (av.Config.CanEnterHelmWithoutPower || av.IsPowered())
@@ -38,10 +39,10 @@ public class PilotingTrigger : HandTarget, IHandTarget, IScuttleListener, IDockL
             else if (av is Submersible sub)
                 sub.EnterHelmControl();
             else
-                av.Log.Error($"Unsupported helm on vehicle {av.NiceName()} type {av.GetType()}");
+                log.Error($"Unsupported helm on vehicle {av.NiceName()} type {av.GetType()}");
         }
 
-        LogWriter.Default.Write($"PilotingTrigger.OnHandClick end");
+        log.Write($"PilotingTrigger.OnHandClick end");
     }
 
     void IHandTarget.OnHandHover(GUIHand hand)

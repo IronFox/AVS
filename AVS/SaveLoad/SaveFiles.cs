@@ -1,4 +1,5 @@
 ﻿using AVS.Log;
+using AVS.Util;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -6,7 +7,6 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Security.Cryptography;
-using AVS.Util;
 
 namespace AVS.SaveLoad;
 
@@ -48,13 +48,14 @@ internal class SaveFiles
     /// <param name="prefabID">Prefab identifier to write to</param>
     /// <param name="prefix">File prefix</param>
     /// <param name="data">Data to write</param>
-    /// <param name="writer">Log writer for logging errors and debug information</param>
-    public bool WritePrefabReflected<T>(PrefabIdentifier? prefabID, string prefix, T data, LogWriter writer)
+    /// <param name="rmc">Owning root mod controller</param>
+    public bool WritePrefabReflected<T>(PrefabIdentifier? prefabID, string prefix, T data,
+        RootModController rmc)
     {
-        var subWriter = writer.Tag($"IO");
+        using var log = SmartLog.ForAVS(rmc, $"IO");
         if (prefabID.IsNull())
         {
-            writer.Error($"PrefabIdentifier is null, cannot write: {prefix}");
+            log.Error($"PrefabIdentifier is null, cannot write: {prefix}");
             return false;
         }
 
@@ -66,11 +67,11 @@ internal class SaveFiles
         }
         catch (Exception e)
         {
-            writer.Error($"Failed to serialize json data for file {fname}", e);
+            log.Error($"Failed to serialize json data for file {fname}", e);
             return false;
         }
 
-        return WriteJson($"{prefix}-{prefabID.Id}", json, writer);
+        return WriteJson($"{prefix}-{prefabID.Id}", json, rmc);
     }
 
 
@@ -80,11 +81,12 @@ internal class SaveFiles
     /// <param name="prefabID">Prefab identifier to write to</param>
     /// <param name="prefix">File prefix</param>
     /// <param name="data">Data to write</param>
-    /// <param name="writer">Log writer for logging errors and debug information</param>
+    /// <param name="rmc">Owning root mod controller</param>
     /// <returns>True if the data was successfully written, false otherwise.</returns>
-    public bool WritePrefabData(PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer)
+    public bool WritePrefabData(PrefabIdentifier? prefabID, string prefix, Data data,
+        RootModController rmc)
     {
-        var subWriter = writer.Tag($"IO");
+        using var writer = SmartLog.ForAVS(rmc, $"IO");
         if (prefabID.IsNull())
         {
             writer.Error($"PrefabIdentifier is null, cannot write: {prefix}");
@@ -104,23 +106,25 @@ internal class SaveFiles
         }
 
 
-        return WriteJson(fname, json, writer);
+        return WriteJson(fname, json, rmc);
     }
 
     /// <summary>
     /// Serializes the specified data to JSON and writes it to a file.
     /// </summary>
     /// <remarks>If serialization fails, an error is logged using the provided <paramref
-    /// name="writer"/>, and the method returns <see langword="false"/>. If the file writing operation fails, the
+    /// name="rmc"/>, and the method returns <see langword="false"/>. If the file writing operation fails, the
     /// method also returns <see langword="false"/>.</remarks>
     /// <typeparam name="T">The type of the data to be serialized.</typeparam>
     /// <param name="innerName">Inner file name without folder or trailing extension</param>
     /// <param name="data">The object to serialize into JSON. Cannot be null.</param>
-    /// <param name="writer">The <see cref="LogWriter"/> instance used to log errors or other information. Cannot be null.</param>
+    /// <param name="rmc">Owning root mod controller</param>
     /// <returns><see langword="true"/> if the JSON data was successfully written to the file; otherwise, <see
     /// langword="false"/>.</returns>
-    internal bool WriteReflected<T>(string innerName, T data, LogWriter writer)
+    internal bool WriteReflected<T>(string innerName, T data,
+        RootModController rmc)
     {
+        using var writer = SmartLog.ForAVS(rmc, $"IO");
         string json;
         try
         {
@@ -132,7 +136,7 @@ internal class SaveFiles
             return false;
         }
 
-        return WriteJson(innerName, json, writer);
+        return WriteJson(innerName, json, rmc);
     }
 
     /// <summary>
@@ -141,11 +145,11 @@ internal class SaveFiles
     /// <typeparam name="T">Type to deserialize from JSON</typeparam>
     /// <param name="innerName">Inner file name without folder or trailing extension</param>
     /// <param name="data">Deserialized data. Null if loading has failed</param>
-    /// <param name="writer">Log writer for events</param>
+    /// <param name="rmc">Owning root mod controller</param>
     /// <returns>True if loading has succeeded and produced non-null data</returns>
-    internal bool ReadReflected<T>(string innerName, out T? data, LogWriter writer) where T : class
+    internal bool ReadReflected<T>(string innerName, out T? data, RootModController rmc) where T : class
     {
-        data = ReadJson<T>(innerName, writer);
+        data = ReadJson<T>(innerName, rmc);
         return data != null;
     }
 
@@ -157,23 +161,23 @@ internal class SaveFiles
     /// <param name="prefabID">The identifier of the prefab to read. Cannot be <see langword="null"/>.</param>
     /// <param name="prefix">A string prefix used to construct the JSON file name.</param>
     /// <param name="outData">Deserialized data</param>
-    /// <param name="writer">Log writer</param>
+    /// <param name="rmc">Owning root mod controller</param>
     /// <returns>True on success</returns>
     public bool ReadPrefabReflected<T>(
         PrefabIdentifier? prefabID,
         string prefix,
         [NotNullWhen(true)] out T? outData,
-        LogWriter writer) where T : class
+        RootModController rmc) where T : class
     {
-        var subWriter = writer.Tag($"IO");
+        using var log = SmartLog.ForAVS(rmc, $"IO");
         if (prefabID.IsNull())
         {
-            writer.Error($"PrefabIdentifier is null, cannot read: {prefix}");
+            log.Error($"PrefabIdentifier is null, cannot read: {prefix}");
             outData = null;
             return false;
         }
 
-        outData = ReadJson<T>($"{prefix}-{prefabID.Id}", writer);
+        outData = ReadJson<T>($"{prefix}-{prefabID.Id}", rmc);
         return outData != null;
     }
 
@@ -186,25 +190,26 @@ internal class SaveFiles
     /// <param name="prefabID">The identifier of the prefab to read. Cannot be <see langword="null"/>.</param>
     /// <param name="prefix">A string prefix used to construct the JSON file name.</param>
     /// <param name="data">The data object to populate with the JSON content.</param>
-    /// <param name="writer">The log writer used to record operation details and errors.</param>
-    public bool ReadPrefabData(PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer)
+    /// <param name="rmc">Owning root mod controller.</param>
+    public bool ReadPrefabData(PrefabIdentifier? prefabID, string prefix, Data data, RootModController rmc)
     {
-        var subWriter = writer.Tag($"IO");
+        using var log = SmartLog.ForAVS(rmc, $"IO");
+
         if (prefabID.IsNull())
         {
-            writer.Error($"PrefabIdentifier is null, cannot read: {prefix}");
+            log.Error($"PrefabIdentifier is null, cannot read: {prefix}");
             return false;
         }
 
-        var json = ReadJson<JObject>($"{prefix}-{prefabID.Id}", writer);
+        var json = ReadJson<JObject>($"{prefix}-{prefabID.Id}", rmc);
         if (json is not null)
         {
-            data.FromJson(json, writer);
+            data.FromJson(json, log);
             return true;
         }
         else
         {
-            writer.Error($"Failed to read JSON for {prefix}-{prefabID.Id}");
+            log.Error($"Failed to read JSON for {prefix}-{prefabID.Id}");
             return false;
         }
     }
@@ -214,10 +219,12 @@ internal class SaveFiles
     /// </summary>
     /// <param name="innerName">Inner file name without folder or trailing extension</param>
     /// <param name="json">Serialized JSON</param>
-    /// <param name="writer">Logger to write errors to</param>
+    /// <param name="rmc">Owning root mod controller</param>
     /// <returns>True if the file was successfully written</returns>
-    private bool WriteJson(string innerName, string json, LogWriter writer)
+    private bool WriteJson(string innerName, string json,
+        RootModController rmc)
     {
+        using var writer = SmartLog.ForAVS(rmc, $"IO");
         var files = new List<FilePath>();
         try
         {
@@ -274,8 +281,9 @@ internal class SaveFiles
     }
 
 
-    private T? ReadJson<T>(string innerName, LogWriter writer) where T : class
+    private T? ReadJson<T>(string innerName, RootModController rmc) where T : class
     {
+        using var log = SmartLog.ForAVS(rmc, $"IO");
         var files = new List<FilePath>();
         try
         {
@@ -283,7 +291,7 @@ internal class SaveFiles
         }
         catch (Exception e)
         {
-            writer.Error($"Failed to convert filename '{innerName}' to files in slot {Slot}", e);
+            log.Error($"Failed to convert filename '{innerName}' to files in slot {Slot}", e);
             return null;
         }
 
@@ -291,13 +299,13 @@ internal class SaveFiles
         {
             if (!file.IsFile)
             {
-                writer.Debug($"File does not exist: {file.FullName}");
+                log.Debug($"File does not exist: {file.FullName}");
                 continue;
             }
 
             if (file.FileSize > 100_000_000) // ~100 MB
             {
-                writer.Error($"File {file.FullName} is too large ({file.FileSize} bytes), skipping.");
+                log.Error($"File {file.FullName} is too large ({file.FileSize} bytes), skipping.");
                 continue;
             }
 
@@ -309,7 +317,7 @@ internal class SaveFiles
                 var dataIdx = json.IndexOf("\"data\"");
                 if (hashIdx == -1 || dataIdx == -1)
                 {
-                    writer.Error($"File {file.FullName} does not contain 'hash' or 'data' fields.");
+                    log.Error($"File {file.FullName} does not contain 'hash' or 'data' fields.");
                     continue;
                 }
 
@@ -326,7 +334,7 @@ internal class SaveFiles
                 var dataEnd = json.LastIndexOf('}');
                 if (dataEnd <= dataStart)
                 {
-                    writer.Error($"Malformed JSON in file {file.FullName} (data field).");
+                    log.Error($"Malformed JSON in file {file.FullName} (data field).");
                     continue;
                 }
 
@@ -345,22 +353,22 @@ internal class SaveFiles
                     // Parse dataJson as JToken
                     var rs = JsonConvert.DeserializeObject<T>(dataJson) ??
                              throw new JsonSerializationException($"Failed to deserialize data for {innerName}");
-                    writer.Debug($"Successfully read file {file.FullName} with length {dataJson.Length}");
+                    log.Debug($"Successfully read file {file.FullName} with length {dataJson.Length}");
                     return rs;
                 }
                 else
                 {
-                    writer.Error(
+                    log.Error(
                         $"Hash mismatch for file {file.FullName}. Expected: {hashToken}, Actual: {base64Hash}");
                 }
             }
             catch (Exception e)
             {
-                writer.Error($"Failed to read or parse file {file.FullName}", e);
+                log.Error($"Failed to read or parse file {file.FullName}", e);
             }
         }
 
-        writer.Error($"No valid JSON data found in files for {innerName} in slot {Slot}");
+        log.Error($"No valid JSON data found in files for {innerName} in slot {Slot}");
         return null;
     }
 

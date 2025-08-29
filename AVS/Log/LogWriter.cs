@@ -1,7 +1,7 @@
-﻿using System;
+﻿using AVS.Util;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.Util;
 
 
 namespace AVS.Log;
@@ -83,16 +83,7 @@ public readonly struct LogWriter
         return $"{dt}{tag}{prefix}{msg}";
     }
 
-    /// <summary>
-    /// Logs a debug message if the filter allows it.
-    /// </summary>
-    /// <param name="filter">Filter for verbose log messages</param>
-    /// <param name="msg">Message to log</param>
-    public void Debug(ILogFilter filter, string msg)
-    {
-        if (filter.LogDebug)
-            Logger.Log(MakeMessage(msg, "Debug"));
-    }
+
 
     /// <summary>
     /// Logs a debug message

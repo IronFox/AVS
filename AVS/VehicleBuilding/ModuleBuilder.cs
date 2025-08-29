@@ -23,15 +23,15 @@ internal class ModuleBuilder : MonoBehaviour
     public static bool haveWeCalledBuildAllSlots = false;
     public static bool slotExtenderIsPatched = false;
     public static bool SlotExtenderHasGreenLight { get; set; } = false;
-    internal static string GetModulePrefix(MainPatcher mp) => mp.ModName + "_Avs_Vehicle_Module";
+    internal static string GetModulePrefix(RootModController rmc) => rmc.ModName + "_Avs_Vehicle_Module";
 
-    public static bool IsModuleName(MainPatcher mp, string name)
+    public static bool IsModuleName(RootModController rmc, string name)
     {
-        var prefix = GetModulePrefix(mp);
+        var prefix = GetModulePrefix(rmc);
         return name.StartsWith(prefix) && int.TryParse(name.Substring(prefix.Length), out _);
     }
 
-    public static string ModuleName(MainPatcher mp, int index) => GetModulePrefix(mp) + index;
+    public static string ModuleName(RootModController rmc, int index) => GetModulePrefix(rmc) + index;
 
     public void Awake()
     {
@@ -64,15 +64,18 @@ internal class ModuleBuilder : MonoBehaviour
 
     public void BuildAllSlots()
     {
-        MainPatcher.AnyInstance.StartCoroutine(BuildAllSlotsInternal());
+        RootModController.AnyInstance.StartAvsCoroutine(
+            nameof(ModuleBuilder) + '.' + nameof(BuildAllSlotsInternal),
+            BuildAllSlotsInternal);
     }
 
     public static void LoadVehicleSlots(Dictionary<string, uGUI_EquipmentSlot> sourceSlots,
         bool clearExisting = true)
     {
+        using var log = SmartLog.ForAVS(RootModController.AnyInstance);
         if (clearExisting)
         {
-            Log.Write($"Clearing existing vehicle slots...");
+            log.Write($"Clearing existing vehicle slots...");
             AllVehicleSlots.Clear();
         }
 
@@ -86,12 +89,12 @@ internal class ModuleBuilder : MonoBehaviour
             }
 
         if (added > 0)
-            Log.Write($"Loaded {added} new vehicle slots.");
+            log.Write($"Loaded {added} new vehicle slots.");
     }
 
-    public IEnumerator BuildAllSlotsInternal()
+    public IEnumerator BuildAllSlotsInternal(SmartLog log)
     {
-        Log.Write($"Waiting for PDA to be initialized...");
+        log.Write($"Waiting for PDA to be initialized...");
         yield return new WaitUntil(() => haveSlotsBeenInited);
 
         var eq = uGUI_PDA.main.transform
@@ -99,29 +102,29 @@ internal class ModuleBuilder : MonoBehaviour
             .SafeGetComponent<uGUI_Equipment>();
         if (eq.IsNull())
         {
-            Log.Error("Failed to find Equipment in PDA. Cannot build vehicle module slots.");
+            log.Error("Failed to find Equipment in PDA. Cannot build vehicle module slots.");
             yield break;
         }
 
         // Log.Write(
         //     $"Equipment found. Children are: {string.Join(", ", eq.transform.SafeGetChildren().Select(x => x.NiceName()))}");
 
-        foreach (var mp in MainPatcher.AllInstances)
+        foreach (var rmc in RootModController.AllInstances)
         {
-            Log.Write($"Building vehicle module slots for {mp.ModName}...");
+            log.Write($"Building vehicle module slots for {rmc.ModName}...");
 
-            if (!AllVehicleSlots.ContainsKey(ModuleName(mp, 0)))
+            if (!AllVehicleSlots.ContainsKey(ModuleName(rmc, 0)))
             {
-                Log.Write($"Slots have not previously been mapped (currently: {AllVehicleSlots.Count})");
+                log.Write($"Slots have not previously been mapped (currently: {AllVehicleSlots.Count})");
 
                 for (var i = 0; i < MaxNumModules; i++)
                 {
-                    var slotName = ModuleName(mp, i);
+                    var slotName = ModuleName(rmc, i);
                     var mod = eq.transform.Find(slotName);
                     if (mod.IsNull())
                     {
                         // If the slot does not exist, create it
-                        Log.Error("Missing vehicle module slot: " + slotName);
+                        log.Error("Missing vehicle module slot: " + slotName);
                         continue;
                     }
 
@@ -133,11 +136,11 @@ internal class ModuleBuilder : MonoBehaviour
             }
             else
             {
-                Log.Write($"Slots have previously been mapped. Updating...");
+                log.Write($"Slots have previously been mapped. Updating...");
 
                 for (var i = 0; i < MaxNumModules; i++)
                 {
-                    var slotName = ModuleName(mp, i);
+                    var slotName = ModuleName(rmc, i);
                     var slot = eq.transform
                         .Find(slotName)
                         .SafeGetComponent<uGUI_EquipmentSlot>();
@@ -145,7 +148,7 @@ internal class ModuleBuilder : MonoBehaviour
                     if (slot.IsNull())
                     {
                         // If the slot does not exist, create it
-                        Log.Error("Missing vehicle module slot: " + slotName);
+                        log.Error("Missing vehicle module slot: " + slotName);
                         continue;
                     }
 
@@ -167,12 +170,13 @@ internal class ModuleBuilder : MonoBehaviour
 
     public void GrabComponents()
     {
-        MainPatcher.AnyInstance.StartCoroutine(BuildGenericModulesASAP());
+        RootModController.AnyInstance.StartAvsCoroutine(
+            nameof(ModuleBuilder) + '.' + nameof(BuildGenericModulesASAP),
+            BuildGenericModulesASAP);
     }
 
-    private IEnumerator BuildGenericModulesASAP()
+    private IEnumerator BuildGenericModulesASAP(SmartLog log)
     {
-        var log = Log.Prefixed(nameof(BuildGenericModulesASAP));
         log.Write($"Begin");
         // this function is invoked by PDA.Awake,
         // so that we can access the same PDA here
@@ -314,15 +318,16 @@ internal class ModuleBuilder : MonoBehaviour
                     break;
             }
 
-        foreach (var mp in MainPatcher.AllInstances)
-            BuildVehicleModuleSlots(log, mp, MaxNumModules);
+        foreach (var rmc in RootModController.AllInstances)
+            BuildVehicleModuleSlots(rmc, MaxNumModules);
         Main.areModulesReady = true;
         haveSlotsBeenInited = true;
     }
 
-    public void BuildVehicleModuleSlots(LogWriter log, MainPatcher mp, int modules)
+    public void BuildVehicleModuleSlots(RootModController rmc, int modules)
     {
-        log.Write(nameof(BuildVehicleModuleSlots) + $" ({modules}, {mp.ModName}) called.");
+        using var log = SmartLog.ForAVS(rmc);
+        log.Write(nameof(BuildVehicleModuleSlots) + $" ({modules}, {rmc.ModName}) called.");
         if (equipment.IsNull())
         {
             log.Error("Equipment is null, cannot build vehicle module slots.");
@@ -339,24 +344,25 @@ internal class ModuleBuilder : MonoBehaviour
                 continue;
             }
 
-            thisModule.name = ModuleName(mp, i);
+            thisModule.name = ModuleName(rmc, i);
             thisModule.SetActive(false);
             thisModule.transform.SetParent(equipment.transform, false);
             thisModule.transform.localScale = Vector3.one;
-            thisModule.GetComponent<uGUI_EquipmentSlot>().slot = ModuleName(mp, i);
+            thisModule.GetComponent<uGUI_EquipmentSlot>().slot = ModuleName(rmc, i);
             thisModule.GetComponent<uGUI_EquipmentSlot>().manager = equipment;
 
-            LinkModule(log, ref thisModule);
+            LinkModule(rmc, ref thisModule);
 
-            DistributeModule(log, ref thisModule, i);
+            DistributeModule(rmc, ref thisModule, i);
 
             if (i == 0)
-                AddBackgroundImage(log, mp, ref thisModule);
+                AddBackgroundImage(rmc, ref thisModule);
         }
     }
 
-    public void LinkModule(LogWriter log, ref GameObject thisModule)
+    public void LinkModule(RootModController rmc, ref GameObject thisModule)
     {
+        using var log = SmartLog.ForAVS(rmc);
         //log.Write(nameof(LinkModule) + $" ({thisModule.NiceName()}) called.");
         // add background
         var backgroundTop = thisModule.transform.Find("Background").SafeGetGameObject();
@@ -376,9 +382,11 @@ internal class ModuleBuilder : MonoBehaviour
         thisModule.GetComponent<uGUI_EquipmentSlot>().background.material = genericModuleSlotMaterial;
     }
 
-    public void DistributeModule(LogWriter log, ref GameObject thisModule, int position)
+    public void DistributeModule(RootModController rmc, ref GameObject thisModule, int position)
     {
-        //log.Write(nameof(DistributeModule) + $" ({thisModule.NiceName()}, {position}) called.");
+        using var log = SmartLog.ForAVS(rmc);
+
+        log.Debug(nameof(DistributeModule) + $" ({thisModule.NiceName()}, {position}) called.");
         var row_size = 4;
         var arrayX = position % row_size;
         var arrayY = position / row_size;
@@ -403,8 +411,9 @@ internal class ModuleBuilder : MonoBehaviour
         thisModule.transform.localPosition = new Vector3(thisX, thisY, 0);
     }
 
-    public void AddBackgroundImage(LogWriter log, MainPatcher mp, ref GameObject parent)
+    public void AddBackgroundImage(RootModController rmc, ref GameObject parent)
     {
+        using var log = SmartLog.ForAVS(rmc);
         log.Write(nameof(AddBackgroundImage) + $" ({parent.NiceName()}) called.");
         if (modulesBackground.IsNull())
         {
@@ -416,7 +425,7 @@ internal class ModuleBuilder : MonoBehaviour
         thisBackground.transform.localRotation = Quaternion.identity;
         thisBackground.transform.localPosition = new Vector3(250, 250, 0);
         thisBackground.transform.localScale = 5 * Vector3.one;
-        thisBackground.EnsureComponent<UnityEngine.UI.Image>().sprite = mp.Images.ModulesBackground;
+        thisBackground.EnsureComponent<UnityEngine.UI.Image>().sprite = rmc.Images.ModulesBackground;
     }
 
     public GameObject? InstantiateGenericModuleSlot()
@@ -434,14 +443,14 @@ internal class ModuleBuilder : MonoBehaviour
 
     internal void SignalOpened(VehicleUpgradeConsoleInput instance, AvsVehicle av)
     {
-        var log = av.Log.Tag(nameof(ModuleBuilder)).Prefixed(nameof(SignalOpened));
+        using var log = av.NewAvsLog();
         Sprite? setSprite;
-        var mp = av.Owner;
-        setSprite = av.Config.ModuleBackgroundImage.OrRequired(mp.Images.ModulesBackground);
+        var rmc = av.Owner;
+        setSprite = av.Config.ModuleBackgroundImage.OrRequired(rmc.Images.ModulesBackground);
         if (equipment.IsNotNull())
         {
             var img = equipment.transform
-                .Find(ModuleName(mp, 0) + "/VehicleModuleBackground(Clone)")
+                .Find(ModuleName(rmc, 0) + "/VehicleModuleBackground(Clone)")
                 .SafeGetComponent<UnityEngine.UI.Image>();
             if (img.IsNotNull())
             {
@@ -459,10 +468,13 @@ internal class ModuleBuilder : MonoBehaviour
         }
 
 
-        if (!haveFixed) av.StartCoroutine(FixModules(instance, av, log));
+        if (!haveFixed)
+            av.Owner.StartAvsCoroutine(
+                nameof(ModuleBuilder) + '.' + nameof(FixModules),
+                log => FixModules(log, instance, av));
     }
 
-    private IEnumerator FixModules(VehicleUpgradeConsoleInput instance, AvsVehicle av, LogWriter log)
+    private IEnumerator FixModules(SmartLog log, VehicleUpgradeConsoleInput instance, AvsVehicle av)
     {
         var pda = Player.main.GetPDA();
         log.Write("Fixing modules in one second...");

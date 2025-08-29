@@ -51,7 +51,9 @@ internal class AvsUpgradesListener : MonoBehaviour
                 true
             );
             UpgradeRegistrar.OnAddActions.ForEach(x => x(addedParams));
-            MainPatcher.AnyInstance.StartCoroutine(BroadcastMessageSoon());
+            RootModController.AnyInstance.StartAvsCoroutine(
+                nameof(AvsUpgradesListener) + '.' + nameof(BroadcastMessageSoon),
+                _ => BroadcastMessageSoon());
         }
     }
 
@@ -73,7 +75,9 @@ internal class AvsUpgradesListener : MonoBehaviour
                 false
             );
             UpgradeRegistrar.OnAddActions.ForEach(x => x(addedParams));
-            MainPatcher.AnyInstance.StartCoroutine(BroadcastMessageSoon());
+            RootModController.AnyInstance.StartAvsCoroutine(
+                nameof(AvsUpgradesListener) + '.' + nameof(BroadcastMessageSoon),
+                _ => BroadcastMessageSoon());
         }
     }
 

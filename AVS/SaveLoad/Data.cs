@@ -1,9 +1,8 @@
-﻿using AVS.Log;
+﻿using AVS.Interfaces;
+using AVS.Log;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using AVS.Interfaces;
-using AVS.Util;
 
 namespace AVS.SaveLoad;
 
@@ -43,7 +42,7 @@ public class Data : INullTestableType
         return json;
     }
 
-    internal void FromJson(JObject json, LogWriter writer)
+    internal void FromJson(JObject json, SmartLog writer)
     {
         foreach (var block in Blocks)
             if (json.TryGetValue(block.Name, out var value) && value is JObject jObject)
@@ -122,7 +121,7 @@ public class DataBlock : IEnumerable<IPersistable>
         return json;
     }
 
-    internal void FromJson(JObject json, LogWriter writer)
+    internal void FromJson(JObject json, SmartLog writer)
     {
         foreach (var property in Properties)
             if (json.TryGetValue(property.Name, out var value))
@@ -160,7 +159,7 @@ public interface IPersistable
     /// </summary>
     /// <param name="value">Value to restore.</param>
     /// <param name="writer">Log writer to use for logging.</param>
-    void RestoreValue(JToken value, LogWriter writer);
+    void RestoreValue(JToken value, SmartLog writer);
 }
 
 /// <summary>
@@ -217,7 +216,7 @@ public class PersistentProperty<T> : IPersistable
         return JSONSerialization.ToJson(value);
     }
 
-    void IPersistable.RestoreValue(JToken value, LogWriter writer)
+    void IPersistable.RestoreValue(JToken value, SmartLog writer)
     {
         try
         {

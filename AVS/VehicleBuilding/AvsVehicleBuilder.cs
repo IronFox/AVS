@@ -13,9 +13,16 @@ using UnityEngine;
 
 namespace AVS;
 
-internal readonly record struct VehicleEntry(MainPatcher MainPatcher, AvsVehicle av, int unique_id, PingType pt, Sprite? ping_sprite, TechType techType = (TechType)0)
+internal readonly record struct VehicleEntry(
+    RootModController MainPatcher,
+    AvsVehicle AV,
+    int UniqueId,
+    PingType PingType,
+    Sprite? PingSprite,
+    TechType TechType = (TechType)0
+    )
 {
-    public string Name => av.name;
+    public string Name => AV.name;
 }
 
 
@@ -46,26 +53,25 @@ internal static class AvsVehicleBuilder
 
     public static bool IsKnownItemType(EquipmentType itemType) => itemType == ModuleType;
 
-    public static IEnumerator Prefabricate(MainPatcher mp, AvsVehicle av, PingType pingType, bool verbose)
+    public static IEnumerator Prefabricate(SmartLog log, RootModController rmc, AvsVehicle av, PingType pingType, bool verbose)
     {
-        var log = av.Log.Tag(nameof(Prefabricate));
         av.OnAwakeOrPrefabricate();
         VehicleRegistrar.VerboseLog(log, VehicleRegistrar.LogType.Log, verbose,
             "Prefabricating the " + av.gameObject.name);
         yield return SeamothHelper.WaitUntilLoaded();
         var seamoth = SeamothHelper.RequireSeamoth;
-        if (!Instrument(mp, av, pingType, seamoth))
+        if (!Instrument(rmc, av, pingType, seamoth))
         {
-            LogWriter.Default.Error("Failed to instrument the vehicle: " + av.gameObject.name);
+            log.Error("Failed to instrument the vehicle: " + av.gameObject.name);
             Logger.LoopMainMenuError($"AVS: Failed prefabrication of {av.GetType().Name}. Not registered. See log.",
                 av.gameObject.name);
             yield break;
         }
 
         prefabs.Add(av);
-        var ve = new VehicleEntry(mp, av, numVehicleTypes, pingType, av.Config.PingSprite);
+        var ve = new VehicleEntry(rmc, av, numVehicleTypes, pingType, av.Config.PingSprite);
         numVehicleTypes++;
-        var naiveVE = new VehicleEntry(mp, ve.av, ve.unique_id, ve.pt, ve.ping_sprite, TechType.None);
+        var naiveVE = new VehicleEntry(rmc, ve.AV, ve.UniqueId, ve.PingType, ve.PingSprite, TechType.None);
         AvsVehicleManager.VehicleTypes
             .Add(naiveVE); // must add/remove this vehicle entry so that we can call VFConfig.Setup.
         VehicleNautilusInterface.PatchCraftable(ref ve, verbose);
@@ -92,11 +98,12 @@ internal static class AvsVehicleBuilder
         if (!av.ReSetupWaterParks())
             return false;
 
+        using var log = av.NewAvsLog();
         try
         {
             foreach (var vu in av.Com.Upgrades)
             {
-                LogWriter.Default.Write("Setting up upgrade in " + vu.Interface.NiceName());
+                log.Write("Setting up upgrade in " + vu.Interface.NiceName());
                 var vuci = vu.Interface.EnsureComponent<VehicleUpgradeConsoleInput>();
                 vuci.flap = vu.Flap.transform;
                 vuci.anglesOpened = vu.AnglesOpened;
@@ -107,17 +114,19 @@ internal static class AvsVehicleBuilder
                 up.av = av;
                 if (vu.ModuleProxies.IsNotNull())
                 {
-                    av.Log.Write(
+                    log.Write(
                         $"Setting up UpgradeProxy in {vu.Interface.NiceName()} with {vu.ModuleProxies.Count} proxy/ies");
                     up.proxies = vu.ModuleProxies.ToArray();
                 }
                 else
                 {
-                    av.Log.Warn($"No module proxies defined for UpgradeProxy in {vu.Interface.NiceName()}");
+                    log.Warn($"No module proxies defined for UpgradeProxy in {vu.Interface.NiceName()}");
                 }
 
                 SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vu.Interface.transform);
-                vu.Interface.EnsureComponent<SaveLoad.AvsUpgradesIdentifier>();
+                var aui = vu.Interface.EnsureComponent<SaveLoad.AvsUpgradesIdentifier>();
+                aui.av = av;
+
             }
 
             if (av.Com.Upgrades.Count == 0)
@@ -131,7 +140,7 @@ internal static class AvsVehicleBuilder
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error(
+            log.Error(
                 "There was a problem setting up the Upgrades Interface. Check VehicleUpgrades.Interface and .Flap", e);
             return false;
         }
@@ -250,7 +259,8 @@ internal static class AvsVehicleBuilder
 
     private static void SetupLightSounds(AvsVehicle av)
     {
-        av.Log.Debug("Setting up light sounds for " + av.name);
+        using var log = av.NewAvsLog();
+        log.Debug("Setting up light sounds for " + av.name);
         var fmods = SeamothHelper.RequireSeamoth.GetComponents<FMOD_StudioEventEmitter>();
         av.SetupLightSounds(fmods);
     }
@@ -350,7 +360,8 @@ internal static class AvsVehicleBuilder
 
     private static void SetupWorldForces(AvsVehicle av, GameObject seamoth)
     {
-        LogWriter.Default.Write("Setting up world forces for " + av.name);
+        using var log = av.NewAvsLog();
+        log.Write("Setting up world forces for " + av.name);
         av.worldForces = seamoth
             .GetComponent<SeaMoth>()
             .worldForces
@@ -381,6 +392,7 @@ internal static class AvsVehicleBuilder
 
     private static void SetupCrushDamage(AvsVehicle av, GameObject seamoth)
     {
+        using var log = av.NewAvsLog();
         var container = new GameObject("CrushDamageContainer");
         container.transform.SetParent(av.transform);
         var ce = container.AddComponent<FMOD_CustomEmitter>();
@@ -410,7 +422,7 @@ internal static class AvsVehicleBuilder
         // TODO: this is of type VoiceNotification
         av.crushDamage.crushDepthUpdate = null;
 
-        LogWriter.Default.Write("Crush sound registered: " + av.crushDamage.soundOnDamage.NiceName());
+        log.Write("Crush sound registered: " + av.crushDamage.soundOnDamage.NiceName());
     }
 
     private static void SetupWaterClipping(AvsVehicle av, GameObject seamoth)
@@ -574,27 +586,28 @@ internal static class AvsVehicleBuilder
 
     #endregion
 
-    private static bool Instrument(MainPatcher mp, AvsVehicle av, PingType pingType, GameObject seamoth)
+    private static bool Instrument(RootModController rmc, AvsVehicle av, PingType pingType, GameObject seamoth)
     {
-        LogWriter.Default.Write("Instrumenting " + av.name + $" {av.Id}");
+        using var log = av.NewAvsLog();
+        log.Write("Instrumenting " + av.name + $" {av.Id}");
         av.Com.StorageRootObject.EnsureComponent<ChildObjectIdentifier>();
         av.modulesRoot = av.Com.ModulesRootObject.EnsureComponent<ChildObjectIdentifier>();
 
         if (!SetupObjects(av as AvsVehicle))
         {
-            LogWriter.Default.Error("Failed to SetupObjects for AvsVehicle.");
+            log.Error("Failed to SetupObjects for AvsVehicle.");
             return false;
         }
 
         if (av is Submarine sub && !SetupObjects(sub))
         {
-            LogWriter.Default.Error("Failed to SetupObjects for Submarine.");
+            log.Error("Failed to SetupObjects for Submarine.");
             return false;
         }
 
         if (av is Submersible sub2 && !SetupObjects(sub2))
         {
-            LogWriter.Default.Error("Failed to SetupObjects for Submersible.");
+            log.Error("Failed to SetupObjects for Submersible.");
             return false;
         }
 
@@ -693,25 +706,26 @@ internal static class AvsVehicleBuilder
 
     internal static void SetIcon(uGUI_Ping ping, PingType inputType)
     {
+        using var log = SmartLog.For(RootModController.AnyInstance);
         foreach (var ve in AvsVehicleManager.VehicleTypes)
-            if (ve.pt == inputType)
+            if (ve.PingType == inputType)
             {
-                LogWriter.Default.Debug(
-                    $"[AvsVehicleBuilder] Setting icon for ping {ping.name} of type {inputType} to sprite {ve.ping_sprite?.texture.NiceName()}");
-                ping.SetIcon(ve.ping_sprite);
+                log.Debug(
+                    $"Setting icon for ping {ping.name} of type {inputType} to sprite {ve.PingSprite?.texture.NiceName()}");
+                ping.SetIcon(ve.PingSprite);
                 return;
             }
 
         foreach (var pair in SpriteHelper.PingSprites)
             if (pair.Type == inputType)
             {
-                LogWriter.Default.Debug(
-                    $"[AvsVehicleBuilder] Setting icon for ping {ping.name} of type {inputType} to sprite {pair.Sprite?.texture.NiceName()}");
+                log.Debug(
+                    $"Setting icon for ping {ping.name} of type {inputType} to sprite {pair.Sprite?.texture.NiceName()}");
                 ping.SetIcon(pair.Sprite);
                 return;
             }
 
-        LogWriter.Default.Debug($"[AvsVehicleBuilder] No custom icons found for type {inputType}. Skipping");
+        log.Debug($"No custom icons found for type {inputType}. Skipping");
     }
 
     /*

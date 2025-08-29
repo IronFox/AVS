@@ -32,24 +32,31 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     /// </summary>
     public MaybeTranslate DisplayName { get; private set; } = default;
 
-    [SerializeField] private int index;
+    [SerializeField]
+    private int index;
 
     /// <summary>
     /// Storage container width.
     /// </summary>
-    [SerializeField] private int width = 6;
+    [SerializeField]
+    private int width = 6;
 
     /// <summary>
     /// Storage container height.
     /// </summary>
-    [SerializeField] private int height = 8;
+    [SerializeField]
+    private int height = 8;
 
-    [SerializeField] private bool canHatchEggs = true;
-    [SerializeField] private AvsVehicle? vehicle;
-    [SerializeField] private Transform? waterPark;
+    [SerializeField]
+    private bool canHatchEggs = true;
+    [SerializeField]
+    private AvsVehicle? vehicle;
+    [SerializeField]
+    private Transform? waterPark;
+
+    private AvsVehicle AV => vehicle.OrThrow(() => new InvalidOperationException($"Trying to access MobileWaterPark.av before it has been initialized"));
 
 
-    private LogWriter Log => (vehicle?.Log ?? LogWriter.Default).Tag($"WP");
 
     public void Awake()
     {
@@ -110,7 +117,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     {
         if (_container.IsNotNull())
             return;
-        Log.Write(
+        using var log = SmartLog.ForAVS(AV.Owner);
+        log.Write(
             $"Initializing {this.NiceName()} for {DisplayName.Rendered} ({DisplayName.Localize}) with width {width} and height {height}");
         _container = new ItemsContainer(width, height,
             waterPark, DisplayName.Rendered, null);
@@ -196,7 +204,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         {
             item.item.gameObject.SetActive(false); //disable the item so it doesn't cause issues
         };
-        Log.Write($"Initialized");
+        log.Write($"Initialized");
     }
 
     private Vector3 RandomLocation(bool dropToFloor)
@@ -321,25 +329,26 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     public void OnProtoSerializeObjectTree(ProtobufSerializer serializer)
     {
+        using var log = SmartLog.ForAVS(AV.Owner);
         if (_container.IsNull())
         {
-            Log.Error($"MobileWaterPark.OnProtoSerializeObjectTree called without a valid container.");
+            log.Error($"MobileWaterPark.OnProtoSerializeObjectTree called without a valid container.");
             return;
         }
 
         if (vehicle.IsNull())
         {
-            Log.Error($"MobileWaterPark.OnProtoSerializeObjectTree called without a valid vehicle or storageRoot.");
+            log.Error($"MobileWaterPark.OnProtoSerializeObjectTree called without a valid vehicle or storageRoot.");
             return;
         }
 
         if (index <= 0)
         {
-            Log.Error($"MobileWaterPark.OnProtoSerializeObjectTree called with invalid index {index}.");
+            log.Error($"MobileWaterPark.OnProtoSerializeObjectTree called with invalid index {index}.");
             return;
         }
 
-        vehicle.Log.Write($"Saving water park to file");
+        log.Write($"Saving water park to file");
         var result = new List<(PrefabIdentifier, Inhabitant)>();
         foreach (var item in _container.ToList())
         {
@@ -347,7 +356,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             var tt = item.item.GetTechType();
             if (prefabId.IsNull())
             {
-                Log.Error($"Item {item.item.NiceName()} does not have a valid PrefabIdentifier, skipping.");
+                log.Error($"Item {item.item.NiceName()} does not have a valid PrefabIdentifier, skipping.");
                 continue;
             }
 
@@ -374,28 +383,30 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 height = height,
                 canHatchEggs = canHatchEggs
             },
-            vehicle.Log);
+            vehicle.Owner);
     }
 
     private List<LoadingInhabitant> ReAddWhenDone { get; } = new();
 
     public void OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
     {
-        Log.Write($"OnProtoDeserializeObjectTree called for water park {index} with vehicle {vehicle?.NiceName()}");
+        //Log.Write($"OnProtoDeserializeObjectTree called for water park {index} with vehicle {vehicle?.NiceName()}");
         if (vehicle.IsNull())
         {
-            Log.Error($"MobileWaterPark.OnProtoDeserializeObjectTree called without a valid vehicle.");
+            LogWriter.Default.Error($"MobileWaterPark.OnProtoDeserializeObjectTree called without a valid vehicle.");
             return;
         }
+
+        using var log = vehicle.NewAvsLog();
 
         if (index <= 0)
         {
-            Log.Error($"MobileWaterPark.OnProtoDeserializeObjectTree called with invalid index {index}.");
+            log.Error($"MobileWaterPark.OnProtoDeserializeObjectTree called with invalid index {index}.");
             return;
         }
 
-        Log.Write($"Loading water park from file");
-        if (vehicle.PrefabID.ReadReflected($"WP{index}", out Serialized? data, vehicle.Log))
+        log.Write($"Loading water park from file");
+        if (vehicle.PrefabID.ReadReflected($"WP{index}", out Serialized? data, vehicle.Owner))
         {
             height = data.height;
             width = data.width;
@@ -405,13 +416,15 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             var itemsToAdd = new List<LoadingInhabitant>();
             if (data.inhabitants.IsNotNull())
             {
-                Log.Write($"Found {data.inhabitants.Count} inhabitants in water park {index}");
+                log.Write($"Found {data.inhabitants.Count} inhabitants in water park {index}");
                 foreach (var inhabitant in data.inhabitants)
                     if (TechTypeExtensions.FromString(inhabitant.techTypeAsString, out var tt, true))
                     {
-                        Log.Write($"Loading inhabitant {tt} for water park {index}");
+                        log.Write($"Loading inhabitant {tt} for water park {index}");
                         var load = CraftData.GetPrefabForTechTypeAsync(tt);
-                        MainPatcher.AnyInstance.StartCoroutine(load);
+                        vehicle.Owner.StartAvsCoroutine(
+                            nameof(CraftData) + '.' + nameof(CraftData.GetPrefabForTechTypeAsync),
+                            _ => load);
 
                         itemsToAdd.Add(new LoadingInhabitant
                         (
@@ -421,48 +434,46 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     }
                     else
                     {
-                        Log.Error(
+                        log.Error(
                             $"Failed to parse tech type {inhabitant.techTypeAsString} for water park {index}, skipping.");
                     }
             }
 
-            Log.Write($"Loaded {itemsToAdd.Count} items for water park {index}. Adding them when done");
+            log.Write($"Loaded {itemsToAdd.Count} items for water park {index}. Adding them when done");
 
             ReAddWhenDone.AddRange(itemsToAdd);
         }
         else
         {
-            Log.Error($"Failed to read water park data for {index}");
+            log.Error($"Failed to read water park data for {index}");
         }
     }
 
-    public void OnVehicleLoaded()
+    public void OnVehicleLoaded(AvsVehicle expectVehicle)
     {
-        Log.Write($"OnVehicleLoaded called for water park {index} with vehicle {vehicle?.NiceName()}");
+        vehicle = vehicle.OrRequired(expectVehicle);
+        using var log = vehicle.NewAvsLog();
+        log.Write($"OnVehicleLoaded called for water park {index} with vehicle {vehicle.NiceName()}");
         if (_container.IsNull())
         {
-            Log.Error($"MobileWaterPark.OnVehicleLoaded called without a valid container.");
-            return;
-        }
-
-        if (vehicle.IsNull())
-        {
-            Log.Error($"MobileWaterPark.OnVehicleLoaded called without a valid vehicle.");
+            log.Error($"MobileWaterPark.OnVehicleLoaded called without a valid container.");
             return;
         }
 
         if (waterPark.IsNull())
         {
-            Log.Error($"MobileWaterPark.OnVehicleLoaded called without a valid water park transform.");
+            log.Error($"MobileWaterPark.OnVehicleLoaded called without a valid water park transform.");
             return;
         }
 
-        vehicle.StartCoroutine(LoadInhabitants(vehicle));
+        vehicle.Owner.StartAvsCoroutine(
+            nameof(MobileWaterPark) + '.' + nameof(LoadInhabitants),
+            log => LoadInhabitants(log, vehicle));
     }
 
-    private IEnumerator LoadInhabitants(AvsVehicle vehicle)
+    private IEnumerator LoadInhabitants(SmartLog log, AvsVehicle vehicle)
     {
-        Log.Write($"Re-adding {ReAddWhenDone.Count} items to the water park");
+        log.Write($"Re-adding {ReAddWhenDone.Count} items to the water park");
         foreach (var item in ReAddWhenDone)
         {
             //try to load the item
@@ -470,7 +481,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             var prefab = item.LoadTask.GetResult();
             if (prefab.IsNull())
             {
-                Log.Error($"Failed to load item {item.Inhabitant.techTypeAsString} for water park {index}, skipping.");
+                log.Error($"Failed to load item {item.Inhabitant.techTypeAsString} for water park {index}, skipping.");
                 continue;
             }
 
@@ -479,7 +490,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             var pickupable = thisItem.GetComponent<Pickupable>();
             if (pickupable.IsNull())
             {
-                Log.Error($"Item {thisItem.NiceName()} does not have a Pickupable component, skipping.");
+                log.Error($"Item {thisItem.NiceName()} does not have a Pickupable component, skipping.");
                 continue;
             }
 
@@ -500,7 +511,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             }
 
             _container!.AddItem(pickupable);
-            Log.Write($"Added item {thisItem.NiceName()} to the water park.");
+            log.Write($"Added item {thisItem.NiceName()} to the water park.");
         }
 
         ReAddWhenDone.Clear();

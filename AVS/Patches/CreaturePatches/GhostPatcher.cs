@@ -39,6 +39,9 @@ internal class GhostPatcher
         else if (techType == TechType.GhostLeviathanJuvenile)
             __result = av.Config.GhostJuvenileBiteDamage;
         else
-            av.Log.Tag(nameof(GhostPatcher)).Error("Unrecognized ghost leviathan");
+        {
+            using var log = av.NewAvsLog();
+            log.Error("Unrecognized ghost leviathan");
+        }
     }
 }

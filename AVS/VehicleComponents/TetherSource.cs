@@ -1,7 +1,7 @@
-﻿using System.Collections;
-using System.Linq;
-using AVS.Util;
+﻿using AVS.Util;
 using AVS.VehicleTypes;
+using System.Collections;
+using System.Linq;
 using UnityEngine;
 
 namespace AVS.VehicleComponents;
@@ -122,7 +122,8 @@ internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
 
     private void MVExit(string reason)
     {
-        av!.Log.Write("TetherSource: Player exiting vehicle because " + reason);
+        using var log = av!.NewAvsLog();
+        log.Write("TetherSource: Player exiting vehicle because " + reason);
         av.ExitHelmControl();
         av.ClosestPlayerExit(false);
 
@@ -161,18 +162,19 @@ internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
 
         if (Player.main.GetVehicle().IsNull())
         {
+            using var log = av.NewAvsLog();
             if (isSimple)
             {
                 if (Vector3.Distance(Player.main.transform.position, transform.position) < 1f)
                 {
-                    av.Log.Write(
+                    log.Write(
                         "TetherSource: Player is close enough to simple tether source. Registering player entry.");
                     av.RegisterTetherEntry(this);
                 }
                 else if (Vector3.Distance(Player.main.transform.position,
                              av.Com.Helms.First().Root.transform.position) < 1f)
                 {
-                    av.Log.Write("TetherSource: Player is close enough to helms root. Registering player entry.");
+                    log.Write("TetherSource: Player is close enough to helms root. Registering player entry.");
                     av.RegisterTetherEntry(this);
                 }
             }
@@ -181,7 +183,7 @@ internal class TetherSource : MonoBehaviour, IScuttleListener, IDockListener
                 var closest = av.Com.TetherSources.FirstOrDefault(PlayerWithinLeash);
                 if (closest.IsNotNull())
                 {
-                    av.Log.Write(
+                    log.Write(
                         $"TetherSource: Player is close enough to tether source {closest.NiceName()}. Registering player entry.");
                     av.RegisterTetherEntry(this);
                 }

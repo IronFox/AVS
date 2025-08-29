@@ -12,17 +12,18 @@ internal class WaterParkStorageInput : StorageInput
             LogWriter.Default.Error("AvsVehicle is null in WaterParkStorageInput.OpenFromExternal");
             return;
         }
+        using var log = av.NewAvsLog();
 
         if (slotID >= av.Com.WaterParks.Count)
         {
-            LogWriter.Default.Error($"Invalid slotID {slotID} in WaterParkStorageInput.OpenFromExternal");
+            log.Error($"Invalid slotID {slotID} in WaterParkStorageInput.OpenFromExternal");
             return;
         }
 
         var mwp = av.Com.WaterParks[slotID].ContentContainer.GetComponent<MobileWaterPark>();
         if (mwp.IsNull())
         {
-            av.Log.Error("MobileWaterPark is null in WaterParkStorageInput.OpenFromExternal");
+            log.Error("MobileWaterPark is null in WaterParkStorageInput.OpenFromExternal");
             return;
         }
 
@@ -42,17 +43,18 @@ internal class WaterParkStorageInput : StorageInput
             LogWriter.Default.Error("AvsVehicle is null in WaterParkStorageInput.OpenPDA");
             return;
         }
+        using var log = av.NewAvsLog();
 
         if (slotID >= av.Com.WaterParks.Count)
         {
-            LogWriter.Default.Error($"Invalid slotID {slotID} in WaterParkStorageInput.OpenFromExternal");
+            log.Error($"Invalid slotID {slotID} in WaterParkStorageInput.OpenFromExternal");
             return;
         }
 
         var mwp = av.Com.WaterParks[slotID].ContentContainer.GetComponent<MobileWaterPark>();
         if (mwp.IsNull())
         {
-            av.Log.Error("MobileWaterPark is null in WaterParkStorageInput.OpenFromExternal");
+            log.Error("MobileWaterPark is null in WaterParkStorageInput.OpenFromExternal");
             return;
         }
 

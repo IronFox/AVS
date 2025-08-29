@@ -235,7 +235,9 @@ public class VehiclePatcher
             }
         }
 
-        MainPatcher.AnyInstance.StartCoroutine(NotifyDockingBay(__instance.transform.parent.Find("BaseCell(Clone)")));
+        RootModController.AnyInstance.StartAvsCoroutine(
+            nameof(VehiclePatcher) + '.' + nameof(NotifyDockingBay),
+            _ => NotifyDockingBay(__instance.transform.parent.Find("BaseCell(Clone)")));
         return true;
     }
 

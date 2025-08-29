@@ -1,5 +1,6 @@
 ﻿using AVS.Admin;
 using AVS.BaseVehicle;
+using AVS.Log;
 using AVS.Util;
 using System;
 using System.Collections;
@@ -40,7 +41,7 @@ internal static class AvsModularStorageSaveLoad
 
     public static void SaveThisModularStorage(AvsVehicle av, ItemsContainer container, int slotID)
     {
-        var log = av.Log.Tag("ModularStorage");
+        using var log = av.NewAvsLog();
         var result = new List<StorageItem>();
         foreach (var item in container.ToList())
         {
@@ -65,10 +66,10 @@ internal static class AvsModularStorageSaveLoad
         av.PrefabID.WriteReflected(
             GetSaveFileName(slotID),
             result,
-            log);
+            av.Owner);
     }
 
-    internal static IEnumerator DeserializeAllModularStorage(MainPatcher mp, AvsVehicle av)
+    internal static IEnumerator DeserializeAllModularStorage(RootModController rmc, AvsVehicle av)
     {
         yield return new WaitUntil(() => GameStateWatcher.IsWorldLoaded);
         yield return new WaitUntil(() => av.upgradesInput.equipment.IsNotNull());
@@ -81,18 +82,19 @@ internal static class AvsModularStorageSaveLoad
             {
                 var container = result?.item?.GetComponent<SeamothStorageContainer>();
                 if (container.IsNotNull() && container.container.IsNotNull())
-                    mp.StartCoroutine(LoadThisModularStorage(mp, av, container.container, i));
+                    rmc.StartAvsCoroutine(
+                        nameof(AvsModularStorageSaveLoad) + '.' + nameof(LoadThisModularStorage),
+                        log => LoadThisModularStorage(log, rmc, av, container.container, i));
             }
         }
     }
 
-    private static IEnumerator LoadThisModularStorage(MainPatcher mp, AvsVehicle av, ItemsContainer container, int slotID)
+    private static IEnumerator LoadThisModularStorage(SmartLog log, RootModController rmc, AvsVehicle av, ItemsContainer container, int slotID)
     {
-        var log = av.Log.Tag(nameof(LoadThisModularStorage));
         if (av.PrefabID.ReadReflected(
                 GetSaveFileName(slotID),
                 out List<StorageItem>? thisStorage,
-                log))
+                rmc))
         {
             var result = new InstanceContainer();
             foreach (var item in thisStorage)
@@ -130,8 +132,9 @@ internal static class AvsModularStorageSaveLoad
                     try
                     {
                         if (TechTypeExtensions.FromString(item.innerBatteryTechTypeAsString, out var btt, true))
-                            mp.StartCoroutine(
-                                SaveLoadUtils.ReloadBatteryPower(thisItem, item.batteryCharge, btt));
+                            rmc.StartAvsCoroutine(
+                                nameof(SaveLoadUtils) + '.' + nameof(SaveLoadUtils.ReloadBatteryPower),
+                                log => SaveLoadUtils.ReloadBatteryPower(log, thisItem, item.batteryCharge, btt));
                         else
                             log.Error(
                                 $"Failed to parse inner battery TechType '{item.innerBatteryTechTypeAsString}' for item {thisItem.NiceName()} in modular storage slot {slotID} for {av.NiceName()} : {av.VehicleName}");

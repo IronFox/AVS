@@ -1,10 +1,10 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Log;
 using AVS.Util;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using AVS.Log;
 
 
 // PURPOSE: Allow battery charges (and Power Relay in general) to work in expected ways on AvsVehicle
@@ -46,9 +46,12 @@ namespace AVS.Patches;
 [HarmonyPatch(typeof(PowerRelay))]
 public static class PowerRelayPatcher
 {
-    private static LogWriter LogOf(AvsVehicle? vehicle)
+    private static SmartLog NewLogOf(AvsVehicle? vehicle)
     {
-        return vehicle.SafeGet(x => x.Log, LogWriter.Default).Tag(nameof(PowerRelayPatcher));
+        if (vehicle.IsNotNull())
+            return new SmartLog(vehicle.Owner, "AVS", frameDelta: 2, tags: [$"V{vehicle.Id}"]);
+
+        return new SmartLog(RootModController.AnyInstance, "AVS", frameDelta: 2);
     }
 
 
@@ -70,15 +73,16 @@ public static class PowerRelayPatcher
     public static bool StartPrefix(PowerRelay __instance)
     {
         var av = __instance.gameObject.SafeGetComponent<AvsVehicle>();
+        using var log = NewLogOf(av);
         if (av.IsNotNull())
         {
-            LogOf(av).Debug("PowerRelay.Start");
+            log.Debug("PowerRelay.Start");
             __instance.InvokeRepeating("UpdatePowerState", UnityEngine.Random.value, 0.5f);
             return false;
         }
         else
         {
-            LogOf(null).Debug("Vehicle not recognized: " + __instance.gameObject.NiceName());
+            log.Debug("Vehicle not recognized: " + __instance.gameObject.NiceName());
         }
 
         return true;
@@ -110,7 +114,9 @@ public static class PowerRelayPatcher
             }
             else
             {
-                LogOf(av).Error("EnergyInterface is null");
+                using var log = NewLogOf(av);
+
+                log.Error("EnergyInterface is null");
                 __result = 0;
             }
 
@@ -140,7 +146,8 @@ public static class PowerRelayPatcher
         if (av.IsNull()) return true;
         if (av.energyInterface.IsNull() || av.energyInterface.sources.IsNull())
         {
-            LogOf(av).Error("EnergyInterface is null");
+            using var log = NewLogOf(av);
+            log.Error("EnergyInterface is null");
             __result = 0;
             return false;
         }
@@ -203,8 +210,8 @@ public static class PowerSystemPatcher
     [HarmonyPatch(nameof(Charger.Update))]
     private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
+        using var log = SmartLog.ForAVS(RootModController.AnyInstance);
         var codes = instructions.ToList();
-        var log = LogWriter.Default.Tag(nameof(PowerSystemPatcher));
         var newCodes = new List<CodeInstruction>(codes.Count);
         //
         // foreach (var code in codes)

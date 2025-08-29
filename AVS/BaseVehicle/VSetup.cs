@@ -18,13 +18,25 @@ public abstract partial class AvsVehicle
 {
     [SerializeField]
     internal int mainPatcherInstanceId;
-    private MainPatcher? owner;
-    internal MainPatcher Owner
+    private RootModController? owner;
+
+    internal SmartLog NewAvsLog(params string[] tags) => new SmartLog(Owner, "AVS", frameDelta: 1, tags: [$"V{Id}", .. tags]);
+    /// <summary>
+    /// Creates a new instance of <see cref="SmartLog"/> preconfigured with module-specific tags.
+    /// </summary>
+    /// <param name="tags">An optional array of additional tags to include in the log. These tags are appended to the default module tags.</param>
+    /// <returns>A new <see cref="SmartLog"/> instance associated with the module and including the specified tags.</returns>
+    public SmartLog NewModLog(params string[] tags) => new SmartLog(Owner, "Mod", frameDelta: 1, tags: [$"V{Id}", .. tags]);
+
+    /// <summary>
+    /// The root mod controller instance that owns this vehicle.
+    /// </summary>
+    public RootModController Owner
     {
         get
         {
             if (owner.IsNull())
-                owner = MainPatcher.GetInstance(mainPatcherInstanceId);
+                owner = RootModController.GetInstance(mainPatcherInstanceId);
             return owner;
         }
     }
@@ -32,9 +44,10 @@ public abstract partial class AvsVehicle
 
     internal void SetupVolumetricLights()
     {
+        using var log = NewAvsLog();
         if (SeamothHelper.Seamoth.IsNull())
         {
-            Log.Error("SeamothHelper.Seamoth is null. Cannot setup volumetric lights.");
+            log.Error("SeamothHelper.Seamoth is null. Cannot setup volumetric lights.");
             return;
         }
 
@@ -46,7 +59,7 @@ public abstract partial class AvsVehicle
         if (this is VehicleTypes.Submarine subma) theseLights.AddRange(subma.Com.Floodlights);
         foreach (var pc in theseLights)
         {
-            LogWriter.Default.Debug($"Setting up volumetric light for {pc.Light.NiceName()} on {this.NiceName()}");
+            log.Debug($"Setting up volumetric light for {pc.Light.NiceName()} on {this.NiceName()}");
             var volumetricLight = new GameObject("VolumetricLight");
             volumetricLight.transform.SetParent(pc.Light.transform);
             volumetricLight.transform.localPosition = Vector3.zero;
@@ -83,7 +96,6 @@ public abstract partial class AvsVehicle
     /// </summary>
     public override void SubConstructionComplete()
     {
-        Log.Debug(this, $"{nameof(AvsVehicle)}.{nameof(SubConstructionComplete)}");
         HudPingInstance.enabled = true;
         worldForces.handleGravity = true;
         BuildBotManager.ResetGhostMaterial();
@@ -95,15 +107,16 @@ public abstract partial class AvsVehicle
     /// </summary>
     public virtual void SubConstructionBeginning()
     {
-        Log.Debug(this, $"{nameof(AvsVehicle)}[#{Id}].{nameof(SubConstructionBeginning)}");
+        using var log = NewAvsLog();
+        log.Debug($"{nameof(AvsVehicle)}[#{Id}].{nameof(SubConstructionBeginning)}");
         if (HudPingInstance)
             HudPingInstance.enabled = false;
         else
-            Log.Error($"HudPingInstance is null in {nameof(SubConstructionBeginning)} #{Id}");
+            log.Error($"HudPingInstance is null in {nameof(SubConstructionBeginning)} #{Id}");
         if (worldForces)
             worldForces.handleGravity = false;
         else
-            Log.Error($"worldForces is null in {nameof(SubConstructionBeginning)} #{Id}");
+            log.Error($"worldForces is null in {nameof(SubConstructionBeginning)} #{Id}");
     }
 
     /// <summary>
@@ -112,20 +125,21 @@ public abstract partial class AvsVehicle
     /// <param name="techType">This vehicle's tech type</param>
     public virtual void OnCraftEnd(TechType techType)
     {
-        Log.Write($"OnCraftEnd called for {techType}");
+        using var log = NewAvsLog();
+        log.Write($"OnCraftEnd called for {techType}");
 
-        IEnumerator GiveUsABatteryOrGiveUsDeath()
+        IEnumerator GiveUsABatteryOrGiveUsDeath(SmartLog log)
         {
             yield return new WaitForSeconds(2.5f);
 
             // give us an AI battery please
             var result = new InstanceContainer();
-            yield return AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(OnCraftEnd)), TechType.PowerCell,
+            yield return AvsCraftData.InstantiateFromPrefabAsync(log, TechType.PowerCell,
                 result);
             var newAIBattery = result.Instance;
             if (newAIBattery.IsNull())
             {
-                Log.Error($"Could not find PowerCell prefab for {techType}");
+                log.Error($"Could not find PowerCell prefab for {techType}");
                 yield break;
             }
 
@@ -140,7 +154,7 @@ public abstract partial class AvsVehicle
 
             if (!energyInterface.hasCharge)
             {
-                yield return AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(OnCraftEnd)), TechType.PowerCell,
+                yield return AvsCraftData.InstantiateFromPrefabAsync(log, TechType.PowerCell,
                     result);
                 var newPowerCell = result.Instance;
                 if (newPowerCell.IsNotNull())
@@ -154,21 +168,23 @@ public abstract partial class AvsVehicle
                 }
                 else
                 {
-                    Log.Error($"Could not find PowerCell prefab for {techType}");
+                    log.Error($"Could not find PowerCell prefab for {techType}");
                 }
             }
         }
 
         if (Com.Batteries.Count > 0)
-            StartCoroutine(GiveUsABatteryOrGiveUsDeath());
+            Owner.StartAvsCoroutine(
+                nameof(MaterialReactor) + '.' + nameof(GiveUsABatteryOrGiveUsDeath),
+                GiveUsABatteryOrGiveUsDeath);
     }
 
     internal void CheckEnergyInterface()
     {
-        Log.Debug(this, $"{nameof(AvsVehicle)}.{nameof(CheckEnergyInterface)}");
+        using var log = NewAvsLog();
         if (energyInterface.sources.Length < Com.Batteries.Count)
         {
-            Log.Error($"EnergyInterface for {this.NiceName()} has less sources than batteries. " +
+            log.Error($"EnergyInterface for {this.NiceName()} has less sources than batteries. " +
                       $"Expected {Com.Batteries.Count}, got {energyInterface.sources.Length}. " +
                       $"This is a bug, please report it.");
             var energyMixins = new List<EnergyMixin>();
@@ -179,13 +195,12 @@ public abstract partial class AvsVehicle
         if (!IsPowered())
             GetComponentsInChildren<IPowerListener>(true).ForEach(x => x.OnBatteryDead());
 
-        Log.Debug(this,
-            $"EnergyInterface for {energyInterface.NiceName()} has {energyInterface.sources.Length} sources.");
+        log.Debug($"EnergyInterface for {energyInterface.NiceName()} has {energyInterface.sources.Length} sources.");
     }
 
     internal void SetupPowerCells()
     {
-        Log.Debug(this, $"{nameof(AvsVehicle)}.{nameof(SetupPowerCells)}");
+        using var log = NewAvsLog();
         var seamothEnergyMixin = SeamothHelper.RequireSeamoth.GetComponent<EnergyMixin>();
         var energyMixins = new List<EnergyMixin>();
         if (Com.Batteries.Count == 0)
@@ -206,8 +221,7 @@ public abstract partial class AvsVehicle
 
         foreach (var vb in Com.Batteries)
         {
-            Log.Debug(this,
-                $"Setting up vehicle battery '{vb.DisplayName?.Text ?? vb.Root.name}' for {this.NiceName()}");
+            log.Debug($"Setting up vehicle battery '{vb.DisplayName?.Text ?? vb.Root.name}' for {this.NiceName()}");
             // Configure energy mixin for this battery slot
             //vb.Root.GetComponents<EnergyMixin>().ForEach(em => GameObject.Destroy(em)); // remove old energy mixins
             var energyMixin = vb.Root.EnsureComponent<EnergyMixin>();
@@ -234,7 +248,8 @@ public abstract partial class AvsVehicle
             model.mixin = energyMixin;
 
             SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vb.Root.transform);
-            vb.Root.EnsureComponent<SaveLoad.AvsBatteryIdentifier>();
+            var abi = vb.Root.EnsureComponent<SaveLoad.AvsBatteryIdentifier>();
+            abi.av = this;
         }
 
         // Configure energy interface
@@ -263,7 +278,8 @@ public abstract partial class AvsVehicle
     /// <param name="pingType"></param>
     internal void PrefabSetupHudPing(PingType pingType)
     {
-        Log.Write($"Setting up HudPingInstance for {GetType().Name}");
+        using var log = NewAvsLog();
+        log.Write($"Setting up HudPingInstance for {GetType().Name}");
         hudPingInstance = gameObject.EnsureComponent<PingInstance>();
         hudPingInstance.origin = transform;
         hudPingInstance.pingType = pingType;
@@ -274,11 +290,12 @@ public abstract partial class AvsVehicle
     internal bool ReSetupModularStorages()
     {
         var iter = 0;
+        using var log = NewAvsLog();
         try
         {
             foreach (var vs in Com.ModularStorages)
             {
-                Log.Debug("Setting up Modular Storage " + vs.Container.NiceName() + " for " +
+                log.Debug("Setting up Modular Storage " + vs.Container.NiceName() + " for " +
                           this.NiceName());
                 vs.Container.SetActive(false);
 
@@ -288,7 +305,7 @@ public abstract partial class AvsVehicle
                 var storage = sm.transform.Find("Storage/Storage1");
                 if (storage.IsNull())
                 {
-                    Log.Error("Could not find Storage/Storage1 in the Seamoth prefab");
+                    log.Error("Could not find Storage/Storage1 in the Seamoth prefab");
                     return false;
                 }
 
@@ -312,7 +329,7 @@ public abstract partial class AvsVehicle
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error(
+            log.Error(
                 "There was a problem setting up the Modular Storage. Check VehicleStorage.Container and AvsVehicle.StorageRootObject",
                 e);
             return false;
@@ -322,15 +339,16 @@ public abstract partial class AvsVehicle
     internal bool ReSetupWaterParks()
     {
         var iter = 0;
+        using var log = NewAvsLog();
         try
         {
-            LogWriter.Default.Debug($"Setting up {Com.WaterParks.Count} Mobile Water Parks");
+            log.Debug($"Setting up {Com.WaterParks.Count} Mobile Water Parks");
             foreach (var vp in Com.WaterParks)
             {
                 vp.Root.SetActive(false);
 
                 var cont = vp.ContentContainer.gameObject.EnsureComponent<MobileWaterPark>();
-                LogWriter.Default.Debug("Setting up Mobile Water Park " + cont.NiceName() + $" '{cont.DisplayName}'");
+                log.Debug("Setting up Mobile Water Park " + cont.NiceName() + $" '{cont.DisplayName}'");
                 var name = vp.DisplayName ?? Text.Untranslated("Innate Vehicle Storage " + iter);
                 cont.Setup(this, name, vp, iter + 1);
                 var storageCloseSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1")
@@ -356,7 +374,7 @@ public abstract partial class AvsVehicle
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error(
+            log.Error(
                 "There was a problem setting up the Innate Storage. Check VehicleStorage.Container and AvsVehicle.StorageRootObject",
                 e);
             return false;
@@ -374,6 +392,7 @@ public abstract partial class AvsVehicle
 
                 var cont = vs.Container.EnsureComponent<InnateStorageContainer>();
                 var name = vs.DisplayName ?? Text.Untranslated("Innate Vehicle Storage " + iter);
+                cont.av = this;
                 cont.storageRoot = Com.StorageRootObject.GetComponent<ChildObjectIdentifier>();
                 cont.DisplayName = name;
                 cont.height = vs.Height;
@@ -455,7 +474,8 @@ public abstract partial class AvsVehicle
             model.mixin = em;
 
             SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vb.Root.transform);
-            vb.Root.EnsureComponent<SaveLoad.AvsBatteryIdentifier>();
+            var abi = vb.Root.EnsureComponent<SaveLoad.AvsBatteryIdentifier>();
+            abi.av = this;
         }
 
         // Configure energy interface
@@ -487,6 +507,9 @@ public abstract partial class AvsVehicle
             }
 
         if (lightsOnSound.IsNull() || lightsOffSound.IsNull())
-            Log.Error("Failed to find light sounds for " + name);
+        {
+            using var log = NewAvsLog();
+            log.Error("Failed to find light sounds for " + name);
+        }
     }
 }

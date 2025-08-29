@@ -52,7 +52,7 @@ namespace AVS.Util
         /// <returns>A read-only list containing the specified object as its only element.</returns>
         public static IReadOnlyList<TSource> ToRoList<TSource>(this TSource source)
         {
-            return [ source ];
+            return [source];
         }
 
         /// <summary>
@@ -130,7 +130,7 @@ namespace AVS.Util
         /// <returns>A HashSet containing the elements of the source enumerable.</returns>
         public static HashSet<T> ToHashSet<T>(this IEnumerable<T> source)
         {
-            return [..source];
+            return [.. source];
         }
 
         /// <summary>
@@ -162,6 +162,25 @@ namespace AVS.Util
             }
 
             return current;
+        }
+
+        /// <summary>
+        /// Creates a new character array by repeating the specified string a given number of times.
+        /// </summary>
+        /// <param name="s">The string to be repeated. Cannot be <see langword="null"/> or empty.</param>
+        /// <param name="count">The number of times to repeat the string. Must be greater than zero.</param>
+        /// <returns>A character array containing the repeated string. Returns an empty array if <paramref name="count"/> is less
+        /// than or equal to zero or if <paramref name="s"/> is <see langword="null"/> or empty.</returns>
+        public static char[] Repeat(this string s, int count)
+        {
+            if (count <= 0 || string.IsNullOrEmpty(s))
+                return [];
+            var result = new char[s.Length * count];
+            for (int i = 0; i < count; i++)
+            {
+                s.CopyTo(0, result, i * s.Length, s.Length);
+            }
+            return result;
         }
 
     }

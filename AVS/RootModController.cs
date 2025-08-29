@@ -17,9 +17,9 @@ using UnityEngine.SceneManagement;
 namespace AVS;
 
 /// <summary>
-/// AVS main patcher class. Must be inherited by the main mod class.
+/// AVS root mod controller class. Must be inherited by the main mod class.
 /// </summary>
-public abstract class MainPatcher : BaseUnityPlugin
+public abstract class RootModController : BaseUnityPlugin
 {
     //private static MainPatcher? _instance;
     private PatcherImages? images;
@@ -84,18 +84,13 @@ public abstract class MainPatcher : BaseUnityPlugin
     /// </summary>
     public abstract string ModName { get; }
 
-    /// <summary>
-    /// If true, debug messages will be logged, otherwise omitted.
-    /// </summary>
-    public bool LogDebugMessages { get; set; }
-
 
     //internal static VFConfig VFConfig { get; private set; }
     //internal static AVSNautilusConfig NautilusConfig { get; private set; }
 
-    private static Dictionary<int, MainPatcher> Instances { get; } = [];
+    private static Dictionary<int, RootModController> Instances { get; } = [];
 
-    internal static MainPatcher AnyInstance
+    internal static RootModController AnyInstance
     {
         get
         {
@@ -105,7 +100,12 @@ public abstract class MainPatcher : BaseUnityPlugin
         }
     }
 
-    internal static IEnumerable<MainPatcher> AllInstances => Instances.Values;
+    internal static IEnumerable<RootModController> AllInstances => Instances.Values;
+
+    /// <summary>
+    /// Logging verbosity level for the mod.
+    /// </summary>
+    public virtual Verbosity LogVerbosity => Verbosity.Regular;
 
     /// <summary>
     /// Begins plugin patching and initialization.
@@ -114,17 +114,18 @@ public abstract class MainPatcher : BaseUnityPlugin
     public virtual void Awake()
     {
         AVS.Logger.Init(Logger);
-        var assembly = typeof(MainPatcher).Assembly;
+        using var log = SmartLog.ForAVS(this);
+        var assembly = typeof(RootModController).Assembly;
         var name = assembly.GetName();
         //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-        LogWriter.Default.Write($"Booting AVS {name.Version} from {assembly.Location} for {PluginId}.");
-        LogWriter.Default.Write("AVS MainPatcher Awake started.");
+        log.Write($"Booting AVS {name.Version} from {assembly.Location} for {PluginId}.");
+        log.Write("AVS MainPatcher Awake started.");
 
         LanguageHandler.RegisterLocalizationFolder();
 
         Instances[GetInstanceID()] = this;
 
-        LogWriter.Default.Write("AVS MainPatcher Awake: SetupInstance completed. Loading images...");
+        log.Write("AVS MainPatcher Awake: SetupInstance completed. Loading images...");
         images = LoadImages();
 
 
@@ -132,7 +133,7 @@ public abstract class MainPatcher : BaseUnityPlugin
         //NautilusConfig = Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions<AVSNautilusConfig>();
         PrePatch();
         PrefabLoader.SignalCanLoad();
-        PrefabLoader.Request(TechType.Exosuit, LogWriter.Default, true);
+        PrefabLoader.Request(TechType.Exosuit, true);
         SeamothHelper.Request();
         //PrefabLoader.Request(TechType.Aquarium);
     }
@@ -158,7 +159,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
         PostPatch();
         CompatChecker.CheckAll(this);
-        StartCoroutine(AVS.Logger.MakeAlerts());
+        StartAvsCoroutine(nameof(AVS.Logger) + '.' + nameof(AVS.Logger.MakeAlerts), log => AVS.Logger.MakeAlerts());
     }
 
     /// <summary>
@@ -166,7 +167,8 @@ public abstract class MainPatcher : BaseUnityPlugin
     /// </summary>
     public virtual void PrePatch()
     {
-        LogWriter.Default.Write("PrePatch started.");
+        using var log = SmartLog.ForAVS(this);
+        log.Write("PrePatch started.");
 
         IEnumerator CollectPrefabsForBuilderReference()
         {
@@ -175,16 +177,16 @@ public abstract class MainPatcher : BaseUnityPlugin
             AvsVehicleBuilder.UpgradeConsole = request.GetResult();
         }
 
-        StartCoroutine(CollectPrefabsForBuilderReference());
+        StartAvsCoroutine(nameof(RootModController) + '.' + nameof(PrePatch) + '.' + nameof(CollectPrefabsForBuilderReference), _ => CollectPrefabsForBuilderReference());
         try
         {
             AvsFabricator.CreateAndRegister(this, Images.FabricatorIcon);
             Admin.Utils.RegisterDepthModules(this);
-            LogWriter.Default.Write("PrePatch finished.");
+            log.Write("PrePatch finished.");
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error("PrePatch failed.", e);
+            log.Error("PrePatch failed.", e);
         }
     }
 
@@ -197,7 +199,7 @@ public abstract class MainPatcher : BaseUnityPlugin
     /// state changes during loading and unloading of scenes.</remarks>
     public virtual void Patch()
     {
-        var log = LogWriter.Default.Tag("Patch");
+        using var log = SmartLog.ForAVS(this);
 
         log.Write("Starting");
         log.Write("Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.SaveData>()");
@@ -218,7 +220,7 @@ public abstract class MainPatcher : BaseUnityPlugin
             try
             {
                 AvsVehicleManager.CreateSpritesFile(this, e);
-                LogWriter.Default.Write("Sprites file created successfully.");
+                log.Write("Sprites file created successfully.");
             }
             catch (Exception ex)
             {
@@ -261,7 +263,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
         log.Write("Patching...");
         var harmony = new Harmony(PluginId);
-        var assembly = typeof(MainPatcher).Assembly;
+        var assembly = typeof(RootModController).Assembly;
 
         var patches =
             AccessTools
@@ -385,11 +387,61 @@ public abstract class MainPatcher : BaseUnityPlugin
         //VehicleBuilder.ScatterDataBoxes(craftables);
     }
 
-    internal static MainPatcher GetInstance(int mainPatcherInstanceId)
+    internal static RootModController GetInstance(int mainPatcherInstanceId)
     {
         if (Instances.TryGetValue(mainPatcherInstanceId, out var instance))
             return instance;
         throw new InvalidOperationException(
             $"No MainPatcher instance with ID {mainPatcherInstanceId} is registered. Known IDs: {string.Join(", ", Instances.Keys)}");
+    }
+
+
+    /// <summary>
+    /// Starts a new coroutine with enhanced error handling and logging.
+    /// </summary>
+    /// <param name="routine">The routine being executed</param>
+    /// <param name="methodName">Name of the method or context for logging purposes.</param>
+    /// <returns>The coroutine executing the enumerator</returns>
+    internal Coroutine StartAvsCoroutine(string methodName, Func<SmartLog, IEnumerator> routine)
+    {
+        return StartCoroutine(Run(methodName, routine, true));
+    }
+
+    /// <summary>
+    /// Starts a new coroutine with enhanced error handling and logging.
+    /// </summary>
+    /// <param name="routine">The routine being executed</param>
+    /// <param name="methodName">Name of the method or context for logging purposes.</param>
+    /// <returns>The coroutine executing the enumerator</returns>
+    public Coroutine StartModCoroutine(string methodName, Func<SmartLog, IEnumerator> routine)
+    {
+        return StartCoroutine(Run(methodName, routine, false));
+    }
+
+    private IEnumerator Run(string methodName, Func<SmartLog, IEnumerator> factory, bool isAvs)
+    {
+        using var log = new SmartLog(this, isAvs ? "AVS" : "Mod", 5, true, nameOverride: methodName);
+        var routine = factory(log);
+        while (true)
+        {
+            object? current;
+            try
+            {
+                if (!routine.MoveNext())
+                {
+                    log.Write("Finished");
+                    yield break;
+                }
+                current = routine.Current;
+            }
+            catch (Exception e)
+            {
+                log.Error("Exception in coroutine", e);
+                yield break;
+            }
+            log.Interrupt();
+            yield return current;
+            log.Resume();
+        }
     }
 }

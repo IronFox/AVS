@@ -6,16 +6,16 @@ namespace AVS.UpgradeModules.Common
     internal abstract class DepthModuleBase : AvsVehicleModule
     {
 
-        protected DepthModuleBase(MainPatcher mp)
+        protected DepthModuleBase(RootModController rmc)
         {
-            MainPatcher = mp;
+            Owner = rmc;
         }
         internal static List<TechType> AllDepthModuleTypes { get; } = new List<TechType>();
 
         /// <inheritdoc/>
         public override IReadOnlyCollection<TechType>? AutoDisplace => AllDepthModuleTypes;
 
-        public MainPatcher MainPatcher { get; }
+        public override RootModController Owner { get; }
 
         protected override void OnTechTypesAssigned(UpgradeTechTypes techTypes)
         {
@@ -28,7 +28,7 @@ namespace AVS.UpgradeModules.Common
     internal abstract class DepthModuleBase<T> : DepthModuleBase
         where T : DepthModuleBase<T>
     {
-        protected DepthModuleBase(MainPatcher mp) : base(mp)
+        protected DepthModuleBase(RootModController rmc) : base(rmc)
         {
         }
 

@@ -1,26 +1,13 @@
-﻿using BepInEx.Logging;
+﻿using AVS.Util;
+using BepInEx.Logging;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using AVS.Util;
 using UnityEngine;
 
 namespace AVS;
 
-/// <summary>
-/// Defines a filter for controlling whether debug-level log messages are processed.
-/// </summary>
-/// <remarks>Implementations of this interface can be used to determine whether debug-level log messages
-/// should be included in the logging output. This is typically used to enable or disable verbose logging
-/// dynamically based on application settings or runtime conditions.</remarks>
-public interface ILogFilter
-{
-    /// <summary>
-    /// Gets a value indicating whether debug-level logging is enabled.
-    /// </summary>
-    bool LogDebug { get; }
-}
 
 /// <summary>
 /// Provides logging, notification, and main menu alert utilities for the AVS mod.
@@ -66,15 +53,6 @@ public static class Logger
     {
         OutLog?.LogError(prefix + e.Message);
         OutLog?.LogError(e.StackTrace);
-    }
-
-    /// <summary>
-    /// Logs a debug message if the owner allows debug logging.
-    /// </summary>
-    public static void DebugLog(ILogFilter owner, string message)
-    {
-        if (owner?.LogDebug == true)
-            OutLog?.LogInfo($"[DebugLog]: {message}");
     }
 
     /// <summary>

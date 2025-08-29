@@ -71,7 +71,9 @@ public static class VFXConstructingPatch
             __instance.timeToConstruct = av.Config.TimeToConstruct;
             __instance.BroadcastMessage(nameof(AvsVehicle.SubConstructionBeginning), null, (SendMessageOptions)1);
             __instance.SendMessageUpwards(nameof(AvsVehicle.SubConstructionBeginning), null, (SendMessageOptions)1);
-            av.Owner.StartCoroutine(ManageColor(__instance, av));
+            av.Owner.StartAvsCoroutine(
+                nameof(VFXConstructingPatch) + '.' + nameof(ManageColor),
+                _ => ManageColor(__instance, av));
         }
     }
 }

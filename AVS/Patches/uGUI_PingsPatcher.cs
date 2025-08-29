@@ -1,10 +1,10 @@
-﻿using System;
+﻿using AVS.Log;
+using AVS.Util;
+using HarmonyLib;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using AVS.Log;
-using AVS.Util;
-using HarmonyLib;
 
 // PURPOSE: Allow AvsVehicles to use (and have displayed) custom ping sprites.
 // VALUE: Very high.
@@ -41,7 +41,7 @@ internal class uGUI_PingsPatcher
     [HarmonyPatch(nameof(uGUI_Pings.OnAdd))]
     private static IEnumerable<CodeInstruction> uGUI_PingsOnAddTranspiler(IEnumerable<CodeInstruction> input)
     {
-        var log = LogWriter.Default.Tag(nameof(uGUI_PingsPatcher));
+        using var log = SmartLog.ForAVS(RootModController.AnyInstance);
         var instructions = input.ToList();
         //foreach (var instruction in instructions)
         //    log.Debug($"Instruction: '{instruction}' op '{instruction.operand}' code '{instruction.opcode}'");

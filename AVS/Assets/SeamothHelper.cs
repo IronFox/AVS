@@ -25,8 +25,9 @@ public static class SeamothHelper
     {
         if (loader is null)
         {
-            LogWriter.Default.Write($"Loading Seamoth prefab...");
-            loader = PrefabLoader.Request(TechType.Seamoth, LogWriter.Default, true);
+            using var log = SmartLog.ForAVS(RootModController.AnyInstance);
+            log.Write($"Loading Seamoth prefab...");
+            loader = PrefabLoader.Request(TechType.Seamoth, true);
         }
 
         return loader;

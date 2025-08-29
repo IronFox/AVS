@@ -11,7 +11,7 @@ namespace AVS.UpgradeModules.Variations
         /// <summary>
         /// Parameters passed to <see cref="SelectableChargeableModule.OnActivate(Params)"/>.
         /// </summary>
-        public readonly struct Params
+        public readonly record struct Params
         {
             /// <summary>
             /// The vehicle that the upgrade is being used on.
@@ -82,7 +82,8 @@ namespace AVS.UpgradeModules.Variations
         /// <param name="param">The current charge state.</param>
         public virtual void OnActivate(Params param)
         {
-            LogWriter.Default.Debug(this, $"nameof");
+            using var log = SmartLog.ForAVS(Owner);
+            log.Debug($"OnActivate({param})");
         }
     }
 }

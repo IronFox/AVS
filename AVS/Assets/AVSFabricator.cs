@@ -10,17 +10,18 @@ namespace AVS.Assets;
 
 internal static class AvsFabricator
 {
-    private static string GetClassID(MainPatcher mp) => mp.ModName + "FabricatorClassID";
+    private static string GetClassID(RootModController rmc) => rmc.ModName + "FabricatorClassID";
     private static string DisplayName { get; } = Translator.Get(TranslationKey.Fabricator_DisplayName);
     private static string Description { get; } = Translator.Get(TranslationKey.Fabricator_Description);
     internal static CraftTree.Type TreeType { get; set; } = default;
 
-    internal static void CreateAndRegister(MainPatcher mp, Sprite icon)
+    internal static void CreateAndRegister(RootModController rmc, Sprite icon)
     {
-        LogWriter.Default.Write(nameof(CreateAndRegister) + $" ({icon.NiceName()})");
+        using var log = SmartLog.ForAVS(rmc);
+        log.Write(nameof(CreateAndRegister) + $" ({icon.NiceName()})");
         try
         {
-            var Info = Nautilus.Assets.PrefabInfo.WithTechType(GetClassID(mp), DisplayName, Description)
+            var Info = Nautilus.Assets.PrefabInfo.WithTechType(GetClassID(rmc), DisplayName, Description)
                 .WithIcon(icon.OrRequired(() => SpriteManager.Get(TechType.Fabricator)));
 
             var prefab = new Nautilus.Assets.CustomPrefab(Info);
@@ -51,7 +52,7 @@ internal static class AvsFabricator
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error(nameof(CreateAndRegister), e);
+            log.Error(nameof(CreateAndRegister), e);
             throw;
         }
     }

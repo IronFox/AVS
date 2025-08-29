@@ -80,13 +80,14 @@ public abstract partial class AvsVehicle
 
     private void SafeSignal(Action action, string actionName)
     {
+        using var log = NewAvsLog();
         try
         {
             action();
         }
         catch (Exception e)
         {
-            Log.Error($"Error while executing {actionName} for {GetType().Name}: {e}");
+            log.Error($"Error while executing {actionName} for {GetType().Name}: {e}");
         }
     }
 
@@ -169,7 +170,9 @@ public abstract partial class AvsVehicle
                 useRigidbody.detectCollisions = true;
             }
 
-            Owner.StartCoroutine(EnsureCollisionsEnabledEventually());
+            Owner.StartAvsCoroutine(
+                nameof(UndockVehicle) + '.' + nameof(EnsureCollisionsEnabledEventually),
+                _ => EnsureCollisionsEnabledEventually());
         }
 
         SafeSignal(OnVehicleUndocked, nameof(OnVehicleUndocked));

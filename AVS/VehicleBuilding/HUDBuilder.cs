@@ -1,7 +1,7 @@
 ﻿using AVS.BaseVehicle;
-using System.Collections.Generic;
 using AVS.StorageComponents;
 using AVS.Util;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace AVS;
@@ -130,7 +130,7 @@ internal static class HUDBuilder
             .GetComponent<TMPro.TextMeshProUGUI>();
 
         var modVehicleBackground = mvHUDElementsRoot.transform.Find("Background").GetComponent<UnityEngine.UI.Image>();
-        modVehicleBackground.sprite = Assets.SpriteHelper.GetSpriteRaw("Sprites/StorageHUDBackground.png");
+        modVehicleBackground.sprite = null;// Assets.SpriteHelper.GetSpriteRaw("Sprites/StorageHUDBackground.png");
         modVehicleBackground.transform.localScale = new Vector3(1, 1.238f, 1);
         modVehicleBackground.transform.localPosition = offset;
 

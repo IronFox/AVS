@@ -113,7 +113,7 @@ public static class DockedVehicleHandTargetPatch
         if (!__instance.dockingBay.HasUndockingClearance())
             return false;
 
-        var mp = av.Owner;
+        var rmc = av.Owner;
 
         __instance.dockingBay.OnUndockingStart();
         __instance.dockingBay.subRoot.BroadcastMessage("OnLaunchBayOpening", SendMessageOptions.DontRequireReceiver);
@@ -135,8 +135,9 @@ public static class DockedVehicleHandTargetPatch
         Player.main.SetCurrentSub(null, false);
         if (__instance.dockingBay.dockedVehicle.IsNotNull())
         {
-            mp.StartCoroutine(
-                __instance.dockingBay.dockedVehicle.Undock(Player.main, __instance.dockingBay.transform.position.y));
+            rmc.StartAvsCoroutine(
+                nameof(Vehicle) + '.' + nameof(Vehicle.Undock),
+                _ => __instance.dockingBay.dockedVehicle.Undock(Player.main, __instance.dockingBay.transform.position.y));
             SkyEnvironmentChanged.Broadcast(__instance.dockingBay.dockedVehicle.gameObject, (GameObject?)null);
         }
 
@@ -153,7 +154,9 @@ public static class DockedVehicleHandTargetPatch
                 av.useRigidbody.detectCollisions = true;
             }
 
-            mp.StartCoroutine(ReEnableCollisionsInAMoment());
+            rmc.StartAvsCoroutine(
+                nameof(DockedVehicleHandTargetPatch) + '.' + nameof(ReEnableCollisionsInAMoment),
+                _ => ReEnableCollisionsInAMoment());
         }
         else
         {
@@ -182,7 +185,9 @@ public static class DockedVehicleHandTargetPatch
 
             if (moonpoolMaybe.IsNotNull() &&
                 moonpoolMaybe.name.Equals("BaseMoonpool(Clone)", StringComparison.OrdinalIgnoreCase))
-                mp.StartCoroutine(ReEnableCollisionsInAMoment());
+                rmc.StartAvsCoroutine(
+                    nameof(DockedVehicleHandTargetPatch) + '.' + nameof(ReEnableCollisionsInAMoment),
+                    _ => ReEnableCollisionsInAMoment());
         }
 
         SkyEnvironmentChanged.Broadcast(av.gameObject, (GameObject?)null);

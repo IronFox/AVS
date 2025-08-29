@@ -44,7 +44,7 @@ public abstract partial class AvsVehicle
     /// </summary>
     protected internal virtual void DoExitRoutines()
     {
-        Log.Debug(this, nameof(DoExitRoutines));
+        using var log = NewAvsLog();
         EndHelmControl(0.5f);
         MyExitLockedMode();
     }
@@ -167,7 +167,8 @@ public abstract partial class AvsVehicle
     /// <param name="playEnterAnimation">If true, the character enter animation is played</param>
     public sealed override void EnterVehicle(Player player, bool teleport, bool playEnterAnimation = true)
     {
-        Log.Write(
+        using var log = NewAvsLog();
+        log.Write(
             $"{nameof(AvsVehicle)}.{nameof(EnterVehicle)} called with teleport={teleport}, playEnterAnimation={playEnterAnimation}");
         if (playerPosition.IsNotNull()) base.EnterVehicle(player, teleport, playEnterAnimation);
     }
@@ -187,7 +188,8 @@ public abstract partial class AvsVehicle
         Helm helm
     )
     {
-        Log.Debug(this, nameof(AvsVehicle) + '.' + nameof(BeginHelmControl));
+        using var log = NewAvsLog();
+        log.Debug(nameof(AvsVehicle) + '.' + nameof(BeginHelmControl));
         if (helm.PlayerControlLocation.IsNull())
             throw new NullReferenceException($"Helm must have a valid {nameof(helm.PlayerControlLocation)}");
         playerPosition = helm.PlayerControlLocation;
@@ -203,7 +205,7 @@ public abstract partial class AvsVehicle
         }
         catch (Exception ex)
         {
-            Log.Error(nameof(OnPreBeginHelmControl), ex);
+            log.Error(nameof(OnPreBeginHelmControl), ex);
         }
 
         try
@@ -219,13 +221,13 @@ public abstract partial class AvsVehicle
 
             PlayerAtHelm = helm;
             playerSits = helm.IsSeated;
-            Log.Debug(this, $"Player.playerController := {Player.main.playerController.NiceName()}");
-            Log.Debug(this, $"Player.mode := {Player.main.mode}");
-            Log.Debug(this, $"Vehicle.playerSits := {playerSits}");
-            Log.Debug(this, $"Vehicle.playerPosition := {playerPosition.NiceName()}");
-            Log.Debug(this, $"Vehicle.customGoalOnEnter := {customGoalOnEnter}");
-            Log.Debug(this, $"Vehicle.energyInterface := {energyInterface.NiceName()}");
-            Log.Debug(this, $"Vehicle.mainAnimator := {mainAnimator.NiceName()}");
+            log.Debug($"Player.playerController := {Player.main.playerController.NiceName()}");
+            log.Debug($"Player.mode := {Player.main.mode}");
+            log.Debug($"Vehicle.playerSits := {playerSits}");
+            log.Debug($"Vehicle.playerPosition := {playerPosition.NiceName()}");
+            log.Debug($"Vehicle.customGoalOnEnter := {customGoalOnEnter}");
+            log.Debug($"Vehicle.energyInterface := {energyInterface.NiceName()}");
+            log.Debug($"Vehicle.mainAnimator := {mainAnimator.NiceName()}");
             base.EnterVehicle(Player.main, true);
             uGUI.main.quickSlots.SetTarget(this);
             NotifyStatus(PlayerStatus.OnPilotBegin);
@@ -241,14 +243,14 @@ public abstract partial class AvsVehicle
             }
             catch (Exception ex)
             {
-                Log.Error(nameof(OnBeginHelmControl), ex);
+                log.Error(nameof(OnBeginHelmControl), ex);
             }
 
-            Log.Debug(this, nameof(AvsVehicle) + '.' + nameof(BeginHelmControl) + " done");
+            log.Debug(nameof(AvsVehicle) + '.' + nameof(BeginHelmControl) + " done");
         }
         catch (Exception ex)
         {
-            Log.Error(nameof(AvsVehicle) + '.' + nameof(BeginHelmControl), ex);
+            log.Error(nameof(AvsVehicle) + '.' + nameof(BeginHelmControl), ex);
         }
     }
 
@@ -263,13 +265,14 @@ public abstract partial class AvsVehicle
     /// </remarks>
     protected void EndHelmControl(float ikArmToggleTime)
     {
+        using var log = NewAvsLog();
         try
         {
             OnPreEndHelmControl();
         }
         catch (Exception ex)
         {
-            Log.Error(nameof(OnPreEndHelmControl), ex);
+            log.Error(nameof(OnPreEndHelmControl), ex);
         }
 
         try
@@ -301,12 +304,12 @@ public abstract partial class AvsVehicle
             }
             catch (Exception ex)
             {
-                Log.Error(nameof(OnEndHelmControl), ex);
+                log.Error(nameof(OnEndHelmControl), ex);
             }
         }
         catch (Exception ex)
         {
-            Log.Error(nameof(AvsVehicle) + '.' + nameof(EndHelmControl), ex);
+            log.Error(nameof(AvsVehicle) + '.' + nameof(EndHelmControl), ex);
         }
     }
 
@@ -363,7 +366,7 @@ public abstract partial class AvsVehicle
 
     private bool SanitizePlayerForWalking(bool isBoarding)
     {
-        var log = Log.Tag(nameof(SanitizePlayerForWalking));
+        using var log = NewAvsLog();
         var anyIssues = false;
         if (Player.main.currentMountedVehicle != this)
         {
@@ -447,7 +450,8 @@ public abstract partial class AvsVehicle
     /// the tether space of the vehicle via teleport</remarks>
     internal void RegisterPlayerEntry(Action? ifNotDockedAction = null)
     {
-        Log.Debug(this, nameof(AvsVehicle) + '.' + nameof(RegisterPlayerEntry));
+        using var log = NewAvsLog();
+        log.Debug(nameof(AvsVehicle) + '.' + nameof(RegisterPlayerEntry));
         if (!isScuttled /*&& !IsUnderCommand*/)
         {
             try
@@ -456,14 +460,14 @@ public abstract partial class AvsVehicle
             }
             catch (Exception ex)
             {
-                Log.Error(nameof(OnPrePlayerEntry), ex);
+                log.Error(nameof(OnPrePlayerEntry), ex);
             }
 
 
             try
             {
                 if (IsBoarded)
-                    Log.Warn(
+                    log.Warn(
                         $"{nameof(AvsVehicle)}.{nameof(RegisterPlayerEntry)}: Vehicle is already under command, re-executing registration.");
                 IsBoarded = true;
 
@@ -474,11 +478,11 @@ public abstract partial class AvsVehicle
                 {
                     ifNotDockedAction?.Invoke();
                     SanitizePlayerForWalking(true);
-                    Log.Write($"Player sanitized for walking");
+                    log.Write($"Player sanitized for walking");
                 }
                 else
                 {
-                    Log.Write($"The vehicle registers as being docked. Some player updates cannot be performed");
+                    log.Write($"The vehicle registers as being docked. Some player updates cannot be performed");
                 }
 
                 NotifyStatus(PlayerStatus.OnPlayerEntry);
@@ -490,19 +494,19 @@ public abstract partial class AvsVehicle
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(nameof(OnPlayerEntry), ex);
+                    log.Error(nameof(OnPlayerEntry), ex);
                 }
 
-                Log.Debug(this, nameof(AvsVehicle) + '.' + nameof(RegisterPlayerEntry) + " end");
+                log.Debug(nameof(AvsVehicle) + '.' + nameof(RegisterPlayerEntry) + " end");
             }
             catch (Exception ex)
             {
-                Log.Error(nameof(AvsVehicle) + '.' + nameof(RegisterPlayerEntry), ex);
+                log.Error(nameof(AvsVehicle) + '.' + nameof(RegisterPlayerEntry), ex);
             }
         }
         else
         {
-            Log.Error(
+            log.Error(
                 $"{nameof(AvsVehicle)}.{nameof(RegisterPlayerEntry)}: Cannot register player entry, vehicle is scuttled ({isScuttled}) or already under command ({IsBoarded}).");
         }
     }
@@ -512,14 +516,15 @@ public abstract partial class AvsVehicle
     /// </summary>
     public void PlayerEntry(VehicleHatchDefinition hatch)
     {
-        Log.Debug(this, nameof(AvsVehicle) + '.' + nameof(PlayerEntry));
+        using var log = NewAvsLog();
+        log.Debug(nameof(AvsVehicle) + '.' + nameof(PlayerEntry));
 
         RegisterPlayerEntry(() =>
         {
-            Log.Debug(this, $"Setting player to hatch entry location: {hatch.EntryLocation.position}");
+            log.Debug($"Setting player to hatch entry location: {hatch.EntryLocation.position}");
             Player.main.transform.position = hatch.EntryLocation.position;
         });
-        Log.Debug(this, nameof(AvsVehicle) + '.' + nameof(PlayerEntry) + " done");
+        log.Debug(nameof(AvsVehicle) + '.' + nameof(PlayerEntry) + " done");
     }
 
     /// <summary>
@@ -535,14 +540,15 @@ public abstract partial class AvsVehicle
     /// </summary>
     public void PlayerExit(VehicleHatchDefinition hatch, bool canExitToSurface)
     {
-        Log.Debug(this, $"{nameof(AvsVehicle)}.{nameof(PlayerExit)}");
+        using var log = NewAvsLog();
+        log.Debug($"{nameof(AvsVehicle)}.{nameof(PlayerExit)}");
         try
         {
             OnPrePlayerExit();
         }
         catch (Exception ex)
         {
-            Log.Error(nameof(OnPrePlayerExit), ex);
+            log.Error(nameof(OnPrePlayerExit), ex);
         }
 
         try
@@ -568,7 +574,7 @@ public abstract partial class AvsVehicle
                 }
                 else
                 {
-                    Character.ExitToSurface(hatch.SurfaceExitLocation, Log);
+                    Character.ExitToSurface(Owner, hatch.SurfaceExitLocation);
                 }
 
                 Player.main.transform.position = hatch.ExitLocation.position;
@@ -580,14 +586,14 @@ public abstract partial class AvsVehicle
             }
             catch (Exception ex)
             {
-                Log.Error(nameof(OnPlayerExit), ex);
+                log.Error(nameof(OnPlayerExit), ex);
             }
 
-            Log.Debug(this, $"{nameof(AvsVehicle)}.{nameof(PlayerExit)} end");
+            log.Debug($"{nameof(AvsVehicle)}.{nameof(PlayerExit)} end");
         }
         catch (Exception ex)
         {
-            Log.Error(nameof(AvsVehicle) + '.' + nameof(PlayerExit), ex);
+            log.Error(nameof(AvsVehicle) + '.' + nameof(PlayerExit), ex);
         }
     }
 }

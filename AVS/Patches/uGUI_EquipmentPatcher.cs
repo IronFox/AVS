@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using AVS.VehicleBuilding;
+﻿using AVS.VehicleBuilding;
 using HarmonyLib;
+using System.Collections.Generic;
 
 // PURPOSE: PDA displays AvsVehicle upgrades correctly
 // VALUE: Very high.

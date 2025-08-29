@@ -76,7 +76,9 @@ public static class CyclopsPatcher
                 }
             }
 
-            av.Owner.StartCoroutine(EnsureSubRootSet());
+            av.Owner.StartAvsCoroutine(
+                nameof(CyclopsPatcher) + '.' + nameof(EnsureSubRootSet),
+                _ => EnsureSubRootSet());
         }
     }
 

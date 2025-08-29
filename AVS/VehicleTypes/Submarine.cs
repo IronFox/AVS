@@ -2,6 +2,7 @@
 using AVS.Composition;
 using AVS.Configuration;
 using AVS.Localization;
+using AVS.Log;
 using AVS.SaveLoad;
 using AVS.Util;
 using AVS.VehicleBuilding;
@@ -251,7 +252,8 @@ public abstract class Submarine : AvsVehicle
     /// <inheritdoc />
     protected override void OnPlayerEntry()
     {
-        Log.Debug(this, nameof(Submarine) + '.' + nameof(OnPlayerEntry));
+        using var log = NewAvsLog();
+        log.Debug($"OnPlayerEntry()");
         isPlayerInside = true;
         ThetherChecksSuspended = false;
         //if (!isScuttled)
@@ -270,8 +272,6 @@ public abstract class Submarine : AvsVehicle
         EnsureColorPickerEnabled();
 
         Player.main.CancelInvoke("ValidateCurrentSub");
-
-        Log.Debug(this, nameof(Submarine) + '.' + nameof(OnPlayerEntry) + " done");
     }
 
     ///// <summary>
@@ -307,10 +307,10 @@ public abstract class Submarine : AvsVehicle
     /// <inheritdoc />
     protected override void OnPlayerExit()
     {
-        Log.Debug(this, nameof(Submarine) + '.' + nameof(OnPlayerExit));
+        using var log = NewAvsLog();
+        log.Debug($"OnPlayerExit()");
         isPlayerInside = false;
         ThetherChecksSuspended = false;
-        Log.Debug(this, nameof(Submarine) + '.' + nameof(OnPlayerExit) + " done");
     }
 
 
@@ -334,7 +334,9 @@ public abstract class Submarine : AvsVehicle
                 active.transform.Find("InputField/Text").GetComponent<TextMeshProUGUI>().text = GetName();
             }
 
-            Owner.StartCoroutine(TrySpawnFabricator());
+            Owner.StartAvsCoroutine(
+                nameof(Submarine) + '.' + nameof(TrySpawnFabricator),
+                TrySpawnFabricator);
         }
 
         base.SubConstructionComplete();
@@ -349,7 +351,7 @@ public abstract class Submarine : AvsVehicle
         if (isplayerinthissub) ClosestPlayerExit(false);
     }
 
-    private IEnumerator TrySpawnFabricator()
+    private IEnumerator TrySpawnFabricator(SmartLog log)
     {
         if (Com.Fabricator.IsNull()) yield break;
         foreach (var fab in GetComponentsInChildren<Fabricator>())
@@ -357,15 +359,15 @@ public abstract class Submarine : AvsVehicle
                 // This fabricator blueprint has already been fulfilled.
                 yield break;
 
-        yield return SpawnFabricator(Owner, Com.Fabricator.transform);
+        yield return SpawnFabricator(log, Owner, Com.Fabricator.transform);
     }
 
-    private IEnumerator SpawnFabricator(MainPatcher mp, Transform location)
+    private IEnumerator SpawnFabricator(SmartLog log, RootModController rmc, Transform location)
     {
-        var log = Log.Tag(nameof(SpawnFabricator));
         var result = new InstanceContainer();
-        yield return mp.StartCoroutine(
-            AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(SpawnFabricator)), TechType.Fabricator, result));
+        yield return rmc.StartAvsCoroutine(
+            nameof(AvsCraftData) + '.' + nameof(AvsCraftData.InstantiateFromPrefabAsync),
+            log2 => AvsCraftData.InstantiateFromPrefabAsync(log2, TechType.Fabricator, result));
         fabricator = result.Instance;
         if (fabricator.IsNull())
         {
@@ -577,7 +579,9 @@ public abstract class Submarine : AvsVehicle
 
         if (console.IsNull())
         {
-            yield return Owner.StartCoroutine(Builder.BeginAsync(TechType.BaseUpgradeConsole));
+            yield return Owner.StartAvsCoroutine(
+                nameof(Builder) + '.' + nameof(Builder.BeginAsync),
+                _ => Builder.BeginAsync(TechType.BaseUpgradeConsole));
             Builder.ghostModel.GetComponentInChildren<BaseGhost>().OnPlace();
             console = Resources.FindObjectsOfTypeAll<BaseUpgradeConsoleGeometry>().ToList()
                 .Find(x => x.gameObject.name.Contains("Short")).gameObject;
@@ -694,14 +698,16 @@ public abstract class Submarine : AvsVehicle
 
     internal void EnterHelmControl(int helmIndex)
     {
-        Log.Write($"Entering helm control for seat index {helmIndex} on submarine {VehicleName}");
+        using var log = NewAvsLog();
+        log.Write($"Entering helm control for seat index {helmIndex} on submarine {VehicleName}");
         BeginHelmControl(Com.Helms[helmIndex]);
     }
 
     /// <inheritdoc />
     protected internal override void DoExitRoutines()
     {
-        Log.Debug(this, nameof(Submarine) + '.' + nameof(DoExitRoutines));
+        using var log = NewAvsLog();
+        log.Debug(nameof(Submarine) + '.' + nameof(DoExitRoutines));
 
         // check if we're level by comparing pitch and roll
         var roll = transform.rotation.eulerAngles.z;
@@ -718,7 +724,7 @@ public abstract class Submarine : AvsVehicle
         Com.Engine.KillMomentum();
         if (currentHelmIndex >= Com.Helms.Count)
         {
-            Log.Error(
+            log.Error(
                 $"Error: tried to exit a submarine without pilot seats or with an incorrect selection ({currentHelmIndex})");
             return;
         }
@@ -735,18 +741,17 @@ public abstract class Submarine : AvsVehicle
         Vector3 exit;
         if (exitLocation.IsNotNull())
         {
-            Log.Debug(this,
-                $"Exit location defined. Deriving from seat status {seat.Root.transform.localPosition} / {seat.Root.transform.localRotation}");
+            log.Debug($"Exit location defined. Deriving from seat status {seat.Root.transform.localPosition} / {seat.Root.transform.localRotation}");
             exit = exitLocation.position;
         }
         else
         {
-            Log.Debug(this, "Exit location not declared in seat definition. Calculating location");
+            log.Debug("Exit location not declared in seat definition. Calculating location");
             // if the exit location is not set, use the calculated exit location
             exit = seat.CalculatedExitLocation;
         }
 
-        Log.Debug(this, $"Exiting submarine at {exit} (local {transform.InverseTransformPoint(exit)})");
+        log.Debug($"Exiting submarine at {exit} (local {transform.InverseTransformPoint(exit)})");
         Player.main.transform.position = exit;
     }
 

@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.Log;
+using AVS.Util;
 using System.Collections;
 using UnityEngine;
 
@@ -12,24 +13,30 @@ internal class Scuttler : MonoBehaviour
     private Coroutine? establish;
     private Coroutine? check;
 
-    public void Scuttle(MainPatcher mp)
+    public void Scuttle(RootModController rmc)
     {
-        scuttleCor = mp.StartCoroutine(DoScuttle(mp));
+        scuttleCor = rmc.StartAvsCoroutine(
+            nameof(Scuttler) + '.' + nameof(DoScuttle),
+            _ => DoScuttle(rmc));
     }
 
-    public void Unscuttle(MainPatcher mp)
+    public void Unscuttle(RootModController rmc)
     {
-        mp.StopCoroutine(scuttleCor);
-        mp.StopCoroutine(establish);
-        mp.StopCoroutine(check);
+        rmc.StopCoroutine(scuttleCor);
+        rmc.StopCoroutine(establish);
+        rmc.StopCoroutine(check);
         gameObject.GetComponent<Rigidbody>().isKinematic = false;
     }
 
-    public IEnumerator DoScuttle(MainPatcher mp)
+    public IEnumerator DoScuttle(RootModController rmc)
     {
-        establish = mp.StartCoroutine(EstablishScuttlePosition());
+        establish = rmc.StartAvsCoroutine(
+            nameof(Scuttler) + '.' + nameof(EstablishScuttlePosition),
+            _ => EstablishScuttlePosition());
         yield return establish;
-        check = mp.StartCoroutine(CheckScuttlePosition());
+        check = rmc.StartAvsCoroutine(
+            nameof(Scuttler) + '.' + nameof(CheckScuttlePosition),
+            CheckScuttlePosition);
         yield return check;
     }
 
@@ -65,7 +72,7 @@ internal class Scuttler : MonoBehaviour
         }
     }
 
-    public IEnumerator CheckScuttlePosition()
+    public IEnumerator CheckScuttlePosition(SmartLog log)
     {
         while (true)
         {
@@ -73,7 +80,7 @@ internal class Scuttler : MonoBehaviour
                 break;
             if (transform.position.y < scuttlePosition.y - 20) // why 20?
             {
-                Logger.Log("Moving wreck to " + scuttlePosition.ToString());
+                log.Write("Moving wreck to " + scuttlePosition.ToString());
                 transform.position = scuttlePosition + Vector3.up * 3f;
             }
 

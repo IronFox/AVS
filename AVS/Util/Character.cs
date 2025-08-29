@@ -54,17 +54,21 @@ public static class Character
             UWE.Utils.ExitPhysicsSyncSection();
         }
 
-        MainPatcher.AnyInstance.StartCoroutine(waitForTeleport());
+        RootModController.AnyInstance.StartAvsCoroutine(
+            nameof(Character) + '.' + nameof(TeleportTo),
+            _ => waitForTeleport());
     }
 
     /// <summary>
     /// Grants the player invincibility for a specified duration.
     /// </summary>
     /// <param name="time">Time in seconds to become invincible</param>
-    /// <param name="mp">Main patcher instance to run the coroutine</param>
-    public static void GrantInvincibility(MainPatcher mp, float time)
+    /// <param name="rmc">root mod controller instance to run the coroutine</param>
+    public static void GrantInvincibility(RootModController rmc, float time)
     {
-        mp.StartCoroutine(IntlGrantPlayerInvincibility(3f));
+        rmc.StartAvsCoroutine(
+            nameof(Character) + '.' + nameof(IntlGrantPlayerInvincibility),
+            _ => IntlGrantPlayerInvincibility(3f));
     }
 
     private static IEnumerator IntlGrantPlayerInvincibility(float time)
@@ -77,10 +81,12 @@ public static class Character
     /// <summary>
     /// Asynchronously animates the character to sit down in a chair.
     /// </summary>
-    public static void SitDown(MainPatcher mp)
+    public static void SitDown(RootModController rmc)
     {
         Player.main.EnterSittingMode();
-        mp.StartCoroutine(SitDownInChair());
+        rmc.StartAvsCoroutine(
+            nameof(Character) + '.' + nameof(SitDownInChair),
+            _ => SitDownInChair());
     }
 
     /// <summary>
@@ -133,9 +139,9 @@ public static class Character
     /// This method initiates an animation sequence to transition the player character from sitting to standing.
     /// The process is managed asynchronously and may involve resetting player animator states.
     /// </remarks>
-    public static void StandUp(MainPatcher mp)
+    public static void StandUp(RootModController rmc)
     {
-        mp.StartCoroutine(StandUpFromChair());
+        rmc.StartAvsCoroutine(nameof(Character) + '.' + nameof(StandUpFromChair), _ => StandUpFromChair());
     }
 
     /// <summary>
@@ -145,15 +151,16 @@ public static class Character
     /// Used when the player exits a vehicle underwater but needs to resurface.
     /// </remarks>
     /// <param name="surfaceExitLocation">The location to exit to the surface.</param>
-    /// <param name="outLog">Out logging facility</param>
-    public static void ExitToSurface(Transform surfaceExitLocation, LogWriter outLog)
+    /// <param name="rmc">The root mod controller instance used to start coroutines.</param>
+    public static void ExitToSurface(RootModController rmc, Transform surfaceExitLocation)
     {
-        Player.main.StartCoroutine(ExitToSurfaceRoutine(surfaceExitLocation, outLog));
+        rmc.StartAvsCoroutine(
+            nameof(Character) + '.' + nameof(ExitToSurfaceRoutine),
+            outLog => ExitToSurfaceRoutine(surfaceExitLocation, outLog));
     }
 
-    private static IEnumerator ExitToSurfaceRoutine(Transform surfaceExitLocation, LogWriter outLog)
+    private static IEnumerator ExitToSurfaceRoutine(Transform surfaceExitLocation, SmartLog log)
     {
-        var log = outLog.Tag("ExitToSurface");
         log.Write(
             $"Trying to exit player to {surfaceExitLocation.NiceName()} @{surfaceExitLocation.SafeGet(x => x.position, Vector3.zero)}");
         var tryCount = 0;

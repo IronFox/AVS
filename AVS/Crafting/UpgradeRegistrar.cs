@@ -557,7 +557,8 @@ public static class UpgradeRegistrar
     internal static UpgradeTechTypes RegisterUpgrade(Node node, AvsVehicleModule upgrade,
         UpgradeCompat compat = default)
     {
-        LogWriter.Default.Write($"Registering {nameof(AvsVehicleModule)} " + upgrade.ClassId + " : " +
+        using var log = SmartLog.ForAVS(upgrade.Owner);
+        log.Write($"Registering {nameof(AvsVehicleModule)} " + upgrade.ClassId + " : " +
                                 upgrade.DisplayName);
         var result = ValidateAvsVehicleUpgrade(upgrade, compat);
         if (result)
@@ -567,7 +568,7 @@ public static class UpgradeRegistrar
                     $"CraftTreeHandler: Cannot add an upgrade to a folder that already contains folders. Folder: {node.GetPath()}");
             if (upgradeClassIdMap.ContainsKey(upgrade.ClassId))
             {
-                LogWriter.Default.Error(
+                log.Error(
                     $"UpgradeRegistrar Error: {nameof(AvsVehicleModule)} {upgrade.ClassId} is already registered! Please use a unique ClassId for each upgrade.");
                 return default;
             }
@@ -576,7 +577,7 @@ public static class UpgradeRegistrar
             if (icon.IsNotNull())
                 UpgradeIcons.Add(upgrade.ClassId, icon);
             else
-                LogWriter.Default.Error(
+                log.Error(
                     $"UpgradeRegistrar Error: {nameof(AvsVehicleModule)} {upgrade.ClassId} has a null icon! Please provide a valid icon sprite.");
             var utt = new UpgradeTechTypes();
             var isPdaRegistered = false;
@@ -598,7 +599,7 @@ public static class UpgradeRegistrar
         }
         else
         {
-            LogWriter.Default.Error("Failed to register upgrade: " + upgrade.ClassId);
+            log.Error("Failed to register upgrade: " + upgrade.ClassId);
             return default;
         }
     }

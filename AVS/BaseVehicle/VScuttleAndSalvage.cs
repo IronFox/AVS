@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.Log;
+using AVS.Util;
 using System.Collections;
 using UnityEngine;
 
@@ -76,7 +77,7 @@ public abstract partial class AvsVehicle
     /// </summary>
     public virtual void OnSalvage()
     {
-        IEnumerator DropLoot(Vector3 place, GameObject root)
+        IEnumerator DropLoot(SmartLog log, Vector3 place, GameObject root)
         {
             var result = new InstanceContainer();
             foreach (var item in Config.Recipe)
@@ -85,7 +86,7 @@ public abstract partial class AvsVehicle
                     yield return null;
                     if (Random.value < 0.6f) continue;
 
-                    yield return AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(OnSalvage)), item.Type, result);
+                    yield return AvsCraftData.InstantiateFromPrefabAsync(log, item.Type, result);
                     var go = result.Instance;
                     if (!go.IsNull())
                     {
@@ -105,6 +106,8 @@ public abstract partial class AvsVehicle
             }
         }
 
-        StartCoroutine(DropLoot(transform.position, gameObject));
+        Owner.StartAvsCoroutine(
+            nameof(AvsVehicle) + '.' + nameof(OnSalvage) + '.' + nameof(DropLoot),
+            log => DropLoot(log, transform.position, gameObject));
     }
 }

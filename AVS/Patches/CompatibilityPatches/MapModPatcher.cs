@@ -52,9 +52,9 @@ public static class MapModPatcher
                         continue; // If we don't have an icon, we can't modify it
                     icon.sprite = SpriteManager.Get(TechType.Exosuit);
                     foreach (var mvType in AvsVehicleManager.VehicleTypes)
-                        if (mvType.pt == ping.pingType)
+                        if (mvType.PingType == ping.pingType)
                         {
-                            icon.sprite = mvType.ping_sprite;
+                            icon.sprite = mvType.PingSprite;
                             break;
                         }
 

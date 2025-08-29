@@ -50,32 +50,33 @@ public static class Utils
     /// <summary>
     /// Registers the common depth modules for vehicles.
     /// </summary>
-    public static void RegisterDepthModules(MainPatcher mp)
+    public static void RegisterDepthModules(RootModController rmc)
     {
-        LogWriter.Default.Write(
+        using var log = SmartLog.ForAVS(rmc);
+        log.Write(
             "Registering depth modules");
         var folder = Node.Create(
-            mp.ModName + "DepthModules",
+            rmc.ModName + "DepthModules",
             Translator.Get(TranslationKey.Fabricator_Node_DepthModules),
-            mp.DepthModuleNodeIcon);
+            rmc.DepthModuleNodeIcon);
 
 
         var compat = UpgradeCompat.AvsVehiclesOnly;
-        var depthmodule1 = new DepthModule1(mp);
+        var depthmodule1 = new DepthModule1(rmc);
         folder.RegisterUpgrade(depthmodule1, compat);
 
-        var depthmodule2 = new DepthModule2(mp);
+        var depthmodule2 = new DepthModule2(rmc);
         depthmodule2.ExtendRecipe(depthmodule1);
         folder.RegisterUpgrade(depthmodule2, compat);
 
-        var depthmodule3 = new DepthModule3(mp);
+        var depthmodule3 = new DepthModule3(rmc);
         depthmodule3.ExtendRecipe(depthmodule2);
         folder.RegisterUpgrade(depthmodule3, compat);
 
         DepthModuleBase.AllDepthModuleTypes.AddRange(depthmodule1.TechTypes.AllNotNone);
         DepthModuleBase.AllDepthModuleTypes.AddRange(depthmodule2.TechTypes.AllNotNone);
         DepthModuleBase.AllDepthModuleTypes.AddRange(depthmodule3.TechTypes.AllNotNone);
-        LogWriter.Default.Write(
+        log.Write(
             "Registered depth modules: " +
             string.Join(", ", DepthModuleBase.AllDepthModuleTypes.Select(x => x.ToString())));
     }
@@ -89,10 +90,10 @@ public static class Utils
     /// <remarks>This method ensures that the entry is added or updated only after the PDA
     /// Encyclopedia mapping is initialized.  If an entry with the same key already exists, it will be replaced with
     /// the provided data.</remarks>
-    /// <param name="mp">The <see cref="MainPatcher"/> instance owning the process.</param>
+    /// <param name="rmc">The <see cref="RootModController"/> instance owning the process.</param>
     /// <param name="data">The encyclopedia entry data to add or update. The <see cref="PDAEncyclopedia.EntryData.key"/> property must
     /// be unique and non-null.</param>
-    public static void AddEncyclopediaEntry(MainPatcher mp, PDAEncyclopedia.EntryData data)
+    public static void AddEncyclopediaEntry(RootModController rmc, PDAEncyclopedia.EntryData data)
     {
         IEnumerator AddEncyclopediaEntryInternal()
         {
@@ -100,6 +101,6 @@ public static class Utils
             PDAEncyclopedia.mapping[data.key] = data;
         }
 
-        mp.StartCoroutine(AddEncyclopediaEntryInternal());
+        rmc.StartCoroutine(AddEncyclopediaEntryInternal());
     }
 }

@@ -14,12 +14,15 @@ public class PrefabLoader
     private static readonly Dictionary<(TechType, bool), PrefabLoader> _loaders = new();
     private LogWriter Log { get; }
 
-    private PrefabLoader(TechType techType, bool ifNotFoundLeaveEmpty, LogWriter outLog)
+    private PrefabLoader(TechType techType, bool ifNotFoundLeaveEmpty)
     {
-        Log = outLog.Tag(nameof(PrefabLoader)).Tag(techType.AsString());
+        using var log = SmartLog.ForAVS(RootModController.AnyInstance, techType.AsString());
+        log.Write($"Creating PrefabLoader for {techType}, IfNotFoundLeaveEmpty={ifNotFoundLeaveEmpty}");
         TechType = techType;
         IfNotFoundLeaveEmpty = ifNotFoundLeaveEmpty;
-        _ = MainPatcher.AnyInstance.StartCoroutine(LoadResource());
+        _ = RootModController.AnyInstance.StartAvsCoroutine(
+            nameof(PrefabLoader) + '.' + nameof(LoadResource),
+            LoadResource);
     }
 
     /// <summary>
@@ -68,17 +71,16 @@ public class PrefabLoader
     /// If true, <see cref="Prefab"/> will be left empty (null).
     /// If false, <see cref="Prefab"/> is filled with a new generic loot item that has the requested tech type attached
     /// but no other components.</param>
-    /// <param name="outLog">Out log writer. Effective only if this is the first request</param>
     /// <returns>A <see cref="PrefabLoader"/> instance associated with the specified <paramref name="techType"/>. If an
     /// instance already exists, it returns the existing instance; otherwise, it creates a new one and starts the loading process.</returns>
-    public static PrefabLoader Request(TechType techType, LogWriter outLog, bool ifNotFoundLeaveEmpty)
+    public static PrefabLoader Request(TechType techType, bool ifNotFoundLeaveEmpty)
     {
         var key = (techType, ifNotFoundLeaveEmpty);
         if (_loaders.TryGetValue(key, out var instance))
             return instance;
 
         _loaders[key] =
-            instance = new PrefabLoader(techType, ifNotFoundLeaveEmpty, outLog);
+            instance = new PrefabLoader(techType, ifNotFoundLeaveEmpty);
         return instance;
     }
 
@@ -108,37 +110,35 @@ public class PrefabLoader
     /// </summary>
     internal static bool CanLoad { get; private set; }
 
-    private IEnumerator LoadResource()
+    private IEnumerator LoadResource(SmartLog log)
     {
         var iteration = 0;
-
         while (true)
         {
             iteration++;
             yield return new WaitUntil(() => CanLoad);
 
-            Log.Write($"Requesting prefab for {TechType}.");
+            log.Write($"Requesting prefab for {TechType}.");
             TaskResult<GameObject> result = new();
-            var nested = MainPatcher.AnyInstance.StartCoroutine(
-                CraftData.InstantiateFromPrefabAsync(TechType, result, IfNotFoundLeaveEmpty));
+            var nested = CraftData.InstantiateFromPrefabAsync(TechType, result, IfNotFoundLeaveEmpty);
             yield return nested;
             var prefab = result.Get();
             if (prefab.IsNull())
             {
                 if (iteration > 60 && IfNotFoundLeaveEmpty)
                 {
-                    Log.Error($"Persistently failed to load prefab for {TechType}. Aborting");
+                    log.Error($"Persistently failed to load prefab for {TechType}. Aborting");
                     TerminalFailure = true;
                     yield break; // give up after 60 seconds if we are supposed to leave empty
                 }
 
-                Log.Warn(
+                log.Warn(
                     $"Failed to load prefab for {TechType} at this time (iteration {iteration}). Will retry in 1 second.");
                 yield return new WaitForSeconds(1f); // wait a bit and try again
             }
             else
             {
-                Log.Write($"Loaded {prefab.NiceName()} for {TechType}. Setting as DontDestroyOnLoad.");
+                log.Write($"Loaded {prefab.NiceName()} for {TechType}. Setting as DontDestroyOnLoad.");
                 Object.DontDestroyOnLoad(prefab);
                 prefab.hideFlags |= HideFlags.HideAndDontSave;
                 prefab.SetActive(false);

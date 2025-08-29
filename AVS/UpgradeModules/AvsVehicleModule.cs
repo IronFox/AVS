@@ -1,6 +1,7 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Configuration;
 using AVS.Crafting;
+using AVS.Interfaces;
 using AVS.Localization;
 using AVS.Log;
 using AVS.Util;
@@ -8,7 +9,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using AVS.Interfaces;
 using UnityEngine;
 
 namespace AVS.UpgradeModules;
@@ -17,14 +17,14 @@ namespace AVS.UpgradeModules;
 /// Base class for all mod vehicle upgrades.
 /// Provides core properties and recipe handling.
 /// </summary>
-public abstract class AvsVehicleModule : ILogFilter, INullTestableType
+public abstract class AvsVehicleModule : INullTestableType
 {
-    /// <summary>
-    /// If true, enables debug logging for this upgrade.
-    /// </summary>
-    public bool LogDebug { get; set; } = false;
-
     private UpgradeTechTypes techTypes = default;
+
+    /// <summary>
+    /// Queries the owner of this upgrade.
+    /// </summary>
+    public abstract RootModController Owner { get; }
 
     private static Dictionary<TechType, AvsVehicleModule> RegisteredModules { get; } = new();
 
@@ -163,13 +163,14 @@ public abstract class AvsVehicleModule : ILogFilter, INullTestableType
     public virtual void OnAdded(AddActionParams param)
     {
         var now = DateTime.Now;
+        using var log = SmartLog.ForAVS(Owner);
 
-        LogWriter.Default.Debug(
+        log.Debug(
             $"AvsVehicleModule[{ClassId}].OnAdded(vehicle={param.Vehicle},isAdded={param.Added},slot={param.SlotID})");
 
         if (AutoDisplace.IsNotNull() && param.Vehicle.IsNotNull())
         {
-            LogWriter.Default.Write(
+            log.Write(
                 $"Auto-displacing modules for {ClassId} in {param.Vehicle.GetVehicleName()} at slot {param.SlotID}");
             try
             {
@@ -185,26 +186,26 @@ public abstract class AvsVehicleModule : ILogFilter, INullTestableType
                         {
                             if (AutoDisplace.Contains(t.type))
                             {
-                                LogWriter.Default.Write($"Evacuating extra {t.type} type from slot {slot}");
+                                log.Write($"Evacuating extra {t.type} type from slot {slot}");
                                 if (!param.Vehicle.modules.RemoveItem(p.item))
                                 {
-                                    LogWriter.Default.Error($"Failed remove");
+                                    log.Error($"Failed remove");
                                     continue;
                                 }
 
                                 Inventory.main.AddPending(p.item);
-                                LogWriter.Default.Write($"Inventory moved");
+                                log.Write($"Inventory moved");
                                 break;
                             }
                             else
                             {
-                                LogWriter.Default.Debug(
+                                log.Debug(
                                     $"Skipping {t.type} in slot {slot} for auto-displacement because it is not in {string.Join(", ", AutoDisplace)}");
                             }
                         }
                         else
                         {
-                            LogWriter.Default.Error(
+                            log.Error(
                                 $"No TechTag on item {p.item.name} in slot {slot} for auto-displacement");
                         }
                     }
@@ -212,7 +213,7 @@ public abstract class AvsVehicleModule : ILogFilter, INullTestableType
             }
             catch (Exception e)
             {
-                LogWriter.Default.Error($"Error while removing auto-displaced modules: {e.Message}", e);
+                log.Error($"Error while removing auto-displaced modules: {e.Message}", e);
             }
         }
     }
@@ -223,7 +224,8 @@ public abstract class AvsVehicleModule : ILogFilter, INullTestableType
     /// <param name="param">Parameters for the remove action.</param>
     public virtual void OnRemoved(AddActionParams param)
     {
-        LogWriter.Default.Debug(
+        using var log = SmartLog.ForAVS(Owner);
+        log.Debug(
             $"ArchonBaseModule[{ClassId}].OnRemoved(vehicle={param.Vehicle},isAdded={param.Added},slot={param.SlotID})");
     }
 
@@ -232,7 +234,8 @@ public abstract class AvsVehicleModule : ILogFilter, INullTestableType
     /// </summary>
     public virtual void OnCyclops(AddActionParams param)
     {
-        LogWriter.Default.Debug(this,
+        using var log = SmartLog.ForAVS(Owner);
+        log.Debug(
             $"Cyclops module {ClassId} action: {(param.Added ? "Added" : "Removed")} in slot {param.SlotID} for Cyclops '{param.Cyclops.NiceName()}'");
     }
 

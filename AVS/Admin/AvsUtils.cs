@@ -92,10 +92,10 @@ public static class AvsUtils
     /// <remarks>This method ensures that the entry is added or updated only after the PDA
     /// Encyclopedia mapping is initialized.  If an entry with the same key already exists, it will be replaced with
     /// the provided data.</remarks>
-    /// <param name="mp">The <see cref="MainPatcher"/> instance owning the process.</param>
+    /// <param name="rmc">The <see cref="RootModController"/> instance owning the process.</param>
     /// <param name="data">The encyclopedia entry data to add or update. The <see cref="PDAEncyclopedia.EntryData.key"/> property must
     /// be unique and non-null.</param>
-    public static void AddEncyclopediaEntry(MainPatcher mp, PDAEncyclopedia.EntryData data)
+    public static void AddEncyclopediaEntry(RootModController rmc, PDAEncyclopedia.EntryData data)
     {
         IEnumerator AddEncyclopediaEntryInternal()
         {
@@ -106,6 +106,8 @@ public static class AvsUtils
                 PDAEncyclopedia.mapping.Add(data.key, data);
         }
 
-        mp.StartCoroutine(AddEncyclopediaEntryInternal());
+        rmc.StartAvsCoroutine(
+            nameof(AvsUtils) + '.' + nameof(AddEncyclopediaEntry),
+            _ => AddEncyclopediaEntryInternal());
     }
 }

@@ -53,7 +53,7 @@ public static class VehicleRegistrar
     /// <param name="verbose">Whether verbose logging is enabled.</param>
     /// <param name="message">The message to log.</param>
     /// <param name="log">Out logger</param>
-    public static void VerboseLog(LogWriter log, LogType type, bool verbose, string message)
+    public static void VerboseLog(SmartLog log, LogType type, bool verbose, string message)
     {
         if (verbose)
             switch (type)
@@ -73,24 +73,25 @@ public static class VehicleRegistrar
     /// Registers a vehicle asynchronously by starting a coroutine.
     /// </summary>
     /// <remarks>Calls <see cref="RegisterVehicle"/> as a new coroutine</remarks>
-    /// <param name="mp">The owning main patcher instance.</param>
+    /// <param name="rmc">The owning root mod controller instance.</param>
     /// <param name="av">The mod vehicle to register.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
-    public static void RegisterVehicleLater(MainPatcher mp, AvsVehicle av, bool verbose = false)
+    public static void RegisterVehicleLater(RootModController rmc, AvsVehicle av, bool verbose = false)
     {
-        mp.StartCoroutine(RegisterVehicle(mp, av, verbose));
+        rmc.StartAvsCoroutine(nameof(VehicleRegistrar) + '.' + nameof(RegisterVehicle), log => RegisterVehicle(log, rmc, av, verbose));
     }
 
     /// <summary>
     /// Coroutine for registering a mod vehicle, including validation and queuing if necessary.
     /// </summary>
-    /// <param name="mp">The owning main patcher instance.</param>
+    /// <param name="rmc">The owning root mod controller instance.</param>
     /// <param name="av">The mod vehicle to register.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
+    /// <param name="log">Out logger</param>
     /// <returns>IEnumerator for coroutine execution.</returns>
-    public static IEnumerator RegisterVehicle(MainPatcher mp, AvsVehicle av, bool verbose = false)
+    public static IEnumerator RegisterVehicle(SmartLog log, RootModController rmc, AvsVehicle av, bool verbose = false)
     {
-        var log = av.Log.Tag(nameof(RegisterVehicle));
+        av.mainPatcherInstanceId = rmc.GetInstanceID();
         av.OnAwakeOrPrefabricate();
         yield return SeamothHelper.WaitUntilLoaded();
         if (AvsVehicleManager.VehicleTypes.Any(x => x.Name == av.gameObject.name))
@@ -100,7 +101,7 @@ public static class VehicleRegistrar
         }
 
         VerboseLog(log, LogType.Log, verbose, $"The {av.gameObject.name} is beginning validation.");
-        if (!ValidateAll(av, verbose))
+        if (!ValidateAll(rmc, av, verbose))
         {
             log.Error($"{av.gameObject.name} failed validation. Not registered.");
             Logger.LoopMainMenuError($"Failed validation. Not registered. See log.", av.gameObject.name);
@@ -110,12 +111,12 @@ public static class VehicleRegistrar
         if (RegistrySemaphore)
         {
             VerboseLog(log, LogType.Log, verbose, $"Enqueueing the {av.gameObject.name} for Registration.");
-            RegistrationQueue.Enqueue(() => mp.StartCoroutine(InternalRegisterVehicle(mp, av, verbose)));
-            yield return new WaitUntil(() => AvsVehicleManager.VehicleTypes.Select(x => x.av).Contains(av));
+            RegistrationQueue.Enqueue(() => rmc.StartAvsCoroutine(nameof(VehicleRegistrar) + '.' + nameof(InternalRegisterVehicle), log => InternalRegisterVehicle(log, rmc, av, verbose)));
+            yield return new WaitUntil(() => AvsVehicleManager.VehicleTypes.Select(x => x.AV).Contains(av));
         }
         else
         {
-            yield return mp.StartCoroutine(InternalRegisterVehicle(mp, av, verbose));
+            yield return rmc.StartAvsCoroutine(nameof(VehicleRegistrar) + '.' + nameof(InternalRegisterVehicle), log => InternalRegisterVehicle(log, rmc, av, verbose));
         }
     }
 
@@ -123,20 +124,18 @@ public static class VehicleRegistrar
     /// <summary>
     /// Internal coroutine for registering a mod vehicle, including prefab creation and queue management.
     /// </summary>
-    /// <param name="mp">The owning main patcher instance.</param>
+    /// <param name="log">Out logger</param>
+    /// <param name="rmc">The owning root mod controller instance.</param>
     /// <param name="av">The mod vehicle to register.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
     /// <returns>IEnumerator for coroutine execution.</returns>
-    private static IEnumerator InternalRegisterVehicle(MainPatcher mp, AvsVehicle av, bool verbose)
+    private static IEnumerator InternalRegisterVehicle(SmartLog log, RootModController rmc, AvsVehicle av, bool verbose)
     {
-        var log = av.Log.Tag(nameof(InternalRegisterVehicle));
-        av.mainPatcherInstanceId = mp.GetInstanceID();
         RegistrySemaphore = true;
         VerboseLog(log, LogType.Log, verbose, $"The {av.gameObject.name} is beginning Registration.");
         var registeredPingType = AvsVehicleManager.RegisterPingType(av,
-            (PingType)(0xFF + (mp.ModName.GetHashCode() & 0x7FFFFF)), verbose);
-        yield return mp.StartCoroutine(
-            AvsVehicleBuilder.Prefabricate(mp, av, registeredPingType, verbose));
+            (PingType)(0xFF + (rmc.ModName.GetHashCode() & 0x7FFFFF)), verbose);
+        yield return AvsVehicleBuilder.Prefabricate(log, rmc, av, registeredPingType, verbose);
         RegistrySemaphore = false;
         log.Write($"Finished {av.gameObject.name} registration for ping type {registeredPingType}.");
         VehiclesRegistered++;
@@ -149,26 +148,27 @@ public static class VehicleRegistrar
     /// </summary>
     /// <param name="av">The mod vehicle to validate.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
+    /// <param name="rmc">The root mod controller instance used for logging.</param>
     /// <returns>True if the vehicle is valid; otherwise, false.</returns>
-    public static bool ValidateAll(AvsVehicle av, bool verbose)
+    public static bool ValidateAll(RootModController rmc, AvsVehicle av, bool verbose)
     {
-        var log = av.Log.Tag(nameof(ValidateAll));
+        using var log = av.NewAvsLog();
         if (av is Submarine sub1)
-            if (!ValidateRegistration(sub1, verbose))
+            if (!ValidateRegistration(rmc, sub1, verbose))
             {
                 log.Error("Invalid Submarine Registration for the " + av.gameObject.name + ". Next.");
                 return false;
             }
 
         if (av is Submersible sub2)
-            if (!ValidateRegistration(sub2, verbose))
+            if (!ValidateRegistration(rmc, sub2, verbose))
             {
                 log.Error("Invalid Submersible Registration for the " + av.gameObject.name + ". Next.");
                 return false;
             }
 
         if (av is Skimmer sk)
-            if (!ValidateRegistration(sk, verbose))
+            if (!ValidateRegistration(rmc, sk, verbose))
             {
                 log.Error("Invalid Submersible Registration for the " + av.gameObject.name + ". Next.");
                 return false;
@@ -181,12 +181,13 @@ public static class VehicleRegistrar
     /// Validates the registration of a mod vehicle, checking required fields and configuration.
     /// </summary>
     /// <param name="av">The mod vehicle to validate.</param>
+    /// <param name="rmc">The root mod controller instance used for logging.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
     /// <returns>True if the vehicle is valid; otherwise, false.</returns>
-    public static bool ValidateRegistration(AvsVehicle av, bool verbose)
+    public static bool ValidateRegistration(RootModController rmc, AvsVehicle av, bool verbose)
     {
         var thisName = "";
-        var log = av.Log.Tag(nameof(ValidateRegistration));
+        using var log = av.NewAvsLog();
         try
         {
             if (av.IsNull())
@@ -287,19 +288,19 @@ public static class VehicleRegistrar
             }
 
             foreach (var vs in av.Com.InnateStorages.Concat(av.Com.ModularStorages))
-                if (!vs.CheckValidity(log, thisName))
+                if (!vs.CheckValidity(rmc, thisName))
                     return false;
 
             foreach (var vu in av.Com.Upgrades)
-                if (!vu.CheckValidity(log, thisName, verbose))
+                if (!vu.CheckValidity(rmc, thisName, verbose))
                     return false;
 
             foreach (var vb in av.Com.Batteries.Concat(av.Com.BackupBatteries))
-                if (!vb.CheckValidity(log, thisName, verbose))
+                if (!vb.CheckValidity(rmc, thisName, verbose))
                     return false;
 
             foreach (var vfl in av.Com.Headlights)
-                if (!vfl.CheckValidity(log, thisName))
+                if (!vfl.CheckValidity(rmc, thisName))
                     return false;
 
             if (av.Com.StorageRootObject.IsNull())
@@ -358,13 +359,14 @@ public static class VehicleRegistrar
     /// Validates the registration of a Submarine, including submarine-specific requirements.
     /// </summary>
     /// <param name="av">The submarine to validate.</param>
+    /// <param name="rmc">The root mod controller instance used for logging.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
     /// <returns>True if the submarine is valid; otherwise, false.</returns>
-    public static bool ValidateRegistration(Submarine av, bool verbose)
+    public static bool ValidateRegistration(RootModController rmc, Submarine av, bool verbose)
     {
-        if (!ValidateRegistration(av as AvsVehicle, verbose))
+        if (!ValidateRegistration(rmc, av as AvsVehicle, verbose))
             return false;
-        var log = av.Log.Tag(nameof(ValidateRegistration));
+        using var log = av.NewAvsLog();
         var thisName = "";
         try
         {
@@ -417,16 +419,16 @@ public static class VehicleRegistrar
                     thisName +
                     $"A null {nameof(Submarine)}.Com.ControlPanel was provided. This is necessary to toggle floodlights.");
             foreach (var ps in av.Com.Helms)
-                if (!ps.CheckValidity(log, thisName, verbose))
+                if (!ps.CheckValidity(rmc, thisName, verbose))
                     return false;
             foreach (var vhs in av.Com.Hatches)
-                if (!vhs.CheckValidity(log, thisName, verbose))
+                if (!vhs.CheckValidity(rmc, thisName, verbose))
                     return false;
             foreach (var vs in av.Com.ModularStorages)
-                if (!vs.CheckValidity(log, thisName))
+                if (!vs.CheckValidity(rmc, thisName))
                     return false;
             foreach (var vfl in av.Com.Floodlights)
-                if (!vfl.CheckValidity(log, thisName))
+                if (!vfl.CheckValidity(rmc, thisName))
                     return false;
         }
         catch (Exception e)
@@ -447,12 +449,13 @@ public static class VehicleRegistrar
     /// </summary>
     /// <param name="av">The submersible to validate.</param>
     /// <param name="verbose">Whether to enable verbose logging.</param>
+    /// <param name="rmc">The root mod controller instance used for logging.</param>
     /// <returns>True if the submersible is valid; otherwise, false.</returns>
-    public static bool ValidateRegistration(Submersible av, bool verbose)
+    public static bool ValidateRegistration(RootModController rmc, Submersible av, bool verbose)
     {
-        if (!ValidateRegistration(av as AvsVehicle, verbose))
+        if (!ValidateRegistration(rmc, av as AvsVehicle, verbose))
             return false;
-        var log = av.Log.Tag(nameof(ValidateRegistration));
+        using var log = av.NewAvsLog();
         var thisName = "";
         try
         {
@@ -464,13 +467,13 @@ public static class VehicleRegistrar
                 return false;
             }
 
-            if (!av.Com.PilotSeat.CheckValidity(log, thisName, verbose))
+            if (!av.Com.PilotSeat.CheckValidity(rmc, thisName, verbose))
                 return false;
             foreach (var vhs in av.Com.Hatches)
-                if (!vhs.CheckValidity(log, thisName, verbose))
+                if (!vhs.CheckValidity(rmc, thisName, verbose))
                     return false;
             foreach (var vs in av.Com.ModularStorages)
-                if (!vs.CheckValidity(log, thisName))
+                if (!vs.CheckValidity(rmc, thisName))
                     return false;
         }
         catch (Exception e)

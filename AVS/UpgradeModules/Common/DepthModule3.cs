@@ -10,12 +10,12 @@ namespace AVS.UpgradeModules.Common
     /// </summary>
     internal class DepthModule3 : DepthModuleBase<DepthModule3>
     {
-        public DepthModule3(MainPatcher mp) : base(mp)
+        public DepthModule3(RootModController rmc) : base(rmc)
         {
         }
 
         /// <inheritdoc/>
-        public override string ClassId => MainPatcher.ModName + "DepthModule3";
+        public override string ClassId => Owner.ModName + "DepthModule3";
         /// <inheritdoc/>
         public override string DisplayName => Translator.Get(TranslationKey.Module_Depth3_DisplayName);
         /// <inheritdoc/>
@@ -29,7 +29,7 @@ namespace AVS.UpgradeModules.Common
                 .Done();
         /// <inheritdoc/>
 
-        public override Sprite Icon => MainPatcher.DepthModule3Icon;
+        public override Sprite Icon => Owner.DepthModule3Icon;
         /// <inheritdoc/>
         public override void OnAdded(AddActionParams param)
         {

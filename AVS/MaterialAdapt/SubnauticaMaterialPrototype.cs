@@ -1,11 +1,11 @@
 ﻿using AVS.Assets;
+using AVS.Interfaces;
 using AVS.Log;
 using AVS.Util;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using AVS.Interfaces;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -366,7 +366,7 @@ public class SubnauticaMaterialPrototype : INullTestableType
     /// if the respective material is not found</returns>
     public static bool GlassMaterialFromAquarium(out Material? result, MaterialLog logConfig = default)
     {
-        var sm = PrefabLoader.Request(TechType.Aquarium, logConfig.Writer, true);
+        var sm = PrefabLoader.Request(TechType.Aquarium, true);
         if (sm.Prefab.IsNull())
         {
             result = null;

@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Log;
 using AVS.Util;
 using System;
 using System.Collections;
@@ -38,23 +39,25 @@ internal class AvsInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListen
 
     void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
     {
-        Av.Owner.StartCoroutine(LoadInnateStorage());
+        Av.Owner.StartAvsCoroutine(
+            nameof(AvsInnateStorageIdentifier) + '.' + nameof(LoadInnateStorage),
+            LoadInnateStorage);
     }
 
-    private IEnumerator LoadInnateStorage()
+    private IEnumerator LoadInnateStorage(SmartLog log)
     {
         yield return new WaitUntil(() => Av.IsNotNull());
 
-        var log = Av.Log.Tag(nameof(LoadInnateStorage));
         var thisStorage = Av.ReadInnateStorage(SaveFileName);
         if (thisStorage.IsNull())
-            if (!Av.PrefabID.ReadReflected(SaveFileName, out thisStorage, Av.Log))
+            if (!Av.PrefabID.ReadReflected(SaveFileName, out thisStorage, Av.Owner))
                 yield break;
 
         var result = new InstanceContainer();
         foreach (var item in thisStorage)
         {
-            yield return AvsCraftData.InstantiateFromPrefabAsync(Av.Log.Tag(nameof(AvsInnateStorageIdentifier)),
+            yield return AvsCraftData.InstantiateFromPrefabAsync(
+                log,
                 item.Item1, result);
             var thisItem = result.Instance;
             if (thisItem.IsNull())
@@ -88,8 +91,9 @@ internal class AvsInnateStorageIdentifier : MonoBehaviour, IProtoTreeEventListen
                 // then we have a battery xor we are a battery
                 try
                 {
-                    Av.Owner.StartCoroutine(
-                        SaveLoadUtils.ReloadBatteryPower(thisItem, item.Item2, item.Item3));
+                    Av.Owner.StartAvsCoroutine(
+                        nameof(SaveLoadUtils) + '.' + nameof(SaveLoadUtils.ReloadBatteryPower),
+                        log2 => SaveLoadUtils.ReloadBatteryPower(log2, thisItem, item.Item2, item.Item3));
                 }
                 catch (Exception e)
                 {

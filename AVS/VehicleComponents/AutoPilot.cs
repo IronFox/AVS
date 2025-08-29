@@ -158,7 +158,7 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
     internal AvsVehicle av => GetComponent<AvsVehicle>();
     internal LiveMixin liveMixin => av.liveMixin;
     internal EnergyInterface eInterf => av.energyInterface;
-    internal LogWriter Log => av.Log.Prefixed("Autopilot");
+    //internal LogWriter Log => av.Log.Prefixed("Autopilot");
 
     private PositiveValueThresholdTracker DepthTracker { get; }
         = new(
@@ -334,7 +334,8 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
         {
             if (liveMixin.maxHealth <= 0)
             {
-                Log.Error("LiveMixin max health is zero, cannot update health state.");
+                using var log = av.NewAvsLog();
+                log.Error("LiveMixin max health is zero, cannot update health state.");
                 return;
             }
 
@@ -343,7 +344,8 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
         }
         catch (Exception e)
         {
-            Log.Error("Error updating health state: ", e);
+            using var log = av.NewAvsLog();
+            log.Error("Error updating health state: ", e);
         }
     }
 
@@ -360,7 +362,8 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
         }
         catch (Exception e)
         {
-            Log.Error("Error updating power state: ", e);
+            using var log = av.NewAvsLog();
+            log.Error("Error updating power state: ", e);
         }
     }
 
@@ -371,7 +374,8 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
             var crushDepth = GetComponent<CrushDamage>().crushDepth;
             if (crushDepth <= 0)
             {
-                Log.Error("Crush depth is zero or negative, cannot update depth state.");
+                using var log = av.NewAvsLog();
+                log.Error("Crush depth is zero or negative, cannot update depth state.");
                 return;
             }
 
@@ -382,7 +386,8 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
         }
         catch (Exception e)
         {
-            Log.Error("Error updating depth state: ", e);
+            using var log = av.NewAvsLog();
+            log.Error("Error updating depth state: ", e);
         }
     }
 
@@ -413,52 +418,65 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
 
     void ILightsStatusListener.OnHeadlightsOn()
     {
-        Log.Debug("OnHeadlightsOn");
+        using var log = av.NewAvsLog();
+
+        log.Debug("OnHeadlightsOn");
     }
 
     void ILightsStatusListener.OnHeadlightsOff()
     {
-        Log.Debug("OnHeadlightsOff");
+        using var log = av.NewAvsLog();
+
+        log.Debug("OnHeadlightsOff");
     }
 
     void ILightsStatusListener.OnInteriorLightsOn()
     {
-        Log.Debug("OnInteriorLightsOn");
+        using var log = av.NewAvsLog();
+
+        log.Debug("OnInteriorLightsOn");
     }
 
     void ILightsStatusListener.OnInteriorLightsOff()
     {
-        Log.Debug("OnInteriorLightsOff");
+        using var log = av.NewAvsLog();
+        log.Debug("OnInteriorLightsOff");
     }
 
     void ILightsStatusListener.OnNavLightsOn()
     {
-        Log.Debug("OnNavLightsOn");
+        using var log = av.NewAvsLog();
+        log.Debug("OnNavLightsOn");
     }
 
     void ILightsStatusListener.OnNavLightsOff()
     {
-        Log.Debug("OnNavLightsOff");
+        using var log = av.NewAvsLog();
+        log.Debug("OnNavLightsOff");
     }
 
     void ILightsStatusListener.OnFloodlightsOn()
     {
-        Log.Debug("OnFloodlightsOn");
+        using var log = av.NewAvsLog();
+        log.Debug("OnFloodlightsOn");
     }
 
     void ILightsStatusListener.OnFloodlightsOff()
     {
-        Log.Debug("OnFloodlightsOff");
+        using var log = av.NewAvsLog();
+        log.Debug("OnFloodlightsOff");
     }
 
     void IVehicleStatusListener.OnTakeDamage()
     {
-        Log.Debug("OnTakeDamage");
+        using var log = av.NewAvsLog();
+        log.Debug("OnTakeDamage");
     }
 
     void IPowerListener.OnPowerUp()
     {
-        Log.Debug("OnPowerUp");
+        using var log = av.NewAvsLog();
+        log.Debug("OnPowerUp");
         isDead = false;
         //apVoice.EnqueueClip(apVoice.voice.EnginePoweringUp);
         var listeners = av.GetComponentsInChildren<IAutopilotEventListener>();
@@ -471,14 +489,17 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
                 MainCameraControl.main.ShakeCamera(1f, 0.5f);
             }
 
-            MainPatcher.AnyInstance.StartCoroutine(ShakeCamera());
+            RootModController.AnyInstance.StartAvsCoroutine(
+                nameof(Autopilot) + '.' + nameof(ShakeCamera),
+                _ => ShakeCamera());
             MainCameraControl.main.ShakeCamera(0.15f, 4.5f);
         }
     }
 
     void IPowerListener.OnPowerDown()
     {
-        Log.Debug("OnPowerDown");
+        using var log = av.NewAvsLog();
+        log.Debug("OnPowerDown");
         isDead = true;
         av.GetComponentsInChildren<IAutopilotEventListener>()
             .ForEach(l => l.Signal(AutopilotEvent.PowerDown));
@@ -486,51 +507,60 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
 
     void IPowerListener.OnBatterySafe()
     {
-        Log.Debug("OnBatterySafe");
+        using var log = av.NewAvsLog();
+        log.Debug("OnBatterySafe");
     }
 
     void IPowerListener.OnBatteryLow()
     {
-        Log.Debug("OnBatteryLow");
+        using var log = av.NewAvsLog();
+        log.Debug("OnBatteryLow");
     }
 
     void IPowerListener.OnBatteryNearlyEmpty()
     {
-        Log.Debug("OnBatteryNearlyEmpty");
+        using var log = av.NewAvsLog();
+        log.Debug("OnBatteryNearlyEmpty");
     }
 
     void IPowerListener.OnBatteryDepleted()
     {
-        Log.Debug("OnBatteryDepleted");
+        using var log = av.NewAvsLog();
+        log.Debug("OnBatteryDepleted");
     }
 
     void IPlayerListener.OnPlayerEntry()
     {
-        Log.Debug("OnPlayerEntry");
+        using var log = av.NewAvsLog();
+        log.Debug("OnPlayerEntry");
         av.GetComponentsInChildren<IAutopilotEventListener>()
             .ForEach(l => l.Signal(AutopilotEvent.PlayerEntry));
     }
 
     void IPlayerListener.OnPlayerExit()
     {
-        Log.Debug("OnPlayerExit");
+        using var log = av.NewAvsLog();
+        log.Debug("OnPlayerExit");
         av.GetComponentsInChildren<IAutopilotEventListener>()
             .ForEach(l => l.Signal(AutopilotEvent.PlayerExit));
     }
 
     void IPlayerListener.OnPilotBegin()
     {
-        Log.Debug("OnPilotBegin");
+        using var log = av.NewAvsLog();
+        log.Debug("OnPilotBegin");
     }
 
     void IPlayerListener.OnPilotEnd()
     {
-        Log.Debug("OnPilotEnd");
+        using var log = av.NewAvsLog();
+        log.Debug("OnPilotEnd");
     }
 
     void IPowerListener.OnBatteryDead()
     {
-        Log.Debug("OnBatteryDead");
+        using var log = av.NewAvsLog();
+        log.Debug("OnBatteryDead");
         var was = PowerTracker.CurrentStatus;
         PowerTracker.SetLevel(AutopilotStatus.PowerDead); // Reset power tracker to dead state
         av.GetComponentsInChildren<IAutopilotEventListener>()
@@ -539,7 +569,8 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
 
     void IPowerListener.OnBatteryRevive()
     {
-        Log.Debug("OnBatteryRevive");
+        using var log = av.NewAvsLog();
+        log.Debug("OnBatteryRevive");
     }
 
 
@@ -548,7 +579,8 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
 
     void IVehicleStatusListener.OnNearbyLeviathan()
     {
-        Log.Debug("OnNearbyLeviathan");
+        using var log = av.NewAvsLog();
+        log.Debug("OnNearbyLeviathan");
 
         IEnumerator ResetDangerStatusEventually()
         {
@@ -562,7 +594,9 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
 
         StopAllCoroutines();
         timeWeStartedWaiting = Time.time;
-        MainPatcher.AnyInstance.StartCoroutine(ResetDangerStatusEventually());
+        RootModController.AnyInstance.StartAvsCoroutine(
+            nameof(Autopilot) + '.' + nameof(ResetDangerStatusEventually),
+            _ => ResetDangerStatusEventually());
         if (DangerStatus == AutopilotStatus.LeviathanSafe)
         {
             var was = DangerStatus;
@@ -575,13 +609,15 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
 
     void IScuttleListener.OnScuttle()
     {
-        Log.Debug("OnScuttle");
+        using var log = av.NewAvsLog();
+        log.Debug("OnScuttle");
         enabled = false;
     }
 
     void IScuttleListener.OnUnscuttle()
     {
-        Log.Debug(nameof(IScuttleListener.OnUnscuttle));
+        using var log = av.NewAvsLog();
+        log.Debug(nameof(IScuttleListener.OnUnscuttle));
         enabled = true;
     }
 }

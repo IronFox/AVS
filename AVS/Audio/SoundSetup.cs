@@ -1,5 +1,5 @@
-﻿using System;
-using AVS.Util;
+﻿using AVS.Util;
+using System;
 using UnityEngine;
 
 namespace AVS.Audio;
@@ -58,6 +58,7 @@ public readonly record struct SoundSettings(
 /// <summary>
 /// Represents the configuration for a sound source, including its audio clip, playback settings, and spatial properties.
 /// </summary>
+/// <param name="RMC">The root mod controller associated with this sound setup</param>
 /// <param name="Owner">The owning game object</param>
 /// <param name="AudioClip">The audio clip associated with this instance</param>
 /// <param name="Settings">The initial volume and pitch settings</param>
@@ -69,6 +70,7 @@ public readonly record struct SoundSettings(
 /// <exception cref="System.ArgumentNullException">Thrown if AudioClip is null.</exception>
 /// <exception cref="System.ArgumentOutOfRangeException">Thrown if distance parameters are invalid.</exception>
 public readonly record struct SoundSetup(
+    RootModController RMC,
     GameObject Owner,
     AudioClip AudioClip,
     SoundSettings Settings = default,

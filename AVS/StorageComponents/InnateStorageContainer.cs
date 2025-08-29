@@ -1,4 +1,5 @@
-﻿using AVS.Localization;
+﻿using AVS.BaseVehicle;
+using AVS.Localization;
 using AVS.Log;
 using AVS.Util;
 using System;
@@ -43,7 +44,8 @@ public class InnateStorageContainer : MonoBehaviour, ICraftTarget //, IProtoEven
     private void Init()
     {
         if (_container.IsNotNull()) return;
-        LogWriter.Default.Debug(
+        using var log = SmartLog.ForAVS(av!.Owner, nameof(InnateStorageContainer));
+        log.Debug(
             $"Initializing {this.NiceName()} for {DisplayName.Rendered} ({DisplayName.Localize}) with width {width} and height {height}");
         _container = new ItemsContainer(width, height,
             storageRoot!.transform, DisplayName.Rendered, null);
@@ -59,14 +61,15 @@ public class InnateStorageContainer : MonoBehaviour, ICraftTarget //, IProtoEven
     public void OnCraftEnd(TechType techType)
     {
         // NEWNEW
-        IEnumerator GetAndSetTorpedoSlots()
+        IEnumerator GetAndSetTorpedoSlots(SmartLog log)
         {
             if (techType == TechType.SeamothTorpedoModule || techType == TechType.ExosuitTorpedoArmModule)
                 for (var i = 0; i < 2; i++)
                 {
                     var result = new InstanceContainer();
                     yield return AvsCraftData.InstantiateFromPrefabAsync(
-                        LogWriter.Default.Tag(nameof(InnateStorageContainer)), techType, result);
+                        log,
+                        techType, result);
                     var gameObject = result.Instance;
                     if (gameObject.IsNotNull())
                     {
@@ -84,7 +87,9 @@ public class InnateStorageContainer : MonoBehaviour, ICraftTarget //, IProtoEven
         }
 
         Init();
-        StartCoroutine(GetAndSetTorpedoSlots());
+        av!.Owner.StartAvsCoroutine(
+            nameof(InnateStorageContainer) + '.' + nameof(GetAndSetTorpedoSlots),
+            GetAndSetTorpedoSlots);
     }
 
     /// <summary>
@@ -109,7 +114,10 @@ public class InnateStorageContainer : MonoBehaviour, ICraftTarget //, IProtoEven
     /// </summary>
     public TechType[] allowedTech = [];
 
-    [AssertNotNull] [SerializeField] internal ChildObjectIdentifier? storageRoot;
+    [AssertNotNull][SerializeField] internal ChildObjectIdentifier? storageRoot;
 
-    [SerializeField] internal int version = 3;
+    [SerializeField]
+    internal int version = 3;
+    [SerializeField]
+    internal AvsVehicle? av;
 }

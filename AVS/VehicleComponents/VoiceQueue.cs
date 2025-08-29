@@ -19,7 +19,7 @@ namespace AVS;
 /// It is typically used to represent a line of dialogue or sound effect in an application, with an
 /// associated translation key for localization and an optional priority to determine playback order or
 /// importance.</remarks>
-public class VoiceLine : INullTestableType
+public record VoiceLine : INullTestableType
 {
     /// <summary>
     /// The single audio clip of this voice line.
@@ -91,7 +91,7 @@ public class VoiceLine : INullTestableType
         Priority = priority;
     }
 
-    internal void ReplaceQueue(Queue<Queued> partQueue)
+    internal void ReplaceQueue(AvsVehicle av, Queue<Queued> partQueue)
     {
         partQueue.Clear();
         if (Clips.IsNotNull() && Clips.Count > 0)
@@ -101,19 +101,20 @@ public class VoiceLine : INullTestableType
                 var gap = i > 0 && Gaps.IsNotNull() && i <= Gaps.Count
                     ? Gaps[i - 1]
                     : 0f;
-                Logger.DebugLog(
+                using var log = av.NewAvsLog();
+                log.Debug(
                     $"Fetched gap at index {i} out of {string.Join(", ", Gaps?.Select(x => x.ToStr()) ?? Array.Empty<string>())}: {gap.ToStr()} ");
-                partQueue.Enqueue(new Queued(this, Clips[i], i == 0, gap));
+                partQueue.Enqueue(new Queued(av, this, Clips[i], i == 0, gap));
             }
         }
         else if (Clip.IsNotNull())
         {
-            partQueue.Enqueue(new Queued(this, Clip, true, 0));
+            partQueue.Enqueue(new Queued(av, this, Clip, true, 0));
         }
         else
         {
             if (!string.IsNullOrEmpty(TextTranslationKey))
-                partQueue.Enqueue(new Queued(this, null, true, 0));
+                partQueue.Enqueue(new Queued(av, this, null, true, 0));
         }
     }
 }
@@ -127,14 +128,15 @@ internal readonly struct Queued
     public float DelayInSeconds { get; }
     public bool HasClips { get; }
 
-    public Queued(VoiceLine line, AudioClip? clip, bool isFirst, float delayInSeconds)
+    public Queued(AvsVehicle av, VoiceLine line, AudioClip? clip, bool isFirst, float delayInSeconds)
     {
         Line = line;
         Clip = clip;
         IsFirst = isFirst;
         DelayInSeconds = delayInSeconds;
         HasClips = line.HasAnyClips;
-        Logger.DebugLog(
+        using var log = av.NewAvsLog();
+        log.Debug(
             $"Queued voice line: {line.TextTranslationKey}, clip: {clip.NiceName()}, isFirst: {isFirst}, delay: {delayInSeconds:F2}s, volume: {Volume:F2}");
     }
 }
@@ -152,6 +154,8 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
     private AvsVehicle? av;
     private EnergyInterface? aiEI;
     private List<AudioSource> speakers = new();
+
+    internal AvsVehicle AV => av.OrThrow(() => new InvalidOperationException("VoiceQueue not initialized properly"));
 
     private VoiceLine? Playing { get; set; } = null;
     private Queue<Queued> PartQueue { get; } = new();
@@ -193,7 +197,9 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
             yield break;
         }
 
-        av.Owner.StartCoroutine(WaitUntilReadyToSpeak());
+        av.Owner.StartAvsCoroutine(
+            nameof(VoiceQueue) + '.' + nameof(WaitUntilReadyToSpeak),
+            _ => WaitUntilReadyToSpeak());
     }
 
     private void SetupSpeakers()
@@ -322,7 +328,7 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
             if (Playing is null || Playing.Priority < line.Priority)
             {
                 Playing = line;
-                line.ReplaceQueue(PartQueue);
+                line.ReplaceQueue(AV, PartQueue);
             }
     }
 

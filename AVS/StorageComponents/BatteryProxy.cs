@@ -13,7 +13,9 @@ internal class BatteryProxy : MonoBehaviour
 
     public void Awake()
     {
-        av!.Owner.StartCoroutine(GetSeamothBitsASAP());
+        av!.Owner.StartAvsCoroutine(
+            nameof(BatteryProxy) + '.' + nameof(GetSeamothBitsASAP),
+            _ => GetSeamothBitsASAP());
     }
 
     public IEnumerator GetSeamothBitsASAP()

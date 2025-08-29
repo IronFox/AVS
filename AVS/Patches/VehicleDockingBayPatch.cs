@@ -111,6 +111,7 @@ internal class VehicleDockingBayPatch
         var av = vehicle as AvsVehicle;
         if (av.IsNotNull())
         {
+            using var log = av.NewAvsLog();
             var moonpool = dock.GetComponentInParent<Moonpool>();
             var cmm = dock.GetComponentInParent<CyclopsMotorMode>();
             if (av.IsBoarded)
@@ -126,7 +127,7 @@ internal class VehicleDockingBayPatch
             }
             else
             {
-                av.Log.Warn(av.Owner.ModName +
+                log.Warn(av.Owner.ModName +
                             " AVS is not aware of this dock. The player is probably in a weird position now.");
                 av.DockVehicle();
             }

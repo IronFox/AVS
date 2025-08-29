@@ -34,7 +34,9 @@ public static class SpawnConsoleCommandPatcher
         {
             var text = (string)n.data[0];
             if (UWE.Utils.TryParseEnum<TechType>(text, out var techType))
-                MainPatcher.AnyInstance.StartCoroutine(CheckSpawnForMVs(techType));
+                RootModController.AnyInstance.StartAvsCoroutine(
+                    nameof(SpawnConsoleCommandPatcher) + '.' + nameof(CheckSpawnForMVs),
+                    _ => CheckSpawnForMVs(techType));
         }
     }
 

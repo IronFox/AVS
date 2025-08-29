@@ -1,9 +1,8 @@
 ﻿using AVS.BaseVehicle;
-using HarmonyLib;
-using System.Linq;
 using AVS.Util;
 using AVS.VehicleBuilding;
-using UnityEngine;
+using HarmonyLib;
+using System.Linq;
 
 // PURPOSE: Prevent Drones from accessing upgrades. Display upgrade module models when appropriate. Display custom upgrade-background images.
 // VALUE: High. Drones would have odd behavior otherwise, and the other functions are important developer utilities.
@@ -36,7 +35,7 @@ internal class VehicleUpgradeConsoleInputPatcher
         if (av.IsNotNull() && __instance.GetComponentInChildren<UpgradeProxy>().IsNotNull() &&
             __instance.GetComponentInChildren<UpgradeProxy>().slots.IsNotNull())
         {
-            var log = av.Log.Tag(nameof(UpdateVisualsPostfix));
+            using var log = av.NewAvsLog();
             var proxy = __instance.GetComponentInChildren<UpgradeProxy>();
             if (proxy.IsNull() || proxy.slots.IsNull())
             {

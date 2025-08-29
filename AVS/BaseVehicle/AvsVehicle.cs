@@ -2,7 +2,6 @@
 using AVS.Composition;
 using AVS.Configuration;
 using AVS.Localization;
-using AVS.Log;
 using AVS.MaterialAdapt;
 using AVS.Util;
 using AVS.VehicleComponents;
@@ -16,7 +15,7 @@ namespace AVS.BaseVehicle;
 /// AvsVehicle is the primary abstract class provided by AVS. 
 /// All AVS vehicles inherit from this class.
 /// </summary>
-public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEventListener, ILogFilter
+public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEventListener
 {
     /// <summary>
     /// The piloting style of the vehicle.
@@ -50,21 +49,12 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
     /// </summary>
     public virtual GameObject VehicleRoot => gameObject;
 
-    /// <summary>
-    /// Primary logging facility for this vehicle.
-    /// </summary>
-    internal LogWriter Log { get; }
 
     /// <summary>
     /// Invariant vehicle configuration. Initialized during construction.
     /// Never null.
     /// </summary>
     public VehicleConfiguration Config { get; }
-
-    /// <summary>
-    /// True to log high-verbosity debug messages (as non-debug)
-    /// </summary>
-    public virtual bool LogDebug { get; } = false;
 
     /// <summary>
     /// Retrieves the composition of the vehicle.
@@ -89,9 +79,6 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
     /// <exception cref="ArgumentNullException"></exception>
     protected AvsVehicle(VehicleConfiguration config)
     {
-        Log = new LogWriter($"V{Id}", LogWriter.DefaultTags);
-
-
         Config = config ?? throw new ArgumentNullException(nameof(config), "VehicleConfiguration cannot be null");
         MaterialFixer = new MaterialFixer(this, new AvsMaterialResolver(config.MaterialAdaptConfig, this),
             config.MaterialAdaptConfig.LogConfig);
@@ -131,10 +118,11 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
         RequireComposition();
         //playerPosition = GetMainHelm().PlayerControlLocation;
         playerPosition = null;
+        using var log = NewAvsLog();
         if (SubRoot.IsNull())
-            Log.Write("SubRoot not (yet) found during OnAwakeOrPrefabricate");
+            log.Write("SubRoot not (yet) found during OnAwakeOrPrefabricate");
         else
-            Log.Write("SubRoot found during OnAwakeOrPrefabricate");
+            log.Write("SubRoot found during OnAwakeOrPrefabricate");
     }
 
     /// <summary>
@@ -184,6 +172,7 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
     ///<inheritdoc />
     public override void Awake()
     {
+        using var log = NewAvsLog();
         OnAwakeOrPrefabricate();
         hudPingInstance =
             gameObject.GetComponent<PingInstance>(); //created during prefab. Cannot properly create here if missing
@@ -195,9 +184,9 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
 
         base.Awake();
 
-        var mp = Owner;
+        var rmc = Owner;
 
-        AvsVehicleManager.EnrollVehicle(mp, this); // Register our new vehicle with AVS
+        AvsVehicleManager.EnrollVehicle(rmc, this); // Register our new vehicle with AVS
         UpgradeOnAddedActions.Add(StorageModuleAction);
         UpgradeOnAddedActions.Add(ArmorPlatingModuleAction);
         UpgradeOnAddedActions.Add(PowerUpgradeModuleAction);
@@ -213,13 +202,13 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
         {
             if (x.Interface.IsNull())
             {
-                Log.Error($"Null upgrade interface found.");
+                log.Error($"Null upgrade interface found.");
                 return;
             }
 
             var consoleInput = x.Interface.GetComponent<VehicleUpgradeConsoleInput>();
             if (consoleInput.IsNull())
-                Log.Error(
+                log.Error(
                     $"VehicleUpgradeConsoleInput not found on {x.Interface.NiceName()}. This is a required component for vehicle upgrades.");
             else
                 consoleInput.equipment = modules;
@@ -303,7 +292,8 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
         }
         catch (Exception e)
         {
-            Log.Error($"Error during base.Update()", e);
+            using var log = NewAvsLog();
+            log.Error($"Error during base.Update()", e);
         }
 
         if (hadNoPlayerPosition)
@@ -527,6 +517,7 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
     /// <param name="newStatus">New status to broadcast</param>
     internal void NotifyStatus(PlayerStatus newStatus)
     {
+        using var log = NewAvsLog();
         foreach (var component in GetComponentsInChildren<IPlayerListener>())
             switch (newStatus)
             {
@@ -543,7 +534,7 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
                     component.OnPilotEnd();
                     break;
                 default:
-                    Log.Error("Error: tried to notify using an invalid status");
+                    log.Error("Error: tried to notify using an invalid status");
                     break;
             }
     }
