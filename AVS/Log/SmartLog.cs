@@ -160,7 +160,7 @@ namespace AVS.Log
             {
                 if (pair.Value.HasStarted)
                     if (coroutineChannel.Length > pair.Key)
-                        coroutineChannel[pair.Key] = '|';
+                        coroutineChannel[pair.Key] = '│';
             }
 
             if (InterruptableAncestor.IsNotNull())

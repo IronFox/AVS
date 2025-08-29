@@ -429,7 +429,7 @@ public abstract class RootModController : BaseUnityPlugin
             {
                 if (!routine.MoveNext())
                 {
-                    log.Write("Finished");
+                    //log.Write("Coroutine finished");
                     yield break;
                 }
                 current = routine.Current;
