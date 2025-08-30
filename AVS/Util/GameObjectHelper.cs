@@ -230,29 +230,36 @@ public static class GameObjectHelper
         if (o.IsNull())
             return "<null>";
 
-        var text = o.name;
-        var num = text.IndexOf('(');
-        if (num >= 0) text = text.Substring(0, num);
+        var text = SanitizeObjectName(o.name);
 
         return $"<{o.GetType().Name}> '{text}' [{o.GetInstanceID()}]";
     }
 
 
+    private static string SanitizeObjectName(string text)
+    {
+        var num = text.IndexOf('(');
+        if (num >= 0)
+            text = text.Substring(0, num);
+        return text;
+    }
+
     /// <summary>
     /// Produces the full hierarchy path of a Transform as a single string using / as separator.
     /// Returns "&lt;null&gt;" if the Transform is null.
     /// </summary>
-    public static string PathToString(this Transform t)
+    public static string PathToString(this Component c, Transform? root = null)
     {
-        if (!t)
+        if (!c)
             return "<null>";
-
+        var t = c.transform;
         var list = new List<string>();
         try
         {
-            while (t)
+            while (t && t != root)
             {
-                list.Add($"{t.name}[{t.GetInstanceID()}]");
+                var name = SanitizeObjectName(t.name);
+                list.Add($"{name}[{t.GetInstanceID()}]");
                 t = t.parent;
             }
         }

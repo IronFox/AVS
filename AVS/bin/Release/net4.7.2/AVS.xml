@@ -9063,7 +9063,7 @@
             Returns "&lt;null&gt;" if the object is null.
             </summary>
         </member>
-        <member name="M:AVS.Util.GameObjectHelper.PathToString(UnityEngine.Transform)">
+        <member name="M:AVS.Util.GameObjectHelper.PathToString(UnityEngine.Component,UnityEngine.Transform)">
             <summary>
             Produces the full hierarchy path of a Transform as a single string using / as separator.
             Returns "&lt;null&gt;" if the Transform is null.
