@@ -364,5 +364,16 @@ namespace AVS.Log
         /// <returns>A <see cref="SmartLog"/> instance configured with the specified domain.</returns>
         public static SmartLog For(RootModController mainPatcher, string domain = "Mod", params string[] tags)
             => new SmartLog(mainPatcher, domain: domain, 1, tags: tags);
+
+
+        /// <summary>
+        /// Creates a new instance of <see cref="SmartLog"/> configured for the specified domain using forced laziness.
+        /// </summary>
+        /// <param name="mainPatcher">The root mod controller instance used to initialize the log.</param>
+        /// <param name="tags">Optional additional tags to associate with this log context.</param>
+        /// <param name="domain">The domain name associated with the log. Defaults to "Mod" if not specified.</param>
+        /// <returns>A <see cref="SmartLog"/> instance configured with the specified domain.</returns>
+        public static SmartLog LazyFor(RootModController mainPatcher, string domain = "Mod", params string[] tags)
+            => new SmartLog(mainPatcher, domain: domain, 1, tags: tags, forceLazy: true);
     }
 }

@@ -40,7 +40,7 @@ public class EquipmentPatcher
         ref Dictionary<EquipmentType, List<string>> ___typeToSlots)
     {
         var av = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (av.IsNull())
+        if (av.IsNull() || __instance != av.modules)
             return;
         if (!ModuleBuilder.IsModuleName(av.Owner, l))
             return;
@@ -61,7 +61,7 @@ public class EquipmentPatcher
         ref Dictionary<EquipmentType, List<string>> ___typeToSlots)
     {
         var av = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (av.IsNull())
+        if (av.IsNull() || __instance != av.modules)
             return;
         if (!ModuleBuilder.IsModuleName(av.Owner, slot))
             return;
@@ -84,7 +84,7 @@ public class EquipmentPatcher
         if (!AvsVehicleBuilder.IsKnownItemType(itemType))
             return;
         var av = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (av.IsNull())
+        if (av.IsNull() || __instance != av.modules)
             return;
         ___typeToSlots = av.VehicleTypeToSlots;
     }
@@ -107,7 +107,7 @@ public class EquipmentPatcher
             return;
 
         var av = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (av.IsNull())
+        if (av.IsNull() || __instance != av.modules)
             return;
         ___typeToSlots = av.VehicleTypeToSlots;
     }
@@ -129,7 +129,7 @@ public class EquipmentPatcher
             return;
 
         var av = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (av.IsNull())
+        if (av.IsNull() || __instance != av.modules)
             return;
         ___typeToSlots = av.VehicleTypeToSlots;
     }
@@ -149,7 +149,7 @@ public class EquipmentPatcher
         ref Dictionary<EquipmentType, List<string>> ___typeToSlots)
     {
         var av = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (av.IsNull())
+        if (av.IsNull() || __instance != av.modules)
             return;
         if (!ModuleBuilder.IsModuleName(av.Owner, slot))
             return;
@@ -191,10 +191,6 @@ public class EquipmentPatcher
     [HarmonyPatch(nameof(Equipment.IsCompatible))]
     public static bool IsCompatiblePrefix(EquipmentType itemType, EquipmentType slotType, ref bool __result)
     {
-        __result = itemType == slotType || (itemType == EquipmentType.VehicleModule &&
-                                            (slotType == EquipmentType.SeamothModule ||
-                                             slotType == EquipmentType.ExosuitModule ||
-                                             slotType == AvsVehicleBuilder.ModuleType));
         __result = itemType == slotType || (
             itemType == EquipmentType.VehicleModule &&
             (

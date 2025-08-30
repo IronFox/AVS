@@ -4943,6 +4943,15 @@
             <param name="domain">The domain name associated with the log. Defaults to "Mod" if not specified.</param>
             <returns>A <see cref="T:AVS.Log.SmartLog"/> instance configured with the specified domain.</returns>
         </member>
+        <member name="M:AVS.Log.SmartLog.LazyFor(AVS.RootModController,System.String,System.String[])">
+            <summary>
+            Creates a new instance of <see cref="T:AVS.Log.SmartLog"/> configured for the specified domain using forced laziness.
+            </summary>
+            <param name="mainPatcher">The root mod controller instance used to initialize the log.</param>
+            <param name="tags">Optional additional tags to associate with this log context.</param>
+            <param name="domain">The domain name associated with the log. Defaults to "Mod" if not specified.</param>
+            <returns>A <see cref="T:AVS.Log.SmartLog"/> instance configured with the specified domain.</returns>
+        </member>
         <member name="T:AVS.Log.Verbosity">
             <summary>
             Logging verbosity levels.
