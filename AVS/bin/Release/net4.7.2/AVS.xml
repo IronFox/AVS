@@ -969,6 +969,13 @@
             <param name="pt">The ping type.</param>
             <param name="pingSprite">The <see cref="T:UnityEngine.Sprite"/> to register.</param>
         </member>
+        <member name="M:AVS.Assets.SpriteHelper.ToSprite(Atlas.Sprite)">
+            <summary>
+            Converts an <see cref="T:Atlas.Sprite"/> to a <see cref="T:UnityEngine.Sprite"/>.
+            </summary>
+            <param name="s">The <see cref="T:Atlas.Sprite"/> to convert.</param>
+            <returns>A <see cref="T:UnityEngine.Sprite"/> generated from the given <see cref="T:Atlas.Sprite"/>.</returns>
+        </member>
         <member name="T:AVS.Audio.AsyncPromise`1">
             <summary>
             Represents an asynchronous operation that will eventually yield a value of type <typeparamref name="T"/>.
@@ -2614,7 +2621,7 @@
             </summary>
             <remarks>The method creates a new <see cref="T:Nautilus.Crafting.RecipeData"/> object and populates its
             ingredients list based on the current object's <c>IngredientsDictionary</c>. Each entry in the dictionary is
-            transformed into a <see cref="T:Ingredient"/> and added to the resulting recipe.</remarks>
+            transformed into a <see cref="T:CraftData.Ingredient"/> and added to the resulting recipe.</remarks>
             <returns>A <see cref="T:Nautilus.Crafting.RecipeData"/> instance containing the ingredients from the current object's
             <c>IngredientsDictionary</c>.</returns>
         </member>
