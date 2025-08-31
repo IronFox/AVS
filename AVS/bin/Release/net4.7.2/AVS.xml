@@ -4875,7 +4875,7 @@
             Gets the date and time when the context was created.
             </summary>
         </member>
-        <member name="M:AVS.Log.SmartLog.#ctor(AVS.RootModController,System.String,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.Boolean)">
+        <member name="M:AVS.Log.SmartLog.#ctor(AVS.RootModController,System.String,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object},System.String,System.Boolean)">
             <summary>
             Creates a new disposable log context. The new context becomes the current context.
             </summary>
@@ -4883,6 +4883,7 @@
             <param name="frameDelta">Optional additional stack frame delta to apply when determining the name of this context.</param>
             <param name="isInterruptable">If true, this context can be interrupted by asynchronous operations and later resumed.</param>
             <param name="tags">Optional additional tags to associate with this context to be set at creation time.</param>
+            <param name="parameters">Optional parameters to format into the name of this context.</param>
             <param name="nameOverride">Optional name to use instead of the calling method's name.</param>
             <param name="domain">The domain name associated with the log. Typically AVS or Mod.</param>
             <param name="forceLazy">If true, logging of the start message is always deferred until the first actual log message.</param>

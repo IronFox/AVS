@@ -1,6 +1,7 @@
 ﻿using AVS.Interfaces;
 using AVS.Util;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -22,6 +23,7 @@ namespace AVS.Log
         /// </summary>
         public RootModController RMC { get; }
         private bool IsInterruptable { get; }
+        private IReadOnlyList<object?>? Parameters { get; }
 
         /// <summary>
         /// The recursive depth of this log context. Root context has depth 0.
@@ -70,10 +72,19 @@ namespace AVS.Log
         /// <param name="frameDelta">Optional additional stack frame delta to apply when determining the name of this context.</param>
         /// <param name="isInterruptable">If true, this context can be interrupted by asynchronous operations and later resumed.</param>
         /// <param name="tags">Optional additional tags to associate with this context to be set at creation time.</param>
+        /// <param name="parameters">Optional parameters to format into the name of this context.</param>
         /// <param name="nameOverride">Optional name to use instead of the calling method's name.</param>
         /// <param name="domain">The domain name associated with the log. Typically AVS or Mod.</param>
         /// <param name="forceLazy">If true, logging of the start message is always deferred until the first actual log message.</param>
-        public SmartLog(RootModController rmc, string? domain, int frameDelta = 0, bool isInterruptable = false, IReadOnlyList<string>? tags = null, string? nameOverride = null, bool forceLazy = false)
+        public SmartLog(
+            RootModController rmc,
+            string? domain,
+            int frameDelta = 0,
+            bool isInterruptable = false,
+            IReadOnlyList<string>? tags = null,
+            IReadOnlyList<object?>? parameters = null,
+            string? nameOverride = null,
+            bool forceLazy = false)
         {
             Previous = Current;
             Parent = Current;
@@ -98,6 +109,7 @@ namespace AVS.Log
             RMC = rmc;
             Current = this;
             IsInterruptable = isInterruptable;
+            Parameters = parameters;
             InterruptableAncestor = isInterruptable ? this : Parent?.InterruptableAncestor;
             //IsInterruptableSelfOrChild = isInterruptable || (Parent?.IsInterruptableSelfOrChild ?? false);
 
@@ -120,6 +132,53 @@ namespace AVS.Log
             }
         }
 
+        private static string ToString(object? o)
+        {
+            switch (o)
+            {
+                case null:
+                    return "null";
+                case string s:
+                    return $"\"{s}\"";
+                case char c:
+                    return $"'{c}'";
+                case bool b:
+                    return b ? "true" : "false";
+                case UnityEngine.Object uo:
+                    return uo.NiceName();
+                case IEnumerable ie:
+                    {
+                        var it = ie.GetEnumerator();
+                        using var e = it as IDisposable;
+                        List<string> asStrings = [];
+                        while (it.MoveNext())
+                        {
+                            asStrings.Add(ToString(it.Current));
+                        }
+                        return "[" + string.Join(", ", asStrings) + "]";
+                    }
+                default:
+                    return $"`{o}`";
+            }
+        }
+
+        private string HeadLine
+        {
+            get
+            {
+                if (Parameters.IsNullOrEmpty())
+                    return Name;
+                try
+                {
+                    return $"{Name} ({string.Join(", ", Parameters.Select(ToString))})";
+                }
+                catch (FormatException)
+                {
+                    return Name + " (formatting error)";
+                }
+            }
+        }
+
         internal void SignalLog()
         {
             if (HasStarted)
@@ -131,7 +190,7 @@ namespace AVS.Log
                 string prefix = "> ";
                 if (IsInterruptable)
                     prefix = ">>";
-                Logger.Log(MakeMessage(Name, depthOverride: Depth - 1, dtOverride: StartTime, isStart: true, prefix: prefix));
+                Logger.Log(MakeMessage(HeadLine, depthOverride: Depth - 1, dtOverride: StartTime, isStart: true, prefix: prefix));
             }
             catch (Exception ex)
             {
