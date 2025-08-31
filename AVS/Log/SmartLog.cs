@@ -433,7 +433,15 @@ namespace AVS.Log
         internal static SmartLog LazyForAVS(RootModController rmc, IReadOnlyList<string>? tags = null, [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
             => new SmartLog(rmc, "AVS", 1, tags: tags, forceLazy: true, nameOverride: SmartLog.DeriveCallerName(callerFilePath, memberName));
 
-        internal static string DeriveCallerName(string callerFilePath, string memberName)
+        /// <summary>
+        /// Derives a fully qualified caller name based on the file path and member name.
+        /// </summary>
+        /// <param name="callerFilePath">The file path of the caller. Typically provided by the <see cref="CallerFilePathAttribute"/>.</param>
+        /// <param name="memberName">The name of the calling member. Typically provided by the <see cref="CallerMemberNameAttribute"/>.</param>
+        /// <returns>A string representing the caller's fully qualified name in the format "FileName.MemberName", where
+        /// "FileName" is the name of the file without its extension. Returns an empty string if either <paramref
+        /// name="callerFilePath"/> or <paramref name="memberName"/> is null or empty.</returns>
+        public static string DeriveCallerName(string callerFilePath, string memberName)
         {
             if (string.IsNullOrEmpty(callerFilePath) || string.IsNullOrEmpty(memberName))
                 return "";
@@ -447,9 +455,13 @@ namespace AVS.Log
         /// <param name="mainPatcher">The root mod controller instance used to initialize the log.</param>
         /// <param name="tags">Optional additional tags to associate with this log context.</param>
         /// <param name="domain">The domain name associated with the log. Defaults to "Mod" if not specified.</param>
+        /// <param name="parameters">Optional parameters to format into the name of this context.</param>
         /// <returns>A <see cref="SmartLog"/> instance configured with the specified domain.</returns>
-        public static SmartLog For(RootModController mainPatcher, string domain = "Mod", params string[] tags)
-            => new SmartLog(mainPatcher, domain: domain, 1, tags: tags);
+        public static SmartLog For(RootModController mainPatcher, string domain = "Mod",
+            IReadOnlyList<string>? tags = null,
+            IReadOnlyList<object?>? parameters = null
+            )
+            => new SmartLog(mainPatcher, domain: domain, 1, tags: tags, parameters: parameters);
 
 
         /// <summary>
@@ -461,11 +473,22 @@ namespace AVS.Log
         /// </remarks>
         /// <param name="mainPatcher">The root mod controller instance used to initialize the log.</param>
         /// <param name="tags">Optional additional tags to associate with this log context.</param>
+        /// <param name="parameters">Optional parameters to format into the name of this context.</param>
         /// <param name="domain">The domain name associated with the log. Defaults to "Mod" if not specified.</param>
         /// <param name="callerFilePath">The file path of the calling member, automatically provided by the compiler.</param>
         /// <param name="memberName">The name of the calling member, automatically provided by the compiler.</param>
         /// <returns>A <see cref="SmartLog"/> instance configured with the specified domain.</returns>
-        public static SmartLog LazyFor(RootModController mainPatcher, string domain = "Mod", IReadOnlyList<string>? tags = null, [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
-            => new SmartLog(mainPatcher, domain: domain, 1, tags: tags, forceLazy: true, nameOverride: DeriveCallerName(callerFilePath, memberName));
+        public static SmartLog LazyFor(
+            RootModController mainPatcher,
+            string domain = "Mod",
+            IReadOnlyList<string>? tags = null,
+            IReadOnlyList<object?>? parameters = null,
+            [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
+            => new SmartLog(mainPatcher,
+                domain: domain,
+                1, tags: tags,
+                parameters: parameters,
+                forceLazy: true,
+                nameOverride: DeriveCallerName(callerFilePath, memberName));
     }
 }

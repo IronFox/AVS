@@ -1931,14 +1931,15 @@
             Executed when the vehicle is salvaged.
             </summary>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.NewModLog(System.String[])">
+        <member name="M:AVS.BaseVehicle.AvsVehicle.NewModLog(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object})">
             <summary>
             Creates a new instance of <see cref="T:AVS.Log.SmartLog"/> preconfigured with module-specific tags.
             </summary>
             <param name="tags">An optional array of additional tags to include in the log. These tags are appended to the default module tags.</param>
+            <param name="parameters">An optional array of parameters to include in the log for contextual information.</param>
             <returns>A new <see cref="T:AVS.Log.SmartLog"/> instance associated with the module and including the specified tags.</returns>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.NewLazyModLog(System.Collections.Generic.IReadOnlyList{System.String},System.String,System.String)">
+        <member name="M:AVS.BaseVehicle.AvsVehicle.NewLazyModLog(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object},System.String,System.String)">
             <summary>
             Creates a new lazy instance of <see cref="T:AVS.Log.SmartLog"/> preconfigured with module-specific tags.
             Lazy logs defer the output of the log context until it is actually needed, which can improve performance.
@@ -1949,6 +1950,7 @@
             <param name="callerFilePath">The file path of the caller. This is automatically populated by the compiler.</param>
             <param name="memberName">The member name of the caller. This is automatically populated by the compiler.</param>
             <param name="tags">An optional array of additional tags to include in the log. These tags are appended to the default module tags.</param>
+            <param name="parameters">An optional array of parameters to include in the log context.</param>
             <returns>A new <see cref="T:AVS.Log.SmartLog"/> instance associated with the module and including the specified tags.</returns>
         </member>
         <member name="P:AVS.BaseVehicle.AvsVehicle.Owner">
@@ -4788,16 +4790,27 @@
             cref="F:AVS.Log.Verbosity.Verbose"/>.</remarks>
             <param name="message">The debug message to log. This should provide detailed information useful for debugging purposes.</param>
         </member>
-        <member name="M:AVS.Log.SmartLog.For(AVS.RootModController,System.String,System.String[])">
+        <member name="M:AVS.Log.SmartLog.DeriveCallerName(System.String,System.String)">
+            <summary>
+            Derives a fully qualified caller name based on the file path and member name.
+            </summary>
+            <param name="callerFilePath">The file path of the caller. Typically provided by the <see cref="T:System.Runtime.CompilerServices.CallerFilePathAttribute"/>.</param>
+            <param name="memberName">The name of the calling member. Typically provided by the <see cref="T:System.Runtime.CompilerServices.CallerMemberNameAttribute"/>.</param>
+            <returns>A string representing the caller's fully qualified name in the format "FileName.MemberName", where
+            "FileName" is the name of the file without its extension. Returns an empty string if either <paramref
+            name="callerFilePath"/> or <paramref name="memberName"/> is null or empty.</returns>
+        </member>
+        <member name="M:AVS.Log.SmartLog.For(AVS.RootModController,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object})">
             <summary>
             Creates a new instance of <see cref="T:AVS.Log.SmartLog"/> configured for the specified domain.
             </summary>
             <param name="mainPatcher">The root mod controller instance used to initialize the log.</param>
             <param name="tags">Optional additional tags to associate with this log context.</param>
             <param name="domain">The domain name associated with the log. Defaults to "Mod" if not specified.</param>
+            <param name="parameters">Optional parameters to format into the name of this context.</param>
             <returns>A <see cref="T:AVS.Log.SmartLog"/> instance configured with the specified domain.</returns>
         </member>
-        <member name="M:AVS.Log.SmartLog.LazyFor(AVS.RootModController,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.String,System.String)">
+        <member name="M:AVS.Log.SmartLog.LazyFor(AVS.RootModController,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object},System.String,System.String)">
             <summary>
             Creates a new instance of <see cref="T:AVS.Log.SmartLog"/> configured for the specified domain using forced laziness.
             </summary>
@@ -4807,6 +4820,7 @@
             </remarks>
             <param name="mainPatcher">The root mod controller instance used to initialize the log.</param>
             <param name="tags">Optional additional tags to associate with this log context.</param>
+            <param name="parameters">Optional parameters to format into the name of this context.</param>
             <param name="domain">The domain name associated with the log. Defaults to "Mod" if not specified.</param>
             <param name="callerFilePath">The file path of the calling member, automatically provided by the compiler.</param>
             <param name="memberName">The name of the calling member, automatically provided by the compiler.</param>

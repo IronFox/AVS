@@ -112,7 +112,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     /// </summary>
     public bool isGeneratingEnergy;
 
-    private MaybeTranslate label;
+    private MaybeTranslate Label { get; set; }
 
 
     /// <summary>
@@ -167,7 +167,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     public void Initialize(AvsVehicle avsVehicle, int height, int width, MaybeTranslate label, float totalCapacity,
         List<MaterialReactorConversionDeclaration> iMaterialData)
     {
-        this.label = label;
+        Label = label;
         using var log = NewLog();
         if (avsVehicle.GetComponentsInChildren<MaterialReactor>().Any(x => x.av == avsVehicle))
         {
@@ -218,7 +218,8 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
 
         av = avsVehicle;
         capacity = totalCapacity;
-        container = new ItemsContainer(width, height, transform, label.Rendered, null);
+        log.Write($"Creating items container '{label.Text}'");
+        container = new ItemsContainer(width, height, transform, label.Text, null); //as it turns out, the items container ALWAYS localizes its label. No point rendering it here.
         container.onAddItem += OnAddItem;
         container.isAllowedToRemove = IsAllowedToRemove;
         container.SetAllowedTechTypes(iMaterialData
@@ -258,6 +259,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
             DestroyImmediate(this);
             return;
         }
+
 
         var any = false;
         var reactants = currentEnergies.Keys.ToList();
@@ -367,7 +369,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         if (spentMaterialIndex.Values.ToList().Contains(pickupable.inventoryItem.techType)) return true;
         if (verbose || CanWarnAbout(pickupable))
             ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_CannotRemoveMaterialsFromReactor,
-                label.Rendered));
+                Label.Rendered));
         return false;
     }
 
@@ -382,13 +384,14 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     void IHandTarget.OnHandClick(GUIHand hand)
     {
         using var log = NewLog();
-        log.Debug($"MaterialReactor.OnHandClick: {hand.NiceName()} clicked on {gameObject.NiceName()}");
+        log.Write($"MaterialReactor.OnHandClick: {hand.NiceName()} clicked on {gameObject.NiceName()}");
         if (container.IsNotNull())
         {
             var pda = Player.main.GetPDA();
             Inventory.main.SetUsedStorage(container);
             if (!pda.Open(PDATab.Inventory, transform, OnClosePDA))
                 OnClosePDA(pda);
+            //uGUI_InventoryTab
         }
 
         log.Debug($"MaterialReactor.OnHandClick: Exit");
@@ -405,7 +408,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
                 ? string.Empty
                 : $"({Translator.GetFormatted(TranslationKey.HandHover_Reactor_Charge, (int)reactorBattery.GetCharge(), capacity)})";
 
-            var finalText = $"{label} {chargeValue}";
+            var finalText = $"{Label} {chargeValue}";
             main.SetText(HandReticle.TextType.Hand, finalText, true, GameInput.Button.LeftHand);
             if (canViewWhitelist)
             {

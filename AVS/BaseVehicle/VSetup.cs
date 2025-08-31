@@ -21,15 +21,32 @@ public abstract partial class AvsVehicle
     internal int mainPatcherInstanceId;
     private RootModController? owner;
 
-    internal SmartLog NewLazyAvsLog(IReadOnlyList<string>? tags = null, [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
-        => new SmartLog(Owner, "AVS", frameDelta: 1, tags: [$"V{Id}", .. (tags ?? [])], forceLazy: true, nameOverride: SmartLog.DeriveCallerName(callerFilePath, memberName));
-    internal SmartLog NewAvsLog(params string[] tags) => new SmartLog(Owner, "AVS", frameDelta: 1, tags: [$"V{Id}", .. tags]);
+    internal SmartLog NewLazyAvsLog(
+        IReadOnlyList<string>? tags = null,
+        IReadOnlyList<object?>? parameters = null,
+        [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
+        => new SmartLog(
+            Owner,
+            "AVS",
+            frameDelta: 1,
+            tags: [$"V{Id}", .. (tags ?? [])],
+            forceLazy: true,
+            parameters: parameters,
+            nameOverride: SmartLog.DeriveCallerName(callerFilePath, memberName));
+    internal SmartLog NewAvsLog(
+        IReadOnlyList<string>? tags = null,
+        IReadOnlyList<object?>? parameters = null
+        ) => new SmartLog(Owner, "AVS", frameDelta: 1, tags: [$"V{Id}", .. (tags ?? [])], parameters: parameters);
     /// <summary>
     /// Creates a new instance of <see cref="SmartLog"/> preconfigured with module-specific tags.
     /// </summary>
     /// <param name="tags">An optional array of additional tags to include in the log. These tags are appended to the default module tags.</param>
+    /// <param name="parameters">An optional array of parameters to include in the log for contextual information.</param>
     /// <returns>A new <see cref="SmartLog"/> instance associated with the module and including the specified tags.</returns>
-    public SmartLog NewModLog(params string[] tags) => new SmartLog(Owner, "Mod", frameDelta: 1, tags: [$"V{Id}", .. tags]);
+    public SmartLog NewModLog(
+        IReadOnlyList<string>? tags = null,
+        IReadOnlyList<object?>? parameters = null)
+        => new SmartLog(Owner, "Mod", frameDelta: 1, tags: [$"V{Id}", .. (tags ?? [])], parameters: parameters);
     /// <summary>
     /// Creates a new lazy instance of <see cref="SmartLog"/> preconfigured with module-specific tags.
     /// Lazy logs defer the output of the log context until it is actually needed, which can improve performance.
@@ -40,9 +57,20 @@ public abstract partial class AvsVehicle
     /// <param name="callerFilePath">The file path of the caller. This is automatically populated by the compiler.</param>
     /// <param name="memberName">The member name of the caller. This is automatically populated by the compiler.</param>
     /// <param name="tags">An optional array of additional tags to include in the log. These tags are appended to the default module tags.</param>
+    /// <param name="parameters">An optional array of parameters to include in the log context.</param>
     /// <returns>A new <see cref="SmartLog"/> instance associated with the module and including the specified tags.</returns>
-    public SmartLog NewLazyModLog(IReadOnlyList<string>? tags = null, [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
-        => new SmartLog(Owner, "Mod", frameDelta: 1, tags: [$"V{Id}", .. (tags ?? [])], forceLazy: true, nameOverride: SmartLog.DeriveCallerName(callerFilePath, memberName));
+    public SmartLog NewLazyModLog(
+        IReadOnlyList<string>? tags = null,
+        IReadOnlyList<object?>? parameters = null,
+        [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
+        => new SmartLog(
+            Owner,
+            "Mod",
+            frameDelta: 1,
+            tags: [$"V{Id}", .. (tags ?? [])],
+            forceLazy: true,
+            nameOverride: SmartLog.DeriveCallerName(callerFilePath, memberName),
+            parameters: parameters);
 
     /// <summary>
     /// The root mod controller instance that owns this vehicle.
@@ -191,7 +219,7 @@ public abstract partial class AvsVehicle
 
         if (Com.Batteries.Count > 0)
             Owner.StartAvsCoroutine(
-                nameof(MaterialReactor) + '.' + nameof(GiveUsABatteryOrGiveUsDeath),
+                nameof(AvsVehicle) + '.' + nameof(GiveUsABatteryOrGiveUsDeath),
                 GiveUsABatteryOrGiveUsDeath);
     }
 
