@@ -65,7 +65,7 @@ public static class SpriteHelper
     {
         if (_spriteCache.TryGetValue(fullPath, out var cachedSprite))
             return cachedSprite;
-        using var log = SmartLog.ForAVS(rmc);
+        using var log = SmartLog.ForAVS(rmc, parameters: [fullPath]);
         try
         {
             var spriteBytes = File.ReadAllBytes(fullPath);

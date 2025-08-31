@@ -137,7 +137,8 @@ internal readonly struct Queued
         HasClips = line.HasAnyClips;
         using var log = av.NewAvsLog();
         log.Debug(
-            $"Queued voice line: {line.TextTranslationKey}, clip: {clip.NiceName()}, isFirst: {isFirst}, delay: {delayInSeconds:F2}s, volume: {Volume:F2}");
+            $"Queued voice line: {line.TextTranslationKey}, clip: {clip.NiceName()},...");
+        log.Debug($"...isFirst: {isFirst}, delay: {delayInSeconds:F2}s, volume: {Volume:F2}");
     }
 }
 
