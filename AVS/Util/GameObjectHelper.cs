@@ -422,6 +422,20 @@ public static class GameObjectHelper
     }
 
     /// <summary>
+    /// Retrieves the first component of type <typeparamref name="T"/> in the parent hierarchy of the specified component.
+    /// Returns null if the component is null or if no such component is found in the parent hierarchy.
+    /// </summary>
+    /// <typeparam name="T">The type of component to retrieve.</typeparam>
+    /// <param name="c">The Component from which to search for the sibling or parent component.</param>
+    /// <returns>The first component of type <typeparamref name="T"/> found, or <see langword="null"/> if none is found.</returns>
+    public static T? SafeGetComponentInParent<T>(this Component? c) where T : Component
+    {
+        if (c.IsNull())
+            return null;
+        return c.GetComponentInParent<T>();
+    }
+
+    /// <summary>
     /// Selectively gets a component of type <typeparamref name="T"/> from a sibling component.
     /// If the component is null, returns null.
     /// </summary>
