@@ -426,7 +426,7 @@ namespace AVS.Log
             {
                 SignalLog();
                 if (ex.IsNotNull())
-                    Logger.Exception(MakeMessage(message), ex);
+                    Logger.Exception(MakeMessage(message).TrimEnd() + ": ", ex);
                 else
                     Logger.Error(MakeMessage(message));
             }
