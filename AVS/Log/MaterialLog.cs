@@ -14,41 +14,42 @@ public readonly struct MaterialLog
     /// <summary>
     /// Constructs a new material adaptation logging configuration.
     /// </summary>
-    /// <param name="prefix">Optional logging prefix, used to identify the source of the log message.</param>
     /// <param name="tags">Optional logging tags, used to identify the source of the log message.</param>
-    /// <param name="includeTimestamp">If true, log messages will include a timestamp.</param>
     /// <param name="logMaterialVariables">If true, input material variables will be logged.</param>
     /// <param name="logMaterialChanges">If true material property changes will be logged.</param>
     /// <param name="logExtraSteps">If true, extra steps of the material adaptation process will be logged.</param>
     public MaterialLog(
         bool logMaterialVariables = true,
         bool logMaterialChanges = true,
-        string? prefix = null,
         string[]? tags = null,
-        bool includeTimestamp = true,
         bool logExtraSteps = false
     )
     {
-        Writer = new LogWriter(
-            prefix,
-            tags,
-            includeTimestamp
-        );
+        Tags = tags;
         LogMaterialVariables = logMaterialVariables;
         LogMaterialChanges = logMaterialChanges;
         LogExtraSteps = logExtraSteps;
     }
 
+
     /// <summary>
-    /// Internal log writer used for material adaptation logging.
+    /// Creates a new scopes smart log for material adaptation logging.
     /// </summary>
-    public LogWriter Writer { get; }
+    /// <param name="rmc"></param>
+    /// <returns></returns>
+    public SmartLog NewLog(RootModController rmc)
+        => new SmartLog(rmc, Domain.AVS, frameDelta: 1, tags: Tags, forceLazy: true);
 
 
     /// <summary>
     /// If true material property changes will be logged.
     /// </summary>
     public bool LogMaterialChanges { get; }
+
+    /// <summary>
+    /// Default tags associated with this logging configuration.
+    /// </summary>
+    public string[]? Tags { get; }
 
     /// <summary>
     /// If true, input material variables will be logged.
@@ -71,24 +72,20 @@ public readonly struct MaterialLog
     /// Default logging configuration for material adaptation.
     /// </summary>
     public static MaterialLog Default { get; } = new(
-        false,
-        false,
-        null,
-        [MaterialAdaptationTag],
-        true,
-        true
+        logMaterialVariables: false,
+        logMaterialChanges: false,
+        tags: [MaterialAdaptationTag],
+        logExtraSteps: true
     );
 
     /// <summary>
     /// Muted logging configuration for material adaptation.
     /// </summary>
     public static MaterialLog Silent { get; } = new(
-        false,
-        false,
-        null,
-        [MaterialAdaptationTag],
-        true,
-        false
+        logMaterialVariables: false,
+        logMaterialChanges: false,
+        tags: [MaterialAdaptationTag],
+        logExtraSteps: false
     );
 
 
@@ -96,23 +93,21 @@ public readonly struct MaterialLog
     /// Verbose logging configuration for material adaptation.
     /// </summary>
     public static MaterialLog Verbose { get; } = new(
-        true,
-        true,
-        null,
-        [MaterialAdaptationTag],
-        true,
-        true
+        logMaterialVariables: true,
+        logMaterialChanges: true,
+        tags: [MaterialAdaptationTag],
+        logExtraSteps: true
     );
 
     /// <summary>
     /// Logs an extra step in the material adaptation process.
     /// If <see cref="LogExtraSteps"/> is false, this method does nothing.
     /// </summary>
-    public void LogExtraStep(string msg)
+    public void LogExtraStep(SmartLog log, string msg)
     {
         if (!LogExtraSteps)
             return;
-        Writer.Write(msg);
+        log.Write(msg);
     }
 
 
@@ -120,22 +115,22 @@ public readonly struct MaterialLog
     /// Logs a material change message.
     /// If <see cref="LogMaterialChanges"/> is false, this method does nothing.
     /// </summary>
-    public void LogMaterialChange(string msg)
+    public void LogMaterialChange(SmartLog log, string msg)
     {
         if (!LogMaterialChanges)
             return;
-        Writer.Write(msg);
+        log.Write(msg);
     }
 
     /// <summary>
     /// Logs a material change message using a function to generate the message.
     /// If <see cref="LogMaterialChanges"/> is false, this method does nothing.
     /// </summary>
-    public void LogMaterialChange(Func<string> msg)
+    public void LogMaterialChange(SmartLog log, Func<string> msg)
     {
         if (!LogMaterialChanges)
             return;
-        Writer.Write(msg());
+        log.Write(msg());
     }
 
     private string ValueToString<T>(T value)
@@ -151,6 +146,7 @@ public readonly struct MaterialLog
     /// Logs a material property set operation.
     /// </summary>
     /// <typeparam name="T">C# type being updated</typeparam>
+    /// <param name="log">The log to write to</param>
     /// <param name="type">Unity type being updated</param>
     /// <param name="name">Field name being updated</param>
     /// <param name="old">Old value</param>
@@ -158,6 +154,7 @@ public readonly struct MaterialLog
     /// <param name="m">Material affected</param>
     /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
     public void LogMaterialVariableSet<T>(
+        SmartLog log,
         ShaderPropertyType type,
         string name,
         T old,
@@ -166,19 +163,21 @@ public readonly struct MaterialLog
         string? materialName)
     {
         if (LogMaterialChanges)
-            Writer.Write(
+            log.Write(
                 $"Setting {type} {name} ({ValueToString(old)} -> {ValueToString(value)}) on {materialName ?? m.NiceName()}");
     }
 
     /// <summary>
     /// Logs a material property value.
     /// </summary>
+    /// <param name="log">The log to write to</param>
     /// <param name="type">Unity type being updated</param>
     /// <param name="name">Field name being updated</param>
     /// <param name="dataAsString">The current value as string</param>
     /// <param name="m">Material affected</param>
     /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
     public void LogMaterialVariableData(
+        SmartLog log,
         ShaderPropertyType? type,
         string name,
         string dataAsString,
@@ -186,18 +185,20 @@ public readonly struct MaterialLog
         string? materialName)
     {
         if (LogMaterialVariables)
-            Writer.Write($"{materialName ?? m.NiceName()} [{type}] {name} := {dataAsString}");
+            log.Write($"{materialName ?? m.NiceName()} [{type}] {name} := {dataAsString}");
     }
 
     /// <summary>
     /// Logs a material property set operation.
     /// </summary>
     /// <typeparam name="T">C# type being logged</typeparam>
+    /// <param name="log">The log to write to</param>
     /// <param name="name">Field name being updated</param>
     /// <param name="data">Recognized data</param>
     /// <param name="m">Material being logged</param>
     /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
     public void LogMaterialVariableData<T>(
+        SmartLog log,
         string name,
         T data,
         Material m,
@@ -209,32 +210,32 @@ public readonly struct MaterialLog
         switch (data)
         {
             case float f:
-                LogMaterialVariableData(ShaderPropertyType.Float, name, f.ToString(CultureInfo.InvariantCulture), m,
+                LogMaterialVariableData(log, ShaderPropertyType.Float, name, f.ToString(CultureInfo.InvariantCulture), m,
                     materialName);
                 break;
             case int i:
-                LogMaterialVariableData(ShaderPropertyType.Float, name, i.ToString(), m, materialName);
+                LogMaterialVariableData(log, ShaderPropertyType.Float, name, i.ToString(), m, materialName);
                 break;
             case Vector4 v:
-                LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m, materialName);
+                LogMaterialVariableData(log, ShaderPropertyType.Vector, name, v.ToString(), m, materialName);
                 break;
             case Vector3 v:
-                LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m, materialName);
+                LogMaterialVariableData(log, ShaderPropertyType.Vector, name, v.ToString(), m, materialName);
                 break;
             case Vector2 v:
-                LogMaterialVariableData(ShaderPropertyType.Vector, name, v.ToString(), m, materialName);
+                LogMaterialVariableData(log, ShaderPropertyType.Vector, name, v.ToString(), m, materialName);
                 break;
             case Color c:
-                LogMaterialVariableData(ShaderPropertyType.Color, name, c.ToString(), m, materialName);
+                LogMaterialVariableData(log, ShaderPropertyType.Color, name, c.ToString(), m, materialName);
                 break;
             case Texture t:
-                LogMaterialVariableData(ShaderPropertyType.Texture, name, t.NiceName(), m, materialName);
+                LogMaterialVariableData(log, ShaderPropertyType.Texture, name, t.NiceName(), m, materialName);
                 break;
             case null:
-                LogMaterialVariableData(DecodeType(typeof(T)), name, "<null>", m, materialName);
+                LogMaterialVariableData(log, DecodeType(typeof(T)), name, "<null>", m, materialName);
                 break;
             default:
-                LogMaterialVariableData(DecodeType(typeof(T)), name, "<unknown>", m, materialName);
+                LogMaterialVariableData(log, DecodeType(typeof(T)), name, "<unknown>", m, materialName);
                 break;
         }
     }
@@ -262,15 +263,4 @@ public readonly struct MaterialLog
         return null;
     }
 
-    /// <summary>
-    /// Logs a warning message.
-    /// </summary>
-    public void Warn(string v)
-        => Writer.Warn(v);
-
-    /// <summary>
-    /// Logs an error message.
-    /// </summary>
-    public void Error(string v)
-        => Writer.Error(v);
 }

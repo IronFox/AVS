@@ -60,7 +60,6 @@ internal class ModuleBuilder : MonoBehaviour
     public Transform? leftArmSlot = null;
 
     private bool haveSlotsBeenInited = false;
-    private static LogWriter Log { get; } = LogWriter.Default.Tag(nameof(ModuleBuilder));
 
     public void BuildAllSlots()
     {
@@ -337,7 +336,7 @@ internal class ModuleBuilder : MonoBehaviour
         // build, link, and position modules
         for (var i = 0; i < modules; i++)
         {
-            var thisModule = InstantiateGenericModuleSlot();
+            var thisModule = InstantiateGenericModuleSlot(rmc);
             if (thisModule.IsNull())
             {
                 log.Error("Failed to get generic module slot for index: " + i);
@@ -428,11 +427,12 @@ internal class ModuleBuilder : MonoBehaviour
         thisBackground.EnsureComponent<UnityEngine.UI.Image>().sprite = rmc.Images.ModulesBackground;
     }
 
-    public GameObject? InstantiateGenericModuleSlot()
+    public GameObject? InstantiateGenericModuleSlot(RootModController rmc)
     {
         if (genericModuleObject.IsNull())
         {
-            Log.Error("Generic module object is null, cannot get generic module slot.");
+            using var log = SmartLog.ForAVS(rmc);
+            log.Error("Generic module object is null, cannot get generic module slot.");
             return null;
         }
 

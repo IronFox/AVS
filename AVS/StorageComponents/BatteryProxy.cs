@@ -1,19 +1,18 @@
 ﻿using AVS.Assets;
-using AVS.BaseVehicle;
+using AVS.VehicleComponents;
 using System.Collections;
 using UnityEngine;
 
 namespace AVS.StorageComponents;
 
-internal class BatteryProxy : MonoBehaviour
+internal class BatteryProxy : AvAttached
 {
     public Transform? proxy = null;
     public EnergyMixin? mixin = null;
-    public AvsVehicle? av;
 
     public void Awake()
     {
-        av!.Owner.StartAvsCoroutine(
+        AV.Owner.StartAvsCoroutine(
             nameof(BatteryProxy) + '.' + nameof(GetSeamothBitsASAP),
             _ => GetSeamothBitsASAP());
     }

@@ -4,7 +4,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 
 namespace AVS.Log
 {
@@ -92,11 +94,18 @@ namespace AVS.Log
             if (Parent.IsNotNull())
                 TagSet.AddRange(Parent.Tags);
 
-            var sf = new StackFrame(1 + frameDelta, false);
-            var m = sf.GetMethod();
-            //m.GetParameters();
             Domain = domain ?? Parent?.Domain ?? "";
-            Name = nameOverride ?? (m.DeclaringType?.Name + "." + m.Name);
+
+            if (nameOverride.IsNullOrEmpty())
+            {
+                var sf = new StackFrame(1 + frameDelta, false);
+                var m = sf.GetMethod();
+                //m.GetParameters();
+                Name = nameOverride ?? (m.DeclaringType?.Name + "." + m.Name);
+            }
+            else
+                Name = nameOverride;
+
             if (isInterruptable)
             {
                 Depth = 0;
@@ -183,10 +192,19 @@ namespace AVS.Log
         {
             if (HasStarted)
                 return;
+            if (IsDisposed)
+            {
+                Logger.Error($"SmartLog.SignalLog failed on {Name}: is disposed");
+                return;
+            }
             HasStarted = true;
 
             try
             {
+                if (Parent.IsNotNull())
+                {
+                    Parent.SignalLog();
+                }
                 string prefix = "> ";
                 if (IsInterruptable)
                     prefix = ">>";
@@ -410,8 +428,17 @@ namespace AVS.Log
 
         }
 
-        internal static SmartLog ForAVS(RootModController mainPatcher, params string[] tags)
-            => new SmartLog(mainPatcher, "AVS", 1, tags: tags);
+        internal static SmartLog ForAVS(RootModController rmc, params string[] tags)
+            => new SmartLog(rmc, "AVS", 1, tags: tags);
+        internal static SmartLog LazyForAVS(RootModController rmc, IReadOnlyList<string>? tags = null, [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
+            => new SmartLog(rmc, "AVS", 1, tags: tags, forceLazy: true, nameOverride: SmartLog.DeriveCallerName(callerFilePath, memberName));
+
+        internal static string DeriveCallerName(string callerFilePath, string memberName)
+        {
+            if (string.IsNullOrEmpty(callerFilePath) || string.IsNullOrEmpty(memberName))
+                return "";
+            return $"{Path.GetFileNameWithoutExtension(callerFilePath)}.{memberName}";
+        }
 
 
         /// <summary>
@@ -428,11 +455,17 @@ namespace AVS.Log
         /// <summary>
         /// Creates a new instance of <see cref="SmartLog"/> configured for the specified domain using forced laziness.
         /// </summary>
+        /// <remarks>
+        /// This version uses a much faster method to derive the caller name, which may be less accurate in some edge cases.
+        /// When calling this method, make sure that the caller type name matches the caller file name.
+        /// </remarks>
         /// <param name="mainPatcher">The root mod controller instance used to initialize the log.</param>
         /// <param name="tags">Optional additional tags to associate with this log context.</param>
         /// <param name="domain">The domain name associated with the log. Defaults to "Mod" if not specified.</param>
+        /// <param name="callerFilePath">The file path of the calling member, automatically provided by the compiler.</param>
+        /// <param name="memberName">The name of the calling member, automatically provided by the compiler.</param>
         /// <returns>A <see cref="SmartLog"/> instance configured with the specified domain.</returns>
-        public static SmartLog LazyFor(RootModController mainPatcher, string domain = "Mod", params string[] tags)
-            => new SmartLog(mainPatcher, domain: domain, 1, tags: tags, forceLazy: true);
+        public static SmartLog LazyFor(RootModController mainPatcher, string domain = "Mod", IReadOnlyList<string>? tags = null, [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
+            => new SmartLog(mainPatcher, domain: domain, 1, tags: tags, forceLazy: true, nameOverride: DeriveCallerName(callerFilePath, memberName));
     }
 }

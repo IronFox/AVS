@@ -19,12 +19,13 @@ internal class AvsMaterialResolver : IMaterialResolver
 
     public IEnumerable<UnityMaterialData> ResolveMaterials()
     {
+        using var log = Target.NewAvsLog();
         var renderers = Target.GetComponentsInChildren<Renderer>(true);
         foreach (var renderer in renderers)
         {
             if (Config.IsExcludedFromMaterialFixing(renderer.gameObject, Target.Com))
             {
-                Config.LogConfig.LogExtraStep(
+                Config.LogConfig.LogExtraStep(log,
                     $"Skipping renderer {renderer.NiceName()} because it is excluded from material fixing");
                 continue;
             }
@@ -35,12 +36,13 @@ internal class AvsMaterialResolver : IMaterialResolver
                 var classification = Config.ClassifyMaterial(renderer, i, m);
                 if (!classification.Include)
                 {
-                    Config.LogConfig.LogExtraStep(
+                    Config.LogConfig.LogExtraStep(log,
                         $"Skipping material {i} of {renderer.NiceName()} ({m.NiceName()}) because it is excluded from material fixing");
                     continue;
                 }
 
                 var material = UnityMaterialData.From(
+                    Target.Owner,
                     renderer,
                     i,
                     classification.Type,

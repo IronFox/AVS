@@ -9,7 +9,8 @@ internal class WaterParkStorageInput : StorageInput
     {
         if (av.IsNull())
         {
-            LogWriter.Default.Error("AvsVehicle is null in WaterParkStorageInput.OpenFromExternal");
+            using var log1 = SmartLog.ForAVS(RootModController.AnyInstance);
+            log1.Error("AvsVehicle is null in WaterParkStorageInput.OpenFromExternal");
             return;
         }
         using var log = av.NewAvsLog();
@@ -40,7 +41,8 @@ internal class WaterParkStorageInput : StorageInput
     {
         if (av.IsNull())
         {
-            LogWriter.Default.Error("AvsVehicle is null in WaterParkStorageInput.OpenPDA");
+            using var log1 = SmartLog.ForAVS(RootModController.AnyInstance);
+            log1.Error("AvsVehicle is null in WaterParkStorageInput.OpenPDA");
             return;
         }
         using var log = av.NewAvsLog();

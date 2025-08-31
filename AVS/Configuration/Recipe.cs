@@ -1,9 +1,9 @@
-﻿using Nautilus.Crafting;
+﻿using AVS.Log;
+using Nautilus.Crafting;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.Log;
 
 namespace AVS.Configuration;
 
@@ -235,26 +235,28 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
     /// </summary>
     /// <param name="recipeData">Data to import</param>
     /// <param name="fallback">Fallback recipe to return in case of invalid data</param>
+    /// <param name="rmc">Root mod controller, used for logging</param>
     /// <returns>Imported data</returns>
-    public static Recipe Import(RecipeData recipeData, Recipe fallback)
+    public static Recipe Import(RootModController rmc, RecipeData recipeData, Recipe fallback)
     {
+        using var log = SmartLog.ForAVS(rmc, "Recipe");
         if (recipeData.Ingredients is null
             || recipeData.Ingredients.Count == 0
            )
         {
-            LogWriter.Default.Error("RecipeData is null or has no ingredients. Returning fallback Recipe.");
+            log.Error("RecipeData is null or has no ingredients. Returning fallback Recipe.");
             return fallback ?? throw new ArgumentNullException(nameof(fallback), "fallback must not be null");
         }
 
         if (recipeData.craftAmount != 1)
         {
-            LogWriter.Default.Error("RecipeData produces amounts other than 1. Returning fallback Recipe.");
+            log.Error("RecipeData produces amounts other than 1. Returning fallback Recipe.");
             return fallback ?? throw new ArgumentNullException(nameof(fallback), "fallback must not be null");
         }
 
         if (recipeData.linkedItemCount != 0)
         {
-            LogWriter.Default.Error("RecipeData has non-empty linked item count. Returning fallback Recipe.");
+            log.Error("RecipeData has non-empty linked item count. Returning fallback Recipe.");
             return fallback ?? throw new ArgumentNullException(nameof(fallback), "fallback must not be null");
         }
 

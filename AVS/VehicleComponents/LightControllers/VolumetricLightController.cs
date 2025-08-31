@@ -1,22 +1,20 @@
-﻿using AVS.BaseVehicle;
-using UnityEngine;
-
-namespace AVS
+﻿namespace AVS.VehicleComponents.LightControllers
 {
-    internal class VolumetricLightController : MonoBehaviour, IPlayerListener, ILightsStatusListener
+    internal class VolumetricLightController : AvAttached, IPlayerListener, ILightsStatusListener
     {
-        private AvsVehicle MV => GetComponent<AvsVehicle>();
+
+
         protected virtual void Awake()
         {
-            if (MV.volumetricLights.Count == 0)
+            if (AV.volumetricLights.Count == 0)
             {
-                Component.DestroyImmediate(this);
+                DestroyImmediate(this);
             }
         }
 
         private void SetVolumetricLights(bool active)
         {
-            MV.volumetricLights.ForEach(x => x.SetActive(active));
+            AV.volumetricLights.ForEach(x => x.SetActive(active));
         }
 
         void IPlayerListener.OnPilotBegin()
@@ -41,7 +39,7 @@ namespace AVS
 
         void ILightsStatusListener.OnHeadlightsOn()
         {
-            if (MV.IsBoarded)
+            if (AV.IsBoarded)
             {
                 SetVolumetricLights(false);
             }
@@ -69,7 +67,7 @@ namespace AVS
 
         void ILightsStatusListener.OnFloodlightsOn()
         {
-            if (MV.IsBoarded)
+            if (AV.IsBoarded)
             {
                 SetVolumetricLights(false);
             }

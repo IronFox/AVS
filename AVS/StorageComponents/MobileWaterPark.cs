@@ -390,10 +390,12 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     public void OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
     {
+
         //Log.Write($"OnProtoDeserializeObjectTree called for water park {index} with vehicle {vehicle?.NiceName()}");
         if (vehicle.IsNull())
         {
-            LogWriter.Default.Error($"MobileWaterPark.OnProtoDeserializeObjectTree called without a valid vehicle.");
+            using var log1 = SmartLog.ForAVS(RootModController.AnyInstance);
+            log1.Error($"MobileWaterPark.OnProtoDeserializeObjectTree called without a valid vehicle.");
             return;
         }
 

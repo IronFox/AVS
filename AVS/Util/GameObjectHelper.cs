@@ -132,6 +132,21 @@ public static class GameObjectHelper
     }
 
     /// <summary>
+    /// Returns a non-null object or throws an exception if the object is null.
+    /// </summary>
+    /// <typeparam name="T">Unity object type to check</typeparam>
+    /// <param name="item">Unity object to check</param>
+    /// <param name="msg">Message to throw as an <see cref="InvalidOperationException" /></param>
+    /// <returns>Non-null <paramref name="item"/></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static T OrThrow<T>(this T? item, string msg) where T : Object
+    {
+        if (item.IsNotNull())
+            return item;
+        throw new InvalidOperationException(msg);
+    }
+
+    /// <summary>
     /// Changes the active state of a GameObject and logs the action, including any exceptions that occur.
     /// </summary>
     /// <remarks>

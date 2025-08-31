@@ -91,8 +91,6 @@ namespace AVS.Patches
         {
             if (AvsVehicleManager.VehicleTypes.Any(x => x.TechType == craftTechType))
                 return true;
-            LogWriter.Default.Tag(nameof(ConstructorInputPatcher)).Write($"Returning false for unknown {craftTechType}: Using default implementation.");
-
             return false;   //move along
         }
     }

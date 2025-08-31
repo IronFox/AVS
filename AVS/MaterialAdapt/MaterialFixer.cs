@@ -91,13 +91,14 @@ public class MaterialFixer
     /// Forcefully reapplies all material adaptations.
     /// Normally not necessary
     /// </summary>
-    public void ReApply()
+    public void ReApply(RootModController rmc)
     {
+        using var log = SmartLog.LazyForAVS(rmc);
         //Logging.LogExtraStep($"Reapplying {adaptations.Count} material adaptations");
         foreach (var adaptation in adaptations)
         {
-            Logging.LogExtraStep($"Reapplying {adaptation.Target.GetMaterial().NiceName()}");
-            adaptation.ApplyToTarget(Logging);
+            Logging.LogExtraStep(log, $"Reapplying {adaptation.Target.GetMaterial().NiceName()}");
+            adaptation.ApplyToTarget(rmc, Logging);
         }
     }
 
@@ -130,30 +131,32 @@ public class MaterialFixer
 
         if (!materialsFixed)
         {
-            HullPrototype = HullPrototype ?? SubnauticaMaterialPrototype.FromSeamoth(Logging);
+
+            HullPrototype = HullPrototype ?? SubnauticaMaterialPrototype.FromSeamoth(Vehicle.Owner, Logging);
 #if PLAIN_COPY_GLASS
             if (!HaveGlassMaterial)
-                HaveGlassMaterial = SubnauticaMaterialPrototype.GlassMaterialFromSeamoth(out glassMaterial, Logging);
+                HaveGlassMaterial = SubnauticaMaterialPrototype.GlassMaterialFromSeamoth(Vehicle.Owner, out glassMaterial, Logging);
 #else
                 GlassPrototype = GlassPrototype ?? SubnauticaMaterialPrototype.GlassFromSeamoth(Logging);
 #endif
 
             if (HullPrototype.IsNotNull() && HaveGlassMaterial)
             {
+                using var log = Vehicle.NewAvsLog();
                 materialsFixed = true;
                 uniformShininess = UniformShininess;
 
 
                 if (HullPrototype.IsEmpty)
                 {
-                    Logging.Error($"No material prototype found on Seamoth");
+                    log.Error($"No material prototype found on Seamoth");
                 }
                 else
                 {
                     var shader = Shaders.FindMainShader();
                     if (shader.IsNull())
                     {
-                        Logging.Error($"No main shader found. Cannot adapt materials");
+                        log.Error($"No main shader found. Cannot adapt materials");
                         return false;
                     }
 
@@ -171,7 +174,7 @@ public class MaterialFixer
 #if PLAIN_COPY_GLASS
                                     if (glassMaterial.IsNull())
                                     {
-                                        Logging.Error($"Glass material is null. Cannot adapt glass material {data}");
+                                        log.Error($"Glass material is null. Cannot adapt glass material {data}");
                                         continue;
                                     }
 
@@ -182,18 +185,18 @@ public class MaterialFixer
                                         break;
 #endif
                                 default:
-                                    Logging.Warn($"Unknown material type for material {data}. Skipping adaptation");
+                                    log.Warn($"Unknown material type for material {data}. Skipping adaptation");
                                     continue;
                             }
 
                             //= new MaterialAdaptation(HullPrototype, data, shader);
-                            materialAdaptation.ApplyToTarget(Logging, uniformShininess);
+                            materialAdaptation.ApplyToTarget(Vehicle.Owner, Logging, uniformShininess);
 
                             adaptations.Add(materialAdaptation);
                         }
                         catch (Exception ex)
                         {
-                            Logging.Error($"Adaptation failed for material {data}: {ex}");
+                            log.Error($"Adaptation failed for material {data}: {ex}");
                             Debug.LogException(ex);
                         }
                     //foreach (var data in GlassMaterialResolver())
@@ -211,7 +214,7 @@ public class MaterialFixer
                     //        Debug.LogException(ex);
                     //    }
                     //}
-                    Logging.LogExtraStep($"All done. Applied {adaptations.Count} adaptations");
+                    Logging.LogExtraStep(log, $"All done. Applied {adaptations.Count} adaptations");
                 }
             }
 
@@ -221,7 +224,7 @@ public class MaterialFixer
         {
             uniformShininess = UniformShininess;
             foreach (var adaptation in adaptations)
-                adaptation.ApplyToTarget(Logging, uniformShininess);
+                adaptation.ApplyToTarget(Vehicle.Owner, Logging, uniformShininess);
             anyChanged = true;
         }
 
@@ -230,11 +233,12 @@ public class MaterialFixer
             repairMaterialsInSeconds -= Time.deltaTime;
             if (repairMaterialsInSeconds < 0 && --repairMaterialsInFrames == 0)
             {
+                using var log = Vehicle.NewAvsLog();
                 repairMaterialsInSeconds = float.MaxValue;
                 doRepairMaterialsPostUndock = false;
-                Logging.LogExtraStep($"Undocked. Resetting materials");
+                Logging.LogExtraStep(log, $"Undocked. Resetting materials");
                 foreach (var adaptation in adaptations)
-                    adaptation.PostDockFixOnTarget(Logging);
+                    adaptation.PostDockFixOnTarget(Vehicle.Owner, Logging);
                 anyChanged = true;
             }
         }

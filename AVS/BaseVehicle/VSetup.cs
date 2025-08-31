@@ -9,6 +9,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using MobileWaterPark = AVS.StorageComponents.MobileWaterPark;
 
@@ -20,7 +21,8 @@ public abstract partial class AvsVehicle
     internal int mainPatcherInstanceId;
     private RootModController? owner;
 
-    internal SmartLog NewLazyAvsLog(params string[] tags) => new SmartLog(Owner, "AVS", frameDelta: 1, tags: [$"V{Id}", .. tags], forceLazy: true);
+    internal SmartLog NewLazyAvsLog(IReadOnlyList<string>? tags = null, [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
+        => new SmartLog(Owner, "AVS", frameDelta: 1, tags: [$"V{Id}", .. (tags ?? [])], forceLazy: true, nameOverride: SmartLog.DeriveCallerName(callerFilePath, memberName));
     internal SmartLog NewAvsLog(params string[] tags) => new SmartLog(Owner, "AVS", frameDelta: 1, tags: [$"V{Id}", .. tags]);
     /// <summary>
     /// Creates a new instance of <see cref="SmartLog"/> preconfigured with module-specific tags.
@@ -28,6 +30,19 @@ public abstract partial class AvsVehicle
     /// <param name="tags">An optional array of additional tags to include in the log. These tags are appended to the default module tags.</param>
     /// <returns>A new <see cref="SmartLog"/> instance associated with the module and including the specified tags.</returns>
     public SmartLog NewModLog(params string[] tags) => new SmartLog(Owner, "Mod", frameDelta: 1, tags: [$"V{Id}", .. tags]);
+    /// <summary>
+    /// Creates a new lazy instance of <see cref="SmartLog"/> preconfigured with module-specific tags.
+    /// Lazy logs defer the output of the log context until it is actually needed, which can improve performance.
+    /// </summary>
+    /// <remarks>
+    /// When using this method, ensure that the caller type name matches the caller file name.
+    /// </remarks>
+    /// <param name="callerFilePath">The file path of the caller. This is automatically populated by the compiler.</param>
+    /// <param name="memberName">The member name of the caller. This is automatically populated by the compiler.</param>
+    /// <param name="tags">An optional array of additional tags to include in the log. These tags are appended to the default module tags.</param>
+    /// <returns>A new <see cref="SmartLog"/> instance associated with the module and including the specified tags.</returns>
+    public SmartLog NewLazyModLog(IReadOnlyList<string>? tags = null, [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
+        => new SmartLog(Owner, "Mod", frameDelta: 1, tags: [$"V{Id}", .. (tags ?? [])], forceLazy: true, nameOverride: SmartLog.DeriveCallerName(callerFilePath, memberName));
 
     /// <summary>
     /// The root mod controller instance that owns this vehicle.
@@ -243,14 +258,13 @@ public abstract partial class AvsVehicle
             tmp.displayName = vb.DisplayName?.Text;
             tmp.displayNameLocalized = vb.DisplayName?.Localize ?? false;
 
-            var model = vb.Root.gameObject.EnsureComponent<BatteryProxy>();
-            model.av = this;
+
+            var model = AvAttached.Ensure<BatteryProxy>(vb.Root, this, log);
             model.proxy = vb.BatteryProxy;
             model.mixin = energyMixin;
 
             SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vb.Root.transform);
-            var abi = vb.Root.EnsureComponent<SaveLoad.AvsBatteryIdentifier>();
-            abi.av = this;
+            var abi = AvAttached.Ensure<SaveLoad.AvsBatteryIdentifier>(vb.Root, this, log);
         }
 
         // Configure energy interface
@@ -384,6 +398,7 @@ public abstract partial class AvsVehicle
 
     internal bool ReSetupInnateStorages()
     {
+        using var log = NewAvsLog();
         var iter = 0;
         try
         {
@@ -402,7 +417,7 @@ public abstract partial class AvsVehicle
                 cont.isAllowedToRemove = vs.InnateIsAllowedToRemove;
                 //cont.name = "Innate Vehicle Storage " + iter;
 
-                LogWriter.Default.Debug("Setting up Innate Storage " + cont.NiceName() + $" '{cont.DisplayName}'");
+                log.Debug("Setting up Innate Storage " + cont.NiceName() + $" '{cont.DisplayName}'");
 
                 var storageCloseSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1")
                     .GetComponent<SeamothStorageInput>().closeSound;
@@ -428,7 +443,7 @@ public abstract partial class AvsVehicle
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error(
+            log.Error(
                 "There was a problem setting up the Innate Storage. Check VehicleStorage.Container and AvsVehicle.StorageRootObject",
                 e);
             return false;

@@ -1,19 +1,13 @@
-﻿using AVS.BaseVehicle;
-using AVS.Log;
+﻿using AVS.Log;
 using AVS.Util;
+using AVS.VehicleComponents;
 using System;
 using System.Collections;
-using UnityEngine;
 
 namespace AVS.SaveLoad;
 
-internal class AvsBatteryIdentifier : MonoBehaviour, IProtoTreeEventListener
+internal class AvsBatteryIdentifier : AvAttached, IProtoTreeEventListener
 {
-    [SerializeField]
-    internal AvsVehicle? av;
-
-    private AvsVehicle AV => av.OrThrow(() => new InvalidOperationException(
-            $"AvsBatteryIdentifier on GameObject {gameObject.name} has null av reference"));
     private const string saveFileNameSuffix = "battery";
     private string SaveFileName => SaveLoadUtils.GetSaveFileName(AV.transform, transform, saveFileNameSuffix);
 

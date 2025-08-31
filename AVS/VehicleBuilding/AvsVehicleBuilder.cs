@@ -14,7 +14,7 @@ using UnityEngine;
 namespace AVS;
 
 internal readonly record struct VehicleEntry(
-    RootModController MainPatcher,
+    RootModController RMC,
     AvsVehicle AV,
     int UniqueId,
     PingType PingType,
@@ -152,6 +152,7 @@ internal static class AvsVehicleBuilder
 
     private static bool SetupObjects(Submarine av)
     {
+        using var log = av.NewLazyAvsLog();
         try
         {
             for (var i = 0; i < av.Com.Helms.Count; i++)
@@ -164,7 +165,7 @@ internal static class AvsVehicleBuilder
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error("There was a problem setting up the PilotSeats. Check VehiclePilotSeat.Seat", e);
+            log.Error("There was a problem setting up the PilotSeats. Check VehiclePilotSeat.Seat", e);
             return false;
         }
 
@@ -179,7 +180,7 @@ internal static class AvsVehicleBuilder
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error("There was a problem setting up the Hatches. Check VehicleHatchStruct.Hatch", e);
+            log.Error("There was a problem setting up the Hatches. Check VehicleHatchStruct.Hatch", e);
             return false;
         }
 
@@ -202,7 +203,7 @@ internal static class AvsVehicleBuilder
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error(
+            log.Error(
                 "There was a problem setting up the Control Panel. Check AvsVehicle.ControlPanel and ensure \"Control-Panel-Location\" exists at the top level of your model. While you're at it, check that \"Fabricator-Location\" is at the top level of your model too.",
                 e);
             return false;
@@ -213,6 +214,7 @@ internal static class AvsVehicleBuilder
 
     private static bool SetupObjects(Submersible av)
     {
+        using var log = av.NewLazyAvsLog();
         try
         {
             av.playerPosition = av.Com.PilotSeat.PlayerControlLocation;
@@ -221,7 +223,7 @@ internal static class AvsVehicleBuilder
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error("There was a problem setting up the PilotSeats. Check VehiclePilotSeat.Seat", e);
+            log.Error("There was a problem setting up the PilotSeats. Check VehiclePilotSeat.Seat", e);
             return false;
         }
 
@@ -236,7 +238,7 @@ internal static class AvsVehicleBuilder
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error("There was a problem setting up the Hatches. Check VehicleHatchStruct.Hatch", e);
+            log.Error("There was a problem setting up the Hatches. Check VehicleHatchStruct.Hatch", e);
             return false;
         }
 
@@ -404,7 +406,8 @@ internal static class AvsVehicleBuilder
                 //LogWriter.Default.Write("Found crush damage sound for " + av.name);
             }
 
-        if (ce.asset.IsNull()) LogWriter.Default.Error("Failed to find crush damage sound for " + av.name);
+        if (ce.asset.IsNull())
+            log.Error("Failed to find crush damage sound for " + av.name);
         /* For reference,
          * Prawn dies from max health in 3:00 minutes.
          * Seamoth in 0:30
@@ -665,43 +668,6 @@ internal static class AvsVehicleBuilder
                 renderer.material = seamothGlassMaterial; // this is the right line
                 continue;
             }
-    }
-
-    //public static void ApplyShaders(AvsVehicle av, Shader shader)
-    //{
-    //    if (av.Config.AutoFixMaterials)
-    //    {
-    //        ForceApplyShaders(av, shader);
-    //        ApplyGlassMaterial(av);
-    //    }
-    //}
-    private static void ForceApplyShaders(AvsVehicle av, Shader shader)
-    {
-        if (shader.IsNull())
-        {
-            LogWriter.Default.Error("Tried to apply a null Shader.");
-            return;
-        }
-
-        // Add the [marmoset] shader to all renderers
-        foreach (var renderer in av.gameObject.GetComponentsInChildren<Renderer>(true))
-        {
-            // skip some materials
-            if (renderer.gameObject.GetComponent<Skybox>())
-            {
-                // I feel okay using Skybox as the designated "don't apply marmoset to me" component.
-                // I think there's no reason a vehicle should have a skybox anywhere.
-                // And if there is, I'm sure that developer can work around this.
-                Component.DestroyImmediate(renderer.gameObject.GetComponent<Skybox>());
-                continue;
-            }
-
-            if (renderer.gameObject.name.ToLower().Contains("light")) continue;
-            if (av.Com.CanopyWindows.Contains(renderer.gameObject)) continue;
-            foreach (var mat in renderer.materials)
-                // give it the marmo shader, no matter what
-                mat.shader = shader;
-        }
     }
 
     internal static void SetIcon(uGUI_Ping ping, PingType inputType)

@@ -5,6 +5,7 @@ using AVS.Localization;
 using AVS.MaterialAdapt;
 using AVS.Util;
 using AVS.VehicleComponents;
+using AVS.VehicleComponents.LightControllers;
 using System;
 using System.Linq;
 using UnityEngine;
@@ -173,55 +174,78 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
     public override void Awake()
     {
         using var log = NewAvsLog();
-        OnAwakeOrPrefabricate();
-        hudPingInstance =
-            gameObject.GetComponent<PingInstance>(); //created during prefab. Cannot properly create here if missing
-        voiceQueue = gameObject.EnsureComponent<VoiceQueue>();
-
-        energyInterface = GetComponent<EnergyInterface>();
-
-        powerManager = gameObject.EnsureComponent<PowerManager>();
-
-        base.Awake();
-
-        var rmc = Owner;
-
-        AvsVehicleManager.EnrollVehicle(rmc, this); // Register our new vehicle with AVS
-        UpgradeOnAddedActions.Add(StorageModuleAction);
-        UpgradeOnAddedActions.Add(ArmorPlatingModuleAction);
-        UpgradeOnAddedActions.Add(PowerUpgradeModuleAction);
-
-        SetupVolumetricLights();
-        HeadlightsController = gameObject.EnsureComponent<HeadlightsController>();
-        gameObject.AddComponent<VolumetricLightController>();
-
-        autopilot = gameObject.EnsureComponent<Autopilot>();
-
-        LazyInitialize();
-        Com.Upgrades.ForEach(x =>
+        try
         {
-            if (x.Interface.IsNull())
+            log.Write($"Gathering composition");
+            OnAwakeOrPrefabricate();
+            log.Write($"Gathering local components");
+            hudPingInstance =
+                gameObject.GetComponent<PingInstance>(); //created during prefab. Cannot properly create here if missing
+            voiceQueue = gameObject.EnsureComponent<VoiceQueue>();
+
+            energyInterface = GetComponent<EnergyInterface>();
+
+            powerManager = gameObject.EnsureComponent<PowerManager>();
+
+            log.Write($"base.Awake()");
+            base.Awake();
+
+            var rmc = Owner;
+
+            log.Write($"Enrolling vehicle");
+            AvsVehicleManager.EnrollVehicle(rmc, this); // Register our new vehicle with AVS
+
+            log.Write($"Registering events");
+            UpgradeOnAddedActions.Add(StorageModuleAction);
+            UpgradeOnAddedActions.Add(ArmorPlatingModuleAction);
+            UpgradeOnAddedActions.Add(PowerUpgradeModuleAction);
+
+            log.Write($"Setting up volumetric lights");
+            SetupVolumetricLights();
+            HeadlightsController = AvAttached.EnsureSelfDestructing<HeadlightsController>(this, log);
+            AvAttached.EnsureSelfDestructing<VolumetricLightController>(this, log);
+
+            log.Write($"Setting up autopilot");
+            autopilot = gameObject.EnsureComponent<Autopilot>();
+
+            log.Write($"Lazy-initializing");
+            LazyInitialize();
+            log.Write($"Setting up upgrades");
+            Com.Upgrades.ForEach(x =>
             {
-                log.Error($"Null upgrade interface found.");
-                return;
-            }
+                if (x.Interface.IsNull())
+                {
+                    log.Error($"Null upgrade interface found.");
+                    return;
+                }
 
-            var consoleInput = x.Interface.GetComponent<VehicleUpgradeConsoleInput>();
-            if (consoleInput.IsNull())
-                log.Error(
-                    $"VehicleUpgradeConsoleInput not found on {x.Interface.NiceName()}. This is a required component for vehicle upgrades.");
-            else
-                consoleInput.equipment = modules;
-        });
-        var warpChipThing = GetComponent("TelePingVehicleInstance");
-        if (warpChipThing.IsNotNull())
-            DestroyImmediate(warpChipThing);
-        vfxConstructing = GetComponent<VFXConstructing>();
+                var consoleInput = x.Interface.GetComponent<VehicleUpgradeConsoleInput>();
+                if (consoleInput.IsNull())
+                    log.Error(
+                        $"VehicleUpgradeConsoleInput not found on {x.Interface.NiceName()}. This is a required component for vehicle upgrades.");
+                else
+                    consoleInput.equipment = modules;
+            });
+            var warpChipThing = GetComponent("TelePingVehicleInstance");
+            if (warpChipThing.IsNotNull())
+                DestroyImmediate(warpChipThing);
 
-        ReSetupInnateStorages(); //preserve labels. Also adapt to changes in language to some extent
-        ReSetupModularStorages(); //preserve labels. Also adapt to changes in language to some extent
-        ReSetupWaterParks();
-        CheckEnergyInterface();
+            vfxConstructing = GetComponent<VFXConstructing>();
+
+            log.Write($"Re-initializing innate storages");
+            ReSetupInnateStorages(); //preserve labels. Also adapt to changes in language to some extent
+            log.Write($"Re-initializing modular storages");
+            ReSetupModularStorages(); //preserve labels. Also adapt to changes in language to some extent
+            log.Write($"Re-initializing mobile water parks");
+            ReSetupWaterParks();
+            log.Write($"Checking energy interface");
+            CheckEnergyInterface();
+        }
+        catch (Exception e)
+        {
+            log.Error($"Error during Awake(): ", e);
+            throw;
+        }
     }
 
     ///<inheritdoc />

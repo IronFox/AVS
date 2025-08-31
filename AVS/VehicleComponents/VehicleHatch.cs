@@ -1,6 +1,5 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Localization;
-using AVS.Log;
 using AVS.Util;
 using AVS.VehicleTypes;
 using UnityEngine;
@@ -48,15 +47,20 @@ internal class VehicleHatch : HandTarget, IHandTarget, IDockListener
 
     public void OnHandClick(GUIHand hand)
     {
-        LogWriter.Default.Write($"VehicleHatch.OnHandClick: {av?.NiceName()}");
-        if (!isLive) return;
+        using var log = av.OrThrow($"VehicleHatch.av is not set at this point").NewAvsLog();
+        log.Write($"VehicleHatch.OnHandClick: {av?.NiceName()}");
+        if (!isLive)
+        {
+            log.Write("VehicleHatch is not live, ignoring click");
+            return;
+        }
         Player.main.rigidBody.velocity = Vector3.zero;
         Player.main.rigidBody.angularVelocity = Vector3.zero;
         if (av is Submarine sub)
         {
             if (hatchIndex < 0 || hatchIndex >= sub.Com.Hatches.Count)
             {
-                LogWriter.Default.Error($"Invalid hatch index {hatchIndex} for submarine {sub.VehicleName}");
+                log.Error($"Invalid hatch index {hatchIndex} for submarine {sub.VehicleName}");
                 return;
             }
 
@@ -70,21 +74,6 @@ internal class VehicleHatch : HandTarget, IHandTarget, IDockListener
             sub2.ClosestPlayerEntry();
         }
 
-        LogWriter.Default.Write("VehicleHatch.OnHandClick: end");
 
-        /*
-        if (av as Walker.IsNotNull())
-        {
-            Player.main.transform.position = (av as Walker).PilotSeat.SitLocation.transform.position;
-            Player.main.transform.rotation = (av as Walker).PilotSeat.SitLocation.transform.rotation;
-            av.PlayerEntry();
-        }
-        if (av as Skimmer.IsNotNull())
-        {
-            Player.main.transform.position = (av as Skimmer).PilotSeats.First().SitLocation.transform.position;
-            Player.main.transform.rotation = (av as Skimmer).PilotSeats.First().SitLocation.transform.rotation;
-            av.PlayerEntry();
-        }
-        */
     }
 }

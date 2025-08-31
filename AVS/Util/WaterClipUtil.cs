@@ -105,8 +105,9 @@ public static class WaterClipUtil
         log.Write($"All set. Water clip proxy bound");
     }
 
-    private static void DestroyComponent<T>(GameObject target, LogWriter log) where T : Component
+    private static void DestroyComponent<T>(RootModController rmc, GameObject target) where T : Component
     {
+        using var log = SmartLog.ForAVS(rmc);
         var component = target.GetComponent<T>();
         if (component.IsNotNull())
         {

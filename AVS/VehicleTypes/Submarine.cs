@@ -7,6 +7,7 @@ using AVS.SaveLoad;
 using AVS.Util;
 using AVS.VehicleBuilding;
 using AVS.VehicleComponents;
+using AVS.VehicleComponents.LightControllers;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -94,11 +95,12 @@ public abstract class Submarine : AvsVehicle
     /// <inheritdoc />
     public override void Awake()
     {
+        using var log = NewAvsLog();
         base.Awake();
-        Floodlights = gameObject.AddComponent<FloodlightsController>();
-        Interiorlights = gameObject.AddComponent<InteriorLightsController>();
-        NavLights = gameObject.AddComponent<NavigationLightsController>();
-        gameObject.EnsureComponent<TetherSource>().av = this;
+        Floodlights = AvAttached.EnsureSelfDestructing<FloodlightsController>(this, log);
+        Interiorlights = AvAttached.EnsureSelfDestructing<InteriorLightsController>(this, log);
+        NavLights = AvAttached.EnsureSelfDestructing<NavigationLightsController>(this, log);
+        AvAttached.EnsureSelfDestructing<TetherSource>(this, log);
         controlPanelLogic.SafeDo(x => x.Init());
     }
 

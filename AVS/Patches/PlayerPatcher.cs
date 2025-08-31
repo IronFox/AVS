@@ -231,11 +231,14 @@ public static class PlayerPatcher
         if (fcc.mode || fcc.ghostMode)
             return true;
         var checkedAncestry = new List<Transform>();
-        if (__instance.currentMountedVehicle is AvsVehicle
+        if (__instance.currentMountedVehicle is AvsVehicle av
             && __instance.mode == Player.Mode.LockedPiloting
             && !Admin.Utils.FindVehicleInParents(Player.main.transform, out var v, checkedAncestry))
-            Log.LogWriter.Default.Error(
+        {
+            using var log = av.NewAvsLog();
+            log.Error(
                 $"Player does not reside in a vehicle or the wrong one ({v.NiceName()}). Checked ancestry: {string.Join("->", checkedAncestry.Select(x => x.NiceName()))}");
+        }
         // Don't skip. This is a weird problem and it needs resolved, so let it die strangely.
         //return false;
         return true;

@@ -1,186 +1,16 @@
 ﻿using AVS.Assets;
 using AVS.Interfaces;
 using AVS.Log;
+using AVS.MaterialAdapt.Variables;
 using AVS.Util;
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
 
 namespace AVS.MaterialAdapt;
 
-internal interface IShaderVariable
-{
-    ShaderPropertyType Type { get; }
-
-    /// <summary>
-    /// Updates a material according to the preserved values present in the local variable
-    /// </summary>
-    /// <param name="m">Material to update</param>
-    /// <param name="logConfig">Log Configuration</param>
-    /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
-    void SetTo(Material m, MaterialLog logConfig, string? materialName);
-}
-
-internal readonly struct ColorVariable : IShaderVariable
-{
-    public ShaderPropertyType Type => ShaderPropertyType.Color;
-    public Color Value { get; }
-    public string Name { get; }
-
-    public ColorVariable(Material m, string n)
-    {
-        Value = m.GetColor(n);
-        Name = n;
-    }
-
-    /// <summary>
-    /// Sets the color property of a material with the given value and logs the change.
-    /// </summary>
-    /// <param name="m">The material on which the color property will be set.</param>
-    /// <param name="name">The name of the color property to set.</param>
-    /// <param name="value">The new color value to assign to the property.</param>
-    /// <param name="logConfig">The log configuration used to log the operation.</param>
-    /// <param name="materialName">Optional custom material name for logging purposes.</param>
-    public static void Set(Material m, string name, Color value, MaterialLog logConfig, string? materialName)
-    {
-        try
-        {
-            var old = m.GetColor(name);
-            if (old == value)
-                return;
-            logConfig.LogMaterialVariableSet(ShaderPropertyType.Color, name, old, value, m, materialName);
-            m.SetColor(name, value);
-        }
-        catch (Exception ex)
-        {
-            logConfig.Writer.Error($"Failed to set color {name} ({value}) on {materialName ?? m.NiceName()}", ex);
-        }
-    }
-
-    public void SetTo(Material m, MaterialLog logConfig, string? materialName)
-    {
-        Set(m, Name, Value, logConfig, materialName);
-    }
-}
-
-internal readonly struct VectorVariable : IShaderVariable
-{
-    public ShaderPropertyType Type => ShaderPropertyType.Vector;
-
-
-    public Vector4 Value { get; }
-    public string Name { get; }
-
-    public VectorVariable(Material m, string n)
-    {
-        Value = m.GetVector(n);
-        Name = n;
-    }
-
-    public void SetTo(Material m, MaterialLog logConfig, string? materialName)
-    {
-        try
-        {
-            var old = m.GetVector(Name);
-            if (old == Value)
-                return;
-            logConfig.LogMaterialVariableSet(Type, Name, old, Value, m, materialName);
-            m.SetVector(Name, Value);
-        }
-        catch (Exception ex)
-        {
-            logConfig.Writer.Error($"Failed to set {Type} {Name} ({Value}) on {materialName ?? m.NiceName()}", ex);
-        }
-    }
-}
-
-internal readonly struct TextureVariable : IShaderVariable
-{
-    public ShaderPropertyType Type => ShaderPropertyType.Vector;
-
-
-    public Texture Texture { get; }
-    public Vector2 Offset { get; }
-    public Vector2 Scale { get; }
-    public string Name { get; }
-
-    public TextureVariable(Material m, string n)
-    {
-        Texture = m.GetTexture(n);
-        Offset = m.GetTextureOffset(n);
-        Scale = m.GetTextureScale(n);
-        Name = n;
-    }
-
-    public void SetTo(Material m, MaterialLog logConfig, string? materialName)
-    {
-        try
-        {
-            var oldT = m.GetTexture(Name);
-            var oldO = m.GetTextureOffset(Name);
-            var oldS = m.GetTextureScale(Name);
-            if (oldT != Texture)
-            {
-                logConfig.LogMaterialVariableSet(Type, Name, oldT, Texture, m, materialName);
-                m.SetTexture(Name, Texture);
-            }
-
-            if (oldO != Offset)
-            {
-                logConfig.LogMaterialVariableSet(Type, Name, oldO, Offset, m, materialName);
-                m.SetTextureOffset(Name, Offset);
-            }
-
-            if (oldS != Scale)
-            {
-                logConfig.LogMaterialVariableSet(Type, Name, oldS, Scale, m, materialName);
-                m.SetTextureScale(Name, Scale);
-            }
-        }
-        catch (Exception ex)
-        {
-            logConfig.Writer.Error(
-                $"Failed to set {Type} {Name} ({Texture.NiceName()}, {Offset}, {Scale}) on {materialName ?? m.NiceName()}",
-                ex);
-        }
-    }
-}
-
-internal readonly struct FloatVariable : IShaderVariable
-{
-    public ShaderPropertyType Type => ShaderPropertyType.Float;
-
-
-    public float Value { get; }
-    public string Name { get; }
-
-    public FloatVariable(Material m, string n)
-    {
-        Value = m.GetFloat(n);
-        Name = n;
-    }
-
-    public void SetTo(Material m, MaterialLog logConfig, string? materialName)
-    {
-        try
-        {
-            var old = m.GetFloat(Name);
-            if (old == Value)
-                return;
-            logConfig.LogMaterialVariableSet(Type, Name, old, Value, m, materialName);
-            m.SetFloat(Name, Value);
-        }
-        catch (Exception ex)
-        {
-            logConfig.Writer.Error(
-                $"Failed to set {Type} {Name} ({Value.ToString(CultureInfo.InvariantCulture)}) on {materialName ?? m.NiceName()}",
-                ex);
-        }
-    }
-}
 
 /// <summary>
 /// Read-only material definition as retrieved from some existing material
@@ -212,30 +42,32 @@ public class SubnauticaMaterialPrototype : INullTestableType
     /// <param name="m">Target material</param>
     /// <param name="logConfig">Log Configuration</param>
     /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
+    /// <param name="rmc">Root mod controller for logging purposes</param>
     /// <param name="variableNamePredicate">
     /// Optional predicate to only check/update certain shader variables by name.
     /// If non-null updates only variables for which this function returns true</param>
-    public void ApplyTo(Material m, MaterialLog logConfig, Func<string, bool>? variableNamePredicate = null,
+    public void ApplyTo(RootModController rmc, Material m, MaterialLog logConfig, Func<string, bool>? variableNamePredicate = null,
         string? materialName = null)
     {
+        using var log = SmartLog.ForAVS(rmc);
         variableNamePredicate = variableNamePredicate ?? (_ => true);
 
         foreach (var v in ColorVariables)
             if (variableNamePredicate(v.Name))
-                v.SetTo(m, logConfig, materialName);
+                v.SetTo(rmc, m, logConfig, materialName);
         foreach (var v in VectorVariables)
             if (variableNamePredicate(v.Name))
-                v.SetTo(m, logConfig, materialName);
+                v.SetTo(rmc, m, logConfig, materialName);
         foreach (var v in FloatVariables)
             if (variableNamePredicate(v.Name))
-                v.SetTo(m, logConfig, materialName);
+                v.SetTo(rmc, m, logConfig, materialName);
         foreach (var v in TextureVariables)
             if (variableNamePredicate(v.Name))
-                v.SetTo(m, logConfig, materialName);
+                v.SetTo(rmc, m, logConfig, materialName);
 
         if (m.globalIlluminationFlags != MaterialGlobalIlluminationFlags)
         {
-            logConfig.LogMaterialChange(
+            logConfig.LogMaterialChange(log,
                 $"Applying global illumination flags ({m.globalIlluminationFlags} -> {MaterialGlobalIlluminationFlags})");
 
             m.globalIlluminationFlags = MaterialGlobalIlluminationFlags;
@@ -244,14 +76,14 @@ public class SubnauticaMaterialPrototype : INullTestableType
         foreach (var existing in m.shaderKeywords.ToList())
             if (!ShaderKeywords.Contains(existing))
             {
-                logConfig.LogMaterialChange($"Removing shader keyword {existing}");
+                logConfig.LogMaterialChange(log, $"Removing shader keyword {existing}");
                 m.DisableKeyword(existing);
             }
 
         foreach (var kw in ShaderKeywords)
             if (!m.IsKeywordEnabled(kw))
             {
-                logConfig.LogMaterialChange($"Enabling shader keyword {kw}");
+                logConfig.LogMaterialChange(log, $"Enabling shader keyword {kw}");
                 m.EnableKeyword(kw);
             }
     }
@@ -322,10 +154,11 @@ public class SubnauticaMaterialPrototype : INullTestableType
     /// </summary>
     /// <param name="logConfig">Logging configuration</param>
     /// <param name="result">The retrieved aquarium glass material, if any.</param>
+    /// <param name="rmc">Root mod controller for logging purposes</param>
     /// <returns>False if the seamoth is not (yet) available. Keep trying if false.
     /// Ttrue if the seamoth is loaded, but <paramref name="result"/> can still be null
     /// if the respective material is not found</returns>
-    public static bool GlassMaterialFromSeamoth(out Material? result, MaterialLog logConfig = default)
+    public static bool GlassMaterialFromSeamoth(RootModController rmc, out Material? result, MaterialLog logConfig = default)
     {
         var sm = SeamothHelper.Seamoth;
         if (sm.IsNull())
@@ -333,8 +166,9 @@ public class SubnauticaMaterialPrototype : INullTestableType
             result = null;
             return false;
         }
+        using var log = SmartLog.LazyForAVS(rmc);
 
-        logConfig.LogExtraStep($"Found Seamoth");
+        logConfig.LogExtraStep(log, $"Found Seamoth");
         var glassMaterial = sm.transform
             .Find("Model/Submersible_SeaMoth/Submersible_seaMoth_geo/Submersible_SeaMoth_glass_interior_geo")
             .GetComponent<SkinnedMeshRenderer>().material;
@@ -346,12 +180,13 @@ public class SubnauticaMaterialPrototype : INullTestableType
     /// Creates a material prototype for the glass material of the Seamoth.
     /// </summary>
     /// <param name="logConfig">Logging configuration</param>
+    /// <param name="rmc">Root mod controller for logging purposes</param>
     /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
     /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
     /// if the respective material is not found</returns>
-    public static SubnauticaMaterialPrototype? GlassFromSeamoth(MaterialLog logConfig = default)
+    public static SubnauticaMaterialPrototype? GlassFromSeamoth(RootModController rmc, MaterialLog logConfig = default)
     {
-        if (!GlassMaterialFromSeamoth(out var glassMaterial, logConfig))
+        if (!GlassMaterialFromSeamoth(rmc, out var glassMaterial, logConfig))
             return null;
         return new SubnauticaMaterialPrototype(glassMaterial, true);
     }
@@ -359,12 +194,13 @@ public class SubnauticaMaterialPrototype : INullTestableType
     /// <summary>
     /// Retrieves the entire glass material of the aquarium.
     /// </summary>
+    /// <param name="rmc">Root mod controller for logging purposes</param>
     /// <param name="logConfig">Logging configuration</param>
     /// <param name="result">The material prototype to fill with the aquarium glass material.</param>
     /// <returns>False if the aquarium is not (yet) available. Keep trying if false.
     /// Ttrue if the aquarium is loaded, but <paramref name="result"/> can still be null
     /// if the respective material is not found</returns>
-    public static bool GlassMaterialFromAquarium(out Material? result, MaterialLog logConfig = default)
+    public static bool GlassMaterialFromAquarium(RootModController rmc, out Material? result, MaterialLog logConfig = default)
     {
         var sm = PrefabLoader.Request(TechType.Aquarium, true);
         if (sm.Prefab.IsNull())
@@ -373,7 +209,9 @@ public class SubnauticaMaterialPrototype : INullTestableType
             return false;
         }
 
-        logConfig.LogExtraStep($"Found Aquarium");
+        using var log = SmartLog.LazyForAVS(rmc);
+
+        logConfig.LogExtraStep(log, $"Found Aquarium");
 
         Material? glassMaterial = null;
         var renderers = sm.Prefab.GetComponentsInChildren<MeshRenderer>();
@@ -383,13 +221,13 @@ public class SubnauticaMaterialPrototype : INullTestableType
                 if (material.shader.name == Shaders.MainShader
                     && material.name.StartsWith("Aquarium_glass"))
                 {
-                    logConfig.LogExtraStep($"Found material prototype: {material.NiceName()}");
+                    logConfig.LogExtraStep(log, $"Found material prototype: {material.NiceName()}");
                     glassMaterial = material;
                     break;
                 }
                 else
                 {
-                    logConfig.LogExtraStep(
+                    logConfig.LogExtraStep(log,
                         $"(Expected) shader mismatch on {material.NiceName()} which uses {material.shader}");
                 }
 
@@ -404,13 +242,14 @@ public class SubnauticaMaterialPrototype : INullTestableType
     /// <summary>
     /// Creates a material prototype for the glass material of the Seamoth.
     /// </summary>
+    /// <param name="rmc">Root mod controller for logging purposes</param>
     /// <param name="logConfig">Logging configuration</param>
     /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
     /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
     /// if the respective material is not found</returns>
-    public static SubnauticaMaterialPrototype? GlassFromAquarium(MaterialLog logConfig = default)
+    public static SubnauticaMaterialPrototype? GlassFromAquarium(RootModController rmc, MaterialLog logConfig = default)
     {
-        if (!GlassMaterialFromAquarium(out var glassMaterial, logConfig))
+        if (!GlassMaterialFromAquarium(rmc, out var glassMaterial, logConfig))
             return null;
         return new SubnauticaMaterialPrototype(glassMaterial);
     }
@@ -421,17 +260,18 @@ public class SubnauticaMaterialPrototype : INullTestableType
     /// If the Seamoth is loaded but the material could not be found, the return
     /// value is an empty material prototype (IsEmpty=true)
     /// </summary>
+    /// <param name="rmc">Root mod controller for logging purposes</param>
     /// <param name="logConfig">Logging configuration</param>
     /// <returns>Null if the seamoth is not (yet) available. Keep trying if null.
     /// Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
     /// if the respective material is not found</returns>
-    public static SubnauticaMaterialPrototype? FromSeamoth(MaterialLog logConfig = default)
+    public static SubnauticaMaterialPrototype? FromSeamoth(RootModController rmc, MaterialLog logConfig = default)
     {
         var sm = SeamothHelper.Seamoth;
         if (sm.IsNull())
             return null;
-
-        logConfig.LogExtraStep($"Found Seamoth");
+        using var log = SmartLog.LazyForAVS(rmc);
+        logConfig.LogExtraStep(log, $"Found Seamoth");
 
         Material? seamothMaterial = null;
         var renderers = sm.GetComponentsInChildren<MeshRenderer>();
@@ -441,13 +281,13 @@ public class SubnauticaMaterialPrototype : INullTestableType
                 if (material.shader.name == Shaders.MainShader
                     && material.name.StartsWith("Submersible_SeaMoth"))
                 {
-                    logConfig.LogExtraStep($"Found material prototype: {material.NiceName()}");
+                    logConfig.LogExtraStep(log, $"Found material prototype: {material.NiceName()}");
                     seamothMaterial = material;
                     break;
                 }
                 else
                 {
-                    logConfig.LogExtraStep(
+                    logConfig.LogExtraStep(log,
                         $"(Expected) shader mismatch on {material.NiceName()} which uses {material.shader}");
                 }
 

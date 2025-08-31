@@ -77,4 +77,9 @@ public static class IsNullExtensions
 
     public static bool IsNull<T>([NotNullWhen(false)] this T? item) where T : struct
         => !item.HasValue;
+
+    public static bool IsNull([NotNullWhen(false)] this string? s)
+        => s is null;
+    public static bool IsNullOrEmpty([NotNullWhen(false)] this string? s)
+        => string.IsNullOrEmpty(s);
 }

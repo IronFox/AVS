@@ -224,7 +224,7 @@ public abstract class RootModController : BaseUnityPlugin
             }
             catch (Exception ex)
             {
-                LogWriter.Default.Error("Failed to create sprites file", ex);
+                log.Error("Failed to create sprites file", ex);
             }
         };
 

@@ -35,7 +35,7 @@ internal static class VehicleNautilusInterface
         else if (vehicle.AV.Config.AllowRecipeOverride)
         {
             vehicleRecipe = vehicle.AV.OnRecipeOverride(
-                Recipe.Import(vehicleRecipe, vehicle.AV.Config.Recipe)
+                Recipe.Import(vehicle.RMC, vehicleRecipe, vehicle.AV.Config.Recipe)
             ).ToRecipeData();
             Nautilus.Utility.JsonUtils.Save(vehicleRecipe, jsonRecipeFileName,
                 new Nautilus.Json.Converters.CustomEnumConverter());
@@ -77,7 +77,7 @@ internal static class VehicleNautilusInterface
         {
             var techType = RegisterVehicle(ve);
             VehicleRegistrar.VerboseLog(log, VehicleRegistrar.LogType.Log, verbose, $"Patched the {ve.Name} Craftable");
-            var newVE = new VehicleEntry(ve.MainPatcher, ve.AV, ve.UniqueId, ve.PingType, ve.PingSprite, techType);
+            var newVE = new VehicleEntry(ve.RMC, ve.AV, ve.UniqueId, ve.PingType, ve.PingSprite, techType);
             AvsVehicleManager.Add(newVE);
         }
         catch (System.Exception e)

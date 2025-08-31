@@ -105,9 +105,6 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     private ReactorBattery? reactorBattery;
     private float capacity = 0;
 
-    private LogWriter Log { get; set; } = LogWriter.Default.Tag(nameof(MaterialReactor));
-
-
     /// <summary>
     /// Set to true if the reactor is currently processing materials and generating energy.
     /// If the local batteries are full, this will be false even if the reactor has materials
@@ -171,7 +168,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         List<MaterialReactorConversionDeclaration> iMaterialData)
     {
         this.label = label;
-        using var log = avsVehicle.NewAvsLog();
+        using var log = NewLog();
         if (avsVehicle.GetComponentsInChildren<MaterialReactor>().Any(x => x.av == avsVehicle))
         {
             ErrorMessage.AddWarning($"A {nameof(AvsVehicle)} may (for now) only have one material reactor!");
@@ -254,8 +251,9 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     {
         if (!isInitialized)
         {
+            using var log = NewLog();
             var errorMsg = $"Material Reactor must be manually initialized. Destroying.";
-            Logger.Error(errorMsg);
+            log.Error(errorMsg);
             ErrorMessage.AddWarning(errorMsg);
             DestroyImmediate(this);
             return;
@@ -341,11 +339,13 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
 
     private void OnAddItem(InventoryItem item)
     {
-        if (maxEnergies.Keys.ToList().Contains(item.techType)) currentEnergies.Add(item, maxEnergies[item.techType]);
+        if (maxEnergies.Keys.ToList().Contains(item.techType))
+            currentEnergies.Add(item, maxEnergies[item.techType]);
         onItemsAdded?.Invoke(item, container!.count);
         // check if it can rot, and disable all that
         var eatable = item.item.gameObject.GetComponent<Eatable>();
-        if (eatable.IsNotNull()) eatable.decomposes = false;
+        if (eatable.IsNotNull())
+            eatable.decomposes = false;
     }
 
     private Dictionary<int, float> LastFishTankWarning { get; } = new();
@@ -371,9 +371,18 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         return false;
     }
 
+    private SmartLog NewLog()
+    {
+        if (av.IsNotNull())
+            return new SmartLog(av.Owner, Domain.AVS, frameDelta: 1, tags: [nameof(MaterialReactor)]);
+        return new SmartLog(RootModController.AnyInstance, Domain.AVS, frameDelta: 1,
+            tags: [nameof(MaterialReactor)]);
+    }
+
     void IHandTarget.OnHandClick(GUIHand hand)
     {
-        Logger.DebugLog($"MaterialReactor.OnHandClick: {hand.NiceName()} clicked on {gameObject.NiceName()}");
+        using var log = NewLog();
+        log.Debug($"MaterialReactor.OnHandClick: {hand.NiceName()} clicked on {gameObject.NiceName()}");
         if (container.IsNotNull())
         {
             var pda = Player.main.GetPDA();
@@ -382,7 +391,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
                 OnClosePDA(pda);
         }
 
-        Logger.DebugLog($"MaterialReactor.OnHandClick: Exit");
+        log.Debug($"MaterialReactor.OnHandClick: Exit");
     }
 
     void IHandTarget.OnHandHover(GUIHand hand)
@@ -483,26 +492,26 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
 
     void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
     {
+        using var log = NewLog();
         if (av.IsNull())
         {
-            Log.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot save data.");
+            log.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot save data.");
             return;
         }
 
-        Log.Write($"Saving state");
+        log.Write($"Saving state");
         av.PrefabID.WriteReflected(newSaveFileName,
             new SavedReactorStatus(GetSaveDict(), reactorBattery.SafeGet(x => x.GetCharge(), 0)), av.Owner);
     }
 
     void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
     {
+        using var log = NewLog();
         if (av.IsNull())
         {
-            Log.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot load saved data.");
+            log.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot load saved data.");
             return;
         }
-        using var log = av.NewAvsLog();
-
         log.Write($"Loading state");
 
         av.PrefabID.ReadReflected(newSaveFileName, out SavedReactorStatus? reactorStatus, av.Owner);
@@ -524,15 +533,16 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
 
     private IReadOnlyList<ReactorEntry> GetSaveDict()
     {
+        using var log = NewLog();
         if (reactorBattery.IsNull())
         {
-            Logger.Error("MaterialReactor: ReactorBattery is null, cannot save data.");
+            log.Error("MaterialReactor: ReactorBattery is null, cannot save data.");
             return [];
         }
 
         if (container.IsNull())
         {
-            Logger.Error("MaterialReactor: Container is null, cannot save data.");
+            log.Error("MaterialReactor: Container is null, cannot save data.");
             return [];
         }
 

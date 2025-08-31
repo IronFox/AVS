@@ -12,8 +12,6 @@ namespace AVS.Assets;
 public class PrefabLoader
 {
     private static readonly Dictionary<(TechType, bool), PrefabLoader> _loaders = new();
-    private LogWriter Log { get; }
-
     private PrefabLoader(TechType techType, bool ifNotFoundLeaveEmpty)
     {
         using var log = SmartLog.ForAVS(RootModController.AnyInstance, techType.AsString());
