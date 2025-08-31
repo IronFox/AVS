@@ -6976,7 +6976,7 @@
             and ensures that the PDA displays vehicle upgrades accurately.
             </summary>
         </member>
-        <member name="M:AVS.Patches.uGUI_EquipmentPatcher.AwakePostfix(System.Collections.Generic.Dictionary{System.String,uGUI_EquipmentSlot}@)">
+        <member name="M:AVS.Patches.uGUI_EquipmentPatcher.AwakePostfix(uGUI_Equipment,System.Collections.Generic.Dictionary{System.String,uGUI_EquipmentSlot}@)">
             <summary>
             A postfix method that modifies the behavior of the <c>uGUI_Equipment</c> class's Awake method to integrate
             custom vehicle upgrade slots into the default equipment system of Subnautica.
@@ -9036,6 +9036,15 @@
             <typeparam name="T">The type of component to retrieve.</typeparam>
             <param name="c">The Component from which to search for the sibling or contained component.</param>
             <param name="includeInactive">Whether to include inactive child GameObjects in the search.</param>
+            <returns>The first component of type <typeparamref name="T"/> found, or <see langword="null"/> if none is found.</returns>
+        </member>
+        <member name="M:AVS.Util.GameObjectHelper.SafeGetComponentInParent``1(UnityEngine.Component)">
+            <summary>
+            Retrieves the first component of type <typeparamref name="T"/> in the parent hierarchy of the specified component.
+            Returns null if the component is null or if no such component is found in the parent hierarchy.
+            </summary>
+            <typeparam name="T">The type of component to retrieve.</typeparam>
+            <param name="c">The Component from which to search for the sibling or parent component.</param>
             <returns>The first component of type <typeparamref name="T"/> found, or <see langword="null"/> if none is found.</returns>
         </member>
         <member name="M:AVS.Util.GameObjectHelper.SafeGetComponent``1(UnityEngine.Component)">
