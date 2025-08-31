@@ -3,27 +3,27 @@ using AVS.VehicleTypes;
 using System.Linq;
 using UnityEngine;
 
-namespace AVS;
+namespace AVS.VehicleComponents.LightControllers;
 
 /// <summary>
 /// Controller for the floodlights on a submarine.
 /// </summary>
 public class FloodlightsController : BaseLightController
 {
-    private Submarine MV => GetComponent<Submarine>();
+    private Submarine Sub => (AV as Submarine).OrThrow($"Vehicle assigned to FloodlightsController is not a submarine");
 
     /// <inheritdoc/>
     protected override void HandleLighting(bool active)
     {
-        MV.Com.Floodlights.ForEach(x => x.Light.SetActive(active));
+        Sub.Com.Floodlights.ForEach(x => x.Light.SetActive(active));
         if (active)
-            MV.Com.Floodlights
+            Sub.Com.Floodlights
                 .Select(x => x.Light.GetComponent<MeshRenderer>())
                 .Where(x => x.IsNotNull())
                 .SelectMany(x => x.materials)
                 .ForEach(x => Shaders.EnableSimpleEmission(x, 10, 10));
         else
-            MV.Com.Floodlights
+            Sub.Com.Floodlights
                 .Select(x => x.Light.GetComponent<MeshRenderer>())
                 .Where(x => x.IsNotNull())
                 .SelectMany(x => x.materials)
@@ -40,20 +40,20 @@ public class FloodlightsController : BaseLightController
     {
         if (playSound)
         {
-            MV.LightsOnSound.Stop();
-            MV.LightsOnSound.Play();
+            Sub.LightsOnSound.Stop();
+            Sub.LightsOnSound.Play();
         }
         else
         {
-            MV.LightsOffSound.Stop();
-            MV.LightsOffSound.Play();
+            Sub.LightsOffSound.Stop();
+            Sub.LightsOffSound.Play();
         }
     }
 
     /// <inheritdoc/>
     protected virtual void Awake()
     {
-        if (MV.Com.Floodlights.Count == 0)
+        if (Sub.Com.Floodlights.Count == 0)
             DestroyImmediate(this);
     }
 }

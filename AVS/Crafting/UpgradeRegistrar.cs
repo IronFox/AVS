@@ -297,10 +297,12 @@ public enum VehicleType
 
 internal class ToggleableTracker
 {
+    public RootModController RMC { get; }
     public ToggleableModule Module { get; }
 
-    public ToggleableTracker(ToggleableModule toggle)
+    public ToggleableTracker(RootModController rmc, ToggleableModule toggle)
     {
+        RMC = rmc;
         Module = toggle;
     }
 
@@ -324,7 +326,7 @@ internal class ToggleableTracker
                 // So if the toggle action already exists, don't add another one.
                 return;
             //var thisToggleCoroutine = vehicle.StartCoroutine(DoToggleAction(param, toggle.DelayUntilFirstOnRepeat, toggle.RepeatDelay, toggle.EnergyCostPerActivation));
-            ToggledActions.Add(key, new ActiveToggle(vehicle, slotId, Module));
+            ToggledActions.Add(key, new ActiveToggle(RMC, vehicle, slotId, Module));
         }
         else
         {
@@ -396,14 +398,16 @@ public static class UpgradeRegistrar
     {
         private Coroutine Action { get; }
         public ToggleableModule Module { get; }
+        public RootModController RMC { get; }
         public Vehicle Vehicle { get; }
         public float StartTime { get; }
 
         public bool IsActive { get; private set; }
 
-        public ActiveToggle(Vehicle vehicle, int slotId, ToggleableModule toggleableUpgrade)
+        public ActiveToggle(RootModController rmc, Vehicle vehicle, int slotId, ToggleableModule toggleableUpgrade)
         {
             Module = toggleableUpgrade;
+            RMC = rmc;
             Vehicle = vehicle;
             StartTime = Time.time;
             SlotID = slotId;
@@ -446,6 +450,7 @@ public static class UpgradeRegistrar
 
         private void UntoggleAndSignal()
         {
+            using var log = SmartLog.ForAVS(RMC);
             if (!Untoggle())
                 return;
             UpdateEventTime();
@@ -455,7 +460,7 @@ public static class UpgradeRegistrar
             }
             catch (Exception e)
             {
-                LogWriter.Default.Error($"Error in {Module.ClassId} OnToggle: {e.Message}", e);
+                log.Error($"Error in {Module.ClassId} OnToggle: {e.Message}", e);
             }
         }
 
@@ -464,6 +469,7 @@ public static class UpgradeRegistrar
 
         private IEnumerator Routine()
         {
+            using var log = SmartLog.ForAVS(RMC);
             IsActive = true;
             var isAvsVehicle = Vehicle.SafeGetComponent<AvsVehicle>();
             try
@@ -472,7 +478,7 @@ public static class UpgradeRegistrar
             }
             catch (Exception e)
             {
-                LogWriter.Default.Error($"Error in {Module.ClassId} OnToggle: {e.Message}", e);
+                log.Error($"Error in {Module.ClassId} OnToggle: {e.Message}", e);
                 Untoggle();
                 yield break;
             }
@@ -496,7 +502,7 @@ public static class UpgradeRegistrar
                 }
                 catch (Exception e)
                 {
-                    LogWriter.Default.Error($"Error in {Module.ClassId} OnRepeat: {e.Message}", e);
+                    log.Error($"Error in {Module.ClassId} OnRepeat: {e.Message}", e);
                     UntoggleAndSignal();
                     yield break;
                 }
@@ -557,7 +563,8 @@ public static class UpgradeRegistrar
     internal static UpgradeTechTypes RegisterUpgrade(Node node, AvsVehicleModule upgrade,
         UpgradeCompat compat = default)
     {
-        LogWriter.Default.Write($"Registering {nameof(AvsVehicleModule)} " + upgrade.ClassId + " : " +
+        using var log = SmartLog.ForAVS(upgrade.Owner);
+        log.Write($"Registering {nameof(AvsVehicleModule)} " + upgrade.ClassId + " : " +
                                 upgrade.DisplayName);
         var result = ValidateAvsVehicleUpgrade(upgrade, compat);
         if (result)
@@ -567,7 +574,7 @@ public static class UpgradeRegistrar
                     $"CraftTreeHandler: Cannot add an upgrade to a folder that already contains folders. Folder: {node.GetPath()}");
             if (upgradeClassIdMap.ContainsKey(upgrade.ClassId))
             {
-                LogWriter.Default.Error(
+                log.Error(
                     $"UpgradeRegistrar Error: {nameof(AvsVehicleModule)} {upgrade.ClassId} is already registered! Please use a unique ClassId for each upgrade.");
                 return default;
             }
@@ -576,7 +583,7 @@ public static class UpgradeRegistrar
             if (icon.IsNotNull())
                 UpgradeIcons.Add(upgrade.ClassId, icon);
             else
-                LogWriter.Default.Error(
+                log.Error(
                     $"UpgradeRegistrar Error: {nameof(AvsVehicleModule)} {upgrade.ClassId} has a null icon! Please provide a valid icon sprite.");
             var utt = new UpgradeTechTypes();
             var isPdaRegistered = false;
@@ -598,7 +605,7 @@ public static class UpgradeRegistrar
         }
         else
         {
-            LogWriter.Default.Error("Failed to register upgrade: " + upgrade.ClassId);
+            log.Error("Failed to register upgrade: " + upgrade.ClassId);
             return default;
         }
     }
@@ -611,30 +618,32 @@ public static class UpgradeRegistrar
     /// <returns>True if valid, false otherwise.</returns>
     private static bool ValidateAvsVehicleUpgrade(AvsVehicleModule upgrade, UpgradeCompat compat)
     {
+        using var log = SmartLog.ForAVS(upgrade.Owner);
+
         if (compat.SkipAvsVehicle && compat.SkipSeamoth && compat.SkipExosuit && compat.SkipCyclops)
         {
-            LogWriter.Default.Error(
+            log.Error(
                 $"UpgradeRegistrar Error: {nameof(AvsVehicleModule)} {upgrade.ClassId}: compat cannot skip all vehicle types!");
             return false;
         }
 
         if (upgrade.ClassId.Equals(string.Empty))
         {
-            LogWriter.Default.Error(
+            log.Error(
                 $"UpgradeRegistrar Error: {nameof(AvsVehicleModule)} {upgrade.ClassId} cannot have empty class ID!");
             return false;
         }
 
         if (upgrade.GetRecipe(VehicleType.AvsVehicle).IsEmpty)
         {
-            LogWriter.Default.Error(
+            log.Error(
                 $"UpgradeRegistrar Error: {nameof(AvsVehicleModule)} {upgrade.ClassId} cannot have empty recipe!");
             return false;
         }
 
         if (!upgrade.UnlockAtStart)
             if (!upgrade.UnlockedSprite && !upgrade.UnlockedMessage.Equals(AvsVehicleModule.DefaultUnlockMessage))
-                LogWriter.Default.Warn(
+                log.Warn(
                     $"UpgradeRegistrar Warning: the upgrade {upgrade.ClassId} has UnlockAtStart false and UnlockedSprite null. When unlocked, its custom UnlockedMessage will not be displayed. Add an UnlockedSprite to resolve this.");
 
         return true;
@@ -878,7 +887,7 @@ public static class UpgradeRegistrar
             isPDASetup = true;
             foreach (var t in utt.AllNotNone)
                 if (!OnToggleActions.ContainsKey(t))
-                    OnToggleActions.Add(t, new ToggleableTracker(toggle));
+                    OnToggleActions.Add(t, new ToggleableTracker(upgrade.Owner, toggle));
         }
     }
 }

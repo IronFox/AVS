@@ -1,6 +1,6 @@
-﻿using AVS.Util;
+﻿using AVS.Log;
+using AVS.Util;
 using System.Collections;
-using AVS.Log;
 using UnityEngine;
 
 namespace AVS.SaveLoad;
@@ -60,9 +60,8 @@ internal static class SaveLoadUtils
     internal static string GetSaveFileName(Transform root, Transform target, string fileSuffix) =>
         $"{GetTransformPath(root, target)}-{fileSuffix}";
 
-    internal static IEnumerator ReloadBatteryPower(GameObject thisItem, float thisCharge, TechType innerBatteryTT)
+    internal static IEnumerator ReloadBatteryPower(SmartLog log, GameObject thisItem, float thisCharge, TechType innerBatteryTT)
     {
-        var log = LogWriter.Default.Tag(nameof(ReloadBatteryPower));
         var existing = thisItem.GetComponentInChildren<Battery>();
         // check whether we *are* a battery xor we *have* a battery
         if (existing.IsNotNull())
@@ -82,7 +81,8 @@ internal static class SaveLoadUtils
             }
 
             var result = new InstanceContainer();
-            yield return AvsCraftData.InstantiateFromPrefabAsync(LogWriter.Default.Tag(nameof(ReloadBatteryPower)),
+            yield return AvsCraftData.InstantiateFromPrefabAsync(
+                log,
                 innerBatteryTT, result);
             var newBat = result.Instance;
             var bat = newBat.SafeGetComponent<Battery>();

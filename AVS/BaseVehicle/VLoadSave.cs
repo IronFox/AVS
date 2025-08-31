@@ -1,9 +1,9 @@
 ﻿using AVS.SaveLoad;
 using AVS.Util;
+using AVS.VehicleBuilding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS.BaseVehicle;
@@ -138,7 +138,7 @@ public abstract partial class AvsVehicle
 
     private void SaveSimpleData()
     {
-        PrefabID.WriteData(BasicSaveFileNamePrefix, GetOrCreateData(), Log);
+        PrefabID.WriteData(BasicSaveFileNamePrefix, GetOrCreateData(), Owner);
     }
 
     void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
@@ -158,11 +158,14 @@ public abstract partial class AvsVehicle
 
     void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
     {
-        Log.Write($"OnProtoDeserializeObjectTree {name} {GetType().Name}");
-        if (PrefabID.ReadData(BasicSaveFileNamePrefix, GetOrCreateData(), Log))
+        using var log = NewAvsLog();
+        log.Write($"OnProtoDeserializeObjectTree {name} {GetType().Name}");
+        if (PrefabID.ReadData(BasicSaveFileNamePrefix, GetOrCreateData(), Owner))
             OnDataLoaded();
 
-        StartCoroutine(AvsModularStorageSaveLoad.DeserializeAllModularStorage(this));
+        Owner.StartAvsCoroutine(
+            nameof(AvsModularStorageSaveLoad) + '.' + nameof(AvsModularStorageSaveLoad.DeserializeAllModularStorage),
+            _ => AvsModularStorageSaveLoad.DeserializeAllModularStorage(Owner, this));
     }
 
     /// <summary>
@@ -182,7 +185,7 @@ public abstract partial class AvsVehicle
         if (innateStorageSaveData.Count() == Com.InnateStorages.Count())
         {
             // write it out
-            PrefabID.WriteReflected(StorageSaveName, innateStorageSaveData, Log);
+            PrefabID.WriteReflected(StorageSaveName, innateStorageSaveData, Owner);
             innateStorageSaveData.Clear();
         }
     }
@@ -193,7 +196,7 @@ public abstract partial class AvsVehicle
             PrefabID.ReadReflected(
                 StorageSaveName,
                 out loadedStorageData,
-                Log);
+                Owner);
         if (loadedStorageData.IsNull())
             return default;
         if (loadedStorageData.ContainsKey(path))
@@ -222,16 +225,16 @@ public abstract partial class AvsVehicle
         if (batterySaveData.Count() == batteryCount)
         {
             // write it out
-            PrefabID.WriteReflected(BatterySaveName, batterySaveData, Log);
+            PrefabID.WriteReflected(BatterySaveName, batterySaveData, Owner);
             batterySaveData.Clear();
         }
     }
 
     internal Tuple<TechType, float>? ReadBatteryData(string path)
     {
+        using var log = NewAvsLog();
         if (loadedBatteryData.IsNull())
-            PrefabID.ReadReflected(BatterySaveName, out loadedBatteryData, Log);
-        var log = Log.Tag(nameof(ReadBatteryData));
+            PrefabID.ReadReflected(BatterySaveName, out loadedBatteryData, Owner);
         if (loadedBatteryData.IsNull())
         {
             log.Error(
@@ -274,17 +277,18 @@ public abstract partial class AvsVehicle
     /// </summary>
     public virtual void OnFinishedLoading()
     {
+        using var log = NewAvsLog();
         ReSetupWaterParks();
         foreach (var wp in Com.WaterParks)
         {
             var waterPark = wp.ContentContainer.GetComponent<StorageComponents.MobileWaterPark>();
             if (waterPark.IsNull())
             {
-                Log.Error($"WaterPark {wp.ContentContainer.name} has no MobileWaterPark component!");
+                log.Error($"WaterPark {wp.ContentContainer.name} has no MobileWaterPark component!");
                 continue;
             }
 
-            waterPark.OnVehicleLoaded();
+            waterPark.OnVehicleLoaded(this);
         }
 
         if (lateBoardAt.IsNotNull())

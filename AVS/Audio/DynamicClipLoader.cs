@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AVS.Log;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -66,16 +67,19 @@ namespace AVS.Audio
         /// Asynchronously gets an <see cref="AudioClip"/> from the specified file path.
         /// If the clip is already being loaded, returns the existing promise.
         /// </summary>
+        /// <param name="rmc">The <see cref="RootModController"/> owning the process.</param>
         /// <param name="filePath">The file path to the audio clip.</param>
         /// <returns>An <see cref="AsyncPromise{AudioClip}"/> representing the loading operation.</returns>
-        public static AsyncPromise<AudioClip> GetAudioClipAsync(string filePath)
+        public static AsyncPromise<AudioClip> GetAudioClipAsync(RootModController rmc, string filePath)
         {
             if (AudioClipPromises.TryGetValue(filePath, out AsyncPromise<AudioClip> existingPromise))
             {
                 return existingPromise;
             }
             AsyncPromise<AudioClip> promise = new AsyncPromise<AudioClip>();
-            MainPatcher.Instance.StartCoroutine(LoadAudioClip(filePath, promise.Resolve, promise.Reject));
+            rmc.StartAvsCoroutine(
+                nameof(DynamicClipLoader) + '.' + nameof(LoadAudioClip),
+                log => LoadAudioClip(log, filePath, promise.Resolve, promise.Reject));
             AudioClipPromises[filePath] = promise;
             return promise;
         }
@@ -86,8 +90,9 @@ namespace AVS.Audio
         /// <param name="filePath">The file path to the audio clip.</param>
         /// <param name="onSuccess">Callback invoked with the loaded <see cref="AudioClip"/> on success.</param>
         /// <param name="onError">Callback invoked if loading fails.</param>
+        /// <param name="log">The <see cref="SmartLog"/> instance for logging.</param>
         /// <returns>An <see cref="IEnumerator"/> for use with Unity coroutines.</returns>
-        public static IEnumerator LoadAudioClip(string filePath, Action<AudioClip> onSuccess, Action<string> onError)
+        public static IEnumerator LoadAudioClip(SmartLog log, string filePath, Action<AudioClip> onSuccess, Action<string> onError)
         {
             using (UnityWebRequest www = UnityWebRequestMultimedia.GetAudioClip(filePath, AudioType.OGGVORBIS))
             {
@@ -102,7 +107,7 @@ namespace AVS.Audio
                     AudioClip clip = DownloadHandlerAudioClip.GetContent(www);
                     if (!clip)
                     {
-                        Logger.Error("Failed to retrieve AudioClip from file: " + filePath);
+                        log.Error("Failed to retrieve AudioClip from file: " + filePath);
                         onError?.Invoke($"Resulting clip is null");
                     }
                     else

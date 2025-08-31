@@ -1,9 +1,8 @@
 ﻿using AVS.BaseVehicle;
-using HarmonyLib;
-using System.Linq;
 using AVS.Util;
 using AVS.VehicleBuilding;
-using UnityEngine;
+using HarmonyLib;
+using System.Linq;
 
 // PURPOSE: Prevent Drones from accessing upgrades. Display upgrade module models when appropriate. Display custom upgrade-background images.
 // VALUE: High. Drones would have odd behavior otherwise, and the other functions are important developer utilities.
@@ -32,11 +31,11 @@ internal class VehicleUpgradeConsoleInputPatcher
     [HarmonyPatch(nameof(VehicleUpgradeConsoleInput.UpdateVisuals))]
     public static void UpdateVisualsPostfix(VehicleUpgradeConsoleInput __instance)
     {
-        var mv = __instance.GetComponentInParent<AvsVehicle>();
-        if (mv.IsNotNull() && __instance.GetComponentInChildren<UpgradeProxy>().IsNotNull() &&
+        var av = __instance.GetComponentInParent<AvsVehicle>();
+        if (av.IsNotNull() && __instance.GetComponentInChildren<UpgradeProxy>().IsNotNull() &&
             __instance.GetComponentInChildren<UpgradeProxy>().slots.IsNotNull())
         {
-            var log = mv.Log.Tag(nameof(UpdateVisualsPostfix));
+            using var log = av.NewAvsLog();
             var proxy = __instance.GetComponentInChildren<UpgradeProxy>();
             if (proxy.IsNull() || proxy.slots.IsNull())
             {
@@ -72,10 +71,10 @@ internal class VehicleUpgradeConsoleInputPatcher
     [HarmonyPatch(nameof(VehicleUpgradeConsoleInput.OnHandClick))]
     public static void VehicleUpgradeConsoleInputOnHandClickHarmonyPostfix(VehicleUpgradeConsoleInput __instance)
     {
-        foreach (var mv in AvsVehicleManager.VehiclesInPlay.Where(x => x.IsNotNull()))
-            if (mv.upgradesInput == __instance)
+        foreach (var av in AvsVehicleManager.VehiclesInPlay.Where(x => x.IsNotNull()))
+            if (av.upgradesInput == __instance)
             {
-                ModuleBuilder.Main.SignalOpened(__instance, mv);
+                ModuleBuilder.Main.SignalOpened(__instance, av);
 
                 break;
             }

@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
-using AVS.BaseVehicle;
+﻿using AVS.BaseVehicle;
 using AVS.Util;
 using AVS.VehicleBuilding;
 using HarmonyLib;
+using System.Collections.Generic;
 
 // PURPOSE: allow AvsVehicle upgrade slots to mesh with the game systems
 // VALUE: High
@@ -39,12 +39,12 @@ public class EquipmentPatcher
     public static void SetLabelPrefix(Equipment __instance, string l,
         ref Dictionary<EquipmentType, List<string>> ___typeToSlots)
     {
-        if (!ModuleBuilder.IsModuleName(l))
+        var av = __instance.owner.GetComponentInParent<AvsVehicle>();
+        if (av.IsNull() || __instance != av.modules)
             return;
-        var mv = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (mv.IsNull())
+        if (!ModuleBuilder.IsModuleName(av.Owner, l))
             return;
-        ___typeToSlots = mv.VehicleTypeToSlots;
+        ___typeToSlots = av.VehicleTypeToSlots;
     }
 
     /// <summary>
@@ -60,12 +60,12 @@ public class EquipmentPatcher
     public static void AddSlotPrefix(Equipment __instance, string slot,
         ref Dictionary<EquipmentType, List<string>> ___typeToSlots)
     {
-        if (!ModuleBuilder.IsModuleName(slot))
+        var av = __instance.owner.GetComponentInParent<AvsVehicle>();
+        if (av.IsNull() || __instance != av.modules)
             return;
-        var mv = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (mv.IsNull())
+        if (!ModuleBuilder.IsModuleName(av.Owner, slot))
             return;
-        ___typeToSlots = mv.VehicleTypeToSlots;
+        ___typeToSlots = av.VehicleTypeToSlots;
     }
 
     /// <summary>
@@ -83,10 +83,10 @@ public class EquipmentPatcher
     {
         if (!AvsVehicleBuilder.IsKnownItemType(itemType))
             return;
-        var mv = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (mv.IsNull())
+        var av = __instance.owner.GetComponentInParent<AvsVehicle>();
+        if (av.IsNull() || __instance != av.modules)
             return;
-        ___typeToSlots = mv.VehicleTypeToSlots;
+        ___typeToSlots = av.VehicleTypeToSlots;
     }
 
     /// <summary>
@@ -106,10 +106,10 @@ public class EquipmentPatcher
         if (!AvsVehicleBuilder.IsKnownItemType(type))
             return;
 
-        var mv = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (mv.IsNull())
+        var av = __instance.owner.GetComponentInParent<AvsVehicle>();
+        if (av.IsNull() || __instance != av.modules)
             return;
-        ___typeToSlots = mv.VehicleTypeToSlots;
+        ___typeToSlots = av.VehicleTypeToSlots;
     }
 
     /// <summary>
@@ -128,10 +128,10 @@ public class EquipmentPatcher
         if (!AvsVehicleBuilder.IsKnownItemType(itemType))
             return;
 
-        var mv = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (mv.IsNull())
+        var av = __instance.owner.GetComponentInParent<AvsVehicle>();
+        if (av.IsNull() || __instance != av.modules)
             return;
-        ___typeToSlots = mv.VehicleTypeToSlots;
+        ___typeToSlots = av.VehicleTypeToSlots;
     }
 
     /// <summary>
@@ -148,12 +148,13 @@ public class EquipmentPatcher
     public static void RemoveSlot(Equipment __instance, string slot,
         ref Dictionary<EquipmentType, List<string>> ___typeToSlots)
     {
-        if (!ModuleBuilder.IsModuleName(slot))
+        var av = __instance.owner.GetComponentInParent<AvsVehicle>();
+        if (av.IsNull() || __instance != av.modules)
             return;
-        var mv = __instance.owner.GetComponentInParent<AvsVehicle>();
-        if (mv.IsNull())
+        if (!ModuleBuilder.IsModuleName(av.Owner, slot))
             return;
-        ___typeToSlots = mv.VehicleTypeToSlots;
+
+        ___typeToSlots = av.VehicleTypeToSlots;
     }
 
     /// <summary>
@@ -169,15 +170,13 @@ public class EquipmentPatcher
     public static bool GetSlotTypePrefix(string slot, ref EquipmentType __result,
         Dictionary<EquipmentType, List<string>> ___typeToSlots)
     {
-        if (ModuleBuilder.IsModuleName(slot))
-        {
-            __result = AvsVehicleBuilder.ModuleType;
-            return false;
-        }
-        else
-        {
-            return true;
-        }
+        foreach (var rmc in RootModController.AllInstances)
+            if (ModuleBuilder.IsModuleName(rmc, slot))
+            {
+                __result = AvsVehicleBuilder.ModuleType;
+                return false;
+            }
+        return true;
     }
 
     /// <summary>
@@ -192,10 +191,6 @@ public class EquipmentPatcher
     [HarmonyPatch(nameof(Equipment.IsCompatible))]
     public static bool IsCompatiblePrefix(EquipmentType itemType, EquipmentType slotType, ref bool __result)
     {
-        __result = itemType == slotType || (itemType == EquipmentType.VehicleModule &&
-                                            (slotType == EquipmentType.SeamothModule ||
-                                             slotType == EquipmentType.ExosuitModule ||
-                                             slotType == AvsVehicleBuilder.ModuleType));
         __result = itemType == slotType || (
             itemType == EquipmentType.VehicleModule &&
             (

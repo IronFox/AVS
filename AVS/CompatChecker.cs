@@ -5,84 +5,84 @@ namespace AVS
 {
     internal static class CompatChecker
     {
-        internal static void CheckAll()
+        internal static void CheckAll(RootModController rmc)
         {
             try
             {
-                CheckForNautilusUpdate();
-                CheckForBepInExPackUpdate();
-                CheckForFlareDurationIndicator();
-                CheckForBuildingTweaks();
-                CheckForVanillaExpanded();
+                CheckForNautilusUpdate(rmc);
+                CheckForBepInExPackUpdate(rmc);
+                CheckForFlareDurationIndicator(rmc);
+                CheckForBuildingTweaks(rmc);
+                CheckForVanillaExpanded(rmc);
             }
             catch (Exception e)
             {
                 Logger.LogException("Failed to check compatibility notes.", e);
-                ShowError("Failed to check for compatibility notes. Something went wrong!");
+                ShowError(rmc, "Failed to check for compatibility notes. Something went wrong!");
             }
         }
 
         #region private_utilities
-        private static void ShowError(string message)
+        private static void ShowError(RootModController rmc, string message)
         {
-            Logger.LoopMainMenuError(message, MainPatcher.Instance.ModName);
+            Logger.LoopMainMenuError(message, rmc.ModName);
         }
-        private static void ShowWarning(string message)
+        private static void ShowWarning(RootModController rmc, string message)
         {
-            Logger.LoopMainMenuWarning(message, MainPatcher.Instance.ModName);
+            Logger.LoopMainMenuWarning(message, rmc.ModName);
         }
         #endregion
 
         #region checks
-        private static void CheckForBepInExPackUpdate()
+        private static void CheckForBepInExPackUpdate(RootModController rmc)
         {
             if (Chainloader.PluginInfos.ContainsKey("Tobey.Subnautica.ConfigHandler"))
             {
                 Version target = new Version("1.0.2");
                 if (Chainloader.PluginInfos["Tobey.Subnautica.ConfigHandler"].Metadata.Version.CompareTo(target) < 0)
                 {
-                    ShowWarning("There is a BepInEx Pack update available!");
+                    ShowWarning(rmc, "There is a BepInEx Pack update available!");
                 }
             }
             else
             {
-                ShowWarning("There is a BepInEx Pack update available!");
+                ShowWarning(rmc, "There is a BepInEx Pack update available!");
             }
         }
-        private static void CheckForNautilusUpdate()
+        private static void CheckForNautilusUpdate(RootModController rmc)
         {
             Version target = new Version(Nautilus.PluginInfo.PLUGIN_VERSION);
             if (Chainloader.PluginInfos[Nautilus.PluginInfo.PLUGIN_GUID].Metadata.Version.CompareTo(target) < 0)
             {
-                ShowWarning("There is a Nautilus update available!");
+                ShowWarning(rmc, "There is a Nautilus update available!");
             }
         }
-        private static void CheckForFlareDurationIndicator()
+        private static void CheckForFlareDurationIndicator(RootModController rmc)
         {
             if (Chainloader.PluginInfos.ContainsKey("com.ramune.FlareDurationIndicator"))
             {
                 if (Chainloader.PluginInfos["com.ramune.FlareDurationIndicator"].Metadata.Version.ToString() == "1.0.1")
                 {
-                    ShowError("Not compatible with the Flare Duration Indicator mod version 1.0.1\nPlease remove or downgrade the plugin.");
+                    ShowError(rmc, "Not compatible with the Flare Duration Indicator mod version 1.0.1\nPlease remove or downgrade the plugin.");
                     Logger.Log("Flare Duration Indicator 1.0.1 has a bad patch that must be fixed.");
                 }
             }
         }
-        private static void CheckForBuildingTweaks()
+        private static void CheckForBuildingTweaks(RootModController rmc)
         {
             const string buildingTweaksGUID = "BuildingTweaks";
             if (Chainloader.PluginInfos.ContainsKey(buildingTweaksGUID))
             {
-                ShowWarning("Do not use BuildingTweaks to build things inside/on AVS submarines!");
+                ShowWarning(rmc, "Do not use BuildingTweaks to build things inside/on AVS submarines!");
                 Logger.Log("Using some BuildingTweaks options to build things inside submarines can prevent those buildables from correctly anchoring to the submarine. Be careful.");
             }
         }
-        private static void CheckForVanillaExpanded()
+        private static void CheckForVanillaExpanded(RootModController rmc)
         {
             const string vanillaExpandedGUID = "VanillaExpanded";
             if (Chainloader.PluginInfos.ContainsKey(vanillaExpandedGUID))
             {
-                ShowError("Some vehicles not compatible with Vanilla Expanded!");
+                ShowError(rmc, "Some vehicles not compatible with Vanilla Expanded!");
                 Logger.Log("Vanilla Expanded has a patch on UniqueIdentifier.Awake that throws an error (dereferences null) during many AVS setup methods. If you choose to continue, some vehicles, buildables, and fragments may simply not appear.");
             }
         }

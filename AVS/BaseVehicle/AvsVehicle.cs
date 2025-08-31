@@ -1,10 +1,11 @@
-﻿using AVS.Composition;
+﻿using AVS.Admin;
+using AVS.Composition;
 using AVS.Configuration;
 using AVS.Localization;
-using AVS.Log;
 using AVS.MaterialAdapt;
 using AVS.Util;
 using AVS.VehicleComponents;
+using AVS.VehicleComponents.LightControllers;
 using System;
 using System.Linq;
 using UnityEngine;
@@ -15,7 +16,7 @@ namespace AVS.BaseVehicle;
 /// AvsVehicle is the primary abstract class provided by AVS. 
 /// All AVS vehicles inherit from this class.
 /// </summary>
-public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEventListener, ILogFilter
+public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEventListener
 {
     /// <summary>
     /// The piloting style of the vehicle.
@@ -49,21 +50,12 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
     /// </summary>
     public virtual GameObject VehicleRoot => gameObject;
 
-    /// <summary>
-    /// Primary logging facility for this vehicle.
-    /// </summary>
-    internal LogWriter Log { get; }
 
     /// <summary>
     /// Invariant vehicle configuration. Initialized during construction.
     /// Never null.
     /// </summary>
     public VehicleConfiguration Config { get; }
-
-    /// <summary>
-    /// True to log high-verbosity debug messages (as non-debug)
-    /// </summary>
-    public virtual bool LogDebug { get; } = false;
 
     /// <summary>
     /// Retrieves the composition of the vehicle.
@@ -88,9 +80,6 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
     /// <exception cref="ArgumentNullException"></exception>
     protected AvsVehicle(VehicleConfiguration config)
     {
-        Log = new LogWriter($"V{Id}", LogWriter.DefaultTags);
-
-
         Config = config ?? throw new ArgumentNullException(nameof(config), "VehicleConfiguration cannot be null");
         MaterialFixer = new MaterialFixer(this, new AvsMaterialResolver(config.MaterialAdaptConfig, this),
             config.MaterialAdaptConfig.LogConfig);
@@ -130,10 +119,11 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
         RequireComposition();
         //playerPosition = GetMainHelm().PlayerControlLocation;
         playerPosition = null;
+        using var log = NewAvsLog();
         if (SubRoot.IsNull())
-            Log.Write("SubRoot not (yet) found during OnAwakeOrPrefabricate");
+            log.Write("SubRoot not (yet) found during OnAwakeOrPrefabricate");
         else
-            Log.Write("SubRoot found during OnAwakeOrPrefabricate");
+            log.Write("SubRoot found during OnAwakeOrPrefabricate");
     }
 
     /// <summary>
@@ -183,53 +173,79 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
     ///<inheritdoc />
     public override void Awake()
     {
-        OnAwakeOrPrefabricate();
-        hudPingInstance =
-            gameObject.GetComponent<PingInstance>(); //created during prefab. Cannot properly create here if missing
-        voiceQueue = gameObject.EnsureComponent<VoiceQueue>();
-
-        energyInterface = GetComponent<EnergyInterface>();
-
-        powerManager = gameObject.EnsureComponent<PowerManager>();
-
-        base.Awake();
-
-        AvsVehicleManager.EnrollVehicle(this); // Register our new vehicle with AVS
-        UpgradeOnAddedActions.Add(StorageModuleAction);
-        UpgradeOnAddedActions.Add(ArmorPlatingModuleAction);
-        UpgradeOnAddedActions.Add(PowerUpgradeModuleAction);
-
-        SetupVolumetricLights();
-        HeadlightsController = gameObject.EnsureComponent<HeadlightsController>();
-        gameObject.AddComponent<VolumetricLightController>();
-
-        autopilot = gameObject.EnsureComponent<Autopilot>();
-
-        LazyInitialize();
-        Com.Upgrades.ForEach(x =>
+        using var log = NewAvsLog();
+        try
         {
-            if (x.Interface.IsNull())
+            log.Write($"Gathering composition");
+            OnAwakeOrPrefabricate();
+            log.Write($"Gathering local components");
+            hudPingInstance =
+                gameObject.GetComponent<PingInstance>(); //created during prefab. Cannot properly create here if missing
+            voiceQueue = gameObject.EnsureComponent<VoiceQueue>();
+
+            energyInterface = GetComponent<EnergyInterface>();
+
+            powerManager = gameObject.EnsureComponent<PowerManager>();
+
+            log.Write($"base.Awake()");
+            base.Awake();
+
+            var rmc = Owner;
+
+            log.Write($"Enrolling vehicle");
+            AvsVehicleManager.EnrollVehicle(rmc, this); // Register our new vehicle with AVS
+
+            log.Write($"Registering events");
+            UpgradeOnAddedActions.Add(StorageModuleAction);
+            UpgradeOnAddedActions.Add(ArmorPlatingModuleAction);
+            UpgradeOnAddedActions.Add(PowerUpgradeModuleAction);
+
+            log.Write($"Setting up volumetric lights");
+            SetupVolumetricLights();
+            HeadlightsController = AvAttached.EnsureSelfDestructing<HeadlightsController>(this, log);
+            AvAttached.EnsureSelfDestructing<VolumetricLightController>(this, log);
+
+            log.Write($"Setting up autopilot");
+            autopilot = gameObject.EnsureComponent<Autopilot>();
+
+            log.Write($"Lazy-initializing");
+            LazyInitialize();
+            log.Write($"Setting up upgrades");
+            Com.Upgrades.ForEach(x =>
             {
-                Log.Error($"Null upgrade interface found.");
-                return;
-            }
+                if (x.Interface.IsNull())
+                {
+                    log.Error($"Null upgrade interface found.");
+                    return;
+                }
 
-            var consoleInput = x.Interface.GetComponent<VehicleUpgradeConsoleInput>();
-            if (consoleInput.IsNull())
-                Log.Error(
-                    $"VehicleUpgradeConsoleInput not found on {x.Interface.NiceName()}. This is a required component for vehicle upgrades.");
-            else
-                consoleInput.equipment = modules;
-        });
-        var warpChipThing = GetComponent("TelePingVehicleInstance");
-        if (warpChipThing.IsNotNull())
-            DestroyImmediate(warpChipThing);
-        vfxConstructing = GetComponent<VFXConstructing>();
+                var consoleInput = x.Interface.GetComponent<VehicleUpgradeConsoleInput>();
+                if (consoleInput.IsNull())
+                    log.Error(
+                        $"VehicleUpgradeConsoleInput not found on {x.Interface.NiceName()}. This is a required component for vehicle upgrades.");
+                else
+                    consoleInput.equipment = modules;
+            });
+            var warpChipThing = GetComponent("TelePingVehicleInstance");
+            if (warpChipThing.IsNotNull())
+                DestroyImmediate(warpChipThing);
 
-        ReSetupInnateStorages(); //preserve labels. Also adapt to changes in language to some extent
-        ReSetupModularStorages(); //preserve labels. Also adapt to changes in language to some extent
-        ReSetupWaterParks();
-        CheckEnergyInterface();
+            vfxConstructing = GetComponent<VFXConstructing>();
+
+            log.Write($"Re-initializing innate storages");
+            ReSetupInnateStorages(); //preserve labels. Also adapt to changes in language to some extent
+            log.Write($"Re-initializing modular storages");
+            ReSetupModularStorages(); //preserve labels. Also adapt to changes in language to some extent
+            log.Write($"Re-initializing mobile water parks");
+            ReSetupWaterParks();
+            log.Write($"Checking energy interface");
+            CheckEnergyInterface();
+        }
+        catch (Exception e)
+        {
+            log.Error($"Error during Awake(): ", e);
+            throw;
+        }
     }
 
     ///<inheritdoc />
@@ -300,7 +316,8 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
         }
         catch (Exception e)
         {
-            Log.Error($"Error during base.Update()", e);
+            using var log = NewAvsLog();
+            log.Error($"Error during base.Update()", e);
         }
 
         if (hadNoPlayerPosition)
@@ -490,7 +507,7 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
             StabilizeRoll();
         prevVelocity = useRigidbody.velocity;
         var shouldSetKinematic = teleporting || (!constructionFallOverride && !GetPilotingMode() &&
-                                                 (!Admin.GameStateWatcher.IsWorldSettled || docked ||
+                                                 (!GameStateWatcher.IsWorldSettled || docked ||
                                                   !vfxConstructing.IsConstructed()));
         UWE.Utils.SetIsKinematicAndUpdateInterpolation(useRigidbody, shouldSetKinematic, true);
     }
@@ -524,6 +541,7 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
     /// <param name="newStatus">New status to broadcast</param>
     internal void NotifyStatus(PlayerStatus newStatus)
     {
+        using var log = NewAvsLog();
         foreach (var component in GetComponentsInChildren<IPlayerListener>())
             switch (newStatus)
             {
@@ -540,7 +558,7 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
                     component.OnPilotEnd();
                     break;
                 default:
-                    Log.Error("Error: tried to notify using an invalid status");
+                    log.Error("Error: tried to notify using an invalid status");
                     break;
             }
     }
@@ -603,16 +621,16 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
 
     internal static void MaybeControlRotation(Vehicle veh)
     {
-        if (veh is AvsVehicle mv)
+        if (veh is AvsVehicle av)
         {
-            if (!mv.GetPilotingMode()
-                || !mv.IsBoarded
-                || !mv.Com.Engine.enabled
+            if (!av.GetPilotingMode()
+                || !av.IsBoarded
+                || !av.Com.Engine.enabled
                 || Player.main.GetPDA().isOpen
                 || (AvatarInputHandler.main && !AvatarInputHandler.main.IsEnabled())
-                || !mv.energyInterface.hasCharge)
+                || !av.energyInterface.hasCharge)
                 return;
-            mv.Com.Engine.ControlRotation();
+            av.Com.Engine.ControlRotation();
         }
     }
 

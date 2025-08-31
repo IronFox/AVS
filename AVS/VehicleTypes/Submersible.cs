@@ -1,8 +1,8 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Composition;
 using AVS.Configuration;
-using System;
 using AVS.VehicleBuilding;
+using System;
 
 namespace AVS.VehicleTypes
 {
@@ -71,9 +71,10 @@ namespace AVS.VehicleTypes
         /// <inheritdoc/>
         protected override void OnPlayerEntry()
         {
+            using var log = NewAvsLog();
             if (!isScuttled)
             {
-                Log.Debug(this, "start submersible player entry");
+                log.Debug("start submersible player entry");
                 Player.main.currentSub = null;
                 Player.main.transform.SetParent(transform);
                 EnterHelmControl();

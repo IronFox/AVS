@@ -1,12 +1,12 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Interfaces;
 using AVS.Localization;
+using AVS.Log;
 using AVS.Util;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.Interfaces;
-using AVS.Log;
 using UnityEngine;
 
 namespace AVS.VehicleComponents;
@@ -101,12 +101,9 @@ internal class ReactorBattery : MonoBehaviour, IBattery
 /// text.</remarks>
 public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
 {
-    private AvsVehicle? mv;
+    private AvsVehicle? av;
     private ReactorBattery? reactorBattery;
     private float capacity = 0;
-
-    private LogWriter Log { get; set; } = LogWriter.Default.Tag(nameof(MaterialReactor));
-
 
     /// <summary>
     /// Set to true if the reactor is currently processing materials and generating energy.
@@ -115,7 +112,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     /// </summary>
     public bool isGeneratingEnergy;
 
-    private MaybeTranslate label;
+    private MaybeTranslate Label { get; set; }
 
 
     /// <summary>
@@ -170,8 +167,9 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     public void Initialize(AvsVehicle avsVehicle, int height, int width, MaybeTranslate label, float totalCapacity,
         List<MaterialReactorConversionDeclaration> iMaterialData)
     {
-        this.label = label;
-        if (avsVehicle.GetComponentsInChildren<MaterialReactor>().Any(x => x.mv == avsVehicle))
+        Label = label;
+        using var log = NewLog();
+        if (avsVehicle.GetComponentsInChildren<MaterialReactor>().Any(x => x.av == avsVehicle))
         {
             ErrorMessage.AddWarning($"A {nameof(AvsVehicle)} may (for now) only have one material reactor!");
             return;
@@ -218,10 +216,10 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
             }
         }
 
-        mv = avsVehicle;
-        Log = mv.Log.Tag(nameof(MaterialReactor));
+        av = avsVehicle;
         capacity = totalCapacity;
-        container = new ItemsContainer(width, height, transform, label.Rendered, null);
+        log.Write($"Creating items container '{label.Text}'");
+        container = new ItemsContainer(width, height, transform, label.Text, null); //as it turns out, the items container ALWAYS localizes its label. No point rendering it here.
         container.onAddItem += OnAddItem;
         container.isAllowedToRemove = IsAllowedToRemove;
         container.SetAllowedTechTypes(iMaterialData
@@ -233,19 +231,19 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
             spentMaterialIndex.Add(reagent.InputTechType, reagent.OutputTechType);
         }
 
-        gameObject.LoggedSetActive(false, Log);
+        gameObject.LoggedSetActive(false, log);
         var eMix = gameObject.AddComponent<EnergyMixin>();
         eMix.batterySlot = new StorageSlot(transform);
-        gameObject.LoggedSetActive(true, Log);
+        gameObject.LoggedSetActive(true, log);
         var batteryObj = new GameObject("ReactorBattery");
         batteryObj.transform.SetParent(transform);
         reactorBattery = batteryObj.AddComponent<ReactorBattery>();
         reactorBattery.SetCapacity(capacity);
         eMix.battery = reactorBattery;
-        mv.energyInterface.sources = mv.energyInterface.sources.Append(eMix).ToArray();
+        av.energyInterface.sources = av.energyInterface.sources.Append(eMix).ToArray();
         gameObject.AddComponent<ChildObjectIdentifier>();
         isInitialized = true;
-        mv.Log.Debug(
+        log.Debug(
             $"MaterialReactor {label} initialized with width {width}, height {height}, and battery capacity {capacity}.");
     }
 
@@ -254,26 +252,28 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     {
         if (!isInitialized)
         {
+            using var log = NewLog();
             var errorMsg = $"Material Reactor must be manually initialized. Destroying.";
-            Logger.Error(errorMsg);
+            log.Error(errorMsg);
             ErrorMessage.AddWarning(errorMsg);
             DestroyImmediate(this);
             return;
         }
+
 
         var any = false;
         var reactants = currentEnergies.Keys.ToList();
         foreach (var reactant in reactants)
         {
             var rate = rateEnergies[reactant.techType] * Time.deltaTime;
-            var totalCanConsume = mv!.energyInterface.TotalCanConsume(out var sources);
-            var consumed = mv!.energyInterface.AddEnergy(rate);
-            //foreach (var em in mv.energyInterface.sources)
+            var totalCanConsume = av!.energyInterface.TotalCanConsume(out var sources);
+            var consumed = av!.energyInterface.AddEnergy(rate);
+            //foreach (var em in av.energyInterface.sources)
             //{
             //    if (em.IsNotNull())
-            //        mv.Log.Debug($"{em.NiceName()}: {em.charge} < {em.capacity}");
+            //        av.Log.Debug($"{em.NiceName()}: {em.charge} < {em.capacity}");
             //}
-            //mv.Log.Debug($"MaterialReactor {label} processing {reactant.techType.AsString()} at rate {rate}. Added {consumed} to {mv.Id} {mv.energyInterface.NiceName()}. RequiresPower := {GameModeUtils.RequiresPower()}. totalCanConsume:={totalCanConsume}, #sources:={sources} ");
+            //av.Log.Debug($"MaterialReactor {label} processing {reactant.techType.AsString()} at rate {rate}. Added {consumed} to {av.Id} {av.energyInterface.NiceName()}. RequiresPower := {GameModeUtils.RequiresPower()}. totalCanConsume:={totalCanConsume}, #sources:={sources} ");
             currentEnergies[reactant] -= consumed;
             any |= consumed > 0;
         }
@@ -293,7 +293,10 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
                         container._items.Remove(reactantPair.Key.techType);
                         container.NotifyRemoveItem(reactantPair.Key);
                         var toAdd = spentMaterialIndex[reactantPair.Key.techType];
-                        if (toAdd != TechType.None) MainPatcher.Instance.StartCoroutine(AddMaterial(toAdd));
+                        if (toAdd != TechType.None)
+                            av!.Owner.StartAvsCoroutine(
+                                nameof(MaterialReactor) + '.' + nameof(AddMaterial),
+                                log => AddMaterial(log, toAdd));
                     }
 
                     reactantPair.Key.container = null;
@@ -305,25 +308,25 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         spentMaterials.ForEach(x => currentEnergies.Remove(x));
     }
 
-    private IEnumerator AddMaterial(TechType toAdd)
+    private IEnumerator AddMaterial(SmartLog log, TechType toAdd)
     {
-        if (mv.IsNull() || reactorBattery.IsNull() || container.IsNull())
+        if (av.IsNull() || reactorBattery.IsNull() || container.IsNull())
         {
-            Log.Error(
+            log.Error(
                 $"MaterialReactor: {nameof(AvsVehicle)}, ReactorBattery or Container is null, cannot add material.");
             yield break;
         }
 
         var result = new InstanceContainer();
-        yield return AvsCraftData.InstantiateFromPrefabAsync(Log, toAdd, result);
+        yield return AvsCraftData.InstantiateFromPrefabAsync(log, toAdd, result);
         var spentMaterial = result.Instance.SafeGetComponent<Pickupable>();
         if (spentMaterial.IsNull())
         {
-            Log.Error($"MaterialReactor: Could not instantiate {toAdd.AsString()}");
+            log.Error($"MaterialReactor: Could not instantiate {toAdd.AsString()}");
             yield break;
         }
 
-        spentMaterial.gameObject.LoggedSetActive(false, Log);
+        spentMaterial.gameObject.LoggedSetActive(false, log);
         try
         {
             container.AddItem(spentMaterial.GetComponent<Pickupable>());
@@ -331,18 +334,20 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         catch (Exception e)
         {
             var errorMessage = $"Could not add material {toAdd.AsString()} to the material reactor!";
-            Log.Error(errorMessage, e);
+            log.Error(errorMessage, e);
             ErrorMessage.AddError(errorMessage);
         }
     }
 
     private void OnAddItem(InventoryItem item)
     {
-        if (maxEnergies.Keys.ToList().Contains(item.techType)) currentEnergies.Add(item, maxEnergies[item.techType]);
+        if (maxEnergies.Keys.ToList().Contains(item.techType))
+            currentEnergies.Add(item, maxEnergies[item.techType]);
         onItemsAdded?.Invoke(item, container!.count);
         // check if it can rot, and disable all that
         var eatable = item.item.gameObject.GetComponent<Eatable>();
-        if (eatable.IsNotNull()) eatable.decomposes = false;
+        if (eatable.IsNotNull())
+            eatable.decomposes = false;
     }
 
     private Dictionary<int, float> LastFishTankWarning { get; } = new();
@@ -364,27 +369,38 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         if (spentMaterialIndex.Values.ToList().Contains(pickupable.inventoryItem.techType)) return true;
         if (verbose || CanWarnAbout(pickupable))
             ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_CannotRemoveMaterialsFromReactor,
-                label.Rendered));
+                Label.Rendered));
         return false;
+    }
+
+    private SmartLog NewLog()
+    {
+        if (av.IsNotNull())
+            return new SmartLog(av.Owner, Domain.AVS, frameDelta: 1, tags: [nameof(MaterialReactor)]);
+        return new SmartLog(RootModController.AnyInstance, Domain.AVS, frameDelta: 1,
+            tags: [nameof(MaterialReactor)]);
     }
 
     void IHandTarget.OnHandClick(GUIHand hand)
     {
-        Logger.DebugLog($"MaterialReactor.OnHandClick: {hand.NiceName()} clicked on {gameObject.NiceName()}");
+        using var log = NewLog();
+        log.Write($"MaterialReactor.OnHandClick: {hand.NiceName()} clicked on {gameObject.NiceName()}");
         if (container.IsNotNull())
         {
             var pda = Player.main.GetPDA();
             Inventory.main.SetUsedStorage(container);
             if (!pda.Open(PDATab.Inventory, transform, OnClosePDA))
                 OnClosePDA(pda);
+            //uGUI_InventoryTab
         }
 
-        Logger.DebugLog($"MaterialReactor.OnHandClick: Exit");
+        log.Debug($"MaterialReactor.OnHandClick: Exit");
     }
 
     void IHandTarget.OnHandHover(GUIHand hand)
     {
-        if (!isInitialized || mv.IsNull() || reactorBattery.IsNull()) return;
+        if (!isInitialized || av.IsNull() || reactorBattery.IsNull())
+            return;
         if (container.IsNotNull())
         {
             var main = HandReticle.main;
@@ -392,7 +408,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
                 ? string.Empty
                 : $"({Translator.GetFormatted(TranslationKey.HandHover_Reactor_Charge, (int)reactorBattery.GetCharge(), capacity)})";
 
-            var finalText = $"{label} {chargeValue}";
+            var finalText = $"{Label} {chargeValue}";
             main.SetText(HandReticle.TextType.Hand, finalText, true, GameInput.Button.LeftHand);
             if (canViewWhitelist)
             {
@@ -400,7 +416,9 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
                     Translator.Get(TranslationKey.HandHoverSub_Reactor_ShowWhitelist), false,
                     GameInput.Button.RightHand);
                 if (GameInput.GetButtonDown(GameInput.Button.RightHand) && outputReactorDataCoroutine.IsNull())
-                    outputReactorDataCoroutine = MainPatcher.Instance.StartCoroutine(OutputReactorData());
+                    outputReactorDataCoroutine = av.Owner.StartAvsCoroutine(
+                        nameof(MaterialReactor) + '.' + nameof(OutputReactorData),
+                        _ => OutputReactorData());
             }
             else
             {
@@ -477,37 +495,40 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
 
     void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
     {
-        if (mv.IsNull())
+        using var log = NewLog();
+        if (av.IsNull())
         {
-            Log.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot save data.");
+            log.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot save data.");
             return;
         }
 
-        Log.Write($"Saving state");
-        mv.PrefabID.WriteReflected(newSaveFileName,
-            new SavedReactorStatus(GetSaveDict(), reactorBattery.SafeGet(x => x.GetCharge(), 0)), mv.Log);
+        log.Write($"Saving state");
+        av.PrefabID.WriteReflected(newSaveFileName,
+            new SavedReactorStatus(GetSaveDict(), reactorBattery.SafeGet(x => x.GetCharge(), 0)), av.Owner);
     }
 
     void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
     {
-        if (mv.IsNull())
+        using var log = NewLog();
+        if (av.IsNull())
         {
-            Log.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot load saved data.");
+            log.Error($"MaterialReactor: {nameof(AvsVehicle)} is null, cannot load saved data.");
             return;
         }
+        log.Write($"Loading state");
 
-        Log.Write($"Loading state");
-
-        mv.PrefabID.ReadReflected(newSaveFileName, out SavedReactorStatus? reactorStatus, mv.Log);
+        av.PrefabID.ReadReflected(newSaveFileName, out SavedReactorStatus? reactorStatus, av.Owner);
         if (reactorStatus.IsNull())
         {
-            Log.Warn("MaterialReactor: No saved data found, skipping load.");
+            log.Warn("MaterialReactor: No saved data found, skipping load.");
             return;
         }
 
         if (reactorBattery.IsNotNull())
             reactorBattery.SetCharge(reactorStatus.BatteryCharge);
-        MainPatcher.Instance.StartCoroutine(LoadSaveDict(reactorStatus.Entries));
+        av.Owner.StartAvsCoroutine(
+            nameof(MaterialReactor) + '.' + nameof(LoadSaveDict),
+            log => LoadSaveDict(log, reactorStatus.Entries));
     }
 
     // ReSharper disable once NotAccessedPositionalProperty.Local
@@ -515,15 +536,16 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
 
     private IReadOnlyList<ReactorEntry> GetSaveDict()
     {
+        using var log = NewLog();
         if (reactorBattery.IsNull())
         {
-            Logger.Error("MaterialReactor: ReactorBattery is null, cannot save data.");
+            log.Error("MaterialReactor: ReactorBattery is null, cannot save data.");
             return [];
         }
 
         if (container.IsNull())
         {
-            Logger.Error("MaterialReactor: Container is null, cannot save data.");
+            log.Error("MaterialReactor: Container is null, cannot save data.");
             return [];
         }
 
@@ -544,11 +566,11 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         return result;
     }
 
-    private IEnumerator LoadSaveDict(IReadOnlyList<ReactorEntry> restoredContents)
+    private IEnumerator LoadSaveDict(SmartLog log, IReadOnlyList<ReactorEntry> restoredContents)
     {
         if (restoredContents.Count == 0)
         {
-            Log.Warn("MaterialReactor: No saved data found, skipping load.");
+            log.Warn("MaterialReactor: No saved data found, skipping load.");
             yield break;
         }
 
@@ -557,9 +579,9 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         foreach (var reactant in restoredContents)
             if (TechTypeExtensions.FromString(reactant.Type, out var techType, true))
             {
-                Log.Write($"Adding {techType} to the reactor");
+                log.Write($"Adding {techType} to the reactor");
                 energyDict[techType] = reactant.Energy;
-                yield return MainPatcher.Instance.StartCoroutine(AddMaterial(techType));
+                yield return av!.Owner.StartAvsCoroutine(nameof(MaterialReactor) + '.' + nameof(AddMaterial), log => AddMaterial(log, techType));
             }
 
         Dictionary<InventoryItem, float> energyDict2 = new();
@@ -571,9 +593,9 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
         foreach (var reactant in energyDict2)
         {
             currentEnergies[reactant.Key] = reactant.Value;
-            Log.Write($"Restored {reactant.Key.techType} to {reactant.Value}");
+            log.Write($"Restored {reactant.Key.techType} to {reactant.Value}");
         }
 
-        Log.Write($"Energy dict: {energyDict2.Count} restored");
+        log.Write($"Energy dict: {energyDict2.Count} restored");
     }
 }

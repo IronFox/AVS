@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using AVS.BaseVehicle;
+﻿using AVS.BaseVehicle;
 using AVS.Util;
 using AVS.VehicleTypes;
 using HarmonyLib;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 // PURPOSE: ensure the Player behaves as expected when AvsVehicle are involved
@@ -42,7 +42,9 @@ public static class PlayerPatcher
         // Setup build bot paths.
         // We have to do this at game-start time,
         // because the new objects we create are wiped on scene-change.
-        MainPatcher.Instance.StartCoroutine(BuildBotManager.SetupBuildBotPathsForAllMVs());
+        RootModController.AnyInstance.StartAvsCoroutine(
+            nameof(BuildBotManager) + '.' + nameof(BuildBotManager.SetupBuildBotPathsForAllMVs),
+            _ => BuildBotManager.SetupBuildBotPathsForAllMVs());
         return;
     }
 
@@ -97,8 +99,8 @@ public static class PlayerPatcher
          * "Passing 400 meters," that sort of thing.
          * I'm not sure this patch is strictly necessary.
          */
-        var mv = __instance.GetVehicle() as Submarine;
-        if (mv.IsNotNull() && !mv.IsPlayerControlling())
+        var av = __instance.GetVehicle() as Submarine;
+        if (av.IsNotNull() && !av.IsPlayerControlling())
         {
             //var crushDamage = __instance.gameObject.GetComponentInParent<CrushDamage>();
             //__result = crushDamage.GetDepthClass();
@@ -120,10 +122,10 @@ public static class PlayerPatcher
     [HarmonyPatch(nameof(Player.Update))]
     public static void UpdatePostfix(Player __instance)
     {
-        var mv = __instance.GetVehicle() as Submarine;
-        if (mv.IsNull())
+        var av = __instance.GetVehicle() as Submarine;
+        if (av.IsNull())
             return;
-        if (mv.IsPlayerInside() && !mv.IsPlayerControlling())
+        if (av.IsPlayerInside() && !av.IsPlayerControlling())
         {
             // animator stuff to ensure we don't act like we're swimming at any point
             __instance.playerAnimator.SetBool("is_underwater", false);
@@ -147,8 +149,8 @@ public static class PlayerPatcher
     [HarmonyPatch(nameof(Player.UpdateIsUnderwater))]
     public static bool UpdateIsUnderwaterPrefix(Player __instance)
     {
-        var mv = __instance.GetVehicle() as Submarine;
-        if (mv.IsNotNull())
+        var av = __instance.GetVehicle() as Submarine;
+        if (av.IsNotNull())
         {
             // declare we aren't underwater,
             // since we're wholly within an air bubble
@@ -173,8 +175,8 @@ public static class PlayerPatcher
     [HarmonyPatch(nameof(Player.UpdateMotorMode))]
     public static bool UpdateMotorModePrefix(Player __instance)
     {
-        var mv = __instance.GetVehicle() as Submarine;
-        if (mv.IsNotNull() && !mv.IsPlayerControlling())
+        var av = __instance.GetVehicle() as Submarine;
+        if (av.IsNotNull() && !av.IsPlayerControlling())
         {
             // ensure: if we're in a AvsVehicle and we're not piloting, then we're walking.
             __instance.SetMotorMode(Player.MotorMode.Walk);
@@ -196,11 +198,11 @@ public static class PlayerPatcher
     {
         if (__instance.currentMountedVehicle.IsNotNull())
         {
-            var mv = __instance.currentMountedVehicle as AvsVehicle;
-            switch (mv)
+            var av = __instance.currentMountedVehicle as AvsVehicle;
+            switch (av)
             {
                 case Submarine _:
-                    __result = mv.IsPowered() && mv.IsBoarded;
+                    __result = av.IsPowered() && av.IsBoarded;
                     return;
                 default:
                     return;
@@ -229,11 +231,14 @@ public static class PlayerPatcher
         if (fcc.mode || fcc.ghostMode)
             return true;
         var checkedAncestry = new List<Transform>();
-        if (__instance.currentMountedVehicle is AvsVehicle
+        if (__instance.currentMountedVehicle is AvsVehicle av
             && __instance.mode == Player.Mode.LockedPiloting
             && !Admin.Utils.FindVehicleInParents(Player.main.transform, out var v, checkedAncestry))
-            Log.LogWriter.Default.Error(
+        {
+            using var log = av.NewAvsLog();
+            log.Error(
                 $"Player does not reside in a vehicle or the wrong one ({v.NiceName()}). Checked ancestry: {string.Join("->", checkedAncestry.Select(x => x.NiceName()))}");
+        }
         // Don't skip. This is a weird problem and it needs resolved, so let it die strangely.
         //return false;
         return true;
@@ -253,10 +258,10 @@ public static class PlayerPatcher
     public static bool PlayerExitLockedModePrefix(Player __instance)
     {
         // if we're in an MV, do our special way of exiting a vehicle instead
-        var mv = __instance.GetAvsVehicle();
-        if (mv.IsNull())
+        var av = __instance.GetAvsVehicle();
+        if (av.IsNull())
             return true;
-        mv.DeselectSlots();
+        av.DeselectSlots();
         return false;
     }
 
@@ -270,11 +275,12 @@ public static class PlayerPatcher
     public static void PlayerOnKillPostfix(Player __instance)
     {
         // if we're in an MV, do our special way of exiting a vehicle instead
-        var mv = __instance.GetAvsVehicle();
-        if (mv.IsNull())
+        var av = __instance.GetAvsVehicle();
+        if (av.IsNull())
             return;
-        mv.Log.Write("PlayerOnKillPostfix: Player has died, exiting vehicle.");
-        mv.ExitHelmControl();
-        mv.ClosestPlayerExit(false);
+        using var log = av.NewAvsLog();
+        log.Write("PlayerOnKillPostfix: Player has died, exiting vehicle.");
+        av.ExitHelmControl();
+        av.ClosestPlayerExit(false);
     }
 }

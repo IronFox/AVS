@@ -1,6 +1,6 @@
-﻿using System;
+﻿using AVS.Util;
+using System;
 using System.Collections.Generic;
-using AVS.Util;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 

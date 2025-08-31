@@ -26,12 +26,12 @@ public class SilencePlayerPatcher
     [HarmonyPatch(nameof(Player.CanBeAttacked))]
     public static void PlayerCanBeAttackedHarmonyPostfix(ref bool __result)
     {
-        var mv = Player.main.GetAvsVehicle();
-        if (mv.IsNotNull())
-            if (GetComponentByName(mv.gameObject))
+        var av = Player.main.GetAvsVehicle();
+        if (av.IsNotNull())
+            if (GetComponentByName(av.gameObject))
             {
                 __result = true;
-                mv.ClosestPlayerExit(true);
+                av.ClosestPlayerExit(true);
             }
     }
 

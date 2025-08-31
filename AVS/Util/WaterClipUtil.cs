@@ -1,8 +1,7 @@
 ﻿using AVS.Assets;
 using AVS.Log;
-using System;
-using System.Collections;
 using AVS.Patches;
+using System;
 using UnityEngine;
 
 namespace AVS.Util;
@@ -18,14 +17,14 @@ public static class WaterClipUtil
     /// <remarks>
     /// The Seamoth has to be loaded before this method is called.
     /// </remarks>
-    /// <param name="log">Out logger</param>
+    /// <param name="rmc">Root mod controller for logging purposes</param>
     /// <param name="target">Target object that should contain the WaterClipProxy and its renderers. Should not contain any components</param>
     /// <param name="distanceMap">3D distance map to use</param>
     /// <param name="localBounds">Bounding box of the 3D Distance map in a vehicle located in the point of origin with no rotation</param>
     /// <exception cref="InvalidOperationException">The Seamoth helper was not loaded before this method is called</exception>
-    public static void BindProxy(LogWriter log, GameObject target, Texture3D distanceMap, Bounds localBounds)
+    public static void BindProxy(RootModController rmc, GameObject target, Texture3D distanceMap, Bounds localBounds)
     {
-        log = log.Tag("WCP");
+        using var log = SmartLog.ForAVS(rmc, tags: ["WCP"]);
         var seamoth = SeamothHelper.Seamoth;
         if (seamoth.IsNull())
         {
@@ -106,8 +105,9 @@ public static class WaterClipUtil
         log.Write($"All set. Water clip proxy bound");
     }
 
-    private static void DestroyComponent<T>(GameObject target, LogWriter log) where T : Component
+    private static void DestroyComponent<T>(RootModController rmc, GameObject target) where T : Component
     {
+        using var log = SmartLog.ForAVS(rmc);
         var component = target.GetComponent<T>();
         if (component.IsNotNull())
         {
@@ -124,9 +124,9 @@ public static class WaterClipUtil
     /// <summary>
     /// Unbinds the WaterClipProxy from the specified target GameObject.
     /// </summary>
-    /// <param name="log">Out logger</param>
+    /// <param name="rmc">Root mod controller for logging purposes</param>
     /// <param name="target">Target object that may contain the WaterClipProxy and its renderers</param>
-    public static void UnbindProxy(LogWriter log, GameObject target)
+    public static void UnbindProxy(RootModController rmc, GameObject target)
     {
         //log = log.Tag("WCP");
         //if (target.IsNull())

@@ -16,7 +16,7 @@ public class PilotingTrigger : HandTarget, IHandTarget, IScuttleListener, IDockL
     /// <summary>
     /// The owning vehicle. Assigned during instantiation
     /// </summary>
-    public AvsVehicle? mv;
+    public AvsVehicle? av;
 
     /// <summary>
     /// The index of the seat this trigger was attached to
@@ -27,28 +27,29 @@ public class PilotingTrigger : HandTarget, IHandTarget, IScuttleListener, IDockL
 
     void IHandTarget.OnHandClick(GUIHand hand)
     {
-        LogWriter.Default.Write($"PilotingTrigger.OnHandClick: {mv?.NiceName()}");
-        if (mv.IsNotNull()
-            && !mv.GetPilotingMode()
-            && (mv.Config.CanEnterHelmWithoutPower || mv.IsPowered())
+        using var log = av.IsNotNull() ? av.NewAvsLog() : SmartLog.ForAVS(RootModController.AnyInstance);
+        log.Write($"PilotingTrigger.OnHandClick: {av?.NiceName()}");
+        if (av.IsNotNull()
+            && !av.GetPilotingMode()
+            && (av.Config.CanEnterHelmWithoutPower || av.IsPowered())
             && isLive)
         {
-            if (mv is Submarine submarine)
+            if (av is Submarine submarine)
                 submarine.EnterHelmControl(helmIndex);
-            else if (mv is Submersible sub)
+            else if (av is Submersible sub)
                 sub.EnterHelmControl();
             else
-                mv.Log.Error($"Unsupported helm on vehicle {mv.NiceName()} type {mv.GetType()}");
+                log.Error($"Unsupported helm on vehicle {av.NiceName()} type {av.GetType()}");
         }
 
-        LogWriter.Default.Write($"PilotingTrigger.OnHandClick end");
+        log.Write($"PilotingTrigger.OnHandClick end");
     }
 
     void IHandTarget.OnHandHover(GUIHand hand)
     {
-        if (mv.IsNotNull()
-            && !mv.GetPilotingMode()
-            && (mv.Config.CanEnterHelmWithoutPower || mv.IsPowered())
+        if (av.IsNotNull()
+            && !av.GetPilotingMode()
+            && (av.Config.CanEnterHelmWithoutPower || av.IsPowered())
             && isLive)
         {
             HandReticle.main.SetIcon(HandReticle.IconType.Hand, 1f);

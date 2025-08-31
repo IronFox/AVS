@@ -27,22 +27,22 @@ internal class BlockAvsVehicle : MonoBehaviour
 
     internal void OnTriggerEnter(Collider other)
     {
-        var mv = other.GetComponentInParent<AvsVehicle>();
-        if (mv.IsNull())
+        var av = other.GetComponentInParent<AvsVehicle>();
+        if (av.IsNull())
             return;
-        if (MVs.ContainsKey(mv))
-            MVs[mv]++;
+        if (MVs.ContainsKey(av))
+            MVs[av]++;
         else
-            MVs.Add(mv, 1);
+            MVs.Add(av, 1);
     }
 
     internal void OnTriggerExit(Collider other)
     {
-        var mv = other.GetComponentInParent<AvsVehicle>();
-        if (mv.IsNull())
+        var av = other.GetComponentInParent<AvsVehicle>();
+        if (av.IsNull())
             return;
-        MVs[mv]--;
-        if (MVs[mv] <= 0)
-            MVs.Remove(mv);
+        MVs[av]--;
+        if (MVs[av] <= 0)
+            MVs.Remove(av);
     }
 }

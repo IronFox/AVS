@@ -16,7 +16,7 @@ public class ControlPanel : MonoBehaviour, IVehicleStatusListener, IPowerListene
     /// <summary>
     /// The submarine instance this control panel is associated with.
     /// </summary>
-    public Submarine? mv;
+    public Submarine? av;
 
     private GameObject? buttonHeadlights;
     private GameObject? buttonNavLights;
@@ -123,8 +123,8 @@ public class ControlPanel : MonoBehaviour, IVehicleStatusListener, IPowerListene
     /// </summary>
     public void HeadlightsClick()
     {
-        if (mv.IsNotNull() && mv.HeadlightsController.IsNotNull())
-            mv.HeadlightsController.Toggle();
+        if (av.IsNotNull() && av.HeadlightsController.IsNotNull())
+            av.HeadlightsController.Toggle();
     }
 
     /// <summary>
@@ -142,8 +142,8 @@ public class ControlPanel : MonoBehaviour, IVehicleStatusListener, IPowerListene
     /// </summary>
     public void FloodlightsClick()
     {
-        if (mv.IsNotNull() && mv.Floodlights.IsNotNull())
-            mv.Floodlights.Toggle();
+        if (av.IsNotNull() && av.Floodlights.IsNotNull())
+            av.Floodlights.Toggle();
     }
 
     /// <summary>
@@ -161,8 +161,8 @@ public class ControlPanel : MonoBehaviour, IVehicleStatusListener, IPowerListene
     /// </summary>
     public void NavLightsClick()
     {
-        if (mv.IsNotNull() && mv.NavLights.IsNotNull())
-            mv.NavLights.Toggle();
+        if (av.IsNotNull() && av.NavLights.IsNotNull())
+            av.NavLights.Toggle();
     }
 
     /// <summary>
@@ -180,8 +180,8 @@ public class ControlPanel : MonoBehaviour, IVehicleStatusListener, IPowerListene
     /// </summary>
     public void InteriorLightsClick()
     {
-        if (mv.IsNotNull() && mv.Interiorlights.IsNotNull())
-            mv.Interiorlights.Toggle();
+        if (av.IsNotNull() && av.Interiorlights.IsNotNull())
+            av.Interiorlights.Toggle();
     }
 
     /// <summary>
@@ -199,8 +199,8 @@ public class ControlPanel : MonoBehaviour, IVehicleStatusListener, IPowerListene
     /// </summary>
     public void DefaultColorClick()
     {
-        if (mv.IsNotNull())
-            mv.PaintVehicleDefaultStyle(mv.GetName());
+        if (av.IsNotNull())
+            av.PaintVehicleDefaultStyle(av.GetName());
     }
 
     /// <summary>
@@ -218,11 +218,11 @@ public class ControlPanel : MonoBehaviour, IVehicleStatusListener, IPowerListene
     /// </summary>
     public void PowerClick()
     {
-        if (mv.IsNotNull())
+        if (av.IsNotNull())
         {
-            mv.energyInterface.GetValues(out var charge, out _);
+            av.energyInterface.GetValues(out var charge, out _);
             if (0 < charge)
-                mv.TogglePower();
+                av.TogglePower();
         }
     }
 

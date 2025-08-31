@@ -8,13 +8,13 @@ internal class InnateStorageInput : StorageInput
 {
     public override void OpenFromExternal()
     {
-        if (mv.IsNull())
+        if (av.IsNull())
         {
             Debug.LogError("AvsVehicle is null in InnateStorageInput.OpenFromExternal");
             return;
         }
 
-        var storageInSlot = mv.ModGetStorageInSlot(slotID, AvsVehicleBuilder.InnateStorage);
+        var storageInSlot = av.ModGetStorageInSlot(slotID, AvsVehicleBuilder.InnateStorage);
         if (storageInSlot.IsNotNull())
         {
             var pda = Player.main.GetPDA();
@@ -25,13 +25,13 @@ internal class InnateStorageInput : StorageInput
 
     protected override void OpenPDA()
     {
-        if (mv.IsNull())
+        if (av.IsNull())
         {
             Debug.LogError("AvsVehicle is null in InnateStorageInput.OpenPDA");
             return;
         }
 
-        var storageInSlot = mv.ModGetStorageInSlot(slotID, AvsVehicleBuilder.InnateStorage);
+        var storageInSlot = av.ModGetStorageInSlot(slotID, AvsVehicleBuilder.InnateStorage);
         if (storageInSlot.IsNotNull())
         {
             var pda = Player.main.GetPDA();

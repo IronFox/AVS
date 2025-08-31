@@ -1,9 +1,6 @@
-﻿using AVS.BaseVehicle;
-using AVS.Log;
-using AVS.Util;
-using UnityEngine;
+﻿using AVS.Util;
 
-namespace AVS
+namespace AVS.VehicleComponents.LightControllers
 {
     /// <summary>
     /// Controller for the headlights of a vehicle.
@@ -11,12 +8,10 @@ namespace AVS
     public class HeadlightsController : BaseLightController
     {
 
-        private AvsVehicle MV => GetComponent<AvsVehicle>();
-
         /// <inheritdoc/>
         protected override void HandleLighting(bool active)
         {
-            MV.Com.Headlights.ForEach(x => x.Light.SetActive(active));
+            AV.Com.Headlights.ForEach(x => x.Light.SetActive(active));
             foreach (var component in GetComponentsInChildren<ILightsStatusListener>())
             {
                 if (active)
@@ -35,24 +30,25 @@ namespace AVS
         {
             if (turnOn)
             {
-                MV.LightsOnSound.Stop();
-                MV.LightsOnSound.Play();
+                AV.LightsOnSound.Stop();
+                AV.LightsOnSound.Play();
             }
             else
             {
-                MV.LightsOffSound.Stop();
-                MV.LightsOffSound.Play();
+                AV.LightsOffSound.Stop();
+                AV.LightsOffSound.Play();
             }
         }
 
         /// <inheritdoc/>
         protected virtual void Awake()
         {
-            LogWriter.Default.Debug($"Awake {this.NiceName()} for {MV.NiceName()}: {MV.Com.Headlights.Count} head light(s)");
-            if (MV.Com.Headlights.Count == 0)
+            using var log = AV.NewAvsLog();
+            log.Debug($"Awake {this.NiceName()} for {AV.NiceName()}: {AV.Com.Headlights.Count} head light(s)");
+            if (AV.Com.Headlights.Count == 0)
             {
-                LogWriter.Default.Write($"Destroying headlights controller because there are no lights to control");
-                Component.DestroyImmediate(this);
+                log.Write($"Destroying headlights controller because there are no lights to control");
+                DestroyImmediate(this);
             }
         }
 
@@ -60,9 +56,10 @@ namespace AVS
         protected virtual void Update()
         {
             var isHeadlightsButtonPressed = GameInput.GetButtonDown(GameInput.Button.RightHand);
-            if (MV.IsPlayerControlling() && isHeadlightsButtonPressed && !Player.main.GetPDA().isInUse)
+            if (AV.IsPlayerControlling() && isHeadlightsButtonPressed && !Player.main.GetPDA().isInUse)
             {
-                LogWriter.Default.Debug($"Toggling headlights for {MV.NiceName()}");
+                using var log = AV.NewAvsLog();
+                log.Debug($"Toggling headlights for {AV.NiceName()}");
                 Toggle();
             }
         }

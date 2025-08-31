@@ -1,18 +1,20 @@
 ﻿using AVS.Util;
+using AVS.VehicleTypes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-namespace AVS;
+namespace AVS.VehicleComponents.LightControllers;
 
 /// <summary>
 /// The controller for the navigation lights of a submarine.
 /// </summary>
 public class NavigationLightsController : BaseLightController
 {
-    private VehicleTypes.Submarine MV => GetComponent<VehicleTypes.Submarine>();
+    private Submarine Sub => (AV as Submarine).OrThrow($"Vehicle assigned to FloodlightsController is not a submarine");
+
 
     /// <inheritdoc/>
     protected override void HandleLighting(bool active)
@@ -45,11 +47,11 @@ public class NavigationLightsController : BaseLightController
     /// <inheritdoc/>
     protected virtual void Awake()
     {
-        var noPort = MV.Com.NavigationPortLights.Count == 0;
-        var noStar = MV.Com.NavigationStarboardLights.Count == 0;
-        var noPosi = MV.Com.NavigationPositionLights.Count == 0;
-        var noReds = MV.Com.NavigationRedStrobeLights.Count == 0;
-        var noWhit = MV.Com.NavigationWhiteStrobeLights.Count == 0;
+        var noPort = Sub.Com.NavigationPortLights.Count == 0;
+        var noStar = Sub.Com.NavigationStarboardLights.Count == 0;
+        var noPosi = Sub.Com.NavigationPositionLights.Count == 0;
+        var noReds = Sub.Com.NavigationRedStrobeLights.Count == 0;
+        var noWhit = Sub.Com.NavigationWhiteStrobeLights.Count == 0;
         if (noPort && noStar && noPosi && noReds && noWhit)
             DestroyImmediate(this);
     }
@@ -58,10 +60,10 @@ public class NavigationLightsController : BaseLightController
     protected void Start()
     {
         rb = GetComponent<Rigidbody>();
-        foreach (var lightObj in MV.Com.NavigationPositionLights)
+        foreach (var lightObj in Sub.Com.NavigationPositionLights)
             positionMats.Add(lightObj.GetComponent<MeshRenderer>().material);
         BlinkOn(positionMats, Color.white);
-        foreach (var lightObj in MV.Com.NavigationRedStrobeLights)
+        foreach (var lightObj in Sub.Com.NavigationRedStrobeLights)
         {
             redStrobeMats.Add(lightObj.GetComponent<MeshRenderer>().material);
             var light = lightObj.EnsureComponent<Light>();
@@ -74,7 +76,7 @@ public class NavigationLightsController : BaseLightController
             redStrobeLights.Add(light);
         }
 
-        foreach (var lightObj in MV.Com.NavigationWhiteStrobeLights)
+        foreach (var lightObj in Sub.Com.NavigationWhiteStrobeLights)
         {
             whiteStrobeMats.Add(lightObj.GetComponent<MeshRenderer>().material);
             var light = lightObj.EnsureComponent<Light>();
@@ -87,12 +89,14 @@ public class NavigationLightsController : BaseLightController
             whiteStrobeLights.Add(light);
         }
 
-        foreach (var lightObj in MV.Com.NavigationPortLights)
+        foreach (var lightObj in Sub.Com.NavigationPortLights)
             portMats.Add(lightObj.GetComponent<MeshRenderer>().material);
 
-        foreach (var lightObj in MV.Com.NavigationStarboardLights)
+        foreach (var lightObj in Sub.Com.NavigationStarboardLights)
             starboardMats.Add(lightObj.GetComponent<MeshRenderer>().material);
-        MainPatcher.Instance.StartCoroutine(ControlLights());
+        Sub.Owner.StartAvsCoroutine(
+            nameof(NavigationLightsController) + '.' + nameof(ControlLights),
+            _ => ControlLights());
     }
 
     private Rigidbody? rb = null;
@@ -197,11 +201,15 @@ public class NavigationLightsController : BaseLightController
                 break;
             case LightClass.Ports:
                 if (port.IsNull())
-                    port = MainPatcher.Instance.StartCoroutine(BlinkNarySequence(2, true));
+                    port = Sub.Owner.StartAvsCoroutine(
+                        nameof(NavigationLightsController) + '.' + nameof(BlinkNarySequence),
+                        _ => BlinkNarySequence(2, true));
                 break;
             case LightClass.Starboards:
                 if (starboard.IsNull())
-                    starboard = MainPatcher.Instance.StartCoroutine(BlinkNarySequence(2, false));
+                    starboard = Sub.Owner.StartAvsCoroutine(
+                        nameof(NavigationLightsController) + '.' + nameof(BlinkNarySequence),
+                        _ => BlinkNarySequence(2, false));
                 break;
         }
     }

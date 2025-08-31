@@ -1,9 +1,9 @@
 ﻿using AVS.Crafting;
 using AVS.Localization;
+using AVS.Util;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.Util;
 using UnityEngine;
 
 namespace AVS.Admin;
@@ -80,7 +80,7 @@ internal class ConsoleCommands : MonoBehaviour
 
     public void OnConsoleCommand_logvfvehicles(NotificationCenter.Notification _)
     {
-        AvsVehicleManager.VehicleTypes.Select(x => x.techType).ForEach(x => Logger.Log(x.AsString()));
+        AvsVehicleManager.VehicleTypes.Select(x => x.TechType).ForEach(x => Logger.Log(x.AsString()));
     }
 
     //public void OnConsoleCommand_logvfvoices(NotificationCenter.Notification _)
@@ -94,7 +94,7 @@ internal class ConsoleCommands : MonoBehaviour
     private static IEnumerator ListSpawnCodes()
     {
         var allCodes = new List<string>();
-        allCodes.AddRange(AvsVehicleManager.VehicleTypes.Select(x => x.techType.AsString()));
+        allCodes.AddRange(AvsVehicleManager.VehicleTypes.Select(x => x.TechType.AsString()));
         allCodes.AddRange(UpgradeRegistrar.UpgradeIcons.Select(x => x.Key));
         foreach (var code in allCodes)
         {

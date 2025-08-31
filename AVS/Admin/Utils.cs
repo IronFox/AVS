@@ -3,11 +3,11 @@ using AVS.Localization;
 using AVS.Log;
 using AVS.UpgradeModules;
 using AVS.UpgradeModules.Common;
+using AVS.Util;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
-using AVS.Util;
 
 namespace AVS.Admin;
 
@@ -50,60 +50,38 @@ public static class Utils
     /// <summary>
     /// Registers the common depth modules for vehicles.
     /// </summary>
-    public static void RegisterDepthModules()
+    public static void RegisterDepthModules(RootModController rmc)
     {
-        LogWriter.Default.Write(
+        using var log = SmartLog.ForAVS(rmc);
+        log.Write(
             "Registering depth modules");
         var folder = Node.Create(
-            MainPatcher.Instance.ModName + "DepthModules",
+            rmc.ModName + "DepthModules",
             Translator.Get(TranslationKey.Fabricator_Node_DepthModules),
-            MainPatcher.Instance.DepthModuleNodeIcon);
+            rmc.DepthModuleNodeIcon);
 
 
         var compat = UpgradeCompat.AvsVehiclesOnly;
-        var depthmodule1 = new DepthModule1();
+        var depthmodule1 = new DepthModule1(rmc);
         folder.RegisterUpgrade(depthmodule1, compat);
 
-        var depthmodule2 = new DepthModule2();
+        var depthmodule2 = new DepthModule2(rmc);
         depthmodule2.ExtendRecipe(depthmodule1);
         folder.RegisterUpgrade(depthmodule2, compat);
 
-        var depthmodule3 = new DepthModule3();
+        var depthmodule3 = new DepthModule3(rmc);
         depthmodule3.ExtendRecipe(depthmodule2);
         folder.RegisterUpgrade(depthmodule3, compat);
 
         DepthModuleBase.AllDepthModuleTypes.AddRange(depthmodule1.TechTypes.AllNotNone);
         DepthModuleBase.AllDepthModuleTypes.AddRange(depthmodule2.TechTypes.AllNotNone);
         DepthModuleBase.AllDepthModuleTypes.AddRange(depthmodule3.TechTypes.AllNotNone);
-        LogWriter.Default.Write(
+        log.Write(
             "Registered depth modules: " +
             string.Join(", ", DepthModuleBase.AllDepthModuleTypes.Select(x => x.ToString())));
     }
 
 
-    /// <summary>
-    /// Retrieves the <see cref="TechType"/> associated with a vehicle based on its name.
-    /// </summary>
-    /// <remarks>If no vehicle with the specified name is found, an error is logged, and the method
-    /// returns <see cref="TechType.None"/>.</remarks>
-    /// <param name="name">The name of the vehicle to search for. This parameter is case-sensitive and must not be null or empty.</param>
-    /// <returns>The <see cref="TechType"/> of the vehicle if a match is found; otherwise, returns <see
-    /// cref="TechType.None"/>.</returns>
-    public static TechType GetTechTypeFromVehicleName(string name)
-    {
-        try
-        {
-            var ve = AvsVehicleManager.VehicleTypes.First(x => x.name.Contains(name));
-            return ve.techType;
-        }
-        catch
-        {
-            Logger.Error("GetTechTypeFromVehicleName Error. Could not find a vehicle by the name: " + name +
-                         ". Here are all vehicle names:");
-            AvsVehicleManager.VehicleTypes.ForEach(x => Logger.Log(x.name));
-            return 0;
-        }
-    }
 
 
     /// <summary>
@@ -112,9 +90,10 @@ public static class Utils
     /// <remarks>This method ensures that the entry is added or updated only after the PDA
     /// Encyclopedia mapping is initialized.  If an entry with the same key already exists, it will be replaced with
     /// the provided data.</remarks>
+    /// <param name="rmc">The <see cref="RootModController"/> instance owning the process.</param>
     /// <param name="data">The encyclopedia entry data to add or update. The <see cref="PDAEncyclopedia.EntryData.key"/> property must
     /// be unique and non-null.</param>
-    public static void AddEncyclopediaEntry(PDAEncyclopedia.EntryData data)
+    public static void AddEncyclopediaEntry(RootModController rmc, PDAEncyclopedia.EntryData data)
     {
         IEnumerator AddEncyclopediaEntryInternal()
         {
@@ -122,6 +101,6 @@ public static class Utils
             PDAEncyclopedia.mapping[data.key] = data;
         }
 
-        MainPatcher.Instance.StartCoroutine(AddEncyclopediaEntryInternal());
+        rmc.StartCoroutine(AddEncyclopediaEntryInternal());
     }
 }

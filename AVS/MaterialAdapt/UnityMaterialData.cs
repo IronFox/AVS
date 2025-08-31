@@ -1,7 +1,8 @@
-﻿using AVS.Log;
+﻿using AVS.Interfaces;
+using AVS.Log;
+using AVS.MaterialAdapt.Variables;
 using AVS.Util;
 using System;
-using AVS.Interfaces;
 using UnityEngine;
 
 namespace AVS.MaterialAdapt;
@@ -152,11 +153,12 @@ public class UnityMaterialData : INullTestableType
         EmissionTexture = emissionTexture;
     }
 
-    private static Color GetColor(Material m, string name, MaterialLog logConfig)
+    private static Color GetColor(RootModController rmc, Material m, string name, MaterialLog logConfig)
     {
         if (!m.HasProperty(name))
         {
-            logConfig.Warn($"Material {m} does not have expected property {name}");
+            using var log = SmartLog.ForAVS(rmc);
+            log.Warn($"Material {m} does not have expected property {name}");
             return Color.black;
         }
 
@@ -166,17 +168,19 @@ public class UnityMaterialData : INullTestableType
         }
         catch (Exception e)
         {
-            logConfig.Error($"Material {m} does not have expected color property {name}");
+            using var log = SmartLog.ForAVS(rmc);
+            log.Error($"Material {m} does not have expected color property {name}");
             Debug.LogException(e);
             return Color.black;
         }
     }
 
-    private static Texture? GetTexture(Material m, string name, MaterialLog logConfig)
+    private static Texture? GetTexture(RootModController rmc, Material m, string name, MaterialLog logConfig)
     {
         if (!m.HasProperty(name))
         {
-            logConfig.Warn($"Material {m} does not have expected property {name}");
+            using var log = SmartLog.ForAVS(rmc);
+            log.Warn($"Material {m} does not have expected property {name}");
             return null;
         }
 
@@ -186,17 +190,19 @@ public class UnityMaterialData : INullTestableType
         }
         catch (Exception e)
         {
-            logConfig.Error($"Material {m} does not have expected texture property {name}");
+            using var log = SmartLog.ForAVS(rmc);
+            log.Error($"Material {m} does not have expected texture property {name}");
             Debug.LogException(e);
             return null;
         }
     }
 
-    private static float GetFloat(Material m, string name, MaterialLog logConfig)
+    private static float GetFloat(RootModController rmc, Material m, string name, MaterialLog logConfig)
     {
         if (!m.HasProperty(name))
         {
-            logConfig.Warn($"Material {m} does not have expected property {name}");
+            using var log = SmartLog.ForAVS(rmc);
+            log.Warn($"Material {m} does not have expected property {name}");
             return 0;
         }
 
@@ -206,17 +212,19 @@ public class UnityMaterialData : INullTestableType
         }
         catch (Exception e)
         {
-            logConfig.Error($"Material {m} does not have expected float property {name}");
+            using var log = SmartLog.ForAVS(rmc);
+            log.Error($"Material {m} does not have expected float property {name}");
             Debug.LogException(e);
             return 0;
         }
     }
 
-    private static int GetInt(Material m, string name, MaterialLog logConfig)
+    private static int GetInt(RootModController rmc, Material m, string name, MaterialLog logConfig)
     {
         if (!m.HasProperty(name))
         {
-            logConfig.Warn($"Material {m} does not have expected property {name}");
+            using var log = SmartLog.ForAVS(rmc);
+            log.Warn($"Material {m} does not have expected property {name}");
             return 0;
         }
 
@@ -226,72 +234,83 @@ public class UnityMaterialData : INullTestableType
         }
         catch (Exception e)
         {
-            logConfig.Error($"Material {m} does not have expected int property {name}");
+            using var log = SmartLog.ForAVS(rmc);
+            log.Error($"Material {m} does not have expected int property {name}");
             Debug.LogException(e);
             return 0;
         }
     }
 
 
-    private static UnityMaterialData? From(MaterialAddress target, Material m, MaterialLog logConfig, MaterialType type,
+    private static UnityMaterialData? From(RootModController rmc, MaterialAddress target, Material m, MaterialLog logConfig, MaterialType type,
         bool ignoreShaderName = false)
     {
+        using var log = SmartLog.ForAVS(rmc);
         if (m.shader.name != "Standard" && !ignoreShaderName)
         {
-            logConfig.LogExtraStep($"Ignoring {m.NiceName()} which uses {m.shader.NiceName()}");
+            logConfig.LogExtraStep(log, $"Ignoring {m.NiceName()} which uses {m.shader.NiceName()}");
             return null;
         }
 
         var mName = target.ToString();
-        logConfig.LogExtraStep($"Reading {mName} which uses {m.shader.NiceName()}");
+        logConfig.LogExtraStep(log, $"Reading {mName} which uses {m.shader.NiceName()}");
         var data = new UnityMaterialData(
             type,
             m.name,
-            GetColor(m, "_Color", logConfig),
+            GetColor(rmc, m, "_Color", logConfig),
             Color.white,
-            GetColor(m, "_EmissionColor", logConfig),
-            GetTexture(m, "_MainTex", logConfig),
-            GetFloat(m, "_Glossiness", logConfig),
-            metallicTexture: GetTexture(m, "_MetallicGlossMap", logConfig),
-            bumpMap: GetTexture(m, "_BumpMap", logConfig),
-            emissionTexture: GetTexture(m, "_EmissionMap", logConfig),
-            smoothnessTextureChannel: GetInt(m, "_SmoothnessTextureChannel", logConfig),
+            GetColor(rmc, m, "_EmissionColor", logConfig),
+            GetTexture(rmc, m, "_MainTex", logConfig),
+            GetFloat(rmc, m, "_Glossiness", logConfig),
+            metallicTexture: GetTexture(rmc, m, "_MetallicGlossMap", logConfig),
+            bumpMap: GetTexture(rmc, m, "_BumpMap", logConfig),
+            emissionTexture: GetTexture(rmc, m, "_EmissionMap", logConfig),
+            smoothnessTextureChannel: GetInt(rmc, m, "_SmoothnessTextureChannel", logConfig),
             source: target
         );
 
         logConfig.LogMaterialVariableData(
+            log,
             nameof(data.Color),
             data.Color,
             m, mName);
         logConfig.LogMaterialVariableData(
+            log,
             nameof(data.EmissionColor),
             data.EmissionColor,
             m, mName);
         logConfig.LogMaterialVariableData(
+            log,
             nameof(data.MainTex),
             data.MainTex,
             m, mName);
         logConfig.LogMaterialVariableData(
+            log,
             nameof(data.Smoothness),
             data.Smoothness,
             m, mName);
         logConfig.LogMaterialVariableData(
+            log,
             nameof(data.BumpMap),
             data.BumpMap,
             m, mName);
         logConfig.LogMaterialVariableData(
+            log,
             nameof(data.EmissionTexture),
             data.EmissionTexture,
             m, mName);
         logConfig.LogMaterialVariableData(
+            log,
             nameof(data.MetallicTexture),
             data.MetallicTexture,
             m, mName);
         logConfig.LogMaterialVariableData(
+            log,
             nameof(data.SmoothnessTextureChannel),
             data.SmoothnessTextureChannel,
             m, mName);
         logConfig.LogMaterialVariableData(
+            log,
             nameof(data.SpecularTexture),
             data.SpecularTexture,
             m, mName);
@@ -305,6 +324,7 @@ public class UnityMaterialData : INullTestableType
     /// the method returns null if the material's shader's name does not
     /// currently match "Standard"
     /// </summary>
+    /// <param name="rmc">The owning root mod controller</param>
     /// <param name="source">The source material address to read from</param>
     /// <param name="logConfig">Configuration for logging material operations</param>
     /// <param name="type">The type classification for this material</param>
@@ -314,7 +334,7 @@ public class UnityMaterialData : INullTestableType
     /// return null otherwise</param>
     /// <returns>Read surface shader data or null if the shader name did not match
     /// or the target is (no longer) valid</returns>
-    public static UnityMaterialData? From(MaterialAddress source, MaterialLog logConfig, MaterialType type,
+    public static UnityMaterialData? From(RootModController rmc, MaterialAddress source, MaterialLog logConfig, MaterialType type,
         bool ignoreShaderName = false)
     {
         var material = source.GetMaterial();
@@ -324,7 +344,7 @@ public class UnityMaterialData : INullTestableType
             return null;
         }
 
-        return From(source, material, logConfig, type, ignoreShaderName);
+        return From(rmc, source, material, logConfig, type, ignoreShaderName);
     }
 
 
@@ -338,20 +358,21 @@ public class UnityMaterialData : INullTestableType
     /// <param name="renderer">The source renderer</param>
     /// <param name="materialIndex">The source material index on that renderer</param>
     /// <param name="logConfig">Log Configuration</param>
+    /// <param name="rmc">The owning root mod controller</param>
     /// <param name="ignoreShaderName">
     /// If true, will always read the material, regardless of shader name.
     /// If false, will only read the material if its shader name equals "Standard",
     /// return null otherwise</param>
     /// <returns>Read surface shader data or null if the shader name did not match
     /// or the target is (no longer) valid</returns>
-    public static UnityMaterialData? From(Renderer renderer, int materialIndex, MaterialType type,
+    public static UnityMaterialData? From(RootModController rmc, Renderer renderer, int materialIndex, MaterialType type,
         MaterialLog logConfig = default, bool ignoreShaderName = false)
     {
         var a = new MaterialAddress(renderer, materialIndex);
         var m = a.GetMaterial();
         if (m.IsNull())
             return null;
-        return From(a, m, logConfig, type, ignoreShaderName);
+        return From(rmc, a, m, logConfig, type, ignoreShaderName);
     }
 
 
@@ -361,12 +382,14 @@ public class UnityMaterialData : INullTestableType
     /// <param name="m">Target material</param>
     /// <param name="uniformShininess">If non-null, applies this level of shininess to all materials</param>
     /// <param name="logConfig">Log Configuration</param>
+    /// <param name="rmc">The owning root mod controller</param>
     /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
-    public void ApplyTo(Material m, float? uniformShininess, MaterialLog logConfig, string? materialName)
+    public void ApplyTo(RootModController rmc, Material m, float? uniformShininess, MaterialLog logConfig, string? materialName)
     {
-        ColorVariable.Set(m, "_Color2", Color, logConfig, materialName);
-        ColorVariable.Set(m, "_Color3", Color, logConfig, materialName);
-        ColorVariable.Set(m, "_SpecColor", SpecularColor, logConfig, materialName);
+        using var log = SmartLog.ForAVS(rmc);
+        ColorVariable.Set(rmc, m, "_Color2", Color, logConfig, materialName);
+        ColorVariable.Set(rmc, m, "_Color3", Color, logConfig, materialName);
+        ColorVariable.Set(rmc, m, "_SpecColor", SpecularColor, logConfig, materialName);
 
 
         //if (!MainTex && !m.mainTexture)
@@ -383,7 +406,7 @@ public class UnityMaterialData : INullTestableType
         {
             if (existingSpecTex != spec)
             {
-                logConfig.LogMaterialVariableSet(UnityEngine.Rendering.ShaderPropertyType.Texture,
+                logConfig.LogMaterialVariableSet(log, UnityEngine.Rendering.ShaderPropertyType.Texture,
                     SpecTexName, existingSpecTex, spec, m, materialName);
                 //                    logConfig.LogExtraStep($"Translating smoothness alpha map {spec.NiceName()} to spec");
 
@@ -393,11 +416,11 @@ public class UnityMaterialData : INullTestableType
         else
         {
             if (spec)
-                logConfig.LogExtraStep($"Specular source texture is set but uniform shininess is defined. Ignoring");
+                logConfig.LogExtraStep(log, $"Specular source texture is set but uniform shininess is defined. Ignoring");
             var tex = OnePixelTexture.Get(existingSpecTex);
             if (tex.IsNull())
             {
-                logConfig.LogExtraStep(
+                logConfig.LogExtraStep(log,
                     $"Source has no smoothness alpha texture. Setting to {Smoothness} on {materialName ?? m.NiceName()}");
                 var gray = uniformShininess ?? Smoothness;
                 tex = OnePixelTexture.Create(new Color(gray, gray, gray, gray));
@@ -409,7 +432,7 @@ public class UnityMaterialData : INullTestableType
                 var col = new Color(gray, gray, gray, gray);
                 tex.Update(col,
                     (old, nw) =>
-                        logConfig.LogExtraStep(
+                        logConfig.LogExtraStep(log,
                             $"Updating smoothness alpha texture. Setting {old} -> {nw} in {materialName ?? m.NiceName()}"));
             }
         }
@@ -420,7 +443,7 @@ public class UnityMaterialData : INullTestableType
         {
             if (EmissionTexture != existingIllumTex)
             {
-                logConfig.LogExtraStep(
+                logConfig.LogExtraStep(log,
                     $"Translating emission map {EmissionTexture} to {IllumTexName} on {materialName ?? m.NiceName()}");
 
                 m.SetTexture(Illum, EmissionTexture);
@@ -435,12 +458,12 @@ public class UnityMaterialData : INullTestableType
                 {
                     tex.Update(EmissionColor,
                         (old, nw) =>
-                            logConfig.LogExtraStep(
+                            logConfig.LogExtraStep(log,
                                 $"Updating emission color texture. Setting {old} -> {nw} on {materialName ?? m.NiceName()}"));
                 }
                 else
                 {
-                    logConfig.LogExtraStep(
+                    logConfig.LogExtraStep(log,
                         $"Translating emission color {EmissionColor} to {IllumTexName} on {materialName ?? m.NiceName()}");
                     tex = OnePixelTexture.Create(EmissionColor);
                     m.SetTexture(Illum, tex.Texture);
@@ -448,7 +471,7 @@ public class UnityMaterialData : INullTestableType
             }
             else if (existingIllumTex != Texture2D.blackTexture)
             {
-                logConfig.LogExtraStep(
+                logConfig.LogExtraStep(log,
                     $"Source has no illumination texture and illumination color is black. Loading black into {IllumTexName} on {materialName ?? m.NiceName()}");
                 m.SetTexture(Illum, Texture2D.blackTexture);
             }

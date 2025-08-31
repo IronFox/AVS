@@ -9,7 +9,7 @@ namespace AVS.StorageComponents;
 
 internal abstract class StorageInput : HandTarget, IHandTarget
 {
-    public AvsVehicle? mv;
+    public AvsVehicle? av;
     public int slotID = -1;
     public GameObject? model;
     public Collider? collider;
@@ -20,6 +20,8 @@ internal abstract class StorageInput : HandTarget, IHandTarget
     protected Transform? tr;
     protected Vehicle.DockType dockType;
     protected bool state;
+
+    protected AvsVehicle AV => av.OrThrow("StorageInput does not have a vehicle attached. This should not happen.");
 
     public MaybeTranslate displayName = Text.Untranslated("Storage");
 
@@ -37,7 +39,8 @@ internal abstract class StorageInput : HandTarget, IHandTarget
         var modVe = transform;
         while (modVe.gameObject.GetComponent<AvsVehicle>().IsNull())
             modVe = modVe.parent;
-        mv = modVe.gameObject.GetComponent<AvsVehicle>();
+        if (av.IsNull())
+            av = modVe.gameObject.GetComponent<AvsVehicle>();
         SetEnabled(true);
     }
 

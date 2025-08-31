@@ -1,4 +1,5 @@
 ﻿using AVS.Log;
+using AVS.Util;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -19,22 +20,24 @@ public static class SpriteHelper
     /// Loads a raw <see cref="Sprite"/> from a relative path based on the calling assembly's location.
     /// </summary>
     /// <param name="relativePath">The relative path to the sprite file.</param>
+    /// <param name="rmc">The <see cref="RootModController"/> instance for logging purposes.</param>
     /// <returns>The loaded <see cref="Sprite"/>, or null if not found.</returns>
-    public static Sprite? GetSpriteRaw(string relativePath)
+    public static Sprite? GetSpriteRaw(RootModController rmc, string relativePath)
     {
         var modPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
         var fullPath = Path.Combine(modPath, relativePath);
-        return GetSpriteGenericRaw(fullPath);
+        return GetSpriteGenericRaw(rmc, fullPath);
     }
 
     /// <summary>
     /// Loads a required <see cref="Image"/> from a relative path based on the calling assembly's location.
     /// </summary>
     /// <param name="relativePath">Path relative to the executing assembly's path</param>
+    /// <param name="rmc">The <see cref="RootModController"/> instance for logging purposes.</param>
     /// <returns>Loaded image</returns>
     /// <exception cref="FileNotFoundException">The file does not exist</exception>
     /// <exception cref="IOException">Sprite loading has failed</exception>
-    public static Image RequireImage(string relativePath)
+    public static Image RequireImage(RootModController rmc, string relativePath)
     {
         var modPath = Path.GetDirectoryName(Assembly.GetCallingAssembly().Location);
         var fullPath = Path.Combine(modPath, relativePath);
@@ -43,7 +46,7 @@ public static class SpriteHelper
                 $"Image file not found at {fullPath}. Ensure the file exists in the Sprites directory.");
         //LogWriter.Default.Debug($"Loading image from {fullPath}");
 
-        var sprite = GetSpriteGenericRaw(fullPath);
+        var sprite = GetSpriteGenericRaw(rmc, fullPath);
         if (sprite.IsNull())
             throw new IOException($"Sprite {fullPath} could not be loaded.");
         sprite.name = Path.GetFileNameWithoutExtension(fullPath);
@@ -58,12 +61,13 @@ public static class SpriteHelper
     /// Loads a <see cref="Sprite"/> from a full file path.
     /// </summary>
     /// <param name="fullPath">The full path to the sprite file.</param>
+    /// <param name="rmc">The <see cref="RootModController"/> instance for logging purposes.</param>
     /// <returns>The loaded <see cref="Sprite"/>, or null if not found.</returns>
-    private static Sprite? GetSpriteGenericRaw(string fullPath)
+    private static Sprite? GetSpriteGenericRaw(RootModController rmc, string fullPath)
     {
         if (_spriteCache.TryGetValue(fullPath, out var cachedSprite))
             return cachedSprite;
-
+        using var log = SmartLog.ForAVS(rmc);
         try
         {
             var spriteBytes = File.ReadAllBytes(fullPath);
@@ -76,7 +80,7 @@ public static class SpriteHelper
         }
         catch
         {
-            LogWriter.Default.Warn($"Could not find file {fullPath}. Returning null Sprite.");
+            log.Warn($"Could not find file {fullPath}. Returning null Sprite.");
             _spriteCache[fullPath] = null;
             return null;
         }

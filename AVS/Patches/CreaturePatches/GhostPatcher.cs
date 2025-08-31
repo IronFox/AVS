@@ -29,16 +29,19 @@ internal class GhostPatcher
     [HarmonyPatch(nameof(GhostLeviathanMeleeAttack.GetBiteDamage))]
     public static void GetBiteDamagePostfix(GhostLeviathanMeleeAttack __instance, ref float __result, GameObject target)
     {
-        var mv = target.GetComponent<AvsVehicle>();
-        if (mv.IsNull())
+        var av = target.GetComponent<AvsVehicle>();
+        if (av.IsNull())
             return;
 
         var techType = CraftData.GetTechType(__instance.gameObject);
         if (techType == TechType.GhostLeviathan)
-            __result = mv.Config.GhostAdultBiteDamage;
+            __result = av.Config.GhostAdultBiteDamage;
         else if (techType == TechType.GhostLeviathanJuvenile)
-            __result = mv.Config.GhostJuvenileBiteDamage;
+            __result = av.Config.GhostJuvenileBiteDamage;
         else
-            mv.Log.Tag(nameof(GhostPatcher)).Error("Unrecognized ghost leviathan");
+        {
+            using var log = av.NewAvsLog();
+            log.Error("Unrecognized ghost leviathan");
+        }
     }
 }

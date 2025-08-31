@@ -81,8 +81,8 @@ public static class ExtensionMethods
     {
         void UndockAvsVehicle(Vehicle thisVehicle)
         {
-            if (vehicle is AvsVehicle mv)
-                mv.UndockVehicle(boardPlayer, false);
+            if (vehicle is AvsVehicle av)
+                av.UndockVehicle(boardPlayer, false);
         }
 
         var theseBays = vehicle.transform.parent

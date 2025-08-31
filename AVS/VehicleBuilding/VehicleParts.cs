@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using AVS.Localization;
+﻿using AVS.Localization;
 using AVS.Log;
 using AVS.Util;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace AVS.VehicleBuilding;
@@ -97,9 +97,9 @@ public readonly struct Helm
             ? ExitLocation.position
             : CalculatedExitLocation;
 
-    internal bool CheckValidity(LogWriter log, string thisName, bool verbose)
+    internal bool CheckValidity(RootModController rmc, string thisName, bool verbose)
     {
-        log = log.Tag(nameof(Helm));
+        using var log = SmartLog.ForAVS(rmc);
 
         if (ExitLocation.IsNull())
             VehicleRegistrar.VerboseLog(log, VehicleRegistrar.LogType.Warn, verbose,
@@ -183,9 +183,9 @@ public readonly struct VehicleHatchDefinition
         SurfaceExitLocation = surfaceExit;
     }
 
-    internal bool CheckValidity(LogWriter log, string thisName, bool verbose)
+    internal bool CheckValidity(RootModController rmc, string thisName, bool verbose)
     {
-        log = log.Tag(nameof(VehicleHatchDefinition));
+        using var log = SmartLog.ForAVS(rmc);
         if (SurfaceExitLocation.IsNull())
             VehicleRegistrar.VerboseLog(log, VehicleRegistrar.LogType.Warn, verbose,
                 thisName +
@@ -378,9 +378,9 @@ public readonly struct VehicleStorage
         InnateIsAllowedToRemove = innateIsAllowedToRemove;
     }
 
-    internal bool CheckValidity(LogWriter log, string thisName)
+    internal bool CheckValidity(RootModController rmc, string thisName)
     {
-        log = log.Tag(nameof(VehicleStorage));
+        using var log = SmartLog.ForAVS(rmc);
         if (Container.IsNull())
         {
             log.Error(thisName +
@@ -453,9 +453,9 @@ public readonly struct VehicleUpgrades
         ModuleProxies = moduleProxies;
     }
 
-    internal bool CheckValidity(LogWriter log, string thisName, bool verbose)
+    internal bool CheckValidity(RootModController rmc, string thisName, bool verbose)
     {
-        log = log.Tag(nameof(VehicleUpgrades));
+        using var log = SmartLog.ForAVS(rmc);
 
         if (!Interface)
         {
@@ -516,9 +516,9 @@ public readonly struct VehicleBatteryDefinition
         DisplayName = displayName;
     }
 
-    internal bool CheckValidity(LogWriter log, string thisName, bool verbose)
+    internal bool CheckValidity(RootModController rmc, string thisName, bool verbose)
     {
-        log = log.Tag(nameof(VehicleBatteryDefinition));
+        using var log = SmartLog.ForAVS(rmc);
         if (!Root)
         {
             log.Error(thisName +
@@ -605,9 +605,9 @@ public readonly struct VehicleSpotLightDefinition
         Angle = angle;
     }
 
-    internal bool CheckValidity(LogWriter log, string thisName)
+    internal bool CheckValidity(RootModController rmc, string thisName)
     {
-        log = log.Tag(nameof(VehicleSpotLightDefinition));
+        using var log = SmartLog.ForAVS(rmc);
         if (Light.IsNull())
         {
             log.Error(thisName +

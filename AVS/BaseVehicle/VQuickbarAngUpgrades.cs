@@ -3,10 +3,10 @@ using AVS.Localization;
 using AVS.UpgradeModules;
 using AVS.UpgradeModules.Variations;
 using AVS.Util;
+using AVS.VehicleBuilding;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS.BaseVehicle;
@@ -136,25 +136,25 @@ public abstract partial class AvsVehicle
     {
         get
         {
-            if (_slotIDs.IsNull()) _slotIDs = GenerateSlotIDs(Config.NumModules);
+            if (_slotIDs.IsNull()) _slotIDs = GenerateSlotIDs(Owner, Config.NumModules);
             return _slotIDs;
         }
     }
 
-    private static string[] GenerateModuleSlots(int modules)
+    private static string[] GenerateModuleSlots(RootModController rmc, int modules)
     {
         string[] retIDs;
         retIDs = new string[modules];
-        for (var i = 0; i < modules; i++) retIDs[i] = ModuleBuilder.ModuleName(i);
+        for (var i = 0; i < modules; i++) retIDs[i] = ModuleBuilder.ModuleName(rmc, i);
         return retIDs;
     }
 
-    private static string[] GenerateSlotIDs(int modules)
+    private static string[] GenerateSlotIDs(RootModController rmc, int modules)
     {
         string[] retIDs;
         var numUpgradesTotal = modules;
         retIDs = new string[numUpgradesTotal];
-        for (var i = 0; i < modules; i++) retIDs[i] = ModuleBuilder.ModuleName(i);
+        for (var i = 0; i < modules; i++) retIDs[i] = ModuleBuilder.ModuleName(rmc, i);
         return retIDs;
     }
 
@@ -175,7 +175,7 @@ public abstract partial class AvsVehicle
         = new();
 
 
-    internal List<string> VehicleModuleSlots => GenerateModuleSlots(Config.NumModules).ToList();
+    internal List<string> VehicleModuleSlots => GenerateModuleSlots(Owner, Config.NumModules).ToList();
 
     internal Dictionary<EquipmentType, List<string>> VehicleTypeToSlots => new()
     {
@@ -219,8 +219,8 @@ public abstract partial class AvsVehicle
                     ErrorMessage.AddDebug(Translator.Get(TranslationKey.Error_UpgradeNotRemovable_StorageNotEmpty));
                 return flag;
             }
-
-            Debug.LogError("No VehicleStorageContainer found on VehicleStorageModule item");
+            using var log = NewAvsLog();
+            log.Error("No VehicleStorageContainer found on VehicleStorageModule item");
         }
         else
         {
@@ -232,7 +232,8 @@ public abstract partial class AvsVehicle
                 {
                     lastRemovalError = message.Value;
                     lastRemovalTime = Time.time;
-                    Log.Warn(
+                    using var log = NewAvsLog();
+                    log.Warn(
                         $"Trying to remove {pickupable.GetTechType()} but this type cannot be removed from {this.NiceName()} '{VehicleName}': {message.Value.Text}");
                     ErrorMessage.AddError(message.Value.Rendered);
                 }
@@ -272,7 +273,8 @@ public abstract partial class AvsVehicle
             var modularContainer = GetSeamothStorageContainer(slotID);
             if (modularContainer.IsNull())
             {
-                Log.Warn("Warning: failed to get modular storage container for slotID: " + slotID.ToString());
+                using var log = NewAvsLog();
+                log.Warn("Warning: failed to get modular storage container for slotID: " + slotID.ToString());
                 return;
             }
 
@@ -287,14 +289,16 @@ public abstract partial class AvsVehicle
         var slotItem = GetSlotItem(slotID);
         if (slotItem.IsNull())
         {
-            Log.Warn("Warning: failed to get item for that slotID: " + slotID.ToString());
+            using var log = NewAvsLog();
+            log.Warn("Warning: failed to get item for that slotID: " + slotID.ToString());
             return null;
         }
 
         var item = slotItem.item;
         if (item.GetTechType() != TechType.VehicleStorageModule)
         {
-            Log.Warn("Warning: failed to get pickupable for that slotID: " + slotID.ToString());
+            using var log = NewAvsLog();
+            log.Warn("Warning: failed to get pickupable for that slotID: " + slotID.ToString());
             return null;
         }
 
@@ -313,7 +317,8 @@ public abstract partial class AvsVehicle
             }
             else
             {
-                Log.Error("Error: ModGetStorageInSlot called on invalid innate storage slotID");
+                using var log = NewAvsLog();
+                log.Error("Error: ModGetStorageInSlot called on invalid innate storage slotID");
                 return null;
             }
 
@@ -323,21 +328,23 @@ public abstract partial class AvsVehicle
         switch (techType)
         {
             case TechType.VehicleStorageModule:
-            {
-                var component = GetSeamothStorageContainer(slotID);
-                if (component.IsNull())
                 {
-                    Log.Warn("Warning: failed to get storage-container for that slotID: " + slotID.ToString());
+                    var component = GetSeamothStorageContainer(slotID);
+                    if (component.IsNull())
+                    {
+                        using var log = NewAvsLog();
+                        log.Warn("Warning: failed to get storage-container for that slotID: " + slotID.ToString());
+                        return null;
+                    }
+
+                    return component.container;
+                }
+            default:
+                {
+                    using var log = NewAvsLog();
+                    log.Error("Error: tried to get storage for unsupported TechType");
                     return null;
                 }
-
-                return component.container;
-            }
-            default:
-            {
-                Log.Error("Error: tried to get storage for unsupported TechType");
-                return null;
-            }
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using AVS.Log;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -372,21 +371,6 @@ public class HierarchyAnalyzer
 {
     private OverflowGuard Guard { get; } = new();
 
-    private static void Log(Indent indent, string msg)
-    {
-        if (string.IsNullOrWhiteSpace(msg))
-            return;
-        LogWriter.Default.Write(indent + msg);
-    }
-
-    private static void LogMultiLine(Indent indent, string firstLine, IEnumerable<string> nextLines)
-    {
-        LogWriter.Default.Write(indent + firstLine);
-        indent = indent.Inc();
-        foreach (var line in nextLines)
-            LogWriter.Default.Write(indent + line);
-    }
-
     private JsonNode MaterialToJsonNode(Material m)
     {
         try
@@ -427,10 +411,10 @@ public class HierarchyAnalyzer
                                 ToJsonNode(m.GetFloat(name), m));
                             break;
                         case UnityEngine.Rendering.ShaderPropertyType.Texture:
-                        {
-                            var t = m.GetTexture(name);
-                            properties.Add($"#{i} {name}({type})", ObjectToJson(t, true));
-                        }
+                            {
+                                var t = m.GetTexture(name);
+                                properties.Add($"#{i} {name}({type})", ObjectToJson(t, true));
+                            }
                             break;
                         default:
                             properties.AddValue($"#{i} {name}({type})", "<unsupported type>");
@@ -462,12 +446,12 @@ public class HierarchyAnalyzer
             switch (v)
             {
                 case string[] ar:
-                {
-                    var rs = new JsonArray(owner.ToString(), Guard);
-                    foreach (var item in ar)
-                        rs.Add(new JsonValue(item, Guard));
-                    return rs;
-                }
+                    {
+                        var rs = new JsonArray(owner.ToString(), Guard);
+                        foreach (var item in ar)
+                            rs.Add(new JsonValue(item, Guard));
+                        return rs;
+                    }
                 case double _:
                 case float _:
                 case int _:
@@ -480,14 +464,14 @@ public class HierarchyAnalyzer
                 case Vector4 _:
                     return new JsonValue(v, Guard);
                 case Matrix4x4 mat:
-                {
-                    var rs = new JsonObject(owner.ToString(), Guard);
-                    rs.Add("row0", ToJsonNode(mat.GetRow(0), v));
-                    rs.Add("row1", ToJsonNode(mat.GetRow(1), v));
-                    rs.Add("row2", ToJsonNode(mat.GetRow(2), v));
-                    rs.Add("row3", ToJsonNode(mat.GetRow(3), v));
-                    return rs;
-                }
+                    {
+                        var rs = new JsonObject(owner.ToString(), Guard);
+                        rs.Add("row0", ToJsonNode(mat.GetRow(0), v));
+                        rs.Add("row1", ToJsonNode(mat.GetRow(1), v));
+                        rs.Add("row2", ToJsonNode(mat.GetRow(2), v));
+                        rs.Add("row3", ToJsonNode(mat.GetRow(3), v));
+                        return rs;
+                    }
                 case RectTransform t:
                     return ToJson(t, Inspection.ExtendedNoChildren);
                 case Transform t:
@@ -496,12 +480,12 @@ public class HierarchyAnalyzer
                     return ObjectToJson(t, !typeof(Texture).IsAssignableFrom(owner.GetType()));
 
                 case Material[] ms:
-                {
-                    var ar = new JsonArray(owner.ToString(), Guard);
-                    foreach (var m in ms)
-                        ar.Add(MaterialToJsonNode(m));
-                    return ar;
-                }
+                    {
+                        var ar = new JsonArray(owner.ToString(), Guard);
+                        foreach (var m in ms)
+                            ar.Add(MaterialToJsonNode(m));
+                        return ar;
+                    }
                 case Material m:
                     return MaterialToJsonNode(m);
                 case Component c:

@@ -1,4 +1,6 @@
-﻿namespace AVS.UpgradeModules.Variations
+﻿using AVS.Log;
+
+namespace AVS.UpgradeModules.Variations
 {
     /// <summary>
     /// Abstract base class for selectable vehicle upgrade modules.
@@ -9,7 +11,7 @@
         /// <summary>
         /// Parameters passed to <see cref="OnSelected(Params)"/>.
         /// </summary>
-        public readonly struct Params
+        public readonly record struct Params
         {
             /// <summary>
             /// The vehicle to which the upgrade belongs. May be null if <see cref="Cyclops"/> is not null.
@@ -57,7 +59,8 @@
         /// <param name="param"></param>
         public virtual void OnSelected(Params param)
         {
-            Logger.DebugLog(this, "Selecting " + ClassId + " on AvsVehicle: " + param.Vehicle.subName.name + " in slotID: " + param.SlotID.ToString());
+            using var log = SmartLog.ForAVS(Owner);
+            log.Debug("Selecting " + ClassId + " on AvsVehicle: " + param.Vehicle.subName.name + " in slotID: " + param.SlotID.ToString());
         }
 
     }

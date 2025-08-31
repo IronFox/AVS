@@ -79,7 +79,8 @@ namespace AVS.UpgradeModules.Variations
         /// <param name="state"></param>
         protected virtual void OnRepeat(IToggleState state)
         {
-            LogWriter.Default.Debug(this, $"OnRepeat {ClassId} on Vehicle: {state.Vehicle.NiceName()} in slotID: {state.SlotID} active: {state.IsActive} elapsed: {state.EventTime}");
+            using var log = SmartLog.ForAVS(Owner);
+            log.Debug($"OnRepeat {ClassId} on Vehicle: {state.Vehicle.NiceName()} in slotID: {state.SlotID} active: {state.IsActive} elapsed: {state.EventTime}");
         }
         internal void OnRepeatInternal(IToggleState state)
             => OnRepeat(state);
@@ -90,7 +91,8 @@ namespace AVS.UpgradeModules.Variations
         /// <param name="state"></param>
         protected virtual void OnToggle(IToggleState state)
         {
-            LogWriter.Default.Write($"Toggle {ClassId} on Vehicle: {state.Vehicle.NiceName()} in slotID: {state.SlotID} active: {state.IsActive} elapsed: {state.EventTime}");
+            using var log = SmartLog.ForAVS(Owner);
+            log.Write($"Toggle {ClassId} on Vehicle: {state.Vehicle.NiceName()} in slotID: {state.SlotID} active: {state.IsActive} elapsed: {state.EventTime}");
         }
 
         internal void OnToggleInternal(IToggleState state)

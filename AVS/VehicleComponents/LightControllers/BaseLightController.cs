@@ -1,18 +1,17 @@
-﻿using AVS.Log;
-using AVS.Util;
-using UnityEngine;
+﻿using AVS.Util;
 
-namespace AVS
+namespace AVS.VehicleComponents.LightControllers
 {
     /// <summary>
     /// Base class for light controllers in AVS vehicles.
     /// </summary>
-    public abstract class BaseLightController : MonoBehaviour, IPowerChanged, IScuttleListener, IDockListener
+    public abstract class BaseLightController : AvAttached, IPowerChanged, IScuttleListener, IDockListener
     {
         private bool canLightsBeEnabled = true;
         private bool isDocked = false;
         private bool isScuttled = false;
         private bool _isLightsOn = false;
+
         /// <summary>
         /// The current state of the lights managed by this controller.
         /// </summary>
@@ -30,7 +29,9 @@ namespace AVS
                 {
                     return; // no change
                 }
-                LogWriter.Default.Debug($"{this.NiceName()} Setting IsLightsOn to {value}=>{newValue} (was {oldValue}) for {gameObject.name}, with canLightsBeEnabled={canLightsBeEnabled}, isScuttled={isScuttled}, isDocked={isDocked}");
+                using var log = AV.NewAvsLog();
+
+                log.Debug($"{this.NiceName()} Setting IsLightsOn to {value}=>{newValue} (was {oldValue}) for {gameObject.name}, with canLightsBeEnabled={canLightsBeEnabled}, isScuttled={isScuttled}, isDocked={isDocked}");
                 _isLightsOn = newValue;
                 HandleLighting(IsLightsOn);
                 HandleSound(IsLightsOn);
@@ -57,11 +58,12 @@ namespace AVS
         }
         void IPowerChanged.OnPowerChanged(bool hasBatteryPower, bool isSwitchedOn)
         {
+            using var log = AV.NewAvsLog();
 
             bool now = hasBatteryPower && isSwitchedOn;
             if (canLightsBeEnabled != now)
             {
-                LogWriter.Default.Debug($"Power changed: canLightsBeEnabled was {canLightsBeEnabled}, now {now}");
+                log.Debug($"Power changed: canLightsBeEnabled was {canLightsBeEnabled}, now {now}");
                 canLightsBeEnabled = now;
             }
             IsLightsOn = IsLightsOn;

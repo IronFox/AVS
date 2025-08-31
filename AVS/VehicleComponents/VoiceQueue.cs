@@ -1,12 +1,11 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Configuration;
+using AVS.Interfaces;
 using AVS.Util;
-using AVS.VehicleTypes;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.Interfaces;
 using UnityEngine;
 
 namespace AVS;
@@ -20,7 +19,7 @@ namespace AVS;
 /// It is typically used to represent a line of dialogue or sound effect in an application, with an
 /// associated translation key for localization and an optional priority to determine playback order or
 /// importance.</remarks>
-public class VoiceLine : INullTestableType
+public record VoiceLine : INullTestableType
 {
     /// <summary>
     /// The single audio clip of this voice line.
@@ -92,7 +91,7 @@ public class VoiceLine : INullTestableType
         Priority = priority;
     }
 
-    internal void ReplaceQueue(Queue<Queued> partQueue)
+    internal void ReplaceQueue(AvsVehicle av, Queue<Queued> partQueue)
     {
         partQueue.Clear();
         if (Clips.IsNotNull() && Clips.Count > 0)
@@ -102,19 +101,20 @@ public class VoiceLine : INullTestableType
                 var gap = i > 0 && Gaps.IsNotNull() && i <= Gaps.Count
                     ? Gaps[i - 1]
                     : 0f;
-                Logger.DebugLog(
+                using var log = av.NewAvsLog();
+                log.Debug(
                     $"Fetched gap at index {i} out of {string.Join(", ", Gaps?.Select(x => x.ToStr()) ?? Array.Empty<string>())}: {gap.ToStr()} ");
-                partQueue.Enqueue(new Queued(this, Clips[i], i == 0, gap));
+                partQueue.Enqueue(new Queued(av, this, Clips[i], i == 0, gap));
             }
         }
         else if (Clip.IsNotNull())
         {
-            partQueue.Enqueue(new Queued(this, Clip, true, 0));
+            partQueue.Enqueue(new Queued(av, this, Clip, true, 0));
         }
         else
         {
             if (!string.IsNullOrEmpty(TextTranslationKey))
-                partQueue.Enqueue(new Queued(this, null, true, 0));
+                partQueue.Enqueue(new Queued(av, this, null, true, 0));
         }
     }
 }
@@ -128,14 +128,15 @@ internal readonly struct Queued
     public float DelayInSeconds { get; }
     public bool HasClips { get; }
 
-    public Queued(VoiceLine line, AudioClip? clip, bool isFirst, float delayInSeconds)
+    public Queued(AvsVehicle av, VoiceLine line, AudioClip? clip, bool isFirst, float delayInSeconds)
     {
         Line = line;
         Clip = clip;
         IsFirst = isFirst;
         DelayInSeconds = delayInSeconds;
         HasClips = line.HasAnyClips;
-        Logger.DebugLog(
+        using var log = av.NewAvsLog();
+        log.Debug(
             $"Queued voice line: {line.TextTranslationKey}, clip: {clip.NiceName()}, isFirst: {isFirst}, delay: {delayInSeconds:F2}s, volume: {Volume:F2}");
     }
 }
@@ -150,9 +151,11 @@ internal readonly struct Queued
 /// subtitles for voice lines when enabled.</remarks>
 public class VoiceQueue : MonoBehaviour, IScuttleListener
 {
-    private AvsVehicle? mv;
+    private AvsVehicle? av;
     private EnergyInterface? aiEI;
     private List<AudioSource> speakers = new();
+
+    internal AvsVehicle AV => av.OrThrow(() => new InvalidOperationException("VoiceQueue not initialized properly"));
 
     private VoiceLine? Playing { get; set; } = null;
     private Queue<Queued> PartQueue { get; } = new();
@@ -179,11 +182,11 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
     public void Awake()
     {
         isReadyToSpeak = false;
-        mv = GetComponent<AvsVehicle>();
-        if (mv.Com.BackupBatteries.Count > 0)
-            aiEI = mv.Com.BackupBatteries[0].Root.GetComponent<EnergyInterface>();
+        av = GetComponent<AvsVehicle>();
+        if (av.Com.BackupBatteries.Count > 0)
+            aiEI = av.Com.BackupBatteries[0].Root.GetComponent<EnergyInterface>();
         else
-            aiEI = mv.energyInterface;
+            aiEI = av.energyInterface;
 
         // register self with mainpatcher, for on-the-fly voice selection updating
         //VoiceManager.voices.Add(this);
@@ -194,14 +197,16 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
             yield break;
         }
 
-        MainPatcher.Instance.StartCoroutine(WaitUntilReadyToSpeak());
+        av.Owner.StartAvsCoroutine(
+            nameof(VoiceQueue) + '.' + nameof(WaitUntilReadyToSpeak),
+            _ => WaitUntilReadyToSpeak());
     }
 
     private void SetupSpeakers()
     {
         speakers.Add(gameObject.EnsureComponent<AudioSource>().Register());
-        //speakers.Add(mv.VehicleModel.EnsureComponent<AudioSource>());
-        // if (mv is Submarine sub)
+        //speakers.Add(av.VehicleModel.EnsureComponent<AudioSource>());
+        // if (av is Submarine sub)
         // {
         //     foreach (var ps in sub.Com.Helms)
         //     {
@@ -216,7 +221,7 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
         //         speakers.Add(ps.EnsureComponent<AudioSource>().Register());
         //     }
         // }
-        // if (mv is Submersible sub2)
+        // if (av is Submersible sub2)
         // {
         //     speakers.Add(sub2.Com.PilotSeat.Root.EnsureComponent<AudioSource>().Register());
         //     foreach (var ps in sub2.Com.Hatches)
@@ -250,10 +255,10 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
     /// <inheritdoc/>
     public void Update()
     {
-        if (mv.IsNull() || aiEI.IsNull())
+        if (av.IsNull() || aiEI.IsNull())
             return;
         foreach (var speaker in speakers)
-            if (mv.IsBoarded)
+            if (av.IsBoarded)
                 speaker.GetComponent<AudioLowPassFilter>().enabled = false;
             else
                 speaker.GetComponent<AudioLowPassFilter>().enabled = true;
@@ -296,13 +301,13 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
                 {
                     if (!speaker.enabled)
                         continue;
-                    speaker.volume = part.Volume * mv!.Config.GetVoiceSoundVolume() * SoundSystem.GetVoiceVolume() *
+                    speaker.volume = part.Volume * av!.Config.GetVoiceSoundVolume() * SoundSystem.GetVoiceVolume() *
                                      SoundSystem.GetMasterVolume();
                     speaker.clip = part.Clip;
                     speaker.Play();
                 }
 
-            if ((!part.HasClips || mv!.Config.GetVoiceSubtitlesEnabled())
+            if ((!part.HasClips || av!.Config.GetVoiceSubtitlesEnabled())
                 && part.IsFirst && part.Line.TextTranslationKey.IsNotNull())
                 CreateSubtitle(part.Line.TextTranslationKey);
         }
@@ -319,11 +324,11 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
     /// <param name="line">Line to play</param>
     public void Play(VoiceLine line)
     {
-        if (mv && aiEI.IsNotNull() && aiEI.hasCharge)
+        if (av && aiEI.IsNotNull() && aiEI.hasCharge)
             if (Playing is null || Playing.Priority < line.Priority)
             {
                 Playing = line;
-                line.ReplaceQueue(PartQueue);
+                line.ReplaceQueue(AV, PartQueue);
             }
     }
 
@@ -344,6 +349,6 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
 
     private void CreateSubtitle(string textTranslationKey)
     {
-        Logger.PDANote($"{mv!.subName.hullName.text}: {Language.main.Get(textTranslationKey)}");
+        Logger.PDANote($"{av!.subName.hullName.text}: {Language.main.Get(textTranslationKey)}");
     }
 }

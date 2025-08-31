@@ -7,22 +7,24 @@ internal class WaterParkStorageInput : StorageInput
 {
     public override void OpenFromExternal()
     {
-        if (mv.IsNull())
+        if (av.IsNull())
         {
-            LogWriter.Default.Error("AvsVehicle is null in WaterParkStorageInput.OpenFromExternal");
+            using var log1 = SmartLog.ForAVS(RootModController.AnyInstance);
+            log1.Error("AvsVehicle is null in WaterParkStorageInput.OpenFromExternal");
+            return;
+        }
+        using var log = av.NewAvsLog();
+
+        if (slotID >= av.Com.WaterParks.Count)
+        {
+            log.Error($"Invalid slotID {slotID} in WaterParkStorageInput.OpenFromExternal");
             return;
         }
 
-        if (slotID >= mv.Com.WaterParks.Count)
-        {
-            LogWriter.Default.Error($"Invalid slotID {slotID} in WaterParkStorageInput.OpenFromExternal");
-            return;
-        }
-
-        var mwp = mv.Com.WaterParks[slotID].ContentContainer.GetComponent<MobileWaterPark>();
+        var mwp = av.Com.WaterParks[slotID].ContentContainer.GetComponent<MobileWaterPark>();
         if (mwp.IsNull())
         {
-            mv.Log.Error("MobileWaterPark is null in WaterParkStorageInput.OpenFromExternal");
+            log.Error("MobileWaterPark is null in WaterParkStorageInput.OpenFromExternal");
             return;
         }
 
@@ -37,22 +39,24 @@ internal class WaterParkStorageInput : StorageInput
 
     protected override void OpenPDA()
     {
-        if (mv.IsNull())
+        if (av.IsNull())
         {
-            LogWriter.Default.Error("AvsVehicle is null in WaterParkStorageInput.OpenPDA");
+            using var log1 = SmartLog.ForAVS(RootModController.AnyInstance);
+            log1.Error("AvsVehicle is null in WaterParkStorageInput.OpenPDA");
+            return;
+        }
+        using var log = av.NewAvsLog();
+
+        if (slotID >= av.Com.WaterParks.Count)
+        {
+            log.Error($"Invalid slotID {slotID} in WaterParkStorageInput.OpenFromExternal");
             return;
         }
 
-        if (slotID >= mv.Com.WaterParks.Count)
-        {
-            LogWriter.Default.Error($"Invalid slotID {slotID} in WaterParkStorageInput.OpenFromExternal");
-            return;
-        }
-
-        var mwp = mv.Com.WaterParks[slotID].ContentContainer.GetComponent<MobileWaterPark>();
+        var mwp = av.Com.WaterParks[slotID].ContentContainer.GetComponent<MobileWaterPark>();
         if (mwp.IsNull())
         {
-            mv.Log.Error("MobileWaterPark is null in WaterParkStorageInput.OpenFromExternal");
+            log.Error("MobileWaterPark is null in WaterParkStorageInput.OpenFromExternal");
             return;
         }
 

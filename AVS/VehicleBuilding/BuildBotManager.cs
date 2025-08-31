@@ -14,11 +14,11 @@ internal static class BuildBotManager
     private static Color OriginalConstructingGhostColor =
         ((Material)Resources.Load("Materials/constructingGhost")).color;
 
-    public static void SetupBuildBotBeamPoints(GameObject mv)
+    public static void SetupBuildBotBeamPoints(GameObject av)
     {
-        var bbbp = mv.EnsureComponent<BuildBotBeamPoints>();
+        var bbbp = av.EnsureComponent<BuildBotBeamPoints>();
         var bbbpList = new List<Transform>();
-        var modVehicle = mv.GetComponent<AvsVehicle>();
+        var modVehicle = av.GetComponent<AvsVehicle>();
         if (modVehicle.IsNotNull())
         {
             if (modVehicle.collisionModel.IsNotNull())
@@ -30,7 +30,7 @@ internal static class BuildBotManager
         }
         else
         {
-            foreach (var child in mv.GetComponentsInChildren<Transform>()) bbbpList.Add(child);
+            foreach (var child in av.GetComponentsInChildren<Transform>()) bbbpList.Add(child);
         }
 
         bbbp.beamPoints = bbbpList.ToArray();
@@ -44,8 +44,8 @@ internal static class BuildBotManager
         var rocketPlatformVfx = seamoth.GetComponentInChildren<VFXConstructing>();
         var vfxc = go.EnsureComponent<VFXConstructing>();
 
-        var mv = go.GetComponent<AvsVehicle>();
-        vfxc.timeToConstruct = mv.IsNull() ? 10f : mv.Config.TimeToConstruct;
+        var av = go.GetComponent<AvsVehicle>();
+        vfxc.timeToConstruct = av.IsNull() ? 10f : av.Config.TimeToConstruct;
 
         vfxc.alphaTexture = seamothVFXC.alphaTexture;
         vfxc.alphaDetailTexture = seamothVFXC.alphaDetailTexture;
@@ -223,9 +223,9 @@ internal static class BuildBotManager
         BuildPathsUsingCorners(go, pointsRoot, A, B, C, D, E, F, G, H);
     }
 
-    public static void BuildPathsForAvsVehicle(AvsVehicle mv, GameObject pointsRoot)
+    public static void BuildPathsForAvsVehicle(AvsVehicle av, GameObject pointsRoot)
     {
-        var box = mv.Com.BoundingBoxCollider;
+        var box = av.Com.BoundingBoxCollider;
         if (box.IsNotNull())
         {
             var A = GetCornerBoxCollider(pointsRoot, box, CornerValue.lefttopfront);
@@ -236,24 +236,24 @@ internal static class BuildBotManager
             var F = GetCornerBoxCollider(pointsRoot, box, CornerValue.rightbotfront);
             var G = GetCornerBoxCollider(pointsRoot, box, CornerValue.leftbotback);
             var H = GetCornerBoxCollider(pointsRoot, box, CornerValue.rightbotback);
-            BuildPathsUsingCorners(mv.gameObject, pointsRoot, A, B, C, D, E, F, G, H);
+            BuildPathsUsingCorners(av.gameObject, pointsRoot, A, B, C, D, E, F, G, H);
         }
         else
         {
-            BuildPathsForGameObject(mv.gameObject, pointsRoot);
+            BuildPathsForGameObject(av.gameObject, pointsRoot);
         }
     }
 
     public static void BuildBotPathsHelper(GameObject go)
     {
-        var mv = go.GetComponent<AvsVehicle>();
+        var av = go.GetComponent<AvsVehicle>();
         var bbPointsRoot = new GameObject("BuildBotPoints");
         bbPointsRoot.transform.SetParent(go.transform);
-        if (mv.IsNotNull() && mv.Com.BoundingBoxCollider.IsNotNull())
+        if (av.IsNotNull() && av.Com.BoundingBoxCollider.IsNotNull())
         {
             bbPointsRoot.transform.localPosition =
-                go.transform.InverseTransformPoint(mv.Com.BoundingBoxCollider.transform.position);
-            BuildPathsForAvsVehicle(mv, bbPointsRoot);
+                go.transform.InverseTransformPoint(av.Com.BoundingBoxCollider.transform.position);
+            BuildPathsForAvsVehicle(av, bbPointsRoot);
         }
         else
         {
@@ -271,9 +271,9 @@ internal static class BuildBotManager
 
     public static IEnumerator SetupBuildBotPathsForAllMVs()
     {
-        foreach (var mv in AvsVehicleBuilder.prefabs)
-            if (mv.GetComponentInChildren<BuildBotPath>(true).IsNull())
-                yield return SetupBuildBotPaths(mv.gameObject);
+        foreach (var av in AvsVehicleBuilder.prefabs)
+            if (av.GetComponentInChildren<BuildBotPath>(true).IsNull())
+                yield return SetupBuildBotPaths(av.gameObject);
     }
 
     public static void ResetGhostMaterial()

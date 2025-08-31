@@ -1,11 +1,11 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Log;
 using AVS.SaveLoad;
+using AVS.Util;
 using Nautilus.Json;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.Util;
 using UnityEngine;
 
 namespace AVS;
@@ -40,7 +40,8 @@ internal static class AvsVehicleManager
     /// <returns>The registered, unique ping type.</returns>
     public static PingType RegisterPingType(AvsVehicle v, PingType pt, bool verbose)
     {
-        var log = v.Log.Tag(nameof(RegisterPingType));
+
+        using var log = v.NewAvsLog();
         var ret = pt;
         if ((int)ret < 1000)
         {
@@ -64,56 +65,60 @@ internal static class AvsVehicleManager
     /// <summary>
     /// Enrolls a vehicle into the <see cref="VehiclesInPlay"/> list and starts loading it if constructed.
     /// </summary>
-    /// <param name="mv">The vehicle to enroll.</param>
-    public static void EnrollVehicle(AvsVehicle mv)
+    /// <param name="av">The vehicle to enroll.</param>
+    /// <param name="rmc">The root mod controller instance used to start coroutines.</param>
+    public static void EnrollVehicle(RootModController rmc, AvsVehicle av)
     {
-        if (mv.name.Contains("Clone") && !VehiclesInPlay.Contains(mv))
+        if (av.name.Contains("Clone") && !VehiclesInPlay.Contains(av))
         {
-            VehiclesInPlay.Add(mv);
-            Logger.Log("Enrolled the " + mv.name + " : " + mv.GetName() + " : " + mv.subName);
-            if (!mv.GetComponent<VFXConstructing>() || mv.GetComponent<VFXConstructing>().constructed > 3f)
-                MainPatcher.Instance
-                    .StartCoroutine(
-                        LoadVehicle(
-                            mv)); // I wish I knew a good way to optionally NOT do this if this sub is being constructed rn
+            using var log = av.NewAvsLog();
+            VehiclesInPlay.Add(av);
+            log.Write("Enrolled the " + av.name + " : " + av.GetName() + " : " + av.subName);
+            if (!av.GetComponent<VFXConstructing>() || av.GetComponent<VFXConstructing>().constructed > 3f)
+                rmc
+                    .StartAvsCoroutine(
+                        nameof(AvsVehicleManager) + '.' + nameof(LoadVehicle),
+                        log => LoadVehicle(log,
+                            av)); // I wish I knew a good way to optionally NOT do this if this sub is being constructed rn
         }
     }
 
     /// <summary>
     /// Removes a vehicle from the <see cref="VehiclesInPlay"/> list.
     /// </summary>
-    /// <param name="mv">The vehicle to deregister.</param>
-    public static void DeregisterVehicle(AvsVehicle mv)
+    /// <param name="av">The vehicle to deregister.</param>
+    public static void DeregisterVehicle(AvsVehicle av)
     {
-        VehiclesInPlay.Remove(mv);
+        VehiclesInPlay.Remove(av);
     }
 
     /// <summary>
     /// Coroutine that waits for the world to be ready, then calls <see cref="AvsVehicle.OnFinishedLoading"/> on the vehicle.
     /// </summary>
-    /// <param name="mv">The vehicle to load.</param>
+    /// <param name="log">The log to write to.</param>
+    /// <param name="av">The vehicle to load.</param>
     /// <returns>Coroutine enumerator.</returns>
-    private static IEnumerator LoadVehicle(AvsVehicle mv)
+    private static IEnumerator LoadVehicle(SmartLog log, AvsVehicle av)
     {
         // See SaveData.cs
         yield return new WaitUntil(() => LargeWorldStreamer.main.IsNotNull());
         yield return new WaitUntil(() => LargeWorldStreamer.main.IsReady());
         yield return new WaitUntil(() => LargeWorldStreamer.main.IsWorldSettled());
         yield return new WaitUntil(() => !WaitScreen.IsWaiting);
-        Logger.Log($"Loading: {mv.GetName()}");
+        log.Write($"Loading: {av.GetName()}");
         //if (mv.liveMixin.health == 0)
         //{
         //    mv.OnKill();
         //}
-        mv.OnFinishedLoading();
+        av.OnFinishedLoading();
     }
 
-    internal static void CreateSpritesFile(object sender, JsonFileEventArgs e)
+    internal static void CreateSpritesFile(RootModController rmc, JsonFileEventArgs e)
     {
         SaveFiles.Current.WriteReflected(
-            Patches.SaveLoadManagerPatcher.SaveFileSpritesFileName,
-            VehicleTypes.Select(x => x.techType).Where(GameInfoIcon.Has).Select(x => x.AsString()).ToList(),
-            LogWriter.Default
+            Patches.SaveLoadManagerPatcher.GetSaveFileSpritesFileName(rmc),
+            VehicleTypes.Select(x => x.TechType).Where(GameInfoIcon.Has).Select(x => x.AsString()).ToList(),
+            rmc
         );
     }
 

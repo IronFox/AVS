@@ -131,25 +131,27 @@ public class MaterialAdaptation
     /// Resets only variables known to be corrupted during moonpool undock
     /// </summary>
     /// <param name="logConfig">Log Configuration</param>
-    public void PostDockFixOnTarget(MaterialLog logConfig)
+    /// <param name="rmc">Root mod controller for logging purposes</param>
+    public void PostDockFixOnTarget(RootModController rmc, MaterialLog logConfig)
     {
+        using var log = SmartLog.LazyForAVS(rmc);
         try
         {
             var m = Target.GetMaterial();
             if (m.IsNull())
             {
-                logConfig.Warn($"Target material is gone ({Target}). Cannot apply");
+                log.Warn($"Target material is gone ({Target}). Cannot apply");
                 return;
             }
 
             if (m.shader != Shader)
             {
-                logConfig.LogExtraStep($"Applying {Shader.NiceName()} to {Target}");
+                logConfig.LogExtraStep(log, $"Applying {Shader.NiceName()} to {Target}");
 
                 m.shader = Shader;
             }
 
-            Prototype.ApplyTo(m, logConfig, x =>
+            Prototype.ApplyTo(rmc, m, logConfig, x =>
                     x == "_SpecInt"
                     || x == "_GlowStrength"
                     || x == "_GlowStrengthNight",
@@ -158,7 +160,7 @@ public class MaterialAdaptation
         catch (Exception ex)
         {
             Debug.LogException(ex);
-            logConfig.Error($"Failed to apply MaterialAdaptation to material {Target}");
+            log.Error($"Failed to apply MaterialAdaptation to material {Target}");
         }
     }
 
@@ -166,33 +168,35 @@ public class MaterialAdaptation
     /// Reapplies all material properties to the target
     /// </summary>
     /// <param name="logConfig">Log Configuration</param>
+    /// <param name="rmc">Root mod controller for logging purposes</param>
     /// <param name="uniformShininess">The uniform shininess to apply everywhere. If not null,
     /// the unity material's smoothness value is disregarded</param>
-    public void ApplyToTarget(MaterialLog logConfig = default, float? uniformShininess = null)
+    public void ApplyToTarget(RootModController rmc, MaterialLog logConfig = default, float? uniformShininess = null)
     {
+        using var log = SmartLog.LazyForAVS(rmc);
         try
         {
             var m = Target.GetMaterial();
             var mName = Target.ToString();
             if (m.IsNull())
             {
-                logConfig.Warn($"Target material is gone ({mName}). Cannot apply");
+                log.Warn($"Target material is gone ({mName}). Cannot apply");
                 return;
             }
 
             if (m.shader != Shader)
             {
                 m.shader = Shader;
-                logConfig.LogExtraStep($"Applied {m.shader.NiceName()} to {mName}");
+                logConfig.LogExtraStep(log, $"Applied {m.shader.NiceName()} to {mName}");
             }
 
-            Prototype.ApplyTo(m, logConfig, materialName: mName);
+            Prototype.ApplyTo(rmc, m, logConfig, materialName: mName);
 
-            UnityMaterial.ApplyTo(m, uniformShininess, logConfig, mName);
+            UnityMaterial.ApplyTo(rmc, m, uniformShininess, logConfig, mName);
         }
         catch (Exception ex)
         {
-            logConfig.Error($"Failed to apply MaterialAdaptation to {Target}");
+            log.Error($"Failed to apply MaterialAdaptation to {Target}");
             Debug.LogException(ex);
         }
     }

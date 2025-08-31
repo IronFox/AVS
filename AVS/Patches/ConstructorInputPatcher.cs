@@ -2,14 +2,13 @@
 // VALUE: High.
 // doesn't work atm.
 
+using AVS.Log;
+using AVS.Util;
+using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using AVS.Log;
-using AVS.Util;
-using HarmonyLib;
-using UnityEngine;
 
 namespace AVS.Patches
 {
@@ -36,12 +35,12 @@ namespace AVS.Patches
         [HarmonyPatch(nameof(ConstructorInput.Craft))]
         public static IEnumerable<CodeInstruction> ConstructorInputCraftranspiler(IEnumerable<CodeInstruction> instructions)
         {
-            var log = LogWriter.Default.Tag(nameof(ConstructorInputPatcher));
+            using var log = SmartLog.ForAVS(RootModController.AnyInstance);
             var list = instructions.ToList();
             // foreach (var i in list)
             //     log.Write($"Instruction: opCode='{i.opcode}', operand={i.operand.ObjectToStr()}, labels:{string.Join(", ",i.labels.Select(x => x.ToStr()))}");
             //
-            
+
             var consumeResourceInstruction = list.FirstOrDefault(i => i.opcode == OpCodes.Call && i.operand.ToString().Contains("ConsumeResource"));
             var consumeResourceInstructionIndex = list.IndexOf(consumeResourceInstruction);
             var labelAt = list.FindLastIndex(consumeResourceInstructionIndex, i => i.labels.Count > 0);
@@ -61,8 +60,8 @@ namespace AVS.Patches
                 Transpilers.EmitDelegate<Func<TechType, bool>>(IsAvsVehicle),
                 new (OpCodes.Brtrue, label),
             ];
-            
-            var insertAt = list.FindIndex(x => x.opcode == OpCodes.Stloc_1)+1;
+
+            var insertAt = list.FindIndex(x => x.opcode == OpCodes.Stloc_1) + 1;
             if (insertAt < 0 || insertAt >= labelAt)
             {
                 log.Error("Could not find insert point for custom crafting position validation logic.");
@@ -70,7 +69,7 @@ namespace AVS.Patches
             }
             log.Write($"Inserting custom crafting position validation logic at {insertAt}");
             list.InsertRange(insertAt, insertInstructions);
-            
+
             // foreach (var i in list)
             //     log.Write($"Emitting: opCode='{i.opcode}', operand={i.operand.ObjectToStr()}, labels:{string.Join(", ",i.labels.Select(x => x.ToStr()))}");
 
@@ -87,13 +86,11 @@ namespace AVS.Patches
             //
             // return newInstructions.InstructionEnumeration();
         }
-        
+
         private static bool IsAvsVehicle(TechType craftTechType)
         {
-            if (AvsVehicleManager.VehicleTypes.Any(x => x.techType == craftTechType))
+            if (AvsVehicleManager.VehicleTypes.Any(x => x.TechType == craftTechType))
                 return true;
-            LogWriter.Default.Tag(nameof(ConstructorInputPatcher)).Write($"Returning false for unknown {craftTechType}: Using default implementation.");
-
             return false;   //move along
         }
     }

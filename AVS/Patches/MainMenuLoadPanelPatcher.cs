@@ -1,4 +1,5 @@
-﻿using AVS.Util;
+﻿using AVS.Log;
+using AVS.Util;
 using HarmonyLib;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,12 +28,12 @@ public class MainMenuLoadPanelPatcher
     public static void AddLoadButtonSprites(MainMenuLoadButton lb)
     {
         foreach (var ve in AvsVehicleManager.VehicleTypes)
-            if (ve.mv.IsNotNull() && ve.mv.Config.SaveFileSprite)
+            if (ve.AV.IsNotNull() && ve.AV.Config.SaveFileSprite)
             {
-                var techType = ve.techType.AsString();
+                var techType = ve.TechType.AsString();
                 var imageObject = new GameObject(techType);
                 imageObject.transform.SetParent(lb.saveIcons.transform, false);
-                imageObject.AddComponent<UnityEngine.UI.Image>().sprite = ve.mv.Config.SaveFileSprite;
+                imageObject.AddComponent<UnityEngine.UI.Image>().sprite = ve.AV.Config.SaveFileSprite;
                 imageObject.EnsureComponent<RectTransform>().sizeDelta = new Vector2(24, 24);
                 imageObject.SetActive(false);
             }
@@ -47,21 +48,42 @@ public class MainMenuLoadPanelPatcher
     [HarmonyPatch(nameof(MainMenuLoadPanel.UpdateLoadButtonState))]
     public static void MainMenuLoadPanelUpdateLoadButtonStatePostfix(MainMenuLoadButton lb)
     {
-        // A SaveIcon should be square
-        AddLoadButtonSprites(lb);
+        using var log = SmartLog.ForAVS(RootModController.AnyInstance);
+        try
+        {
+            // A SaveIcon should be square
+            log.Debug(nameof(AddLoadButtonSprites));
+            AddLoadButtonSprites(lb);
 
-        if (SaveLoadManagerPatcher.HasTechTypeGameInfo.TryGetValue(lb.saveGame, out var hasTechTypes))
-            hasTechTypes.ForEach(x => lb.saveIcons.FindChild(x).SafeSetActive(true));
+            log.Debug(nameof(GameObjectHelper.SafeSetActive));
+            if (SaveLoadManagerPatcher.GetTechTypeGameInfo(lb.saveGame, out var hasTechTypes))
+                foreach (var tt in hasTechTypes)
+                {
+                    log.Debug($"Processing {lb.NiceName()}");
+                    log.Debug($"Processing {lb.saveIcons.NiceName()}");
+                    var child = lb.saveIcons.FindChild(tt);
+                    log.Debug($"Resolved tt '{tt}' to child {child.NiceName()}. Setting active");
+                    child.SafeSetActive(true);
+                }
 
-        lb.saveIcons.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().spacing = 0;
 
-        var count = 0;
-        foreach (Transform tr in lb.saveIcons.transform)
-            if (tr.gameObject.activeInHierarchy)
-                count++;
+            log.Debug("set spacing");
+            lb.saveIcons.GetComponent<UnityEngine.UI.HorizontalLayoutGroup>().spacing = 0;
 
-        foreach (Transform tr in lb.saveIcons.transform)
-            if (count > 6)
-                tr.GetComponent<RectTransform>().sizeDelta *= 6 / (float)count;
+            log.Debug("count active");
+            var count = 0;
+            foreach (Transform tr in lb.saveIcons.transform)
+                if (tr.gameObject.activeInHierarchy)
+                    count++;
+
+            log.Debug("set sizeDelta");
+            foreach (Transform tr in lb.saveIcons.transform)
+                if (count > 6)
+                    tr.GetComponent<RectTransform>().sizeDelta *= 6 / (float)count;
+        }
+        catch (System.Exception e)
+        {
+            log.Error("postfix failed", e);
+        }
     }
 }

@@ -1,11 +1,9 @@
 ﻿using AVS.Log;
 using AVS.SaveLoad;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEngine;
 using Object = UnityEngine.Object;
 
@@ -134,6 +132,21 @@ public static class GameObjectHelper
     }
 
     /// <summary>
+    /// Returns a non-null object or throws an exception if the object is null.
+    /// </summary>
+    /// <typeparam name="T">Unity object type to check</typeparam>
+    /// <param name="item">Unity object to check</param>
+    /// <param name="msg">Message to throw as an <see cref="InvalidOperationException" /></param>
+    /// <returns>Non-null <paramref name="item"/></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    public static T OrThrow<T>(this T? item, string msg) where T : Object
+    {
+        if (item.IsNotNull())
+            return item;
+        throw new InvalidOperationException(msg);
+    }
+
+    /// <summary>
     /// Changes the active state of a GameObject and logs the action, including any exceptions that occur.
     /// </summary>
     /// <remarks>
@@ -142,7 +155,7 @@ public static class GameObjectHelper
     /// <param name="gameObject">Game object being manipulated</param>
     /// <param name="toEnabled">New enabled state</param>
     /// <param name="log">Out logging facilities</param>
-    public static void LoggedSetActive(this GameObject gameObject, bool toEnabled, LogWriter log)
+    public static void LoggedSetActive(this GameObject gameObject, bool toEnabled, SmartLog log)
     {
         if (!gameObject)
         {
@@ -232,29 +245,36 @@ public static class GameObjectHelper
         if (o.IsNull())
             return "<null>";
 
-        var text = o.name;
-        var num = text.IndexOf('(');
-        if (num >= 0) text = text.Substring(0, num);
+        var text = SanitizeObjectName(o.name);
 
         return $"<{o.GetType().Name}> '{text}' [{o.GetInstanceID()}]";
     }
 
 
+    private static string SanitizeObjectName(string text)
+    {
+        var num = text.IndexOf('(');
+        if (num >= 0)
+            text = text.Substring(0, num);
+        return text;
+    }
+
     /// <summary>
     /// Produces the full hierarchy path of a Transform as a single string using / as separator.
     /// Returns "&lt;null&gt;" if the Transform is null.
     /// </summary>
-    public static string PathToString(this Transform t)
+    public static string PathToString(this Component c, Transform? root = null)
     {
-        if (!t)
+        if (!c)
             return "<null>";
-
+        var t = c.transform;
         var list = new List<string>();
         try
         {
-            while (t)
+            while (t && t != root)
             {
-                list.Add($"{t.name}[{t.GetInstanceID()}]");
+                var name = SanitizeObjectName(t.name);
+                list.Add($"{name}[{t.GetInstanceID()}]");
                 t = t.parent;
             }
         }
@@ -536,28 +556,28 @@ public static class GameObjectHelper
     /// <summary>
     /// Extension method to write reflected data associated with a prefab identifier to a JSON file of the current save game slot.
     /// </summary>
-    public static bool WriteReflected<T>(this PrefabIdentifier? prefabID, string prefix, T data, LogWriter writer) =>
-        SaveFiles.Current.WritePrefabReflected(prefabID, prefix, data, writer);
+    public static bool WriteReflected<T>(this PrefabIdentifier? prefabID, string prefix, T data, RootModController rmc) =>
+        SaveFiles.Current.WritePrefabReflected(prefabID, prefix, data, rmc);
 
     /// <summary>
     /// Extension method to write data associated with a prefab identifier to a JSON file of the current save game slot.
     /// </summary>
-    public static bool WriteData(this PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer) =>
-        SaveFiles.Current.WritePrefabData(prefabID, prefix, data, writer);
+    public static bool WriteData(this PrefabIdentifier? prefabID, string prefix, Data data, RootModController rmc) =>
+        SaveFiles.Current.WritePrefabData(prefabID, prefix, data, rmc);
 
     /// <summary>
     /// Extension method to read data via reflection from a JSON file in the current save game slot.
     /// </summary>
     public static bool ReadReflected<T>(this PrefabIdentifier? prefabID, string prefix, [NotNullWhen(true)] out T? data,
-        LogWriter writer)
+        RootModController rmc)
         where T : class =>
-        SaveFiles.Current.ReadPrefabReflected(prefabID, prefix, out data, writer);
+        SaveFiles.Current.ReadPrefabReflected(prefabID, prefix, out data, rmc);
 
     /// <summary>
     /// Extension method to read data associated with a prefab identifier from a JSON file in the current save game slot.
     /// </summary>
-    public static bool ReadData(this PrefabIdentifier? prefabID, string prefix, Data data, LogWriter writer) =>
-        SaveFiles.Current.ReadPrefabData(prefabID, prefix, data, writer);
+    public static bool ReadData(this PrefabIdentifier? prefabID, string prefix, Data data, RootModController rmc) =>
+        SaveFiles.Current.ReadPrefabData(prefabID, prefix, data, rmc);
 
     /// <summary>
     /// Resolves the vehicle name of a vehicle.

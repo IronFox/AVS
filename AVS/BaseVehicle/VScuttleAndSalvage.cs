@@ -1,6 +1,6 @@
-﻿using System.Collections;
-using AVS.Log;
+﻿using AVS.Log;
 using AVS.Util;
+using System.Collections;
 using UnityEngine;
 
 namespace AVS.BaseVehicle;
@@ -53,7 +53,7 @@ public abstract partial class AvsVehicle
             (component as IScuttleListener).OnScuttle();
         Com.WaterClipProxies.ForEach(x => x.SetActive(false));
         IsPoweredOn = false;
-        gameObject.EnsureComponent<Scuttler>().Scuttle();
+        gameObject.EnsureComponent<Scuttler>().Scuttle(Owner);
         var sealedThing = gameObject.EnsureComponent<Sealed>();
         sealedThing.openedAmount = 0;
         sealedThing.maxOpenedAmount = liveMixin.maxHealth / 5f;
@@ -69,7 +69,7 @@ public abstract partial class AvsVehicle
         foreach (var component in GetComponentsInChildren<IScuttleListener>()) component.OnUnscuttle();
         Com.WaterClipProxies.ForEach(x => x.SetActive(true));
         IsPoweredOn = true;
-        gameObject.EnsureComponent<Scuttler>().Unscuttle();
+        gameObject.EnsureComponent<Scuttler>().Unscuttle(Owner);
     }
 
     /// <summary>
@@ -77,7 +77,7 @@ public abstract partial class AvsVehicle
     /// </summary>
     public virtual void OnSalvage()
     {
-        IEnumerator DropLoot(Vector3 place, GameObject root)
+        IEnumerator DropLoot(SmartLog log, Vector3 place, GameObject root)
         {
             var result = new InstanceContainer();
             foreach (var item in Config.Recipe)
@@ -86,7 +86,7 @@ public abstract partial class AvsVehicle
                     yield return null;
                     if (Random.value < 0.6f) continue;
 
-                    yield return AvsCraftData.InstantiateFromPrefabAsync(Log.Tag(nameof(OnSalvage)), item.Type, result);
+                    yield return AvsCraftData.InstantiateFromPrefabAsync(log, item.Type, result);
                     var go = result.Instance;
                     if (!go.IsNull())
                     {
@@ -106,6 +106,8 @@ public abstract partial class AvsVehicle
             }
         }
 
-        StartCoroutine(DropLoot(transform.position, gameObject));
+        Owner.StartAvsCoroutine(
+            nameof(AvsVehicle) + '.' + nameof(OnSalvage) + '.' + nameof(DropLoot),
+            log => DropLoot(log, transform.position, gameObject));
     }
 }

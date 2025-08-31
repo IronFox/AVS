@@ -2,10 +2,10 @@
 using AVS.Crafting;
 using AVS.Log;
 using AVS.Util;
+using AVS.VehicleBuilding;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using AVS.VehicleBuilding;
 using UnityEngine;
 
 namespace AVS.SaveLoad;
@@ -13,12 +13,15 @@ namespace AVS.SaveLoad;
 internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
 {
     internal bool isFinished = false;
-    internal AvsVehicle mv => GetComponentInParent<AvsVehicle>();
+
+    [SerializeField]
+    internal AvsVehicle? av;
+    internal AvsVehicle AV => av.OrThrow(() => new InvalidOperationException($"Unable to determine AvsUpgradesIdentifier owner"));
     private const string NewSaveFileName = "Upgrades";
 
     void IProtoTreeEventListener.OnProtoSerializeObjectTree(ProtobufSerializer serializer)
     {
-        var upgradeList = mv.modules?.equipment;
+        var upgradeList = AV.modules?.equipment;
         if (upgradeList is null) return;
         var result = new Dictionary<string, string>();
         foreach (var installed in upgradeList)
@@ -36,33 +39,34 @@ internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
         }
 
         //upgradeList.ForEach(x => result.Add(x.Key, x.Value?.techType ?? TechType.None));
-        mv.PrefabID?.WriteReflected(
+        AV.PrefabID?.WriteReflected(
             NewSaveFileName,
             result,
-            LogWriter.Default);
+            AV.Owner);
     }
 
     void IProtoTreeEventListener.OnProtoDeserializeObjectTree(ProtobufSerializer serializer)
     {
-        MainPatcher.Instance.StartCoroutine(LoadUpgrades());
+        AV.Owner.StartAvsCoroutine(
+            nameof(AvsUpgradesIdentifier) + '.' + nameof(LoadUpgrades),
+            LoadUpgrades);
     }
 
-    private IEnumerator LoadUpgrades()
+    private IEnumerator LoadUpgrades(SmartLog log)
     {
-        yield return new WaitUntil(() => mv.IsNotNull());
-        yield return new WaitUntil(() => mv.upgradesInput.equipment.IsNotNull());
-        mv.UnlockDefaultModuleSlots();
-        if (!mv.PrefabID.ReadReflected<Dictionary<string, string>>(
+        yield return new WaitUntil(() => AV.IsNotNull());
+        yield return new WaitUntil(() => AV.upgradesInput.equipment.IsNotNull());
+        AV.UnlockDefaultModuleSlots();
+        if (!AV.PrefabID.ReadReflected<Dictionary<string, string>>(
                 NewSaveFileName,
                 out var theseUpgrades,
-                LogWriter.Default))
+                AV.Owner))
         {
             isFinished = true;
             yield break;
         }
 
         var result = new InstanceContainer();
-        var log = mv.Log.Tag(nameof(LoadUpgrades));
         foreach (var upgrade in theseUpgrades)
         {
             TechType techType;
@@ -73,36 +77,36 @@ internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
                 if (techType == TechType.None)
                 {
                     log.Error(
-                        $"Failed to parse TechType from '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}");
+                        $"Failed to parse TechType from '{upgrade.Value}' in slot {upgrade.Key} for {AV.NiceName()} : {AV.VehicleName}");
                     continue;
                 }
 
                 log.Write(
-                    $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {techType.AsString()} / {techType.EncodeKey()}");
+                    $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {AV.NiceName()} : {techType.AsString()} / {techType.EncodeKey()}");
             }
             else if (upgrade.Value.StartsWith($"TS:"))
             {
                 if (!TechTypeExtensions.FromString(upgrade.Value.Substring(3), out techType, true))
                 {
                     log.Error(
-                        $"Failed to parse TechType from '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}");
+                        $"Failed to parse TechType from '{upgrade.Value}' in slot {upgrade.Key} for {AV.NiceName()} : {AV.VehicleName}");
                     continue;
                 }
 
                 log.Write(
-                    $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {techType.AsString()} / {techType.EncodeKey()}");
+                    $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {AV.NiceName()} : {techType.AsString()} / {techType.EncodeKey()}");
             }
             else if (upgrade.Value.StartsWith($"Class:"))
             {
                 if (!UpgradeRegistrar.UpgradeClassIdMap.TryGetValue(upgrade.Value.Substring(6), out var upgradePrefab))
                 {
                     log.Error(
-                        $"Failed to find upgrade prefab for '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}");
+                        $"Failed to find upgrade prefab for '{upgrade.Value}' in slot {upgrade.Key} for {AV.NiceName()} : {AV.VehicleName}");
                     continue;
                 }
 
                 log.Write(
-                    $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {upgradePrefab.DisplayName} / {upgradePrefab.TechTypes.ForAvsVehicle}");
+                    $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {AV.NiceName()} : {upgradePrefab.DisplayName} / {upgradePrefab.TechTypes.ForAvsVehicle}");
                 techType = upgradePrefab.TechTypes.ForAvsVehicle;
             }
             else
@@ -110,25 +114,25 @@ internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
                 if (UpgradeRegistrar.UpgradeClassIdMap.TryGetValue(upgrade.Value, out var upgradePrefab))
                 {
                     log.Write(
-                        $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {upgradePrefab.DisplayName} / {upgradePrefab.TechTypes.ForAvsVehicle}");
+                        $"Loading upgrade '{upgrade.Value}' in slot {upgrade.Key} for {AV.NiceName()} : {upgradePrefab.DisplayName} / {upgradePrefab.TechTypes.ForAvsVehicle}");
                     techType = upgradePrefab.TechTypes.ForAvsVehicle;
                 }
                 else
                 {
                     log.Error(
-                        $"Invalid upgrade format '{upgrade.Value}' in slot {upgrade.Key} for {mv.NiceName()} : {mv.VehicleName}");
+                        $"Invalid upgrade format '{upgrade.Value}' in slot {upgrade.Key} for {AV.NiceName()} : {AV.VehicleName}");
                     continue;
                 }
             }
 
             var slotName = upgrade.Key;
 
-            if (!ModuleBuilder.IsModuleName(slotName))
+            if (!ModuleBuilder.IsModuleName(AV.Owner, slotName))
             {
                 var moduleAt = slotName.IndexOf("Module", StringComparison.Ordinal);
                 if (moduleAt >= 0 && int.TryParse(slotName.Substring(moduleAt + 6), out var moduleIndex))
                 {
-                    slotName = mv.slotIDs[moduleIndex];
+                    slotName = AV.slotIDs[moduleIndex];
                     log.Warn($"Slot name '{upgrade.Key}' is invalid, remapped to slot name '{slotName}'");
                 }
                 else
@@ -140,8 +144,8 @@ internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
 
 
             log.Write(
-                $"Loading upgrade {techType} in slot '{slotName}' for {mv.NiceName()} : {techType.AsString()} / {techType.EncodeKey()}");
-            yield return AvsCraftData.InstantiateFromPrefabAsync(mv.Log.Tag(nameof(AvsUpgradesIdentifier)), techType,
+                $"Loading upgrade {techType} in slot '{slotName}' for {AV.NiceName()} : {techType.AsString()} / {techType.EncodeKey()}");
+            yield return AvsCraftData.InstantiateFromPrefabAsync(log, techType,
                 result);
             try
             {
@@ -149,19 +153,19 @@ internal class AvsUpgradesIdentifier : MonoBehaviour, IProtoTreeEventListener
                 if (thisUpgrade.IsNull())
                 {
                     log.Error(
-                        $"Failed to load upgrade {techType} in slot '{slotName}' for {mv.NiceName()} : {mv.VehicleName}");
+                        $"Failed to load upgrade {techType} in slot '{slotName}' for {AV.NiceName()} : {AV.VehicleName}");
                     continue;
                 }
 
-                thisUpgrade.transform.SetParent(mv.modulesRoot.transform);
+                thisUpgrade.transform.SetParent(AV.modulesRoot.transform);
                 thisUpgrade.SetActive(false);
                 var thisItem = new InventoryItem(thisUpgrade.GetComponent<Pickupable>());
-                mv.modules.AddItem(slotName, thisItem, true);
+                AV.modules.AddItem(slotName, thisItem, true);
             }
             catch (Exception e)
             {
                 log.Error(
-                    $"Failed to load upgrade {upgrade.Value} in slot '{upgrade.Key}' for {mv.NiceName()} : {mv.VehicleName}",
+                    $"Failed to load upgrade {upgrade.Value} in slot '{upgrade.Key}' for {AV.NiceName()} : {AV.VehicleName}",
                     e);
             }
         }

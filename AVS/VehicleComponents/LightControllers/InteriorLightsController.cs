@@ -1,18 +1,19 @@
-﻿using AVS.VehicleTypes;
-using UnityEngine;
+﻿using AVS.Util;
+using AVS.VehicleTypes;
 
-namespace AVS
+namespace AVS.VehicleComponents.LightControllers
 {
     /// <summary>
     /// The controller for the interior lights of a submarine.
     /// </summary>
     public class InteriorLightsController : BaseLightController, IPlayerListener
     {
-        private Submarine MV => GetComponent<Submarine>();
+        private Submarine Sub => (AV as Submarine).OrThrow($"Vehicle assigned to FloodlightsController is not a submarine");
+
         /// <inheritdoc/>
         protected override void HandleLighting(bool active)
         {
-            MV.Com.InteriorLights.ForEach(x => x.enabled = active);
+            Sub.Com.InteriorLights.ForEach(x => x.enabled = active);
             foreach (var component in GetComponentsInChildren<ILightsStatusListener>())
             {
                 if (active)
@@ -34,9 +35,9 @@ namespace AVS
         /// <inheritdoc/>
         protected virtual void Awake()
         {
-            if (MV.Com.InteriorLights.Count == 0)
+            if (Sub.Com.InteriorLights.Count == 0)
             {
-                Component.DestroyImmediate(this);
+                DestroyImmediate(this);
             }
         }
 

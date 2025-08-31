@@ -1,25 +1,29 @@
 ﻿using AVS.Assets;
+using AVS.VehicleComponents;
 using System.Collections;
 using UnityEngine;
 
 namespace AVS.StorageComponents;
 
-internal class BatteryProxy : MonoBehaviour
+internal class BatteryProxy : AvAttached
 {
     public Transform? proxy = null;
     public EnergyMixin? mixin = null;
 
     public void Awake()
     {
-        MainPatcher.Instance.StartCoroutine(GetSeamothBitsASAP());
+        AV.Owner.StartAvsCoroutine(
+            nameof(BatteryProxy) + '.' + nameof(GetSeamothBitsASAP),
+            _ => GetSeamothBitsASAP());
     }
 
     public IEnumerator GetSeamothBitsASAP()
     {
         if (proxy is null || mixin is null)
-            // reload reload condition ?
+            // reload racing condition ?
             // no...
             yield break;
+        var owner = av!.Owner;
         //var seamothLoader = PrefabLoader.Request(TechType.Seamoth);
         var seamothEnergyMixin = SeamothHelper.RequireSeamoth.GetComponent<EnergyMixin>();
         mixin.batteryModels = new EnergyMixin.BatteryModels[seamothEnergyMixin.batteryModels.Length];

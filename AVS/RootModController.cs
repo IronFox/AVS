@@ -1,5 +1,9 @@
-﻿using AVS.Assets;
+﻿using AVS.Admin;
+using AVS.Assets;
 using AVS.Log;
+using AVS.Patches.CompatibilityPatches;
+using AVS.Util;
+using AVS.VehicleBuilding;
 using BepInEx;
 using HarmonyLib;
 using Nautilus.Handlers;
@@ -7,20 +11,17 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using AVS.Patches.CompatibilityPatches;
-using AVS.Util;
-using AVS.VehicleBuilding;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 namespace AVS;
 
 /// <summary>
-/// AVS main patcher class. Must be inherited by the main mod class.
+/// AVS root mod controller class. Must be inherited by the main mod class.
 /// </summary>
-public abstract class MainPatcher : BaseUnityPlugin
+public abstract class RootModController : BaseUnityPlugin
 {
-    private static MainPatcher? _instance;
+    //private static MainPatcher? _instance;
     private PatcherImages? images;
 
     /// <summary>
@@ -36,6 +37,8 @@ public abstract class MainPatcher : BaseUnityPlugin
             return images;
         }
     }
+
+
 
     /// <summary>
     /// The icon for the Depth Module 1 upgrade.
@@ -57,11 +60,11 @@ public abstract class MainPatcher : BaseUnityPlugin
     /// </summary>
     public Sprite DepthModuleNodeIcon => Images.DepthModuleNodeIcon;
 
-    /// <summary>
-    /// Queries the main singleton instance of <see cref="MainPatcher"/>.
-    /// </summary>
-    public static MainPatcher Instance => _instance.OrThrow(() => new InvalidOperationException(
-        "MainPatcher instance is not set. Ensure that the Awake method is called before accessing Instance."));
+    ///// <summary>
+    ///// Queries the main singleton instance of <see cref="MainPatcher"/>.
+    ///// </summary>
+    //public static MainPatcher Instance => _instance.OrThrow(() => new InvalidOperationException(
+    //    "MainPatcher instance is not set. Ensure that the Awake method is called before accessing Instance."));
 
     /// <summary>
     /// Loads the images used by AVS.
@@ -85,6 +88,24 @@ public abstract class MainPatcher : BaseUnityPlugin
     //internal static VFConfig VFConfig { get; private set; }
     //internal static AVSNautilusConfig NautilusConfig { get; private set; }
 
+    private static Dictionary<int, RootModController> Instances { get; } = [];
+
+    internal static RootModController AnyInstance
+    {
+        get
+        {
+            if (Instances.Count > 0)
+                return Instances.Values.First();
+            throw new InvalidOperationException("No MainPatcher instances are registered.");
+        }
+    }
+
+    internal static IEnumerable<RootModController> AllInstances => Instances.Values;
+
+    /// <summary>
+    /// Logging verbosity level for the mod.
+    /// </summary>
+    public virtual Verbosity LogVerbosity => Verbosity.Regular;
 
     /// <summary>
     /// Begins plugin patching and initialization.
@@ -93,15 +114,18 @@ public abstract class MainPatcher : BaseUnityPlugin
     public virtual void Awake()
     {
         AVS.Logger.Init(Logger);
-        var assembly = typeof(MainPatcher).Assembly;
+        using var log = SmartLog.ForAVS(this);
+        var assembly = typeof(RootModController).Assembly;
         var name = assembly.GetName();
         //Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)
-        LogWriter.Default.Write($"Booting AVS {name.Version} from {assembly.Location} for {PluginId}.");
-        LogWriter.Default.Write("AVS MainPatcher Awake started.");
+        log.Write($"Booting AVS {name.Version} from {assembly.Location} for {PluginId}.");
+        log.Write("AVS MainPatcher Awake started.");
 
         LanguageHandler.RegisterLocalizationFolder();
-        SetupInstance();
-        LogWriter.Default.Write("AVS MainPatcher Awake: SetupInstance completed. Loading images...");
+
+        Instances[GetInstanceID()] = this;
+
+        log.Write("AVS MainPatcher Awake: SetupInstance completed. Loading images...");
         images = LoadImages();
 
 
@@ -109,9 +133,15 @@ public abstract class MainPatcher : BaseUnityPlugin
         //NautilusConfig = Nautilus.Handlers.OptionsPanelHandler.RegisterModOptions<AVSNautilusConfig>();
         PrePatch();
         PrefabLoader.SignalCanLoad();
-        PrefabLoader.Request(TechType.Exosuit, LogWriter.Default, true);
+        PrefabLoader.Request(TechType.Exosuit, true);
         SeamothHelper.Request();
         //PrefabLoader.Request(TechType.Aquarium);
+    }
+
+    /// <inheritdoc/>
+    public virtual void OnDestroy()
+    {
+        Instances.Remove(GetInstanceID());
     }
 
     /// <inheritdoc/>
@@ -128,8 +158,8 @@ public abstract class MainPatcher : BaseUnityPlugin
         }
 
         PostPatch();
-        CompatChecker.CheckAll();
-        StartCoroutine(AVS.Logger.MakeAlerts());
+        CompatChecker.CheckAll(this);
+        StartAvsCoroutine(nameof(AVS.Logger) + '.' + nameof(AVS.Logger.MakeAlerts), log => AVS.Logger.MakeAlerts());
     }
 
     /// <summary>
@@ -137,7 +167,8 @@ public abstract class MainPatcher : BaseUnityPlugin
     /// </summary>
     public virtual void PrePatch()
     {
-        LogWriter.Default.Write("PrePatch started.");
+        using var log = SmartLog.ForAVS(this);
+        log.Write("PrePatch started.");
 
         IEnumerator CollectPrefabsForBuilderReference()
         {
@@ -146,16 +177,16 @@ public abstract class MainPatcher : BaseUnityPlugin
             AvsVehicleBuilder.UpgradeConsole = request.GetResult();
         }
 
-        StartCoroutine(CollectPrefabsForBuilderReference());
+        StartAvsCoroutine(nameof(RootModController) + '.' + nameof(PrePatch) + '.' + nameof(CollectPrefabsForBuilderReference), _ => CollectPrefabsForBuilderReference());
         try
         {
-            AvsFabricator.CreateAndRegister(Images.FabricatorIcon);
-            Admin.Utils.RegisterDepthModules();
-            LogWriter.Default.Write("PrePatch finished.");
+            AvsFabricator.CreateAndRegister(this, Images.FabricatorIcon);
+            Admin.Utils.RegisterDepthModules(this);
+            log.Write("PrePatch finished.");
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error("PrePatch failed.", e);
+            log.Error("PrePatch failed.", e);
         }
     }
 
@@ -168,7 +199,7 @@ public abstract class MainPatcher : BaseUnityPlugin
     /// state changes during loading and unloading of scenes.</remarks>
     public virtual void Patch()
     {
-        var log = LogWriter.Default.Tag("Patch");
+        using var log = SmartLog.ForAVS(this);
 
         log.Write("Starting");
         log.Write("Nautilus.Handlers.SaveDataHandler.RegisterSaveDataCache<SaveLoad.SaveData>()");
@@ -188,12 +219,12 @@ public abstract class MainPatcher : BaseUnityPlugin
             //}
             try
             {
-                AvsVehicleManager.CreateSpritesFile(sender, e);
-                LogWriter.Default.Write("Sprites file created successfully.");
+                AvsVehicleManager.CreateSpritesFile(this, e);
+                log.Write("Sprites file created successfully.");
             }
             catch (Exception ex)
             {
-                LogWriter.Default.Error("Failed to create sprites file", ex);
+                log.Error("Failed to create sprites file", ex);
             }
         };
 
@@ -209,7 +240,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
         void SetWorldNotLoaded()
         {
-            Admin.GameStateWatcher.IsWorldLoaded = false;
+            GameStateWatcher.IsWorldLoaded = false;
             ModuleBuilder.haveWeCalledBuildAllSlots = false;
             ModuleBuilder.slotExtenderIsPatched = false;
             ModuleBuilder.SlotExtenderHasGreenLight = false;
@@ -217,7 +248,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
         void SetWorldLoaded()
         {
-            Admin.GameStateWatcher.IsWorldLoaded = true;
+            GameStateWatcher.IsWorldLoaded = true;
         }
 
         void OnLoadOnce()
@@ -232,7 +263,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
         log.Write("Patching...");
         var harmony = new Harmony(PluginId);
-        var assembly = typeof(MainPatcher).Assembly;
+        var assembly = typeof(RootModController).Assembly;
 
         var patches =
             AccessTools
@@ -342,7 +373,7 @@ public abstract class MainPatcher : BaseUnityPlugin
 
         log.Write("Registering SceneManager events.");
         // do this here because it happens only once
-        SceneManager.sceneUnloaded += Admin.GameStateWatcher.SignalSceneUnloaded;
+        SceneManager.sceneUnloaded += GameStateWatcher.SignalSceneUnloaded;
     }
 
     /// <summary>
@@ -356,18 +387,61 @@ public abstract class MainPatcher : BaseUnityPlugin
         //VehicleBuilder.ScatterDataBoxes(craftables);
     }
 
-    private void SetupInstance()
+    internal static RootModController GetInstance(int mainPatcherInstanceId)
     {
-        if (_instance.IsNull())
-        {
-            _instance = this;
-            return;
-        }
+        if (Instances.TryGetValue(mainPatcherInstanceId, out var instance))
+            return instance;
+        throw new InvalidOperationException(
+            $"No MainPatcher instance with ID {mainPatcherInstanceId} is registered. Known IDs: {string.Join(", ", Instances.Keys)}");
+    }
 
-        if (_instance != this)
+
+    /// <summary>
+    /// Starts a new coroutine with enhanced error handling and logging.
+    /// </summary>
+    /// <param name="routine">The routine being executed</param>
+    /// <param name="methodName">Name of the method or context for logging purposes.</param>
+    /// <returns>The coroutine executing the enumerator</returns>
+    internal Coroutine StartAvsCoroutine(string methodName, Func<SmartLog, IEnumerator> routine)
+    {
+        return StartCoroutine(Run(methodName, routine, true));
+    }
+
+    /// <summary>
+    /// Starts a new coroutine with enhanced error handling and logging.
+    /// </summary>
+    /// <param name="routine">The routine being executed</param>
+    /// <param name="methodName">Name of the method or context for logging purposes.</param>
+    /// <returns>The coroutine executing the enumerator</returns>
+    public Coroutine StartModCoroutine(string methodName, Func<SmartLog, IEnumerator> routine)
+    {
+        return StartCoroutine(Run(methodName, routine, false));
+    }
+
+    private IEnumerator Run(string methodName, Func<SmartLog, IEnumerator> factory, bool isAvs)
+    {
+        using var log = new SmartLog(this, isAvs ? "AVS" : "Mod", 5, true, nameOverride: methodName);
+        var routine = factory(log);
+        while (true)
         {
-            Destroy(this);
-            return;
+            object? current;
+            try
+            {
+                if (!routine.MoveNext())
+                {
+                    //log.Write("Coroutine finished");
+                    yield break;
+                }
+                current = routine.Current;
+            }
+            catch (Exception e)
+            {
+                log.Error("Exception in coroutine", e);
+                yield break;
+            }
+            log.Interrupt();
+            yield return current;
+            log.Resume();
         }
     }
 }

@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using HarmonyLib;
-using System.Reflection;
-using AVS.Assets;
-using AVS.Log;
+﻿using AVS.Log;
 using AVS.Util;
+using HarmonyLib;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 // PURPOSE: ensure AvsVehicles are displayed correctly in the Map mod
@@ -52,9 +50,9 @@ public static class MapModPatcher
                         continue; // If we don't have an icon, we can't modify it
                     icon.sprite = SpriteManager.Get(TechType.Exosuit);
                     foreach (var mvType in AvsVehicleManager.VehicleTypes)
-                        if (mvType.pt == ping.pingType)
+                        if (mvType.PingType == ping.pingType)
                         {
-                            icon.sprite = new Atlas.Sprite(mvType.ping_sprite);
+                            icon.sprite = mvType.PingSprite;
                             break;
                         }
 
@@ -66,7 +64,8 @@ public static class MapModPatcher
         }
         catch (Exception e)
         {
-            LogWriter.Default.Error("Error in MapModPatcher.Prefix", e);
+            using var log = SmartLog.ForAVS(RootModController.AnyInstance);
+            log.Error("Error in MapModPatcher.Prefix", e);
         }
 
         return true;
@@ -75,8 +74,7 @@ public static class MapModPatcher
 
     internal static IEnumerable<CodeInstruction> Transpile(IEnumerable<CodeInstruction> instructions)
     {
-        var log = LogWriter.Default.Tag(nameof(MapModPatcher));
-        ;
+        using var log = SmartLog.ForAVS(RootModController.AnyInstance);
         var codes = new List<CodeInstruction>(instructions);
 
         foreach (var code in codes)

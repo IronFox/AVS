@@ -33,23 +33,14 @@
             a message is displayed to the user.</remarks>
             <param name="param">The parameters containing the vehicle to evaluate and its associated data.</param>
         </member>
-        <member name="M:AvsUtils.GetTechTypeFromVehicleName(System.String)">
-            <summary>
-            Retrieves the <see cref="T:TechType"/> associated with a vehicle based on its name.
-            </summary>
-            <remarks>If no vehicle with the specified name is found, an error is logged, and the method
-            returns <see cref="F:TechType.None"/>.</remarks>
-            <param name="name">The name of the vehicle to search for. This parameter is case-sensitive and must not be null or empty.</param>
-            <returns>The <see cref="T:TechType"/> of the vehicle if a match is found; otherwise, returns <see
-            cref="F:TechType.None"/>.</returns>
-        </member>
-        <member name="M:AvsUtils.AddEncyclopediaEntry(PDAEncyclopedia.EntryData)">
+        <member name="M:AvsUtils.AddEncyclopediaEntry(AVS.RootModController,PDAEncyclopedia.EntryData)">
             <summary>
             Adds a new entry to the PDA Encyclopedia or updates an existing one if the key already exists.
             </summary>
             <remarks>This method ensures that the entry is added or updated only after the PDA
             Encyclopedia mapping is initialized.  If an entry with the same key already exists, it will be replaced with
             the provided data.</remarks>
+            <param name="rmc">The <see cref="T:AVS.RootModController"/> instance owning the process.</param>
             <param name="data">The encyclopedia entry data to add or update. The <see cref="F:PDAEncyclopedia.EntryData.key"/> property must
             be unique and non-null.</param>
         </member>
@@ -83,23 +74,25 @@
             <param name="verbose">If true, logs detailed registration steps.</param>
             <returns>The registered, unique ping type.</returns>
         </member>
-        <member name="M:AVS.AvsVehicleManager.EnrollVehicle(AVS.BaseVehicle.AvsVehicle)">
+        <member name="M:AVS.AvsVehicleManager.EnrollVehicle(AVS.RootModController,AVS.BaseVehicle.AvsVehicle)">
             <summary>
             Enrolls a vehicle into the <see cref="P:AVS.AvsVehicleManager.VehiclesInPlay"/> list and starts loading it if constructed.
             </summary>
-            <param name="mv">The vehicle to enroll.</param>
+            <param name="av">The vehicle to enroll.</param>
+            <param name="rmc">The root mod controller instance used to start coroutines.</param>
         </member>
         <member name="M:AVS.AvsVehicleManager.DeregisterVehicle(AVS.BaseVehicle.AvsVehicle)">
             <summary>
             Removes a vehicle from the <see cref="P:AVS.AvsVehicleManager.VehiclesInPlay"/> list.
             </summary>
-            <param name="mv">The vehicle to deregister.</param>
+            <param name="av">The vehicle to deregister.</param>
         </member>
-        <member name="M:AVS.AvsVehicleManager.LoadVehicle(AVS.BaseVehicle.AvsVehicle)">
+        <member name="M:AVS.AvsVehicleManager.LoadVehicle(AVS.Log.SmartLog,AVS.BaseVehicle.AvsVehicle)">
             <summary>
             Coroutine that waits for the world to be ready, then calls <see cref="M:AVS.BaseVehicle.AvsVehicle.OnFinishedLoading"/> on the vehicle.
             </summary>
-            <param name="mv">The vehicle to load.</param>
+            <param name="log">The log to write to.</param>
+            <param name="av">The vehicle to load.</param>
             <returns>Coroutine enumerator.</returns>
         </member>
         <member name="T:AVS.Admin.ExternalVehicleConfig`1">
@@ -165,18 +158,19 @@
             langword="bool"/>, <see langword="float"/>,  and <see cref="T:BepInEx.Configuration.KeyboardShortcut"/>. Configuration changes can
             trigger optional callbacks for custom handling.</remarks>
         </member>
-        <member name="M:AVS.Admin.ConfigRegistrar.LogAllVehicleNames">
+        <member name="M:AVS.Admin.ConfigRegistrar.LogAllVehicleNames(AVS.RootModController)">
             <summary>
             Logs the names of all vehicles currently present in the game.
             </summary>
             <remarks>This method initiates an asynchronous operation to retrieve and log vehicle names. 
             It does not block the calling thread and relies on the game's coroutine system to execute.</remarks>
         </member>
-        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForAllAvsVehicles``1(System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{TechType,``0},BepInEx.Configuration.ConfigFile)">
+        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForAllAvsVehicles``1(AVS.RootModController,System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{TechType,``0},BepInEx.Configuration.ConfigFile)">
             <summary>
             Registers a configuration option for all modded vehicles in the game.
             </summary>
             <typeparam name="T">The type of the configuration value.</typeparam>
+            <param name="rmc">The owning root mod controller.</param>
             <param name="name">The name of the configuration option.</param>
             <param name="description">A description of the configuration option, including its purpose and usage.</param>
             <param name="defaultValue">The default value for the configuration option.</param>
@@ -184,7 +178,7 @@
             cref="T:TechType"/> of the vehicle and the new value.</param>
             <param name="configFile">An optional configuration file to store the setting. If not provided, a default configuration file is used.</param>
         </member>
-        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForAvsVehicle``1(System.String,System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{TechType,``0},BepInEx.Configuration.ConfigFile)">
+        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForAvsVehicle``1(AVS.RootModController,System.String,System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{TechType,``0},BepInEx.Configuration.ConfigFile)">
             <summary>
             Registers a configuration option for a specific modded vehicle.
             </summary>
@@ -192,6 +186,7 @@
             option will be associated with the specified modded vehicle and can be accessed or modified through the
             configuration system.</remarks>
             <typeparam name="T">The type of the configuration value. Must be a type supported by the configuration system.</typeparam>
+            <param name="rmc">The owning root mod controller.</param>
             <param name="vehicleName">The name of the modded vehicle for which the configuration option is being registered.</param>
             <param name="name">The name of the configuration option.</param>
             <param name="description">A description of the configuration option, including details such as its purpose or valid range.</param>
@@ -201,7 +196,7 @@
             <param name="configFile">An optional <see cref="T:BepInEx.Configuration.ConfigFile"/> instance to store the configuration option. If not provided, the
             default configuration file is used.</param>
         </member>
-        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForSeamoth``1(System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{``0},BepInEx.Configuration.ConfigFile)">
+        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForSeamoth``1(AVS.RootModController,System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{``0},BepInEx.Configuration.ConfigFile)">
             <summary>
             Registers a configuration option for the Seamoth vehicle.
             </summary>
@@ -209,6 +204,7 @@
             option will be associated with the Seamoth vehicle and can be used to customize its behavior or
             settings.</remarks>
             <typeparam name="T">The type of the configuration value.</typeparam>
+            <param name="rmc">The root mod controller instance used to start the coroutine for registration.</param>
             <param name="name">The unique name of the configuration option.</param>
             <param name="description">A description of the configuration option, including its purpose and constraints.</param>
             <param name="defaultValue">The default value for the configuration option.</param>
@@ -216,7 +212,7 @@
             parameter.</param>
             <param name="configFile">An optional configuration file to store the setting. If not provided, a default configuration file is used.</param>
         </member>
-        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForPrawn``1(System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{``0},BepInEx.Configuration.ConfigFile)">
+        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForPrawn``1(AVS.RootModController,System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{``0},BepInEx.Configuration.ConfigFile)">
             <summary>
             Registers a configuration option for the Prawn with the specified name, description, and default
             value.
@@ -225,6 +221,7 @@
             registration ensures that the configuration option is properly integrated with the Prawn and its
             associated systems.</remarks>
             <typeparam name="T">The type of the configuration value. Must be a type supported by the configuration system.</typeparam>
+            <param name="rmc">The owning root mod controller.</param>
             <param name="name">The unique name of the configuration option. This name is used to identify the option.</param>
             <param name="description">A description of the configuration option, including details such as its purpose or valid range of values.</param>
             <param name="defaultValue">The default value for the configuration option. This value is used if no other value is provided.</param>
@@ -233,7 +230,7 @@
             <param name="configFile">An optional configuration file object where the configuration option will be stored. If not provided, a
             default configuration file is used.</param>
         </member>
-        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForCyclops``1(System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{``0},BepInEx.Configuration.ConfigFile)">
+        <member name="M:AVS.Admin.ConfigRegistrar.RegisterForCyclops``1(AVS.RootModController,System.String,BepInEx.Configuration.ConfigDescription,``0,System.Action{``0},BepInEx.Configuration.ConfigFile)">
             <summary>
             Registers a configuration option for the Cyclops submarine with the specified name, description, and default
             value.
@@ -241,6 +238,7 @@
             <remarks>This method starts a coroutine to handle the registration process asynchronously. The
             configuration option will be available for use after the coroutine completes.</remarks>
             <typeparam name="T">The type of the configuration value.</typeparam>
+            <param name="rmc">The owning root mod controller.</param>
             <param name="name">The unique name of the configuration option. This name is used to identify the option.</param>
             <param name="description">A description of the configuration option, including details such as its purpose or valid range.</param>
             <param name="defaultValue">The default value for the configuration option.</param>
@@ -363,28 +361,19 @@
             <returns><see langword="true"/> if the specified transform or one of its ancestors is the vehicle currently mounted
             by the player; otherwise, <see langword="false"/>.</returns>
         </member>
-        <member name="M:AVS.Admin.Utils.RegisterDepthModules">
+        <member name="M:AVS.Admin.Utils.RegisterDepthModules(AVS.RootModController)">
             <summary>
             Registers the common depth modules for vehicles.
             </summary>
         </member>
-        <member name="M:AVS.Admin.Utils.GetTechTypeFromVehicleName(System.String)">
-            <summary>
-            Retrieves the <see cref="T:TechType"/> associated with a vehicle based on its name.
-            </summary>
-            <remarks>If no vehicle with the specified name is found, an error is logged, and the method
-            returns <see cref="F:TechType.None"/>.</remarks>
-            <param name="name">The name of the vehicle to search for. This parameter is case-sensitive and must not be null or empty.</param>
-            <returns>The <see cref="T:TechType"/> of the vehicle if a match is found; otherwise, returns <see
-            cref="F:TechType.None"/>.</returns>
-        </member>
-        <member name="M:AVS.Admin.Utils.AddEncyclopediaEntry(PDAEncyclopedia.EntryData)">
+        <member name="M:AVS.Admin.Utils.AddEncyclopediaEntry(AVS.RootModController,PDAEncyclopedia.EntryData)">
             <summary>
             Adds a new entry to the PDA Encyclopedia or updates an existing one if the key already exists.
             </summary>
             <remarks>This method ensures that the entry is added or updated only after the PDA
             Encyclopedia mapping is initialized.  If an entry with the same key already exists, it will be replaced with
             the provided data.</remarks>
+            <param name="rmc">The <see cref="T:AVS.RootModController"/> instance owning the process.</param>
             <param name="data">The encyclopedia entry data to add or update. The <see cref="F:PDAEncyclopedia.EntryData.key"/> property must
             be unique and non-null.</param>
         </member>
@@ -502,7 +491,7 @@
             Warning log message.
             </summary>
         </member>
-        <member name="M:AVS.VehicleRegistrar.VerboseLog(AVS.Log.LogWriter,AVS.VehicleRegistrar.LogType,System.Boolean,System.String)">
+        <member name="M:AVS.VehicleRegistrar.VerboseLog(AVS.Log.SmartLog,AVS.VehicleRegistrar.LogType,System.Boolean,System.String)">
             <summary>
             Logs a message if verbose logging is enabled, using the specified log type.
             </summary>
@@ -511,60 +500,69 @@
             <param name="message">The message to log.</param>
             <param name="log">Out logger</param>
         </member>
-        <member name="M:AVS.VehicleRegistrar.RegisterVehicleLater(AVS.BaseVehicle.AvsVehicle,System.Boolean)">
+        <member name="M:AVS.VehicleRegistrar.RegisterVehicleLater(AVS.RootModController,AVS.BaseVehicle.AvsVehicle,System.Boolean)">
             <summary>
             Registers a vehicle asynchronously by starting a coroutine.
             </summary>
-            <remarks>Calls <see cref="M:AVS.VehicleRegistrar.RegisterVehicle(AVS.BaseVehicle.AvsVehicle,System.Boolean)"/></remarks>
-            <param name="mv">The mod vehicle to register.</param>
+            <remarks>Calls <see cref="M:AVS.VehicleRegistrar.RegisterVehicle(AVS.Log.SmartLog,AVS.RootModController,AVS.BaseVehicle.AvsVehicle,System.Boolean)"/> as a new coroutine</remarks>
+            <param name="rmc">The owning root mod controller instance.</param>
+            <param name="av">The mod vehicle to register.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
         </member>
-        <member name="M:AVS.VehicleRegistrar.RegisterVehicle(AVS.BaseVehicle.AvsVehicle,System.Boolean)">
+        <member name="M:AVS.VehicleRegistrar.RegisterVehicle(AVS.Log.SmartLog,AVS.RootModController,AVS.BaseVehicle.AvsVehicle,System.Boolean)">
             <summary>
             Coroutine for registering a mod vehicle, including validation and queuing if necessary.
             </summary>
-            <param name="mv">The mod vehicle to register.</param>
+            <param name="rmc">The owning root mod controller instance.</param>
+            <param name="av">The mod vehicle to register.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
+            <param name="log">Out logger</param>
             <returns>IEnumerator for coroutine execution.</returns>
         </member>
-        <member name="M:AVS.VehicleRegistrar.InternalRegisterVehicle(AVS.BaseVehicle.AvsVehicle,System.Boolean)">
+        <member name="M:AVS.VehicleRegistrar.InternalRegisterVehicle(AVS.Log.SmartLog,AVS.RootModController,AVS.BaseVehicle.AvsVehicle,System.Boolean)">
             <summary>
             Internal coroutine for registering a mod vehicle, including prefab creation and queue management.
             </summary>
-            <param name="mv">The mod vehicle to register.</param>
+            <param name="log">Out logger</param>
+            <param name="rmc">The owning root mod controller instance.</param>
+            <param name="av">The mod vehicle to register.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
             <returns>IEnumerator for coroutine execution.</returns>
         </member>
-        <member name="M:AVS.VehicleRegistrar.ValidateAll(AVS.BaseVehicle.AvsVehicle,System.Boolean)">
+        <member name="M:AVS.VehicleRegistrar.ValidateAll(AVS.RootModController,AVS.BaseVehicle.AvsVehicle,System.Boolean)">
             <summary>
             Validates a mod vehicle and its specific type (Submarine, Submersible, Skimmer).
             </summary>
-            <param name="mv">The mod vehicle to validate.</param>
+            <param name="av">The mod vehicle to validate.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
+            <param name="rmc">The root mod controller instance used for logging.</param>
             <returns>True if the vehicle is valid; otherwise, false.</returns>
         </member>
-        <member name="M:AVS.VehicleRegistrar.ValidateRegistration(AVS.BaseVehicle.AvsVehicle,System.Boolean)">
+        <member name="M:AVS.VehicleRegistrar.ValidateRegistration(AVS.RootModController,AVS.BaseVehicle.AvsVehicle,System.Boolean)">
             <summary>
             Validates the registration of a mod vehicle, checking required fields and configuration.
             </summary>
-            <param name="mv">The mod vehicle to validate.</param>
+            <param name="av">The mod vehicle to validate.</param>
+            <param name="rmc">The root mod controller instance used for logging.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
             <returns>True if the vehicle is valid; otherwise, false.</returns>
         </member>
-        <member name="M:AVS.VehicleRegistrar.ValidateRegistration(AVS.VehicleTypes.Submarine,System.Boolean)">
+        <member name="M:AVS.VehicleRegistrar.ValidateRegistration(AVS.RootModController,AVS.VehicleTypes.Submarine,System.Boolean)">
             <summary>
             Validates the registration of a Submarine, including submarine-specific requirements.
             </summary>
-            <param name="mv">The submarine to validate.</param>
+            <param name="av">The submarine to validate.</param>
+            <param name="rmc">The root mod controller instance used for logging.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
             <returns>True if the submarine is valid; otherwise, false.</returns>
         </member>
-        <member name="M:AVS.VehicleRegistrar.ValidateRegistration(AVS.VehicleTypes.Submersible,System.Boolean)">
+        <member name="M:AVS.VehicleRegistrar.ValidateRegistration(AVS.RootModController,AVS.VehicleTypes.Submersible,System.Boolean)">
             <summary>
             Validates the registration of a Submersible, including submersible-specific requirements.
             </summary>
-            <param name="mv">The submersible to validate.</param>
+            <param name="av">The submersible to validate.</param>
             <param name="verbose">Whether to enable verbose logging.</param>
+            <param name="rmc">The root mod controller instance used for logging.</param>
             <returns>True if the submersible is valid; otherwise, false.</returns>
         </member>
         <member name="T:AVS.Assets.AbstractBiomeType">
@@ -858,7 +856,7 @@
             <see cref="P:AVS.Assets.PrefabLoader.IfNotFoundLeaveEmpty"/> is true and loading has failed persistently for one minute
             </summary>
         </member>
-        <member name="M:AVS.Assets.PrefabLoader.Request(TechType,AVS.Log.LogWriter,System.Boolean)">
+        <member name="M:AVS.Assets.PrefabLoader.Request(TechType,System.Boolean)">
             <summary>
             Requests a <see cref="T:AVS.Assets.PrefabLoader"/> instance for the specified <see cref="P:AVS.Assets.PrefabLoader.TechType"/>.
             </summary>
@@ -870,7 +868,6 @@
             If true, <see cref="P:AVS.Assets.PrefabLoader.Prefab"/> will be left empty (null).
             If false, <see cref="P:AVS.Assets.PrefabLoader.Prefab"/> is filled with a new generic loot item that has the requested tech type attached
             but no other components.</param>
-            <param name="outLog">Out log writer. Effective only if this is the first request</param>
             <returns>A <see cref="T:AVS.Assets.PrefabLoader"/> instance associated with the specified <paramref name="techType"/>. If an
             instance already exists, it returns the existing instance; otherwise, it creates a new one and starts the loading process.</returns>
         </member>
@@ -933,27 +930,30 @@
             Provides helper methods for loading and managing sprites from disk and registering ping sprites.
             </summary>
         </member>
-        <member name="M:AVS.Assets.SpriteHelper.GetSpriteRaw(System.String)">
+        <member name="M:AVS.Assets.SpriteHelper.GetSpriteRaw(AVS.RootModController,System.String)">
             <summary>
             Loads a raw <see cref="T:UnityEngine.Sprite"/> from a relative path based on the calling assembly's location.
             </summary>
             <param name="relativePath">The relative path to the sprite file.</param>
+            <param name="rmc">The <see cref="T:AVS.RootModController"/> instance for logging purposes.</param>
             <returns>The loaded <see cref="T:UnityEngine.Sprite"/>, or null if not found.</returns>
         </member>
-        <member name="M:AVS.Assets.SpriteHelper.RequireImage(System.String)">
+        <member name="M:AVS.Assets.SpriteHelper.RequireImage(AVS.RootModController,System.String)">
             <summary>
             Loads a required <see cref="T:AVS.Assets.Image"/> from a relative path based on the calling assembly's location.
             </summary>
             <param name="relativePath">Path relative to the executing assembly's path</param>
+            <param name="rmc">The <see cref="T:AVS.RootModController"/> instance for logging purposes.</param>
             <returns>Loaded image</returns>
             <exception cref="T:System.IO.FileNotFoundException">The file does not exist</exception>
             <exception cref="T:System.IO.IOException">Sprite loading has failed</exception>
         </member>
-        <member name="M:AVS.Assets.SpriteHelper.GetSpriteGenericRaw(System.String)">
+        <member name="M:AVS.Assets.SpriteHelper.GetSpriteGenericRaw(AVS.RootModController,System.String)">
             <summary>
             Loads a <see cref="T:UnityEngine.Sprite"/> from a full file path.
             </summary>
             <param name="fullPath">The full path to the sprite file.</param>
+            <param name="rmc">The <see cref="T:AVS.RootModController"/> instance for logging purposes.</param>
             <returns>The loaded <see cref="T:UnityEngine.Sprite"/>, or null if not found.</returns>
         </member>
         <member name="P:AVS.Assets.SpriteHelper.PingSprites">
@@ -968,13 +968,6 @@
             <param name="name">The name of the ping sprite.</param>
             <param name="pt">The ping type.</param>
             <param name="pingSprite">The <see cref="T:UnityEngine.Sprite"/> to register.</param>
-        </member>
-        <member name="M:AVS.Assets.SpriteHelper.ToSprite(Atlas.Sprite)">
-            <summary>
-            Converts an <see cref="T:Atlas.Sprite"/> to a <see cref="T:UnityEngine.Sprite"/>.
-            </summary>
-            <param name="s">The <see cref="T:Atlas.Sprite"/> to convert.</param>
-            <returns>A <see cref="T:UnityEngine.Sprite"/> generated from the given <see cref="T:Atlas.Sprite"/>.</returns>
         </member>
         <member name="T:AVS.Audio.AsyncPromise`1">
             <summary>
@@ -1023,21 +1016,23 @@
             Caches promises for audio clips by file path.
             </summary>
         </member>
-        <member name="M:AVS.Audio.DynamicClipLoader.GetAudioClipAsync(System.String)">
+        <member name="M:AVS.Audio.DynamicClipLoader.GetAudioClipAsync(AVS.RootModController,System.String)">
             <summary>
             Asynchronously gets an <see cref="T:UnityEngine.AudioClip"/> from the specified file path.
             If the clip is already being loaded, returns the existing promise.
             </summary>
+            <param name="rmc">The <see cref="T:AVS.RootModController"/> owning the process.</param>
             <param name="filePath">The file path to the audio clip.</param>
             <returns>An <see cref="T:AVS.Audio.AsyncPromise`1"/> representing the loading operation.</returns>
         </member>
-        <member name="M:AVS.Audio.DynamicClipLoader.LoadAudioClip(System.String,System.Action{UnityEngine.AudioClip},System.Action{System.String})">
+        <member name="M:AVS.Audio.DynamicClipLoader.LoadAudioClip(AVS.Log.SmartLog,System.String,System.Action{UnityEngine.AudioClip},System.Action{System.String})">
             <summary>
             Coroutine that loads an <see cref="T:UnityEngine.AudioClip"/> from the specified file path.
             </summary>
             <param name="filePath">The file path to the audio clip.</param>
             <param name="onSuccess">Callback invoked with the loaded <see cref="T:UnityEngine.AudioClip"/> on success.</param>
             <param name="onError">Callback invoked if loading fails.</param>
+            <param name="log">The <see cref="T:AVS.Log.SmartLog"/> instance for logging.</param>
             <returns>An <see cref="T:System.Collections.IEnumerator"/> for use with Unity coroutines.</returns>
         </member>
         <member name="T:AVS.Audio.FModException">
@@ -1062,12 +1057,11 @@
             FMOD sound creator.
             </summary>
         </member>
-        <member name="M:AVS.Audio.FModSoundCreator.Play(AVS.Audio.SoundSetup,AVS.Log.LogWriter)">
+        <member name="M:AVS.Audio.FModSoundCreator.Play(AVS.Audio.SoundSetup)">
             <summary>
             Attempts to instantiate a new FMOD sound source, based on the provided configuration.
             </summary>
             <param name="cfg">The sound configuration to instantiate</param>
-            <param name="log">The logging facilities to use for this sound source</param>
             <returns>Created sound source. Null if creation failed</returns>
         </member>
         <member name="T:AVS.Audio.SoundSettings">
@@ -1117,6 +1111,7 @@
             <summary>
             Represents the configuration for a sound source, including its audio clip, playback settings, and spatial properties.
             </summary>
+            <param name="RMC">The root mod controller associated with this sound setup</param>
             <param name="Owner">The owning game object</param>
             <param name="AudioClip">The audio clip associated with this instance</param>
             <param name="Settings">The initial volume and pitch settings</param>
@@ -1128,7 +1123,7 @@
             <exception cref="T:System.ArgumentNullException">Thrown if AudioClip is null.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if distance parameters are invalid.</exception>
         </member>
-        <member name="M:AVS.Audio.SoundSetup.#ctor(UnityEngine.GameObject,UnityEngine.AudioClip,AVS.Audio.SoundSettings,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
+        <member name="M:AVS.Audio.SoundSetup.#ctor(AVS.RootModController,UnityEngine.GameObject,UnityEngine.AudioClip,AVS.Audio.SoundSettings,System.Single,System.Single,System.Single,System.Boolean,System.Boolean)">
             <summary>
             Represents the configuration for a sound source, including its audio clip, playback settings, and spatial properties.
             </summary>
@@ -1140,6 +1135,7 @@
             <summary>
             Represents the configuration for a sound source, including its audio clip, playback settings, and spatial properties.
             </summary>
+            <param name="RMC">The root mod controller associated with this sound setup</param>
             <param name="Owner">The owning game object</param>
             <param name="AudioClip">The audio clip associated with this instance</param>
             <param name="Settings">The initial volume and pitch settings</param>
@@ -1150,6 +1146,9 @@
             <param name="Is3D">Whether the object is represented in 3D</param>
             <exception cref="T:System.ArgumentNullException">Thrown if AudioClip is null.</exception>
             <exception cref="T:System.ArgumentOutOfRangeException">Thrown if distance parameters are invalid.</exception>
+        </member>
+        <member name="P:AVS.Audio.SoundSetup.RMC">
+            <summary>The root mod controller associated with this sound setup</summary>
         </member>
         <member name="P:AVS.Audio.SoundSetup.Owner">
             <summary>The owning game object</summary>
@@ -1225,20 +1224,10 @@
             The root game object of this vehicle. Usually the same as the vehicle game object.
             </summary>
         </member>
-        <member name="P:AVS.BaseVehicle.AvsVehicle.Log">
-            <summary>
-            Primary logging facility for this vehicle.
-            </summary>
-        </member>
         <member name="P:AVS.BaseVehicle.AvsVehicle.Config">
             <summary>
             Invariant vehicle configuration. Initialized during construction.
             Never null.
-            </summary>
-        </member>
-        <member name="P:AVS.BaseVehicle.AvsVehicle.LogDebug">
-            <summary>
-            True to log high-verbosity debug messages (as non-debug)
             </summary>
         </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.GetVehicleComposition">
@@ -1942,6 +1931,33 @@
             Executed when the vehicle is salvaged.
             </summary>
         </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.NewModLog(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object})">
+            <summary>
+            Creates a new instance of <see cref="T:AVS.Log.SmartLog"/> preconfigured with module-specific tags.
+            </summary>
+            <param name="tags">An optional array of additional tags to include in the log. These tags are appended to the default module tags.</param>
+            <param name="parameters">An optional array of parameters to include in the log for contextual information.</param>
+            <returns>A new <see cref="T:AVS.Log.SmartLog"/> instance associated with the module and including the specified tags.</returns>
+        </member>
+        <member name="M:AVS.BaseVehicle.AvsVehicle.NewLazyModLog(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object},System.String,System.String)">
+            <summary>
+            Creates a new lazy instance of <see cref="T:AVS.Log.SmartLog"/> preconfigured with module-specific tags.
+            Lazy logs defer the output of the log context until it is actually needed, which can improve performance.
+            </summary>
+            <remarks>
+            When using this method, ensure that the caller type name matches the caller file name.
+            </remarks>
+            <param name="callerFilePath">The file path of the caller. This is automatically populated by the compiler.</param>
+            <param name="memberName">The member name of the caller. This is automatically populated by the compiler.</param>
+            <param name="tags">An optional array of additional tags to include in the log. These tags are appended to the default module tags.</param>
+            <param name="parameters">An optional array of parameters to include in the log context.</param>
+            <returns>A new <see cref="T:AVS.Log.SmartLog"/> instance associated with the module and including the specified tags.</returns>
+        </member>
+        <member name="P:AVS.BaseVehicle.AvsVehicle.Owner">
+            <summary>
+            The root mod controller instance that owns this vehicle.
+            </summary>
+        </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.SubConstructionComplete">
             <summary>
             Invoked via reflection by patches to notify the vehicle of a sub construction completion.
@@ -2569,12 +2585,13 @@
             Gets an empty recipe with no ingredients.
             </summary>
         </member>
-        <member name="M:AVS.Configuration.Recipe.Import(Nautilus.Crafting.RecipeData,AVS.Configuration.Recipe)">
+        <member name="M:AVS.Configuration.Recipe.Import(AVS.RootModController,Nautilus.Crafting.RecipeData,AVS.Configuration.Recipe)">
             <summary>
             Converts a <see cref="T:Nautilus.Crafting.RecipeData"/> to a <see cref="T:AVS.Configuration.Recipe"/>.
             </summary>
             <param name="recipeData">Data to import</param>
             <param name="fallback">Fallback recipe to return in case of invalid data</param>
+            <param name="rmc">Root mod controller, used for logging</param>
             <returns>Imported data</returns>
         </member>
         <member name="M:AVS.Configuration.Recipe.#ctor(System.Collections.Generic.IEnumerable{AVS.Configuration.RecipeIngredient})">
@@ -2597,7 +2614,7 @@
             </summary>
             <remarks>The method creates a new <see cref="T:Nautilus.Crafting.RecipeData"/> object and populates its
             ingredients list based on the current object's <c>IngredientsDictionary</c>. Each entry in the dictionary is
-            transformed into a <see cref="T:CraftData.Ingredient"/> and added to the resulting recipe.</remarks>
+            transformed into a <see cref="T:Ingredient"/> and added to the resulting recipe.</remarks>
             <returns>A <see cref="T:Nautilus.Crafting.RecipeData"/> instance containing the ingredients from the current object's
             <c>IngredientsDictionary</c>.</returns>
         </member>
@@ -2931,7 +2948,7 @@
             Implements listeners for vehicle status, power, lights, and autopilot events.
             </summary>
         </member>
-        <member name="F:AVS.ControlPanel.mv">
+        <member name="F:AVS.ControlPanel.av">
             <summary>
             The submarine instance this control panel is associated with.
             </summary>
@@ -4121,97 +4138,6 @@
             The vehicle has detected a nearby leviathan.
             </summary>
         </member>
-        <member name="T:AVS.BaseLightController">
-            <summary>
-            Base class for light controllers in AVS vehicles.
-            </summary>
-        </member>
-        <member name="P:AVS.BaseLightController.IsLightsOn">
-            <summary>
-            The current state of the lights managed by this controller.
-            </summary>
-        </member>
-        <member name="M:AVS.BaseLightController.HandleLighting(System.Boolean)">
-            <summary>
-            Called when the light enabled status has changed.
-            Intended to switch lights on or off in the vehicle.
-            </summary>
-            <param name="lightsAreNowEnabled">True if the lights have been switched on</param>
-        </member>
-        <member name="M:AVS.BaseLightController.HandleSound(System.Boolean)">
-            <summary>
-            Called when the light enabled status has changed.
-            Intended to play a sound when the lights are toggled on or off.
-            </summary>
-            <param name="lightsAreNowEnabled">True if the lights have been switched on</param>
-        </member>
-        <member name="M:AVS.BaseLightController.Toggle">
-            <summary>
-            Toggles the lights on &lt;-&gt; off.
-            </summary>
-        </member>
-        <member name="T:AVS.FloodlightsController">
-            <summary>
-            Controller for the floodlights on a submarine.
-            </summary>
-        </member>
-        <member name="M:AVS.FloodlightsController.HandleLighting(System.Boolean)">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.FloodlightsController.HandleSound(System.Boolean)">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.FloodlightsController.Awake">
-            <inheritdoc/>
-        </member>
-        <member name="T:AVS.HeadlightsController">
-            <summary>
-            Controller for the headlights of a vehicle.
-            </summary>
-        </member>
-        <member name="M:AVS.HeadlightsController.HandleLighting(System.Boolean)">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.HeadlightsController.HandleSound(System.Boolean)">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.HeadlightsController.Awake">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.HeadlightsController.Update">
-            <inheritdoc/>
-        </member>
-        <member name="T:AVS.InteriorLightsController">
-            <summary>
-            The controller for the interior lights of a submarine.
-            </summary>
-        </member>
-        <member name="M:AVS.InteriorLightsController.HandleLighting(System.Boolean)">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.InteriorLightsController.HandleSound(System.Boolean)">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.InteriorLightsController.Awake">
-            <inheritdoc/>
-        </member>
-        <member name="T:AVS.NavigationLightsController">
-            <summary>
-            The controller for the navigation lights of a submarine.
-            </summary>
-        </member>
-        <member name="M:AVS.NavigationLightsController.HandleLighting(System.Boolean)">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.NavigationLightsController.HandleSound(System.Boolean)">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.NavigationLightsController.Awake">
-            <inheritdoc/>
-        </member>
-        <member name="M:AVS.NavigationLightsController.Start">
-            <inheritdoc/>
-        </member>
         <member name="T:AVS.Localization.DefaultTranslator">
             <summary>
             Default implementation of the ITranslator interface for AVS.
@@ -4537,19 +4463,6 @@
             The replaceable implementation for translating keys.
             </summary>
         </member>
-        <member name="T:AVS.ILogFilter">
-            <summary>
-            Defines a filter for controlling whether debug-level log messages are processed.
-            </summary>
-            <remarks>Implementations of this interface can be used to determine whether debug-level log messages
-            should be included in the logging output. This is typically used to enable or disable verbose logging
-            dynamically based on application settings or runtime conditions.</remarks>
-        </member>
-        <member name="P:AVS.ILogFilter.LogDebug">
-            <summary>
-            Gets a value indicating whether debug-level logging is enabled.
-            </summary>
-        </member>
         <member name="T:AVS.Logger">
             <summary>
             Provides logging, notification, and main menu alert utilities for the AVS mod.
@@ -4579,11 +4492,6 @@
         <member name="M:AVS.Logger.Exception(System.String,System.Exception)">
             <summary>
             Logs an exception with a prefix.
-            </summary>
-        </member>
-        <member name="M:AVS.Logger.DebugLog(AVS.ILogFilter,System.String)">
-            <summary>
-            Logs a debug message if the owner allows debug logging.
             </summary>
         </member>
         <member name="M:AVS.Logger.DebugLog(System.String)">
@@ -4646,125 +4554,55 @@
             Coroutine that displays main menu notifications in a loop until the player is loaded.
             </summary>
         </member>
-        <member name="T:AVS.Log.LogWriter">
+        <member name="T:AVS.Log.Domain">
             <summary>
-            Logging configuration, mostly used for material adaptation processes.
+            Logging domain constants
             </summary>
         </member>
-        <member name="P:AVS.Log.LogWriter.Prefix">
+        <member name="P:AVS.Log.Domain.AVS">
             <summary>
-            Logging prefix, used to identify the source of the log message.
+            AVS internal domain
             </summary>
         </member>
-        <member name="P:AVS.Log.LogWriter.Tags">
+        <member name="P:AVS.Log.Domain.Mod">
             <summary>
-            Logging tags, used to identify the source of the log message.
+            Client mod domain
             </summary>
         </member>
-        <member name="P:AVS.Log.LogWriter.IncludeTimestamp">
+        <member name="P:AVS.Log.Domain.Unity">
             <summary>
-            If true, log messages will include a timestamp.
+            Unity domain
             </summary>
-        </member>
-        <member name="M:AVS.Log.LogWriter.#ctor(System.String,System.String[],System.Boolean)">
-            <summary>
-            Creates a new logging definition.
-            </summary>
-            <param name="prefix">Logging prefix, used to identify the source of the log message.</param>
-            <param name="tags">Logging tags, used to identify the source of the log message.</param>
-            <param name="includeTimestamp">If true, log messages will include a timestamp.</param>
-        </member>
-        <member name="M:AVS.Log.LogWriter.#ctor(System.String,System.String[])">
-            <summary>
-            Creates a new logging definition.
-            </summary>
-            <param name="prefix">Logging prefix, used to identify the source of the log message.</param>
-            <param name="tags">Logging tags, used to identify the source of the log message.</param>
-        </member>
-        <member name="F:AVS.Log.LogWriter.DefaultTags">
-            <summary>
-            Default tags used for logging by AVS itself.
-            </summary>
-        </member>
-        <member name="F:AVS.Log.LogWriter.Default">
-            <summary>
-            Default log writer instance for AVS itself.
-            </summary>
-        </member>
-        <member name="M:AVS.Log.LogWriter.Debug(AVS.ILogFilter,System.String)">
-            <summary>
-            Logs a debug message if the filter allows it.
-            </summary>
-            <param name="filter">Filter for verbose log messages</param>
-            <param name="msg">Message to log</param>
-        </member>
-        <member name="M:AVS.Log.LogWriter.Debug(System.String)">
-            <summary>
-            Logs a debug message
-            </summary>
-            <param name="msg">Message to log</param>
-        </member>
-        <member name="M:AVS.Log.LogWriter.Write(System.String)">
-            <summary>
-            Logs a regular message.
-            </summary>
-        </member>
-        <member name="M:AVS.Log.LogWriter.Warn(System.String)">
-            <summary>
-            Logs a warning message.
-            </summary>
-        </member>
-        <member name="M:AVS.Log.LogWriter.Error(System.String)">
-            <summary>
-            Logs an error message.
-            </summary>
-        </member>
-        <member name="M:AVS.Log.LogWriter.Error(System.String,System.Exception)">
-            <summary>
-            Logs an error message.
-            </summary>
-        </member>
-        <member name="M:AVS.Log.LogWriter.Prefixed(System.String)">
-            <summary>
-            Creates a new log writer with an additional prefix appended to end of the current prefix.
-            If the current prefix is null, the new prefix will be used as the only prefix.
-            Otherwise, the new prefix will be appended to the current prefix with a dot separator.
-            </summary>
-            <param name="prefix"></param>
-            <returns></returns>
-        </member>
-        <member name="M:AVS.Log.LogWriter.Tag(System.String)">
-            <summary>
-            Returns a new <see cref="T:AVS.Log.LogWriter"/> instance with the specified tag added to the existing tags.
-            </summary>
-            <param name="tag">The tag to add to the <see cref="T:AVS.Log.LogWriter"/>. Cannot be null.</param>
-            <returns>A <see cref="T:AVS.Log.LogWriter"/> instance with the specified tag included.  If the tag already exists, returns the
-            current instance.</returns>
         </member>
         <member name="T:AVS.Log.MaterialLog">
             <summary>
             Material adaptation logging configuration.
             </summary>
         </member>
-        <member name="M:AVS.Log.MaterialLog.#ctor(System.Boolean,System.Boolean,System.String,System.String[],System.Boolean,System.Boolean)">
+        <member name="M:AVS.Log.MaterialLog.#ctor(System.Boolean,System.Boolean,System.String[],System.Boolean)">
             <summary>
             Constructs a new material adaptation logging configuration.
             </summary>
-            <param name="prefix">Optional logging prefix, used to identify the source of the log message.</param>
             <param name="tags">Optional logging tags, used to identify the source of the log message.</param>
-            <param name="includeTimestamp">If true, log messages will include a timestamp.</param>
             <param name="logMaterialVariables">If true, input material variables will be logged.</param>
             <param name="logMaterialChanges">If true material property changes will be logged.</param>
             <param name="logExtraSteps">If true, extra steps of the material adaptation process will be logged.</param>
         </member>
-        <member name="P:AVS.Log.MaterialLog.Writer">
+        <member name="M:AVS.Log.MaterialLog.NewLog(AVS.RootModController)">
             <summary>
-            Internal log writer used for material adaptation logging.
+            Creates a new scopes smart log for material adaptation logging.
             </summary>
+            <param name="rmc"></param>
+            <returns></returns>
         </member>
         <member name="P:AVS.Log.MaterialLog.LogMaterialChanges">
             <summary>
             If true material property changes will be logged.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.MaterialLog.Tags">
+            <summary>
+            Default tags associated with this logging configuration.
             </summary>
         </member>
         <member name="P:AVS.Log.MaterialLog.LogMaterialVariables">
@@ -4797,29 +4635,30 @@
             Verbose logging configuration for material adaptation.
             </summary>
         </member>
-        <member name="M:AVS.Log.MaterialLog.LogExtraStep(System.String)">
+        <member name="M:AVS.Log.MaterialLog.LogExtraStep(AVS.Log.SmartLog,System.String)">
             <summary>
             Logs an extra step in the material adaptation process.
             If <see cref="P:AVS.Log.MaterialLog.LogExtraSteps"/> is false, this method does nothing.
             </summary>
         </member>
-        <member name="M:AVS.Log.MaterialLog.LogMaterialChange(System.String)">
+        <member name="M:AVS.Log.MaterialLog.LogMaterialChange(AVS.Log.SmartLog,System.String)">
             <summary>
             Logs a material change message.
             If <see cref="P:AVS.Log.MaterialLog.LogMaterialChanges"/> is false, this method does nothing.
             </summary>
         </member>
-        <member name="M:AVS.Log.MaterialLog.LogMaterialChange(System.Func{System.String})">
+        <member name="M:AVS.Log.MaterialLog.LogMaterialChange(AVS.Log.SmartLog,System.Func{System.String})">
             <summary>
             Logs a material change message using a function to generate the message.
             If <see cref="P:AVS.Log.MaterialLog.LogMaterialChanges"/> is false, this method does nothing.
             </summary>
         </member>
-        <member name="M:AVS.Log.MaterialLog.LogMaterialVariableSet``1(UnityEngine.Rendering.ShaderPropertyType,System.String,``0,``0,UnityEngine.Material,System.String)">
+        <member name="M:AVS.Log.MaterialLog.LogMaterialVariableSet``1(AVS.Log.SmartLog,UnityEngine.Rendering.ShaderPropertyType,System.String,``0,``0,UnityEngine.Material,System.String)">
             <summary>
             Logs a material property set operation.
             </summary>
             <typeparam name="T">C# type being updated</typeparam>
+            <param name="log">The log to write to</param>
             <param name="type">Unity type being updated</param>
             <param name="name">Field name being updated</param>
             <param name="old">Old value</param>
@@ -4827,119 +4666,186 @@
             <param name="m">Material affected</param>
             <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         </member>
-        <member name="M:AVS.Log.MaterialLog.LogMaterialVariableData(System.Nullable{UnityEngine.Rendering.ShaderPropertyType},System.String,System.String,UnityEngine.Material,System.String)">
+        <member name="M:AVS.Log.MaterialLog.LogMaterialVariableData(AVS.Log.SmartLog,System.Nullable{UnityEngine.Rendering.ShaderPropertyType},System.String,System.String,UnityEngine.Material,System.String)">
             <summary>
             Logs a material property value.
             </summary>
+            <param name="log">The log to write to</param>
             <param name="type">Unity type being updated</param>
             <param name="name">Field name being updated</param>
             <param name="dataAsString">The current value as string</param>
             <param name="m">Material affected</param>
             <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         </member>
-        <member name="M:AVS.Log.MaterialLog.LogMaterialVariableData``1(System.String,``0,UnityEngine.Material,System.String)">
+        <member name="M:AVS.Log.MaterialLog.LogMaterialVariableData``1(AVS.Log.SmartLog,System.String,``0,UnityEngine.Material,System.String)">
             <summary>
             Logs a material property set operation.
             </summary>
             <typeparam name="T">C# type being logged</typeparam>
+            <param name="log">The log to write to</param>
             <param name="name">Field name being updated</param>
             <param name="data">Recognized data</param>
             <param name="m">Material being logged</param>
             <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         </member>
-        <member name="M:AVS.Log.MaterialLog.Warn(System.String)">
+        <member name="T:AVS.Log.SmartLog">
             <summary>
-            Logs a warning message.
+            Represents a hierarchical, disposable logging context that supports tagging, verbosity control,  and
+            interruptible operations. This class is designed to facilitate structured logging within  nested or asynchronous
+            operations.
             </summary>
         </member>
-        <member name="M:AVS.Log.MaterialLog.Error(System.String)">
+        <member name="P:AVS.Log.SmartLog.RMC">
             <summary>
-            Logs an error message.
+            The owning root mod controller instance.
             </summary>
         </member>
-        <member name="T:AVS.MainPatcher">
+        <member name="P:AVS.Log.SmartLog.Depth">
             <summary>
-            AVS main patcher class. Must be inherited by the main mod class.
+            The recursive depth of this log context. Root context has depth 0.
             </summary>
         </member>
-        <member name="P:AVS.MainPatcher.Images">
+        <member name="P:AVS.Log.SmartLog.Domain">
             <summary>
-            Loaded patcher images. Available after <see cref="M:AVS.MainPatcher.LoadImages"/> is called in <see cref="M:AVS.MainPatcher.Awake"/>.
+            The active logging domain. Inherited only if null
             </summary>
         </member>
-        <member name="P:AVS.MainPatcher.DepthModule1Icon">
+        <member name="P:AVS.Log.SmartLog.Name">
             <summary>
-            The icon for the Depth Module 1 upgrade.
+            The name of this log context, derived from the calling method.
             </summary>
         </member>
-        <member name="P:AVS.MainPatcher.DepthModule2Icon">
+        <member name="P:AVS.Log.SmartLog.IsDisposed">
             <summary>
-            The icon for the Depth Module 2 upgrade.
+            True if this instance has been disposed.
             </summary>
         </member>
-        <member name="P:AVS.MainPatcher.DepthModule3Icon">
+        <member name="P:AVS.Log.SmartLog.Tags">
             <summary>
-            The icon for the Depth Module 3 upgrade.
+            The tags associated with this log context.
             </summary>
         </member>
-        <member name="P:AVS.MainPatcher.DepthModuleNodeIcon">
+        <member name="P:AVS.Log.SmartLog.StartTime">
             <summary>
-            The icon to use for the parent node of all depth modules in the crafting tree.
+            Gets the date and time when the context was created.
             </summary>
         </member>
-        <member name="P:AVS.MainPatcher.Instance">
+        <member name="M:AVS.Log.SmartLog.#ctor(AVS.RootModController,System.String,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object},System.String,System.Boolean)">
             <summary>
-            Queries the main singleton instance of <see cref="T:AVS.MainPatcher"/>.
+            Creates a new disposable log context. The new context becomes the current context.
             </summary>
+            <param name="rmc">The owning root mod controller instance.</param>
+            <param name="frameDelta">Optional additional stack frame delta to apply when determining the name of this context.</param>
+            <param name="isInterruptable">If true, this context can be interrupted by asynchronous operations and later resumed.</param>
+            <param name="tags">Optional additional tags to associate with this context to be set at creation time.</param>
+            <param name="parameters">Optional parameters to format into the name of this context.</param>
+            <param name="nameOverride">Optional name to use instead of the calling method's name.</param>
+            <param name="domain">The domain name associated with the log. Typically AVS or Mod.</param>
+            <param name="forceLazy">If true, logging of the start message is always deferred until the first actual log message.</param>
         </member>
-        <member name="M:AVS.MainPatcher.LoadImages">
+        <member name="M:AVS.Log.SmartLog.IsChildOf(AVS.Log.SmartLog)">
             <summary>
-            Loads the images used by AVS.
+            Checks if this log context is a child of the specified other context.
             </summary>
-            <returns></returns>
+            <param name="other">Potential parent (or this)</param>
+            <returns>True if child of or identical to <paramref name="other"/></returns>
         </member>
-        <member name="P:AVS.MainPatcher.PluginId">
-            <summary>
-            Unique identifier for the plugin.
-            </summary>
-        </member>
-        <member name="P:AVS.MainPatcher.ModName">
-            <summary>
-            Simple name of the plugin, used for logging and identification.
-            Should be a short, human-readable name without spaces or special characters.
-            Prefix used for registered identifiers so to not collide with other mods.
-            </summary>
-        </member>
-        <member name="M:AVS.MainPatcher.Awake">
-            <summary>
-            Begins plugin patching and initialization.
-            Also initializes the logger. Before this method is called, the logger will not work.
-            </summary>
-        </member>
-        <member name="M:AVS.MainPatcher.Start">
+        <member name="M:AVS.Log.SmartLog.ToString">
             <inheritdoc/>
         </member>
-        <member name="M:AVS.MainPatcher.PrePatch">
+        <member name="M:AVS.Log.SmartLog.Dispose">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Log.SmartLog.Write(System.String)">
             <summary>
-             PrePatch is called before any patches are applied.
+            Writes a message to the log.
+            </summary>
+            <remarks>This method formats the provided message before logging it. Ensure that the message
+            is meaningful and adheres to any logging conventions used in your application.</remarks>
+            <param name="message">The message to be logged. Cannot be null or empty.</param>
+        </member>
+        <member name="M:AVS.Log.SmartLog.Warn(System.String)">
+            <summary>
+            Logs a warning message to the configured logging system.
+            </summary>
+            <remarks>This method signals the logging system before logging the warning message. Ensure
+            that the logging system is properly configured to handle warning-level messages.</remarks>
+            <param name="message">The warning message to log. Cannot be null or empty.</param>
+        </member>
+        <member name="M:AVS.Log.SmartLog.Error(System.String,System.Exception)">
+            <summary>
+            Logs an error message, optionally including details of an exception.
+            </summary>
+            <remarks>This method logs the error message and, if provided, the exception details. It is
+            intended for use in scenarios where error information needs to be recorded for diagnostics.</remarks>
+            <param name="message">The error message to log. This value cannot be <see langword="null"/> or empty.</param>
+            <param name="ex">An optional exception containing additional details about the error. If <see langword="null"/>, only the
+            message is logged.</param>
+        </member>
+        <member name="M:AVS.Log.SmartLog.Debug(System.String)">
+            <summary>
+            Logs a debug message if the current log verbosity level is set to <see cref="F:AVS.Log.Verbosity.Verbose"/>.
+            </summary>
+            <remarks>The method will not log the message if the log verbosity level is not set to <see
+            cref="F:AVS.Log.Verbosity.Verbose"/>.</remarks>
+            <param name="message">The debug message to log. This should provide detailed information useful for debugging purposes.</param>
+        </member>
+        <member name="M:AVS.Log.SmartLog.DeriveCallerName(System.String,System.String)">
+            <summary>
+            Derives a fully qualified caller name based on the file path and member name.
+            </summary>
+            <param name="callerFilePath">The file path of the caller. Typically provided by the <see cref="T:System.Runtime.CompilerServices.CallerFilePathAttribute"/>.</param>
+            <param name="memberName">The name of the calling member. Typically provided by the <see cref="T:System.Runtime.CompilerServices.CallerMemberNameAttribute"/>.</param>
+            <returns>A string representing the caller's fully qualified name in the format "FileName.MemberName", where
+            "FileName" is the name of the file without its extension. Returns an empty string if either <paramref
+            name="callerFilePath"/> or <paramref name="memberName"/> is null or empty.</returns>
+        </member>
+        <member name="M:AVS.Log.SmartLog.For(AVS.RootModController,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object})">
+            <summary>
+            Creates a new instance of <see cref="T:AVS.Log.SmartLog"/> configured for the specified domain.
+            </summary>
+            <param name="mainPatcher">The root mod controller instance used to initialize the log.</param>
+            <param name="tags">Optional additional tags to associate with this log context.</param>
+            <param name="domain">The domain name associated with the log. Defaults to "Mod" if not specified.</param>
+            <param name="parameters">Optional parameters to format into the name of this context.</param>
+            <returns>A <see cref="T:AVS.Log.SmartLog"/> instance configured with the specified domain.</returns>
+        </member>
+        <member name="M:AVS.Log.SmartLog.LazyFor(AVS.RootModController,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object},System.String,System.String)">
+            <summary>
+            Creates a new instance of <see cref="T:AVS.Log.SmartLog"/> configured for the specified domain using forced laziness.
+            </summary>
+            <remarks>
+            This version uses a much faster method to derive the caller name, which may be less accurate in some edge cases.
+            When calling this method, make sure that the caller type name matches the caller file name.
+            </remarks>
+            <param name="mainPatcher">The root mod controller instance used to initialize the log.</param>
+            <param name="tags">Optional additional tags to associate with this log context.</param>
+            <param name="parameters">Optional parameters to format into the name of this context.</param>
+            <param name="domain">The domain name associated with the log. Defaults to "Mod" if not specified.</param>
+            <param name="callerFilePath">The file path of the calling member, automatically provided by the compiler.</param>
+            <param name="memberName">The name of the calling member, automatically provided by the compiler.</param>
+            <returns>A <see cref="T:AVS.Log.SmartLog"/> instance configured with the specified domain.</returns>
+        </member>
+        <member name="T:AVS.Log.Verbosity">
+            <summary>
+            Logging verbosity levels.
             </summary>
         </member>
-        <member name="M:AVS.MainPatcher.Patch">
+        <member name="F:AVS.Log.Verbosity.Verbose">
             <summary>
-            Applies various patches and event registrations necessary for mod compatibility and game state management.
+            Everything is logged
             </summary>
-            <remarks>This method registers save data events, patches external mods for compatibility, and
-            manages game state transitions. It uses the Harmony library to apply patches to methods in other mods,
-            ensuring that they work correctly with this mod. Additionally, it sets up event handlers to manage game
-            state changes during loading and unloading of scenes.</remarks>
         </member>
-        <member name="M:AVS.MainPatcher.PostPatch">
+        <member name="F:AVS.Log.Verbosity.Regular">
             <summary>
-            Executes post-patch operations for vehicle data management.
+            Non-debug logs are logged.
+            Smart log contexts are shown only if contained messages are logged
             </summary>
-            <remarks>This method is intended to be called after patching operations to ensure that vehicle
-            data is correctly updated. It may involve operations such as scattering data boxes for craftable
-            items.</remarks>
+        </member>
+        <member name="F:AVS.Log.Verbosity.WarningsAndErrorsOnly">
+            <summary>
+            Only warnings and errors are logged
+            </summary>
         </member>
         <member name="T:AVS.MaterialAdapt.DefaultMaterialAdaptConfig">
             <summary>
@@ -5133,17 +5039,19 @@
             <param name="unityMaterial">The material data extracted from the Unity material</param>
             <param name="shader">The shader to use (Marmoset UBER)</param>
         </member>
-        <member name="M:AVS.MaterialAdapt.MaterialAdaptation.PostDockFixOnTarget(AVS.Log.MaterialLog)">
+        <member name="M:AVS.MaterialAdapt.MaterialAdaptation.PostDockFixOnTarget(AVS.RootModController,AVS.Log.MaterialLog)">
             <summary>
             Resets only variables known to be corrupted during moonpool undock
             </summary>
             <param name="logConfig">Log Configuration</param>
+            <param name="rmc">Root mod controller for logging purposes</param>
         </member>
-        <member name="M:AVS.MaterialAdapt.MaterialAdaptation.ApplyToTarget(AVS.Log.MaterialLog,System.Nullable{System.Single})">
+        <member name="M:AVS.MaterialAdapt.MaterialAdaptation.ApplyToTarget(AVS.RootModController,AVS.Log.MaterialLog,System.Nullable{System.Single})">
             <summary>
             Reapplies all material properties to the target
             </summary>
             <param name="logConfig">Log Configuration</param>
+            <param name="rmc">Root mod controller for logging purposes</param>
             <param name="uniformShininess">The uniform shininess to apply everywhere. If not null,
             the unity material's smoothness value is disregarded</param>
         </member>
@@ -5232,7 +5140,7 @@
             </summary>
             <remarks>Should be called from your vehicle OnVehicleDocked() method</remarks>
         </member>
-        <member name="M:AVS.MaterialAdapt.MaterialFixer.ReApply">
+        <member name="M:AVS.MaterialAdapt.MaterialFixer.ReApply(AVS.RootModController)">
             <summary>
             Forcefully reapplies all material adaptations.
             Normally not necessary
@@ -5255,24 +5163,6 @@
             </summary>
             <remarks>Should be called from your vehicle Update() method</remarks>
         </member>
-        <member name="M:AVS.MaterialAdapt.IShaderVariable.SetTo(UnityEngine.Material,AVS.Log.MaterialLog,System.String)">
-            <summary>
-            Updates a material according to the preserved values present in the local variable
-            </summary>
-            <param name="m">Material to update</param>
-            <param name="logConfig">Log Configuration</param>
-            <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
-        </member>
-        <member name="M:AVS.MaterialAdapt.ColorVariable.Set(UnityEngine.Material,System.String,UnityEngine.Color,AVS.Log.MaterialLog,System.String)">
-            <summary>
-            Sets the color property of a material with the given value and logs the change.
-            </summary>
-            <param name="m">The material on which the color property will be set.</param>
-            <param name="name">The name of the color property to set.</param>
-            <param name="value">The new color value to assign to the property.</param>
-            <param name="logConfig">The log configuration used to log the operation.</param>
-            <param name="materialName">Optional custom material name for logging purposes.</param>
-        </member>
         <member name="T:AVS.MaterialAdapt.SubnauticaMaterialPrototype">
             <summary>
             Read-only material definition as retrieved from some existing material
@@ -5290,13 +5180,14 @@
             Global illumination flags retrieved from the source material
             </summary>
         </member>
-        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.ApplyTo(UnityEngine.Material,AVS.Log.MaterialLog,System.Func{System.String,System.Boolean},System.String)">
+        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.ApplyTo(AVS.RootModController,UnityEngine.Material,AVS.Log.MaterialLog,System.Func{System.String,System.Boolean},System.String)">
             <summary>
             Updates all recorded shader variables in the specified material
             </summary>
             <param name="m">Target material</param>
             <param name="logConfig">Log Configuration</param>
             <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
+            <param name="rmc">Root mod controller for logging purposes</param>
             <param name="variableNamePredicate">
             Optional predicate to only check/update certain shader variables by name.
             If non-null updates only variables for which this function returns true</param>
@@ -5308,51 +5199,56 @@
             <param name="source">Material to read. Can be null, causing <see cref="P:AVS.MaterialAdapt.SubnauticaMaterialPrototype.IsEmpty"/> to be set true</param>
             <param name="loadTextures">If true also load texture property values</param>
         </member>
-        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassMaterialFromSeamoth(UnityEngine.Material@,AVS.Log.MaterialLog)">
+        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassMaterialFromSeamoth(AVS.RootModController,UnityEngine.Material@,AVS.Log.MaterialLog)">
             <summary>
             Creates a material prototype for the glass material of the Seamoth.
             </summary>
             <param name="logConfig">Logging configuration</param>
             <param name="result">The retrieved aquarium glass material, if any.</param>
+            <param name="rmc">Root mod controller for logging purposes</param>
             <returns>False if the seamoth is not (yet) available. Keep trying if false.
             Ttrue if the seamoth is loaded, but <paramref name="result"/> can still be null
             if the respective material is not found</returns>
         </member>
-        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassFromSeamoth(AVS.Log.MaterialLog)">
+        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassFromSeamoth(AVS.RootModController,AVS.Log.MaterialLog)">
             <summary>
             Creates a material prototype for the glass material of the Seamoth.
             </summary>
             <param name="logConfig">Logging configuration</param>
+            <param name="rmc">Root mod controller for logging purposes</param>
             <returns>Null if the seamoth is not (yet) available. Keep trying if null.
             Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
             if the respective material is not found</returns>
         </member>
-        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassMaterialFromAquarium(UnityEngine.Material@,AVS.Log.MaterialLog)">
+        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassMaterialFromAquarium(AVS.RootModController,UnityEngine.Material@,AVS.Log.MaterialLog)">
             <summary>
             Retrieves the entire glass material of the aquarium.
             </summary>
+            <param name="rmc">Root mod controller for logging purposes</param>
             <param name="logConfig">Logging configuration</param>
             <param name="result">The material prototype to fill with the aquarium glass material.</param>
             <returns>False if the aquarium is not (yet) available. Keep trying if false.
             Ttrue if the aquarium is loaded, but <paramref name="result"/> can still be null
             if the respective material is not found</returns>
         </member>
-        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassFromAquarium(AVS.Log.MaterialLog)">
+        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.GlassFromAquarium(AVS.RootModController,AVS.Log.MaterialLog)">
             <summary>
             Creates a material prototype for the glass material of the Seamoth.
             </summary>
+            <param name="rmc">Root mod controller for logging purposes</param>
             <param name="logConfig">Logging configuration</param>
             <returns>Null if the seamoth is not (yet) available. Keep trying if null.
             Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
             if the respective material is not found</returns>
         </member>
-        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.FromSeamoth(AVS.Log.MaterialLog)">
+        <member name="M:AVS.MaterialAdapt.SubnauticaMaterialPrototype.FromSeamoth(AVS.RootModController,AVS.Log.MaterialLog)">
             <summary>
             Creates a material prototype for the main material of the Seamoth body.
             While the Seamoth is not yet available, the method returns null.
             If the Seamoth is loaded but the material could not be found, the return
             value is an empty material prototype (IsEmpty=true)
             </summary>
+            <param name="rmc">Root mod controller for logging purposes</param>
             <param name="logConfig">Logging configuration</param>
             <returns>Null if the seamoth is not (yet) available. Keep trying if null.
             Non-null if the seamoth is loaded, but can then be empty (IsEmpty is true)
@@ -5458,13 +5354,14 @@
             Constructs a new instance of <see cref="T:AVS.MaterialAdapt.UnityMaterialData"/>
             </summary>
         </member>
-        <member name="M:AVS.MaterialAdapt.UnityMaterialData.From(AVS.MaterialAdapt.MaterialAddress,AVS.Log.MaterialLog,AVS.MaterialAdapt.MaterialType,System.Boolean)">
+        <member name="M:AVS.MaterialAdapt.UnityMaterialData.From(AVS.RootModController,AVS.MaterialAdapt.MaterialAddress,AVS.Log.MaterialLog,AVS.MaterialAdapt.MaterialType,System.Boolean)">
             <summary>
             Reads all local values from the given material address (if available).
             Unless <paramref name="ignoreShaderName"/> is set,
             the method returns null if the material's shader's name does not
             currently match "Standard"
             </summary>
+            <param name="rmc">The owning root mod controller</param>
             <param name="source">The source material address to read from</param>
             <param name="logConfig">Configuration for logging material operations</param>
             <param name="type">The type classification for this material</param>
@@ -5475,7 +5372,7 @@
             <returns>Read surface shader data or null if the shader name did not match
             or the target is (no longer) valid</returns>
         </member>
-        <member name="M:AVS.MaterialAdapt.UnityMaterialData.From(UnityEngine.Renderer,System.Int32,AVS.MaterialAdapt.MaterialType,AVS.Log.MaterialLog,System.Boolean)">
+        <member name="M:AVS.MaterialAdapt.UnityMaterialData.From(AVS.RootModController,UnityEngine.Renderer,System.Int32,AVS.MaterialAdapt.MaterialType,AVS.Log.MaterialLog,System.Boolean)">
             <summary>
             Reads all local values from the given renderer material (if available).
             Unless <paramref name="ignoreShaderName"/> is set,
@@ -5486,6 +5383,7 @@
             <param name="renderer">The source renderer</param>
             <param name="materialIndex">The source material index on that renderer</param>
             <param name="logConfig">Log Configuration</param>
+            <param name="rmc">The owning root mod controller</param>
             <param name="ignoreShaderName">
             If true, will always read the material, regardless of shader name.
             If false, will only read the material if its shader name equals "Standard",
@@ -5493,13 +5391,14 @@
             <returns>Read surface shader data or null if the shader name did not match
             or the target is (no longer) valid</returns>
         </member>
-        <member name="M:AVS.MaterialAdapt.UnityMaterialData.ApplyTo(UnityEngine.Material,System.Nullable{System.Single},AVS.Log.MaterialLog,System.String)">
+        <member name="M:AVS.MaterialAdapt.UnityMaterialData.ApplyTo(AVS.RootModController,UnityEngine.Material,System.Nullable{System.Single},AVS.Log.MaterialLog,System.String)">
             <summary>
             Applies the loaded configuration to the given material
             </summary>
             <param name="m">Target material</param>
             <param name="uniformShininess">If non-null, applies this level of shininess to all materials</param>
             <param name="logConfig">Log Configuration</param>
+            <param name="rmc">The owning root mod controller</param>
             <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         </member>
         <member name="M:AVS.MaterialAdapt.UnityMaterialData.RedefineSource(AVS.MaterialAdapt.MaterialAddress)">
@@ -5511,6 +5410,26 @@
         </member>
         <member name="M:AVS.MaterialAdapt.UnityMaterialData.ToString">
             <inheritdoc />
+        </member>
+        <member name="M:AVS.MaterialAdapt.Variables.ColorVariable.Set(AVS.RootModController,UnityEngine.Material,System.String,UnityEngine.Color,AVS.Log.MaterialLog,System.String)">
+            <summary>
+            Sets the color property of a material with the given value and logs the change.
+            </summary>
+            <param name="m">The material on which the color property will be set.</param>
+            <param name="name">The name of the color property to set.</param>
+            <param name="value">The new color value to assign to the property.</param>
+            <param name="logConfig">The log configuration used to log the operation.</param>
+            <param name="materialName">Optional custom material name for logging purposes.</param>
+            <param name="rmc">Root mod controller for logging purposes</param>
+        </member>
+        <member name="M:AVS.MaterialAdapt.Variables.IShaderVariable.SetTo(AVS.RootModController,UnityEngine.Material,AVS.Log.MaterialLog,System.String)">
+            <summary>
+            Updates a material according to the preserved values present in the local variable
+            </summary>
+            <param name="m">Material to update</param>
+            <param name="logConfig">Log Configuration</param>
+            <param name="rmc">Root mod controller for logging purposes</param>
+            <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
         </member>
         <member name="T:AVS.Patches.ArmsControllerPatcher">
             <summary>
@@ -6688,13 +6607,9 @@
             Patcher to load the ping tech types from a save file.
             </summary>
         </member>
-        <member name="P:AVS.Patches.SaveLoadManagerPatcher.HasTechTypeGameInfo">
-            <summary>
-            The AVS tech types registered per save slot
-            </summary>
-        </member>
         <member name="M:AVS.Patches.SaveLoadManagerPatcher.SaveLoadManagerRegisterSaveGamePostfix(System.String)">
             <summary>
+            This patch collects hasTechTypeGameInfo, in order to have save file sprites displayed on the save cards
             Postfix method for the SaveLoadManager.RegisterSaveGame method, enabling the collection and management
             of custom save file sprites associated with save slots.
             </summary>
@@ -7466,12 +7381,12 @@
             Manages the visual effects (VFX) colors for a construction process, including ghost and wireframe colors.
             </summary>
             <remarks>This method updates the ghost material and wireframe colors of the provided <paramref
-            name="vfx"/> instance based on the configuration settings in the <paramref name="mv"/> instance. If the
+            name="vfx"/> instance based on the configuration settings in the <paramref name="av"/> instance. If the
             ghost or wireframe colors in the configuration are set to <see cref="P:UnityEngine.Color.black"/>, the corresponding
             visual effect will not be updated. The method waits until the ghost material of the <paramref name="vfx"/>
             instance is initialized before applying any updates.</remarks>
             <param name="vfx">The <see cref="T:VFXConstructing"/> instance representing the visual effects to be updated. Must not be null.</param>
-            <param name="mv">The <see cref="T:AVS.BaseVehicle.AvsVehicle"/> instance containing configuration settings for the construction process. Must
+            <param name="av">The <see cref="T:AVS.BaseVehicle.AvsVehicle"/> instance containing configuration settings for the construction process. Must
             not be null.</param>
             <returns>An enumerator that can be used to control the execution of the color management process.</returns>
         </member>
@@ -7498,6 +7413,109 @@
             negative scaling of WaterClipProxy objects might cause unintended
             or non-intuitive behavior, ensuring smoother and more predictable outcomes.
             </remarks>
+        </member>
+        <member name="T:AVS.RootModController">
+            <summary>
+            AVS root mod controller class. Must be inherited by the main mod class.
+            </summary>
+        </member>
+        <member name="P:AVS.RootModController.Images">
+            <summary>
+            Loaded patcher images. Available after <see cref="M:AVS.RootModController.LoadImages"/> is called in <see cref="M:AVS.RootModController.Awake"/>.
+            </summary>
+        </member>
+        <member name="P:AVS.RootModController.DepthModule1Icon">
+            <summary>
+            The icon for the Depth Module 1 upgrade.
+            </summary>
+        </member>
+        <member name="P:AVS.RootModController.DepthModule2Icon">
+            <summary>
+            The icon for the Depth Module 2 upgrade.
+            </summary>
+        </member>
+        <member name="P:AVS.RootModController.DepthModule3Icon">
+            <summary>
+            The icon for the Depth Module 3 upgrade.
+            </summary>
+        </member>
+        <member name="P:AVS.RootModController.DepthModuleNodeIcon">
+            <summary>
+            The icon to use for the parent node of all depth modules in the crafting tree.
+            </summary>
+        </member>
+        <member name="M:AVS.RootModController.LoadImages">
+            <summary>
+            Loads the images used by AVS.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="P:AVS.RootModController.PluginId">
+            <summary>
+            Unique identifier for the plugin.
+            </summary>
+        </member>
+        <member name="P:AVS.RootModController.ModName">
+            <summary>
+            Simple name of the plugin, used for logging and identification.
+            Should be a short, human-readable name without spaces or special characters.
+            Prefix used for registered identifiers so to not collide with other mods.
+            </summary>
+        </member>
+        <member name="P:AVS.RootModController.LogVerbosity">
+            <summary>
+            Logging verbosity level for the mod.
+            </summary>
+        </member>
+        <member name="M:AVS.RootModController.Awake">
+            <summary>
+            Begins plugin patching and initialization.
+            Also initializes the logger. Before this method is called, the logger will not work.
+            </summary>
+        </member>
+        <member name="M:AVS.RootModController.OnDestroy">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.RootModController.Start">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.RootModController.PrePatch">
+            <summary>
+             PrePatch is called before any patches are applied.
+            </summary>
+        </member>
+        <member name="M:AVS.RootModController.Patch">
+            <summary>
+            Applies various patches and event registrations necessary for mod compatibility and game state management.
+            </summary>
+            <remarks>This method registers save data events, patches external mods for compatibility, and
+            manages game state transitions. It uses the Harmony library to apply patches to methods in other mods,
+            ensuring that they work correctly with this mod. Additionally, it sets up event handlers to manage game
+            state changes during loading and unloading of scenes.</remarks>
+        </member>
+        <member name="M:AVS.RootModController.PostPatch">
+            <summary>
+            Executes post-patch operations for vehicle data management.
+            </summary>
+            <remarks>This method is intended to be called after patching operations to ensure that vehicle
+            data is correctly updated. It may involve operations such as scattering data boxes for craftable
+            items.</remarks>
+        </member>
+        <member name="M:AVS.RootModController.StartAvsCoroutine(System.String,System.Func{AVS.Log.SmartLog,System.Collections.IEnumerator})">
+            <summary>
+            Starts a new coroutine with enhanced error handling and logging.
+            </summary>
+            <param name="routine">The routine being executed</param>
+            <param name="methodName">Name of the method or context for logging purposes.</param>
+            <returns>The coroutine executing the enumerator</returns>
+        </member>
+        <member name="M:AVS.RootModController.StartModCoroutine(System.String,System.Func{AVS.Log.SmartLog,System.Collections.IEnumerator})">
+            <summary>
+            Starts a new coroutine with enhanced error handling and logging.
+            </summary>
+            <param name="routine">The routine being executed</param>
+            <param name="methodName">Name of the method or context for logging purposes.</param>
+            <returns>The coroutine executing the enumerator</returns>
         </member>
         <member name="T:AVS.SaveLoad.Data">
             <summary>
@@ -7587,7 +7605,7 @@
             </summary>
             <returns>Value to be saved.</returns>
         </member>
-        <member name="M:AVS.SaveLoad.IPersistable.RestoreValue(Newtonsoft.Json.Linq.JToken,AVS.Log.LogWriter)">
+        <member name="M:AVS.SaveLoad.IPersistable.RestoreValue(Newtonsoft.Json.Linq.JToken,AVS.Log.SmartLog)">
             <summary>
             Restores the value of the property.
             </summary>
@@ -7748,7 +7766,7 @@
             Save game slot identifier.
             </summary>
         </member>
-        <member name="M:AVS.SaveLoad.SaveFiles.WritePrefabReflected``1(PrefabIdentifier,System.String,``0,AVS.Log.LogWriter)">
+        <member name="M:AVS.SaveLoad.SaveFiles.WritePrefabReflected``1(PrefabIdentifier,System.String,``0,AVS.RootModController)">
             <summary>
             Writes data associated with a prefab identifier to a JSON file.
             </summary>
@@ -7756,43 +7774,43 @@
             <param name="prefabID">Prefab identifier to write to</param>
             <param name="prefix">File prefix</param>
             <param name="data">Data to write</param>
-            <param name="writer">Log writer for logging errors and debug information</param>
+            <param name="rmc">Owning root mod controller</param>
         </member>
-        <member name="M:AVS.SaveLoad.SaveFiles.WritePrefabData(PrefabIdentifier,System.String,AVS.SaveLoad.Data,AVS.Log.LogWriter)">
+        <member name="M:AVS.SaveLoad.SaveFiles.WritePrefabData(PrefabIdentifier,System.String,AVS.SaveLoad.Data,AVS.RootModController)">
             <summary>
             Writes data associated with a prefab identifier to a JSON file.
             </summary>
             <param name="prefabID">Prefab identifier to write to</param>
             <param name="prefix">File prefix</param>
             <param name="data">Data to write</param>
-            <param name="writer">Log writer for logging errors and debug information</param>
+            <param name="rmc">Owning root mod controller</param>
             <returns>True if the data was successfully written, false otherwise.</returns>
         </member>
-        <member name="M:AVS.SaveLoad.SaveFiles.WriteReflected``1(System.String,``0,AVS.Log.LogWriter)">
+        <member name="M:AVS.SaveLoad.SaveFiles.WriteReflected``1(System.String,``0,AVS.RootModController)">
             <summary>
             Serializes the specified data to JSON and writes it to a file.
             </summary>
             <remarks>If serialization fails, an error is logged using the provided <paramref
-            name="writer"/>, and the method returns <see langword="false"/>. If the file writing operation fails, the
+            name="rmc"/>, and the method returns <see langword="false"/>. If the file writing operation fails, the
             method also returns <see langword="false"/>.</remarks>
             <typeparam name="T">The type of the data to be serialized.</typeparam>
             <param name="innerName">Inner file name without folder or trailing extension</param>
             <param name="data">The object to serialize into JSON. Cannot be null.</param>
-            <param name="writer">The <see cref="T:AVS.Log.LogWriter"/> instance used to log errors or other information. Cannot be null.</param>
+            <param name="rmc">Owning root mod controller</param>
             <returns><see langword="true"/> if the JSON data was successfully written to the file; otherwise, <see
             langword="false"/>.</returns>
         </member>
-        <member name="M:AVS.SaveLoad.SaveFiles.ReadReflected``1(System.String,``0@,AVS.Log.LogWriter)">
+        <member name="M:AVS.SaveLoad.SaveFiles.ReadReflected``1(System.String,``0@,AVS.RootModController)">
             <summary>
             Reads JSON data from files and deserializes it into an object of type <typeparamref name="T"/>.
             </summary>
             <typeparam name="T">Type to deserialize from JSON</typeparam>
             <param name="innerName">Inner file name without folder or trailing extension</param>
             <param name="data">Deserialized data. Null if loading has failed</param>
-            <param name="writer">Log writer for events</param>
+            <param name="rmc">Owning root mod controller</param>
             <returns>True if loading has succeeded and produced non-null data</returns>
         </member>
-        <member name="M:AVS.SaveLoad.SaveFiles.ReadPrefabReflected``1(PrefabIdentifier,System.String,``0@,AVS.Log.LogWriter)">
+        <member name="M:AVS.SaveLoad.SaveFiles.ReadPrefabReflected``1(PrefabIdentifier,System.String,``0@,AVS.RootModController)">
             <summary>
             Deserializes JSON data for a specified prefab identifier.
             </summary>
@@ -7800,10 +7818,10 @@
             <param name="prefabID">The identifier of the prefab to read. Cannot be <see langword="null"/>.</param>
             <param name="prefix">A string prefix used to construct the JSON file name.</param>
             <param name="outData">Deserialized data</param>
-            <param name="writer">Log writer</param>
+            <param name="rmc">Owning root mod controller</param>
             <returns>True on success</returns>
         </member>
-        <member name="M:AVS.SaveLoad.SaveFiles.ReadPrefabData(PrefabIdentifier,System.String,AVS.SaveLoad.Data,AVS.Log.LogWriter)">
+        <member name="M:AVS.SaveLoad.SaveFiles.ReadPrefabData(PrefabIdentifier,System.String,AVS.SaveLoad.Data,AVS.RootModController)">
             <summary>
             Reads and processes JSON data for a specified prefab identifier.
             </summary>
@@ -7813,15 +7831,15 @@
             <param name="prefabID">The identifier of the prefab to read. Cannot be <see langword="null"/>.</param>
             <param name="prefix">A string prefix used to construct the JSON file name.</param>
             <param name="data">The data object to populate with the JSON content.</param>
-            <param name="writer">The log writer used to record operation details and errors.</param>
+            <param name="rmc">Owning root mod controller.</param>
         </member>
-        <member name="M:AVS.SaveLoad.SaveFiles.WriteJson(System.String,System.String,AVS.Log.LogWriter)">
+        <member name="M:AVS.SaveLoad.SaveFiles.WriteJson(System.String,System.String,AVS.RootModController)">
             <summary>
             Writes JSON data to files based on the provided filename.
             </summary>
             <param name="innerName">Inner file name without folder or trailing extension</param>
             <param name="json">Serialized JSON</param>
-            <param name="writer">Logger to write errors to</param>
+            <param name="rmc">Owning root mod controller</param>
             <returns>True if the file was successfully written</returns>
         </member>
         <member name="T:AVS.SaveLoad.SaveLoadUtils">
@@ -7972,9 +7990,9 @@
             Provides core properties and recipe handling.
             </summary>
         </member>
-        <member name="P:AVS.UpgradeModules.AvsVehicleModule.LogDebug">
+        <member name="P:AVS.UpgradeModules.AvsVehicleModule.Owner">
             <summary>
-            If true, enables debug logging for this upgrade.
+            Queries the owner of this upgrade.
             </summary>
         </member>
         <member name="M:AVS.UpgradeModules.AvsVehicleModule.GetModule(TechType)">
@@ -8636,7 +8654,7 @@
         <member name="M:AVS.UpgradeProxy.Awake">
             <inheritdoc />
         </member>
-        <member name="M:AVS.UpgradeProxy.GetSeamothBitsASAP">
+        <member name="M:AVS.UpgradeProxy.GetSeamothBitsASAP(AVS.Log.SmartLog)">
             <summary>
             Initializes and configures the upgrade slots as soon as possible.
             </summary>
@@ -8647,7 +8665,7 @@
         </member>
         <member name="T:AVS.Util.InstanceContainer">
             <summary>
-            Container for the result of <see cref="M:AVS.Util.AvsCraftData.InstantiateFromPrefabAsync(AVS.Log.LogWriter,TechType,AVS.Util.InstanceContainer,System.Boolean)"/>
+            Container for the result of <see cref="M:AVS.Util.AvsCraftData.InstantiateFromPrefabAsync(AVS.Log.SmartLog,TechType,AVS.Util.InstanceContainer,System.Boolean)"/>
             </summary>
         </member>
         <member name="P:AVS.Util.InstanceContainer.Instance">
@@ -8655,11 +8673,11 @@
             Created instance or null if none could be created
             </summary>
         </member>
-        <member name="M:AVS.Util.AvsCraftData.InstantiateFromPrefabAsync(AVS.Log.LogWriter,TechType,AVS.Util.InstanceContainer,System.Boolean)">
+        <member name="M:AVS.Util.AvsCraftData.InstantiateFromPrefabAsync(AVS.Log.SmartLog,TechType,AVS.Util.InstanceContainer,System.Boolean)">
             <summary>
             Asynchronously instantiates a GameObject from a prefab based on a specified TechType.
             </summary>
-            <param name="log">The log writer instance for handling logging activities.</param>
+            <param name="log">The logging instance used for logging messages during the instantiation process.</param>
             <param name="techType">The type of technology for which the prefab is being instantiated.</param>
             <param name="result">The result wrapper that will hold the instantiated GameObject.</param>
             <param name="ifNotFoundLeaveEmpty">Specifies what to do if the tech type could not be found.
@@ -8702,13 +8720,14 @@
             </remarks>
             <param name="destination">Target location</param>
         </member>
-        <member name="M:AVS.Util.Character.GrantInvincibility(System.Single)">
+        <member name="M:AVS.Util.Character.GrantInvincibility(AVS.RootModController,System.Single)">
             <summary>
             Grants the player invincibility for a specified duration.
             </summary>
             <param name="time">Time in seconds to become invincible</param>
+            <param name="rmc">root mod controller instance to run the coroutine</param>
         </member>
-        <member name="M:AVS.Util.Character.SitDown">
+        <member name="M:AVS.Util.Character.SitDown(AVS.RootModController)">
             <summary>
             Asynchronously animates the character to sit down in a chair.
             </summary>
@@ -8721,7 +8740,7 @@
             <param name="rightHandTarget">Right hand target</param>
             <param name="ikArmToggleTime">Time to toggle IK arms</param>
         </member>
-        <member name="M:AVS.Util.Character.StandUp">
+        <member name="M:AVS.Util.Character.StandUp(AVS.RootModController)">
             <summary>
             Makes the player stand up from a seated position.
             </summary>
@@ -8730,7 +8749,7 @@
             The process is managed asynchronously and may involve resetting player animator states.
             </remarks>
         </member>
-        <member name="M:AVS.Util.Character.ExitToSurface(UnityEngine.Transform,AVS.Log.LogWriter)">
+        <member name="M:AVS.Util.Character.ExitToSurface(AVS.RootModController,UnityEngine.Transform)">
             <summary>
             Exits the player to the surface at a specified surface exit location.
             </summary>
@@ -8738,7 +8757,7 @@
             Used when the player exits a vehicle underwater but needs to resurface.
             </remarks>
             <param name="surfaceExitLocation">The location to exit to the surface.</param>
-            <param name="outLog">Out logging facility</param>
+            <param name="rmc">The root mod controller instance used to start coroutines.</param>
         </member>
         <member name="T:AVS.Util.CodeInstructionExtensions">
             <summary>
@@ -8883,7 +8902,17 @@
             <param name="exceptionFactory">Factory that produces the exception to throw. Can throw itself</param>
             <returns>Non-null <paramref name="item"/></returns>
         </member>
-        <member name="M:AVS.Util.GameObjectHelper.LoggedSetActive(UnityEngine.GameObject,System.Boolean,AVS.Log.LogWriter)">
+        <member name="M:AVS.Util.GameObjectHelper.OrThrow``1(``0,System.String)">
+            <summary>
+            Returns a non-null object or throws an exception if the object is null.
+            </summary>
+            <typeparam name="T">Unity object type to check</typeparam>
+            <param name="item">Unity object to check</param>
+            <param name="msg">Message to throw as an <see cref="T:System.InvalidOperationException" /></param>
+            <returns>Non-null <paramref name="item"/></returns>
+            <exception cref="T:System.InvalidOperationException"></exception>
+        </member>
+        <member name="M:AVS.Util.GameObjectHelper.LoggedSetActive(UnityEngine.GameObject,System.Boolean,AVS.Log.SmartLog)">
             <summary>
             Changes the active state of a GameObject and logs the action, including any exceptions that occur.
             </summary>
@@ -8931,7 +8960,7 @@
             Returns "&lt;null&gt;" if the object is null.
             </summary>
         </member>
-        <member name="M:AVS.Util.GameObjectHelper.PathToString(UnityEngine.Transform)">
+        <member name="M:AVS.Util.GameObjectHelper.PathToString(UnityEngine.Component,UnityEngine.Transform)">
             <summary>
             Produces the full hierarchy path of a Transform as a single string using / as separator.
             Returns "&lt;null&gt;" if the Transform is null.
@@ -9084,22 +9113,22 @@
             </summary>
             <returns>The <see cref="T:PrefabIdentifier"/> component if found; otherwise, <see langword="null"/>.</returns>
         </member>
-        <member name="M:AVS.Util.GameObjectHelper.WriteReflected``1(PrefabIdentifier,System.String,``0,AVS.Log.LogWriter)">
+        <member name="M:AVS.Util.GameObjectHelper.WriteReflected``1(PrefabIdentifier,System.String,``0,AVS.RootModController)">
             <summary>
             Extension method to write reflected data associated with a prefab identifier to a JSON file of the current save game slot.
             </summary>
         </member>
-        <member name="M:AVS.Util.GameObjectHelper.WriteData(PrefabIdentifier,System.String,AVS.SaveLoad.Data,AVS.Log.LogWriter)">
+        <member name="M:AVS.Util.GameObjectHelper.WriteData(PrefabIdentifier,System.String,AVS.SaveLoad.Data,AVS.RootModController)">
             <summary>
             Extension method to write data associated with a prefab identifier to a JSON file of the current save game slot.
             </summary>
         </member>
-        <member name="M:AVS.Util.GameObjectHelper.ReadReflected``1(PrefabIdentifier,System.String,``0@,AVS.Log.LogWriter)">
+        <member name="M:AVS.Util.GameObjectHelper.ReadReflected``1(PrefabIdentifier,System.String,``0@,AVS.RootModController)">
             <summary>
             Extension method to read data via reflection from a JSON file in the current save game slot.
             </summary>
         </member>
-        <member name="M:AVS.Util.GameObjectHelper.ReadData(PrefabIdentifier,System.String,AVS.SaveLoad.Data,AVS.Log.LogWriter)">
+        <member name="M:AVS.Util.GameObjectHelper.ReadData(PrefabIdentifier,System.String,AVS.SaveLoad.Data,AVS.RootModController)">
             <summary>
             Extension method to read data associated with a prefab identifier from a JSON file in the current save game slot.
             </summary>
@@ -9258,6 +9287,154 @@
             <returns>The element in the source sequence with the least value as determined by the selector function.</returns>
             <exception cref="T:System.InvalidOperationException">Thrown if the source sequence contains no elements.</exception>
         </member>
+        <member name="M:AVS.Util.ListExt.Repeat(System.String,System.Int32)">
+            <summary>
+            Creates a new character array by repeating the specified string a given number of times.
+            </summary>
+            <param name="s">The string to be repeated. Cannot be <see langword="null"/> or empty.</param>
+            <param name="count">The number of times to repeat the string. Must be greater than zero.</param>
+            <returns>A character array containing the repeated string. Returns an empty array if <paramref name="count"/> is less
+            than or equal to zero or if <paramref name="s"/> is <see langword="null"/> or empty.</returns>
+        </member>
+        <member name="T:AVS.Util.OrderedSet`1">
+            <summary>
+            Represents a collection of unique elements that maintains the order in which items are added.
+            </summary>
+            <typeparam name="T">The type of elements in the set.</typeparam>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.#ctor">
+            <summary>
+            Constructs an empty set.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.#ctor(System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Constructs an empty set with a customer comparer.
+            </summary>
+            <param name="comparer">The comparer to use</param>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Constructs a new set from a given set of items
+            </summary>
+            <param name="items">Items to fill into the new set</param>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.#ctor(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Constructs a new set with a customer comparer from a given set of items
+            </summary>
+            <param name="items">Items to fill into the new set</param>
+            <param name="comparer">The comparer to use</param>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.ToHashSet">
+            <summary>
+            Converts the <see cref="T:AVS.Util.OrderedSet`1"/> to a <see cref="T:System.Collections.Generic.HashSet`1"/> containing the same elements.
+            </summary>
+            <remarks>
+            The order of elements will be lost in the process
+            </remarks>
+            <returns>A <see cref="T:System.Collections.Generic.HashSet`1"/> containing all elements of the <see cref="T:AVS.Util.OrderedSet`1"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.ToList">
+            <summary>
+            Converts the local set to a list
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.ToArray">
+            <summary>
+            Converts the elements of the set to an array.
+            </summary>
+            <returns>An array containing all elements in the set, preserving their order.</returns>
+        </member>
+        <member name="P:AVS.Util.OrderedSet`1.Count">
+            <summary>
+            Gets the number of elements contained in the <see cref="T:AVS.Util.OrderedSet`1"/>.
+            </summary>
+            <value>The total count of elements in the set.</value>
+        </member>
+        <member name="P:AVS.Util.OrderedSet`1.IsReadOnly">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.AddRange(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Adds a range of items to the <see cref="T:AVS.Util.OrderedSet`1"/>.
+            </summary>
+            <param name="items">The collection of elements to add to the set.</param>
+            <returns>The updated <see cref="T:AVS.Util.OrderedSet`1"/> instance.</returns>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.UnionWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.IntersectWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.ExceptWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.SymmetricExceptWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.ContainsAll(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Determines whether the current set contains all elements from the specified collection.
+            </summary>
+            <param name="other">The collection of elements to check against the current set.</param>
+            <returns>True if the current set contains all elements from the specified collection; otherwise, false.</returns>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.ContainsAny(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Determines whether the current set contains any elements from the specified collection.
+            </summary>
+            <param name="other">The collection of elements to check against the current set.</param>
+            <returns>True if the current set contains at least one element from the specified collection; otherwise, false.</returns>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.IsSubsetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.IsSupersetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.IsProperSupersetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.IsProperSubsetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.Overlaps(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.SetEquals(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.Clear">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.RemoveAll(System.Predicate{`0})">
+            <summary>
+            Removes all elements from the set that match the given predicate.
+            </summary>
+            <param name="match">The predicate function that determines whether an element should be removed.</param>
+            <returns>The current set with the elements removed.</returns>
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.Remove(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.Contains(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.CopyTo(`0[],System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.OrderedSet`1.Add(`0)">
+            <inheritdoc />
+        </member>
         <member name="T:AVS.Util.Shaders">
             <summary>
             Constants and helper methods related to shaders.
@@ -9366,24 +9543,24 @@
             Utility class for binding a WaterClipProxy to a target GameObject.
             </summary>
         </member>
-        <member name="M:AVS.Util.WaterClipUtil.BindProxy(AVS.Log.LogWriter,UnityEngine.GameObject,UnityEngine.Texture3D,UnityEngine.Bounds)">
+        <member name="M:AVS.Util.WaterClipUtil.BindProxy(AVS.RootModController,UnityEngine.GameObject,UnityEngine.Texture3D,UnityEngine.Bounds)">
             <summary>
             Binds a WaterClipProxy to the specified target GameObject using the provided distance map and bounds.
             </summary>
             <remarks>
             The Seamoth has to be loaded before this method is called.
             </remarks>
-            <param name="log">Out logger</param>
+            <param name="rmc">Root mod controller for logging purposes</param>
             <param name="target">Target object that should contain the WaterClipProxy and its renderers. Should not contain any components</param>
             <param name="distanceMap">3D distance map to use</param>
             <param name="localBounds">Bounding box of the 3D Distance map in a vehicle located in the point of origin with no rotation</param>
             <exception cref="T:System.InvalidOperationException">The Seamoth helper was not loaded before this method is called</exception>
         </member>
-        <member name="M:AVS.Util.WaterClipUtil.UnbindProxy(AVS.Log.LogWriter,UnityEngine.GameObject)">
+        <member name="M:AVS.Util.WaterClipUtil.UnbindProxy(AVS.RootModController,UnityEngine.GameObject)">
             <summary>
             Unbinds the WaterClipProxy from the specified target GameObject.
             </summary>
-            <param name="log">Out logger</param>
+            <param name="rmc">Root mod controller for logging purposes</param>
             <param name="target">Target object that may contain the WaterClipProxy and its renderers</param>
         </member>
         <member name="T:AVS.VehicleBuilding.Helm">
@@ -9807,10 +9984,136 @@
         <member name="M:AVS.VehicleComponents.Autopilot.Update">
             <inheritdoc/>
         </member>
+        <member name="T:AVS.VehicleComponents.AvAttached">
+            <summary>
+            Common parent class for components that are attached to an AVS vehicle.
+            </summary>
+        </member>
+        <member name="P:AVS.VehicleComponents.AvAttached.AV">
+            <summary>
+            Queries the vehicle this component is attached to. If not already set, it will search the parent hierarchy for an <see cref="T:AVS.BaseVehicle.AvsVehicle"/> component.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleComponents.AvAttached.EnsureSelfDestructing``1(UnityEngine.GameObject,AVS.BaseVehicle.AvsVehicle,AVS.Log.SmartLog)">
+            <summary>
+            Ensures that the specified component of type <typeparamref name="T"/> exists on the given vehicle's
+            GameObject. If the component does not exist, it is added and initialized.
+            </summary>
+            <remarks>This variant allows components to instantly self-destruct upon instantiation, returning null in this case.</remarks>
+            <typeparam name="T">The type of the component to ensure. Must inherit from <see cref="T:AVS.VehicleComponents.AvAttached"/>.</typeparam>
+            <param name="av">The vehicle instance to be attached to the created component</param>
+            <param name="log">The logging instance used to record actions performed by this method</param>
+            <param name="go">The GameObject to which the component should be attached</param>
+            <returns>The existing or newly added component of type <typeparamref name="T"/>, or <c>null</c> if the component
+            could not be added.</returns>
+        </member>
+        <member name="M:AVS.VehicleComponents.AvAttached.EnsureSelfDestructing``1(AVS.BaseVehicle.AvsVehicle,AVS.Log.SmartLog)">
+            <summary>
+            Ensures that the specified component of type <typeparamref name="T"/> exists on the given vehicle's
+            GameObject. If the component does not exist, it is added and initialized.
+            </summary>
+            <remarks>This variant allows components to instantly self-destruct upon instantiation, returning null in this case.</remarks>
+            <typeparam name="T">The type of the component to ensure. Must inherit from <see cref="T:AVS.VehicleComponents.AvAttached"/>.</typeparam>
+            <param name="av">The vehicle instance whose GameObject is being checked or modified</param>
+            <param name="log">The logging instance used to record actions performed by this method</param>
+            <returns>The existing or newly added component of type <typeparamref name="T"/>, or <c>null</c> if the component
+            could not be added.</returns>
+        </member>
         <member name="T:AVS.VehicleComponents.ForeverBattery">
             <summary>
             Energy mixin for a power cell that never depletes
             </summary>
+        </member>
+        <member name="T:AVS.VehicleComponents.LightControllers.BaseLightController">
+            <summary>
+            Base class for light controllers in AVS vehicles.
+            </summary>
+        </member>
+        <member name="P:AVS.VehicleComponents.LightControllers.BaseLightController.IsLightsOn">
+            <summary>
+            The current state of the lights managed by this controller.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.BaseLightController.HandleLighting(System.Boolean)">
+            <summary>
+            Called when the light enabled status has changed.
+            Intended to switch lights on or off in the vehicle.
+            </summary>
+            <param name="lightsAreNowEnabled">True if the lights have been switched on</param>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.BaseLightController.HandleSound(System.Boolean)">
+            <summary>
+            Called when the light enabled status has changed.
+            Intended to play a sound when the lights are toggled on or off.
+            </summary>
+            <param name="lightsAreNowEnabled">True if the lights have been switched on</param>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.BaseLightController.Toggle">
+            <summary>
+            Toggles the lights on &lt;-&gt; off.
+            </summary>
+        </member>
+        <member name="T:AVS.VehicleComponents.LightControllers.FloodlightsController">
+            <summary>
+            Controller for the floodlights on a submarine.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.FloodlightsController.HandleLighting(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.FloodlightsController.HandleSound(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.FloodlightsController.Awake">
+            <inheritdoc/>
+        </member>
+        <member name="T:AVS.VehicleComponents.LightControllers.HeadlightsController">
+            <summary>
+            Controller for the headlights of a vehicle.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.HeadlightsController.HandleLighting(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.HeadlightsController.HandleSound(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.HeadlightsController.Awake">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.HeadlightsController.Update">
+            <inheritdoc/>
+        </member>
+        <member name="T:AVS.VehicleComponents.LightControllers.InteriorLightsController">
+            <summary>
+            The controller for the interior lights of a submarine.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.InteriorLightsController.HandleLighting(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.InteriorLightsController.HandleSound(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.InteriorLightsController.Awake">
+            <inheritdoc/>
+        </member>
+        <member name="T:AVS.VehicleComponents.LightControllers.NavigationLightsController">
+            <summary>
+            The controller for the navigation lights of a submarine.
+            </summary>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.NavigationLightsController.HandleLighting(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.NavigationLightsController.HandleSound(System.Boolean)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.NavigationLightsController.Awake">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.VehicleComponents.LightControllers.NavigationLightsController.Start">
+            <inheritdoc/>
         </member>
         <member name="T:AVS.VehicleComponents.MaterialReactorConversionDeclaration">
             <summary>
@@ -10115,7 +10418,7 @@
             Hand target added to the pilot seat
             </summary>
         </member>
-        <member name="F:AVS.PilotingTrigger.mv">
+        <member name="F:AVS.PilotingTrigger.av">
             <summary>
             The owning vehicle. Assigned during instantiation
             </summary>

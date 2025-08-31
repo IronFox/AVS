@@ -99,11 +99,11 @@ namespace AVS.VehicleComponents
                 sm.toggleLights.SetLightsActive(false);
                 currentDockedVehicle.GetComponent<SeaMoth>().enabled = true; // why is this necessary?
             }
-            else if (currentDockedVehicle is AvsVehicle mv)
+            else if (currentDockedVehicle is AvsVehicle av)
             {
-                if (mv.HeadlightsController.IsNotNull() && mv.HeadlightsController.IsLightsOn)
+                if (av.HeadlightsController.IsNotNull() && av.HeadlightsController.IsLightsOn)
                 {
-                    mv.HeadlightsController.Toggle();
+                    av.HeadlightsController.Toggle();
                 }
             }
         }
@@ -138,12 +138,12 @@ namespace AVS.VehicleComponents
                 Player.main.SetPosition(PlayerExitLocation.position);
                 Character.TeleportTo(PlayerExitLocation.position);
             }
-            if (dockingVehicle is AvsVehicle mv)
+            if (dockingVehicle is AvsVehicle av)
             {
-                mv.DeselectSlots();
+                av.DeselectSlots();
                 Player.main.SetPosition(PlayerExitLocation.position);
                 Character.TeleportTo(PlayerExitLocation.position);
-                mv.DockVehicle();
+                av.DockVehicle();
             }
             dockingVehicle.transform.SetParent(transform);
             GetComponent<VehicleTypes.Submarine>().SafeDo(x => x.ClosestPlayerEntry());
@@ -171,9 +171,9 @@ namespace AVS.VehicleComponents
             {
                 currentDockedVehicle.EnterVehicle(Player.main, true, true);
             }
-            if (currentDockedVehicle is AvsVehicle mv)
+            if (currentDockedVehicle is AvsVehicle av)
             {
-                mv.UndockVehicle();
+                av.UndockVehicle();
             }
         }
         protected virtual IEnumerator DoUndockingAnimations()

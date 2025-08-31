@@ -30,8 +30,8 @@ public class ArmsControllerPatcher
     [HarmonyPatch(nameof(ArmsController.Update))]
     public static void ArmsControllerUpdatePostfix()
     {
-        var mv = Player.main.GetAvsVehicle();
-        if (mv.IsNotNull())
-            mv.HandlePilotingAnimations();
+        var av = Player.main.GetAvsVehicle();
+        if (av.IsNotNull())
+            av.HandlePilotingAnimations();
     }
 }

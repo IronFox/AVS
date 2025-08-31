@@ -60,15 +60,15 @@ public static class DockedVehicleHandTargetPatch
     [HarmonyPatch(nameof(DockedVehicleHandTarget.OnHandHover))]
     public static void OnHandHoverPostfix(DockedVehicleHandTarget __instance)
     {
-        var mv = __instance.dockingBay.GetDockedVehicle() as AvsVehicle;
-        if (mv.IsNotNull())
+        var av = __instance.dockingBay.GetDockedVehicle() as AvsVehicle;
+        if (av.IsNotNull())
         {
-            var text = mv.subName.hullName.text;
-            if (mv is Submarine sub && sub.Com.Hatches.Count > 0)
+            var text = av.subName.hullName.text;
+            if (av is Submarine sub && sub.Com.Hatches.Count > 0)
                 text = sub.GetClosestEntryHatch().Hatch.GetComponent<VehicleComponents.VehicleHatch>().EnterHint;
             float energyActual = 0;
             float energyMax = 0;
-            foreach (var battery in mv.energyInterface.sources)
+            foreach (var battery in av.energyInterface.sources)
             {
                 energyActual += battery.charge;
                 energyMax += battery.capacity;
@@ -78,14 +78,14 @@ public static class DockedVehicleHandTargetPatch
             if (energyFraction == 1)
             {
                 var format2 = Translator.GetFormatted(TranslationKey.HandHover_Docked_StatusCharged,
-                    mv.liveMixin.Percentage());
+                    av.liveMixin.Percentage());
                 HandReticle.main.SetText(HandReticle.TextType.Hand, text, true, GameInput.Button.LeftHand);
                 HandReticle.main.SetText(HandReticle.TextType.HandSubscript, format2, false, GameInput.Button.None);
             }
             else
             {
                 var format2 = Translator.GetFormatted(TranslationKey.HandHover_Docked_StatusCharging,
-                    mv.liveMixin.Percentage(), energyActual.Percentage(energyMax));
+                    av.liveMixin.Percentage(), energyActual.Percentage(energyMax));
                 HandReticle.main.SetText(HandReticle.TextType.Hand, text, true, GameInput.Button.LeftHand);
                 HandReticle.main.SetText(HandReticle.TextType.HandSubscript, format2, false, GameInput.Button.None);
             }
@@ -106,17 +106,19 @@ public static class DockedVehicleHandTargetPatch
     [HarmonyPatch(nameof(DockedVehicleHandTarget.OnHandClick))]
     public static bool OnHandClickPrefix(DockedVehicleHandTarget __instance, GUIHand hand)
     {
-        var mv = __instance.dockingBay.GetDockedVehicle() as AvsVehicle;
-        if (mv.IsNull())
+        var av = __instance.dockingBay.GetDockedVehicle() as AvsVehicle;
+        if (av.IsNull())
             return true;
 
         if (!__instance.dockingBay.HasUndockingClearance())
             return false;
 
+        var rmc = av.Owner;
+
         __instance.dockingBay.OnUndockingStart();
         __instance.dockingBay.subRoot.BroadcastMessage("OnLaunchBayOpening", SendMessageOptions.DontRequireReceiver);
 
-        mv.IsUndockingAnimating = true;
+        av.IsUndockingAnimating = true;
         var subRootName = __instance.dockingBay.subRoot.name.ToLower();
         var moonpoolMaybe = __instance.dockingBay.transform.parent.SafeGetParent();
         if (subRootName.Contains("cyclops"))
@@ -133,14 +135,15 @@ public static class DockedVehicleHandTargetPatch
         Player.main.SetCurrentSub(null, false);
         if (__instance.dockingBay.dockedVehicle.IsNotNull())
         {
-            MainPatcher.Instance.StartCoroutine(
-                __instance.dockingBay.dockedVehicle.Undock(Player.main, __instance.dockingBay.transform.position.y));
+            rmc.StartAvsCoroutine(
+                nameof(Vehicle) + '.' + nameof(Vehicle.Undock),
+                _ => __instance.dockingBay.dockedVehicle.Undock(Player.main, __instance.dockingBay.transform.position.y));
             SkyEnvironmentChanged.Broadcast(__instance.dockingBay.dockedVehicle.gameObject, (GameObject?)null);
         }
 
         __instance.dockingBay.dockedVehicle = null;
 
-        mv.IsUndockingAnimating = false;
+        av.IsUndockingAnimating = false;
         if (subRootName.Contains("cyclops"))
         {
             IEnumerator ReEnableCollisionsInAMoment()
@@ -148,21 +151,23 @@ public static class DockedVehicleHandTargetPatch
                 yield return new WaitForSeconds(5);
                 __instance.dockingBay.transform.parent.parent.parent.Find("CyclopsCollision").gameObject
                     .SetActive(true);
-                mv.useRigidbody.detectCollisions = true;
+                av.useRigidbody.detectCollisions = true;
             }
 
-            MainPatcher.Instance.StartCoroutine(ReEnableCollisionsInAMoment());
+            rmc.StartAvsCoroutine(
+                nameof(DockedVehicleHandTargetPatch) + '.' + nameof(ReEnableCollisionsInAMoment),
+                _ => ReEnableCollisionsInAMoment());
         }
         else
         {
             float GetVehicleTop()
             {
-                if (mv.Com.BoundingBoxCollider.IsNull())
-                    return mv.transform.position.y + mv.transform.lossyScale.y * 0.5f;
+                if (av.Com.BoundingBoxCollider.IsNull())
+                    return av.transform.position.y + av.transform.lossyScale.y * 0.5f;
                 var worldCenter =
-                    mv.Com.BoundingBoxCollider.transform.TransformPoint(mv.Com.BoundingBoxCollider.center);
-                return worldCenter.y + mv.Com.BoundingBoxCollider.size.y * 0.5f *
-                    mv.Com.BoundingBoxCollider.transform.lossyScale.y;
+                    av.Com.BoundingBoxCollider.transform.TransformPoint(av.Com.BoundingBoxCollider.center);
+                return worldCenter.y + av.Com.BoundingBoxCollider.size.y * 0.5f *
+                    av.Com.BoundingBoxCollider.transform.lossyScale.y;
             }
 
             float GetMoonPoolPlane()
@@ -175,16 +180,18 @@ public static class DockedVehicleHandTargetPatch
                 while (GetMoonPoolPlane() < GetVehicleTop())
                     yield return new WaitForEndOfFrame();
                 moonpoolMaybe.Find("Collisions").gameObject.SetActive(true);
-                mv.useRigidbody.detectCollisions = true;
+                av.useRigidbody.detectCollisions = true;
             }
 
             if (moonpoolMaybe.IsNotNull() &&
                 moonpoolMaybe.name.Equals("BaseMoonpool(Clone)", StringComparison.OrdinalIgnoreCase))
-                MainPatcher.Instance.StartCoroutine(ReEnableCollisionsInAMoment());
+                rmc.StartAvsCoroutine(
+                    nameof(DockedVehicleHandTargetPatch) + '.' + nameof(ReEnableCollisionsInAMoment),
+                    _ => ReEnableCollisionsInAMoment());
         }
 
-        SkyEnvironmentChanged.Broadcast(mv.gameObject, (GameObject?)null);
-        mv.UndockVehicle();
+        SkyEnvironmentChanged.Broadcast(av.gameObject, (GameObject?)null);
+        av.UndockVehicle();
 
 
         return false;

@@ -31,12 +31,12 @@ public static class FabricatorPatcher
     [HarmonyPatch(nameof(GhostCrafter.HasEnoughPower))]
     public static bool HasEnoughPowerPrefix(GhostCrafter __instance, ref bool __result)
     {
-        var mv = __instance.GetComponentInParent<AvsVehicle>();
-        if (mv is null || !GameModeUtils.RequiresPower())
+        var av = __instance.GetComponentInParent<AvsVehicle>();
+        if (av is null || !GameModeUtils.RequiresPower())
             return true;
 
         var goodPS = PowerManager.PowerStatus.ChargedAndPowered;
-        __result = mv.PowerManager.EvaluatePowerStatus() == goodPS;
+        __result = av.PowerManager.EvaluatePowerStatus() == goodPS;
         return false;
     }
 }
@@ -79,15 +79,15 @@ public static class CrafterLogicPatcher
             // if powerRelay.powerPreview was null, we must be talking about a AvsVehicle
             // (it was never assigned because PowerRelay.Start is skipped for AvsVehicles)
             // so let's check for one
-            AvsVehicle? mv = null;
+            AvsVehicle? av = null;
             foreach (var tempMV in AvsVehicleManager.VehiclesInPlay)
                 if (tempMV.IsBoarded)
                 {
-                    mv = tempMV;
+                    av = tempMV;
                     break;
                 }
 
-            if (mv.IsNull())
+            if (av.IsNull())
             {
                 Logger.Error(
                     $"ConsumeEnergyPrefix ERROR: PowerRelay was null, but we weren't in an {nameof(AvsVehicle)}.");
@@ -98,7 +98,7 @@ public static class CrafterLogicPatcher
                 // we found the AvsVehicle from whose fabricator we're trying to drain power
                 var WantToSpend = 5f;
                 var SpendTolerance = 4.99f;
-                var energySpent = mv.PowerManager.TrySpendEnergy(WantToSpend);
+                var energySpent = av.PowerManager.TrySpendEnergy(WantToSpend);
                 __result = SpendTolerance <= energySpent;
                 return false;
             }

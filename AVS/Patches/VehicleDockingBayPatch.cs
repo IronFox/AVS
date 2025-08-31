@@ -1,9 +1,9 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Util;
 using HarmonyLib;
 using System;
 using System.Collections.Generic;
 using System.Reflection.Emit;
-using AVS.Util;
 using UnityEngine;
 
 // PURPOSE: allow AvsVehicles to use in-game docking bays
@@ -33,10 +33,10 @@ namespace AVS.Patches;
 [HarmonyPatch(typeof(VehicleDockingBay))]
 internal class VehicleDockingBayPatch
 {
-    private static bool HandleMoonpool(AvsVehicle mv)
+    private static bool HandleMoonpool(AvsVehicle av)
     {
-        //Vector3 boundingDimensions = mv.CyclopsDockRotation * mv.GetBoundingDimensions();
-        var boundingDimensions = mv.GetDockingBoundsSize();
+        //Vector3 boundingDimensions = av.CyclopsDockRotation * av.GetBoundingDimensions();
+        var boundingDimensions = av.GetDockingBoundsSize();
         if (boundingDimensions == Vector3.zero)
             return false;
         var mpx = 8.6f;
@@ -51,10 +51,10 @@ internal class VehicleDockingBayPatch
         return true;
     }
 
-    private static bool HandleCyclops(AvsVehicle mv)
+    private static bool HandleCyclops(AvsVehicle av)
     {
-        //Vector3 boundingDimensions = mv.CyclopsDockRotation * mv.GetBoundingDimensions();
-        var boundingDimensions = mv.GetDockingBoundsSize();
+        //Vector3 boundingDimensions = av.CyclopsDockRotation * av.GetBoundingDimensions();
+        var boundingDimensions = av.GetDockingBoundsSize();
         if (boundingDimensions == Vector3.zero)
             return false;
         var mpx = 4.5f;
@@ -75,29 +75,29 @@ internal class VehicleDockingBayPatch
 
     private static bool IsThisASubmarineWithStandingPilot(GameObject nearby)
     {
-        var mv = UWE.Utils.GetComponentInHierarchy<VehicleTypes.Submarine>(nearby.gameObject);
-        if (mv.IsNull())
+        var av = UWE.Utils.GetComponentInHierarchy<VehicleTypes.Submarine>(nearby.gameObject);
+        if (av.IsNull())
             return false;
-        if (mv.IsBoarded && !mv.IsPlayerPiloting())
+        if (av.IsBoarded && !av.IsPlayerPiloting())
             return true;
         return false;
     }
 
     private static bool IsThisVehicleSmallEnough(VehicleDockingBay bay, GameObject nearby)
     {
-        var mv = UWE.Utils.GetComponentInHierarchy<AvsVehicle>(nearby.gameObject);
-        if (mv.IsNull())
+        var av = UWE.Utils.GetComponentInHierarchy<AvsVehicle>(nearby.gameObject);
+        if (av.IsNull())
             return true;
-        if (!mv.Config.CanMoonpoolDock || mv.docked)
+        if (!av.Config.CanMoonpoolDock || av.docked)
             return false;
         var subRootName = bay.subRoot.name.ToLower();
         if (subRootName.Contains("base"))
         {
-            return HandleMoonpool(mv);
+            return HandleMoonpool(av);
         }
         else if (subRootName.Contains("cyclops"))
         {
-            return HandleCyclops(mv);
+            return HandleCyclops(av);
         }
         else
         {
@@ -108,12 +108,13 @@ internal class VehicleDockingBayPatch
 
     private static void HandleMVDocked(Vehicle vehicle, VehicleDockingBay dock)
     {
-        var mv = vehicle as AvsVehicle;
-        if (mv.IsNotNull())
+        var av = vehicle as AvsVehicle;
+        if (av.IsNotNull())
         {
+            using var log = av.NewAvsLog();
             var moonpool = dock.GetComponentInParent<Moonpool>();
             var cmm = dock.GetComponentInParent<CyclopsMotorMode>();
-            if (mv.IsBoarded)
+            if (av.IsBoarded)
             {
                 Player.main.SetCurrentSub(dock.GetSubRoot(), true);
                 Player.main.ToNormalMode(false);
@@ -122,13 +123,13 @@ internal class VehicleDockingBayPatch
             if (moonpool.IsNotNull() || cmm.IsNotNull())
             {
                 var playerSpawn = dock.transform.Find("playerSpawn");
-                mv.DockVehicle(playerSpawn.position);
+                av.DockVehicle(playerSpawn.position);
             }
             else
             {
-                mv.Log.Warn(MainPatcher.Instance.ModName +
+                log.Warn(av.Owner.ModName +
                             " AVS is not aware of this dock. The player is probably in a weird position now.");
-                mv.DockVehicle();
+                av.DockVehicle();
             }
         }
     }
@@ -144,9 +145,9 @@ internal class VehicleDockingBayPatch
     // This patch animates the docking bay arms as if a seamoth is docked
     public static void LateUpdatePostfix(VehicleDockingBay __instance)
     {
-        var mv = __instance.dockedVehicle as AvsVehicle;
-        if (mv.IsNotNull())
-            mv.AnimateMoonPoolArms(__instance);
+        var av = __instance.dockedVehicle as AvsVehicle;
+        if (av.IsNotNull())
+            av.AnimateMoonPoolArms(__instance);
     }
 
     /// <summary>
@@ -210,8 +211,8 @@ internal class VehicleDockingBayPatch
     public static bool UpdateDockedPositionPrefix(VehicleDockingBay __instance, Vehicle vehicle,
         float interpfraction)
     {
-        var mv = vehicle as AvsVehicle;
-        if (mv.IsNull())
+        var av = vehicle as AvsVehicle;
+        if (av.IsNull())
             return true;
         Transform endingTransform;
         var subRootName = __instance.subRoot.name.ToLower();
@@ -229,12 +230,12 @@ internal class VehicleDockingBayPatch
             return true;
         }
 
-        if (!mv.IsUndockingAnimating)
+        if (!av.IsUndockingAnimating)
         {
             vehicle.transform.position =
                 Vector3.Lerp(__instance.startPosition, endingTransform.position, interpfraction) -
-                mv.GetDockingDifferenceFromCenter();
-            //vehicle.transform.rotation = Quaternion.Lerp(__instance.startRotation, mv.CyclopsDockRotation * endingTransform.rotation, interpfraction);
+                av.GetDockingDifferenceFromCenter();
+            //vehicle.transform.rotation = Quaternion.Lerp(__instance.startRotation, av.CyclopsDockRotation * endingTransform.rotation, interpfraction);
             vehicle.transform.rotation =
                 Quaternion.Lerp(__instance.startRotation, endingTransform.rotation, interpfraction);
         }
