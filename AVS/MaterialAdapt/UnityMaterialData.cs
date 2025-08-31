@@ -155,9 +155,9 @@ public class UnityMaterialData : INullTestableType
 
     private static Color GetColor(RootModController rmc, Material m, string name, MaterialLog logConfig)
     {
+        using var log = SmartLog.LazyForAVS(rmc);
         if (!m.HasProperty(name))
         {
-            using var log = SmartLog.ForAVS(rmc);
             log.Warn($"Material {m} does not have expected property {name}");
             return Color.black;
         }
@@ -168,7 +168,6 @@ public class UnityMaterialData : INullTestableType
         }
         catch (Exception e)
         {
-            using var log = SmartLog.ForAVS(rmc);
             log.Error($"Material {m} does not have expected color property {name}");
             Debug.LogException(e);
             return Color.black;
@@ -177,9 +176,9 @@ public class UnityMaterialData : INullTestableType
 
     private static Texture? GetTexture(RootModController rmc, Material m, string name, MaterialLog logConfig)
     {
+        using var log = SmartLog.LazyForAVS(rmc);
         if (!m.HasProperty(name))
         {
-            using var log = SmartLog.ForAVS(rmc);
             log.Warn($"Material {m} does not have expected property {name}");
             return null;
         }
@@ -190,7 +189,6 @@ public class UnityMaterialData : INullTestableType
         }
         catch (Exception e)
         {
-            using var log = SmartLog.ForAVS(rmc);
             log.Error($"Material {m} does not have expected texture property {name}");
             Debug.LogException(e);
             return null;
@@ -199,9 +197,9 @@ public class UnityMaterialData : INullTestableType
 
     private static float GetFloat(RootModController rmc, Material m, string name, MaterialLog logConfig)
     {
+        using var log = SmartLog.LazyForAVS(rmc);
         if (!m.HasProperty(name))
         {
-            using var log = SmartLog.ForAVS(rmc);
             log.Warn($"Material {m} does not have expected property {name}");
             return 0;
         }
@@ -212,7 +210,6 @@ public class UnityMaterialData : INullTestableType
         }
         catch (Exception e)
         {
-            using var log = SmartLog.ForAVS(rmc);
             log.Error($"Material {m} does not have expected float property {name}");
             Debug.LogException(e);
             return 0;
@@ -221,9 +218,9 @@ public class UnityMaterialData : INullTestableType
 
     private static int GetInt(RootModController rmc, Material m, string name, MaterialLog logConfig)
     {
+        using var log = SmartLog.LazyForAVS(rmc);
         if (!m.HasProperty(name))
         {
-            using var log = SmartLog.ForAVS(rmc);
             log.Warn($"Material {m} does not have expected property {name}");
             return 0;
         }
@@ -234,7 +231,6 @@ public class UnityMaterialData : INullTestableType
         }
         catch (Exception e)
         {
-            using var log = SmartLog.ForAVS(rmc);
             log.Error($"Material {m} does not have expected int property {name}");
             Debug.LogException(e);
             return 0;
@@ -245,7 +241,7 @@ public class UnityMaterialData : INullTestableType
     private static UnityMaterialData? From(RootModController rmc, MaterialAddress target, Material m, MaterialLog logConfig, MaterialType type,
         bool ignoreShaderName = false)
     {
-        using var log = SmartLog.ForAVS(rmc);
+        using var log = SmartLog.LazyForAVS(rmc);
         if (m.shader.name != "Standard" && !ignoreShaderName)
         {
             logConfig.LogExtraStep(log, $"Ignoring {m.NiceName()} which uses {m.shader.NiceName()}");
@@ -386,7 +382,7 @@ public class UnityMaterialData : INullTestableType
     /// <param name="materialName">Optional custom material name to use instead of the nice name of the material itself</param>
     public void ApplyTo(RootModController rmc, Material m, float? uniformShininess, MaterialLog logConfig, string? materialName)
     {
-        using var log = SmartLog.ForAVS(rmc);
+        using var log = SmartLog.LazyForAVS(rmc);
         ColorVariable.Set(rmc, m, "_Color2", Color, logConfig, materialName);
         ColorVariable.Set(rmc, m, "_Color3", Color, logConfig, materialName);
         ColorVariable.Set(rmc, m, "_SpecColor", SpecularColor, logConfig, materialName);

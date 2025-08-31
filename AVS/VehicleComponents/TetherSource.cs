@@ -154,6 +154,8 @@ internal class TetherSource : AvAttached, IScuttleListener, IDockListener
         if (av.IsNull())
             return;
 
+        using var log = Sub.NewLazyAvsLog();
+
         bool PlayerWithinLeash(GameObject tetherSrc)
         {
             var radius = 0.75f;
@@ -164,7 +166,6 @@ internal class TetherSource : AvAttached, IScuttleListener, IDockListener
 
         if (Player.main.GetVehicle().IsNull())
         {
-            using var log = Sub.NewAvsLog();
             if (isSimple)
             {
                 if (Vector3.Distance(Player.main.transform.position, transform.position) < 1f)

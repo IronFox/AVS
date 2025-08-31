@@ -106,8 +106,8 @@ public static class FModSoundCreator
 
             channel.isPlaying(out var isPlaying);
             //                 channel.set3DDistanceFilter()
-            log.Write(
-                $"Sound ({channel.handle}) created @{cfg.Owner.transform.position} for {cfg.AudioClip.NiceName()} (mode={mode}, is3d={cfg.Is3D}, min={cfg.MinDistance.ToStr()}, max={cfg.MaxDistance.ToStr()}, loop={cfg.Loop}, isPlaying={isPlaying})");
+            log.Write($"Sound ({channel.handle}) created @{cfg.Owner.transform.position} for {cfg.AudioClip.NiceName()}");
+            log.Debug($"mode={mode}, is3d={cfg.Is3D}, min={cfg.MinDistance.ToStr()}, max={cfg.MaxDistance.ToStr()}, loop={cfg.Loop}, isPlaying={isPlaying}");
             var result = new FModSound(channel, sound, component, cfg.AudioClip.name, cfg.RMC, rolloffArray)
             {
                 Settings = cfg.Settings,

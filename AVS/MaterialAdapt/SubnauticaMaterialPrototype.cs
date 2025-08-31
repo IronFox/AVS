@@ -49,7 +49,7 @@ public class SubnauticaMaterialPrototype : INullTestableType
     public void ApplyTo(RootModController rmc, Material m, MaterialLog logConfig, Func<string, bool>? variableNamePredicate = null,
         string? materialName = null)
     {
-        using var log = SmartLog.ForAVS(rmc);
+        using var log = SmartLog.LazyForAVS(rmc);
         variableNamePredicate = variableNamePredicate ?? (_ => true);
 
         foreach (var v in ColorVariables)

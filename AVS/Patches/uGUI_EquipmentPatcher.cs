@@ -27,6 +27,7 @@ public class uGUI_EquipmentPatcher
     /// custom vehicle upgrade slots into the default equipment system of Subnautica.
     /// Initializes the custom ModuleBuilder class, sets up all upgrade slots, and ensures proper integration into the UI.
     /// </summary>
+    /// <param name="__instance">The instance of the <c>uGUI_Equipment</c> class being patched.</param>
     /// <param name="___allSlots">
     /// A reference to the dictionary containing all equipment slots managed by the <c>uGUI_Equipment</c> system.
     /// This parameter is used to integrate custom slots for vehicle upgrades.
