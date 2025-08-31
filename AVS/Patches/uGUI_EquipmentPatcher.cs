@@ -1,4 +1,5 @@
-﻿using AVS.VehicleBuilding;
+﻿using AVS.Log;
+using AVS.VehicleBuilding;
 using HarmonyLib;
 using System.Collections.Generic;
 
@@ -32,18 +33,11 @@ public class uGUI_EquipmentPatcher
     /// </param>
     [HarmonyPostfix]
     [HarmonyPatch(nameof(uGUI_Equipment.Awake))]
-    public static void AwakePostfix(ref Dictionary<string, uGUI_EquipmentSlot> ___allSlots)
+    public static void AwakePostfix(uGUI_Equipment __instance, ref Dictionary<string, uGUI_EquipmentSlot> ___allSlots)
     {
-        if (!ModuleBuilder.haveWeCalledBuildAllSlots)
-        {
-            ModuleBuilder.haveWeCalledBuildAllSlots = true;
-            ModuleBuilder._main = Player.main.gameObject.AddComponent<ModuleBuilder>();
-            ModuleBuilder.Main.GrabComponents();
-            ModuleBuilder.Main.isEquipmentInit = true;
-            ModuleBuilder.LoadVehicleSlots(___allSlots);
-            ModuleBuilder.Main.BuildAllSlots();
-            ___allSlots = ModuleBuilder.AllVehicleSlots;
-        }
+        using var log = SmartLog.LazyForAVS(RootModController.AnyInstance, parameters: [__instance, ___allSlots.Count]);
+
+        ModuleBuilder.Init(ref ___allSlots);
     }
 
     /// <summary>
@@ -59,7 +53,7 @@ public class uGUI_EquipmentPatcher
     [HarmonyPatch(nameof(uGUI_Equipment.OnDragHoverEnter))]
     public static void OnDragHoverEnterPatch(ref Dictionary<string, uGUI_EquipmentSlot> ___allSlots)
     {
-        ModuleBuilder.LoadVehicleSlots(___allSlots, false);
+        ModuleBuilder.LinkVehicleSlots(ref ___allSlots, false);
         ___allSlots = ModuleBuilder.AllVehicleSlots;
     }
 
@@ -77,7 +71,7 @@ public class uGUI_EquipmentPatcher
     [HarmonyPatch(nameof(uGUI_Equipment.OnDragHoverStay))]
     public static void OnDragHoverStayPatch(ref Dictionary<string, uGUI_EquipmentSlot> ___allSlots)
     {
-        ModuleBuilder.LoadVehicleSlots(___allSlots, false);
+        ModuleBuilder.LinkVehicleSlots(ref ___allSlots, false);
         ___allSlots = ModuleBuilder.AllVehicleSlots;
     }
 
@@ -94,7 +88,7 @@ public class uGUI_EquipmentPatcher
     [HarmonyPatch(nameof(uGUI_Equipment.OnDragHoverExit))]
     public static void OnDragHoverExitPatch(ref Dictionary<string, uGUI_EquipmentSlot> ___allSlots)
     {
-        ModuleBuilder.LoadVehicleSlots(___allSlots, false);
+        ModuleBuilder.LinkVehicleSlots(ref ___allSlots, false);
         ___allSlots = ModuleBuilder.AllVehicleSlots;
     }
 }

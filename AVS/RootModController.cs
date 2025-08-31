@@ -241,9 +241,7 @@ public abstract class RootModController : BaseUnityPlugin
         void SetWorldNotLoaded()
         {
             GameStateWatcher.IsWorldLoaded = false;
-            ModuleBuilder.haveWeCalledBuildAllSlots = false;
-            ModuleBuilder.slotExtenderIsPatched = false;
-            ModuleBuilder.SlotExtenderHasGreenLight = false;
+            ModuleBuilder.Reset();
         }
 
         void SetWorldLoaded()

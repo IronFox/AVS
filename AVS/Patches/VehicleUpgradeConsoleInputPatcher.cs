@@ -32,10 +32,9 @@ internal class VehicleUpgradeConsoleInputPatcher
     public static void UpdateVisualsPostfix(VehicleUpgradeConsoleInput __instance)
     {
         var av = __instance.GetComponentInParent<AvsVehicle>();
-        if (av.IsNotNull() && __instance.GetComponentInChildren<UpgradeProxy>().IsNotNull() &&
-            __instance.GetComponentInChildren<UpgradeProxy>().slots.IsNotNull())
+        if (av.IsNotNull())
         {
-            using var log = av.NewAvsLog();
+            using var log = av.NewLazyAvsLog();
             var proxy = __instance.GetComponentInChildren<UpgradeProxy>();
             if (proxy.IsNull() || proxy.slots.IsNull())
             {

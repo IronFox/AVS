@@ -12,15 +12,11 @@ internal class ModuleBuilder : MonoBehaviour
 {
     internal static ModuleBuilder? _main;
 
-    public static ModuleBuilder Main => _main ??
-                                        throw new NullReferenceException(
-                                            "ModuleBuilder is not initialized. Ensure it is attached to a GameObject in the scene.");
+    public static ModuleBuilder Main => _main.OrThrow("ModuleBuilder is not initialized. Ensure it is attached to a GameObject in the scene.");
 
-    public static Dictionary<string, uGUI_EquipmentSlot> AllVehicleSlots { get; } = new();
+    public static Dictionary<string, uGUI_EquipmentSlot> AllVehicleSlots { get; private set; } = [];
     public const int MaxNumModules = 18;
-    public bool isEquipmentInit = false;
-    public bool areModulesReady = false;
-    public static bool haveWeCalledBuildAllSlots = false;
+    private static bool haveWeCalledBuildAllSlots = false;
     public static bool slotExtenderIsPatched = false;
     public static bool SlotExtenderHasGreenLight { get; set; } = false;
     internal static string GetModulePrefix(RootModController rmc) => rmc.ModName + "_Avs_Vehicle_Module";
@@ -59,42 +55,41 @@ internal class ModuleBuilder : MonoBehaviour
     public Transform? bottomRightSlot = null;
     public Transform? leftArmSlot = null;
 
-    private bool haveSlotsBeenInited = false;
 
-    public void BuildAllSlots()
-    {
-        RootModController.AnyInstance.StartAvsCoroutine(
-            nameof(ModuleBuilder) + '.' + nameof(BuildAllSlotsInternal),
-            BuildAllSlotsInternal);
-    }
-
-    public static void LoadVehicleSlots(Dictionary<string, uGUI_EquipmentSlot> sourceSlots,
+    public static void LinkVehicleSlots(ref Dictionary<string, uGUI_EquipmentSlot> sourceSlots,
         bool clearExisting = true)
     {
-        using var log = SmartLog.ForAVS(RootModController.AnyInstance);
+        using var log = SmartLog.LazyForAVS(RootModController.AnyInstance, parameters: [sourceSlots.Count, clearExisting]);
         if (clearExisting)
         {
-            log.Write($"Clearing existing vehicle slots...");
-            AllVehicleSlots.Clear();
+            log.Write($"Clearing existing vehicle slots, then replacing");
+            AllVehicleSlots = sourceSlots;
+            sourceSlots = AllVehicleSlots;
+            return;
         }
 
-        var added = 0;
+        List<string> added = [];
         foreach (var pair in sourceSlots)
             if (!AllVehicleSlots.ContainsKey(pair.Key))
             {
                 AllVehicleSlots.Add(pair.Key, pair.Value);
                 //Log.Write($"Loaded slot {pair.Key}: {pair.Value.NiceName()}");
-                added++;
+                added.Add(pair.Key);
             }
 
-        if (added > 0)
-            log.Write($"Loaded {added} new vehicle slots.");
+        if (added.Count > 0)
+        {
+            log.Write($"Loaded {added.Count} new vehicle slots.");
+            foreach (var name in added)
+                log.Debug($" - {name}");
+        }
+
+        sourceSlots = AllVehicleSlots;
     }
 
     public IEnumerator BuildAllSlotsInternal(SmartLog log)
     {
-        log.Write($"Waiting for PDA to be initialized...");
-        yield return new WaitUntil(() => haveSlotsBeenInited);
+        log.Write($"Beginning slot construction");
 
         var eq = uGUI_PDA.main.transform
             .Find("Content/InventoryTab/Equipment")
@@ -167,16 +162,23 @@ internal class ModuleBuilder : MonoBehaviour
         }
     }
 
-    public void GrabComponents()
+    public void Build()
     {
         RootModController.AnyInstance.StartAvsCoroutine(
-            nameof(ModuleBuilder) + '.' + nameof(BuildGenericModulesASAP),
-            BuildGenericModulesASAP);
+            nameof(ModuleBuilder) + '.' + nameof(BuildAllAsync),
+            BuildAllAsync);
     }
 
-    private IEnumerator BuildGenericModulesASAP(SmartLog log)
+    private IEnumerator BuildAllAsync(SmartLog log)
     {
         log.Write($"Begin");
+        yield return BuildGenericModules(log);
+        yield return BuildAllSlotsInternal(log);
+    }
+
+
+    private IEnumerator BuildGenericModules(SmartLog log)
+    {
         // this function is invoked by PDA.Awake,
         // so that we can access the same PDA here
         // Unfortunately this means we must wait for the player to open the PDA.
@@ -190,8 +192,6 @@ internal class ModuleBuilder : MonoBehaviour
             yield break;
         }
 
-        log.Write($"Waiting for PDA to be initialized...");
-        yield return new WaitUntil(() => Main.isEquipmentInit);
         foreach (var pair in AllVehicleSlots)
             //log.Write($"Processing slot {pair.Key}: {pair.Value.NiceName()}");
             switch (pair.Key)
@@ -212,7 +212,7 @@ internal class ModuleBuilder : MonoBehaviour
                         genericModuleObject.transform.localPosition = topLeftSlot.localPosition;
 
                         // add background child gameobject and components
-                        var genericModuleBackground = new GameObject("Background");
+                        var genericModuleBackground = new GameObject("AvsBackground");
                         genericModuleBackground.transform.SetParent(genericModuleObject.transform, false);
                         topLeftSlot.Find("Background").GetComponent<RectTransform>()
                             .TryCopyComponentWithFieldsTo(genericModuleBackground);
@@ -236,7 +236,7 @@ internal class ModuleBuilder : MonoBehaviour
                             topLeftSlot.Find("Background").GetComponent<UnityEngine.UI.Image>().material;
 
                         // add iconrect child gameobject
-                        genericModuleIconRect = new GameObject("IconRect");
+                        genericModuleIconRect = new GameObject("AvsIconRect");
                         genericModuleIconRect.transform.SetParent(genericModuleObject.transform, false);
                         genericModuleObject.GetComponent<uGUI_EquipmentSlot>().iconRect =
                             topLeftSlot.Find("IconRect").GetComponent<RectTransform>()
@@ -245,7 +245,7 @@ internal class ModuleBuilder : MonoBehaviour
                         //===============================================================================
                         // get background image components
                         //===============================================================================
-                        modulesBackground = new GameObject("VehicleModuleBackground");
+                        modulesBackground = new GameObject("AvsVehicleModuleBackground");
                         modulesBackground.SetActive(false);
                         topLeftSlot.Find("Exosuit").GetComponent<RectTransform>()
                             .TryCopyComponentWithFieldsTo(modulesBackground);
@@ -269,7 +269,7 @@ internal class ModuleBuilder : MonoBehaviour
                     {
                         // get slot location
                         leftArmSlot = pair.Value.transform;
-                        armModuleObject = new GameObject("ArmVehicleModule");
+                        armModuleObject = new GameObject("AvsArmVehicleModule");
                         armModuleObject.SetActive(false);
                         var arm = pair.Value.transform;
 
@@ -277,7 +277,7 @@ internal class ModuleBuilder : MonoBehaviour
                         armModuleObject.transform.localPosition = arm.localPosition;
 
                         // add background child gameobject and components
-                        var genericModuleBackground = new GameObject("Background");
+                        var genericModuleBackground = new GameObject("AvsBackground");
                         genericModuleBackground.transform.SetParent(armModuleObject.transform, false);
 
                         if (topLeftSlot.IsNull())
@@ -295,14 +295,14 @@ internal class ModuleBuilder : MonoBehaviour
                             .TryCopyComponentWithFieldsTo(genericModuleBackground);
 
                         // add iconrect child gameobject
-                        var thisModuleIconRect = new GameObject("IconRect");
+                        var thisModuleIconRect = new GameObject("AvsIconRect");
                         thisModuleIconRect.transform.SetParent(armModuleObject.transform, false);
                         armModuleObject.EnsureComponent<uGUI_EquipmentSlot>().iconRect = topLeftSlot.Find("IconRect")
                             .GetComponent<RectTransform>().TryCopyComponentWithFieldsTo(thisModuleIconRect);
 
                         // add 'hints' to show which arm is which (left vs right)
                         leftArmModuleSlotSprite = arm.Find("Hint").GetComponent<UnityEngine.UI.Image>().sprite;
-                        genericModuleHint = new GameObject("Hint");
+                        genericModuleHint = new GameObject("AvsHint");
                         genericModuleHint.transform.SetParent(armModuleObject.transform, false);
                         genericModuleHint.transform.localScale = new Vector3(.75f, .75f, .75f);
                         genericModuleHint.transform.localEulerAngles = new Vector3(0, 180, 0);
@@ -319,13 +319,11 @@ internal class ModuleBuilder : MonoBehaviour
 
         foreach (var rmc in RootModController.AllInstances)
             BuildVehicleModuleSlots(rmc, MaxNumModules);
-        Main.areModulesReady = true;
-        haveSlotsBeenInited = true;
     }
 
     public void BuildVehicleModuleSlots(RootModController rmc, int modules)
     {
-        using var log = SmartLog.ForAVS(rmc);
+        using var log = SmartLog.ForAVS(rmc, parameters: [modules]);
         log.Write(nameof(BuildVehicleModuleSlots) + $" ({modules}, {rmc.ModName}) called.");
         if (equipment.IsNull())
         {
@@ -342,6 +340,7 @@ internal class ModuleBuilder : MonoBehaviour
                 log.Error("Failed to get generic module slot for index: " + i);
                 continue;
             }
+            //uGUI_Equipment
 
             thisModule.name = ModuleName(rmc, i);
             thisModule.SetActive(false);
@@ -361,21 +360,21 @@ internal class ModuleBuilder : MonoBehaviour
 
     public void LinkModule(RootModController rmc, ref GameObject thisModule)
     {
-        using var log = SmartLog.ForAVS(rmc);
+        using var log = SmartLog.ForAVS(rmc, parameters: [thisModule]);
         //log.Write(nameof(LinkModule) + $" ({thisModule.NiceName()}) called.");
         // add background
-        var backgroundTop = thisModule.transform.Find("Background").SafeGetGameObject();
+        var backgroundTop = thisModule.transform.Find("AvsBackground").SafeGetGameObject();
         if (backgroundTop.IsNull() || genericModuleObject.IsNull())
         {
             log.Error("Background or genericModuleObject is null, cannot link module.");
             return;
         }
 
-        genericModuleObject.transform.Find("Background").GetComponent<RectTransform>()
+        genericModuleObject.transform.Find("AvsBackground").GetComponent<RectTransform>()
             .TryCopyComponentWithFieldsTo(backgroundTop);
-        genericModuleObject.transform.Find("Background").GetComponent<CanvasRenderer>()
+        genericModuleObject.transform.Find("AvsBackground").GetComponent<CanvasRenderer>()
             .TryCopyComponentWithFieldsTo(backgroundTop);
-        thisModule.GetComponent<uGUI_EquipmentSlot>().background = genericModuleObject.transform.Find("Background")
+        thisModule.GetComponent<uGUI_EquipmentSlot>().background = genericModuleObject.transform.Find("AvsBackground")
             .GetComponent<UnityEngine.UI.Image>().TryCopyComponentWithFieldsTo(backgroundTop);
         thisModule.GetComponent<uGUI_EquipmentSlot>().background.sprite = genericModuleSlotSprite;
         thisModule.GetComponent<uGUI_EquipmentSlot>().background.material = genericModuleSlotMaterial;
@@ -383,9 +382,9 @@ internal class ModuleBuilder : MonoBehaviour
 
     public void DistributeModule(RootModController rmc, ref GameObject thisModule, int position)
     {
-        using var log = SmartLog.ForAVS(rmc);
+        using var log = SmartLog.ForAVS(rmc, parameters: [thisModule, position]);
 
-        log.Debug(nameof(DistributeModule) + $" ({thisModule.NiceName()}, {position}) called.");
+        //log.Debug(nameof(DistributeModule) + $" ({thisModule.NiceName()}, {position}) called.");
         var row_size = 4;
         var arrayX = position % row_size;
         var arrayY = position / row_size;
@@ -489,5 +488,26 @@ internal class ModuleBuilder : MonoBehaviour
         }
         //else
         //    av.Log.Tag("ModuleBuilder").Write("PDA is not open, no need to close and reopen.");
+    }
+
+    internal static void Init(ref Dictionary<string, uGUI_EquipmentSlot> allSlots)
+    {
+        using var log = SmartLog.LazyForAVS(RootModController.AnyInstance);
+        if (haveWeCalledBuildAllSlots)
+            return;
+        log.Write("Patching uGUI_Equipment.Awake to add custom vehicle slots");
+        haveWeCalledBuildAllSlots = true;
+        _main = Player.main.gameObject.AddComponent<ModuleBuilder>();
+        LinkVehicleSlots(ref allSlots);
+        Main.Build();
+    }
+
+    internal static void Reset()
+    {
+        using var log = SmartLog.LazyForAVS(RootModController.AnyInstance);
+        log.Write("Resetting ModuleBuilder static state.");
+        haveWeCalledBuildAllSlots = false;
+        slotExtenderIsPatched = false;
+        SlotExtenderHasGreenLight = false;
     }
 }
