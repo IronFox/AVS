@@ -158,6 +158,29 @@ namespace AVS.Log
                     return $"\"{s}\"";
                 case char c:
                     return $"'{c}'";
+                case float f:
+                    return f.ToString("G9", System.Globalization.CultureInfo.InvariantCulture);
+                case double d:
+                    return d.ToString("G17", System.Globalization.CultureInfo.InvariantCulture);
+                case decimal m:
+                    return m.ToString(System.Globalization.CultureInfo.InvariantCulture);
+                case byte b:
+                    return b.ToString();
+                case sbyte sb:
+                    return sb.ToString();
+                case short sh:
+                    return sh.ToString();
+                case ushort us:
+                    return us.ToString();
+                case int i:
+                    return i.ToString();
+                case uint ui:
+                    return ui.ToString();
+                case long l:
+                    return l.ToString();
+                case ulong ul:
+                    return ul.ToString();
+
                 case bool b:
                     return b ? "true" : "false";
                 case UnityEngine.Object uo:
