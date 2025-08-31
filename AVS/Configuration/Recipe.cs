@@ -239,7 +239,7 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
     /// <returns>Imported data</returns>
     public static Recipe Import(RootModController rmc, RecipeData recipeData, Recipe fallback)
     {
-        using var log = SmartLog.ForAVS(rmc, "Recipe");
+        using var log = SmartLog.ForAVS(rmc, tags: ["Recipe"]);
         if (recipeData.Ingredients is null
             || recipeData.Ingredients.Count == 0
            )

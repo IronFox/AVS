@@ -14,7 +14,7 @@ public class PrefabLoader
     private static readonly Dictionary<(TechType, bool), PrefabLoader> _loaders = new();
     private PrefabLoader(TechType techType, bool ifNotFoundLeaveEmpty)
     {
-        using var log = SmartLog.ForAVS(RootModController.AnyInstance, techType.AsString());
+        using var log = SmartLog.ForAVS(RootModController.AnyInstance, tags: [techType.AsString()], parameters: [techType, ifNotFoundLeaveEmpty]);
         log.Write($"Creating PrefabLoader for {techType}, IfNotFoundLeaveEmpty={ifNotFoundLeaveEmpty}");
         TechType = techType;
         IfNotFoundLeaveEmpty = ifNotFoundLeaveEmpty;

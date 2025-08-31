@@ -52,7 +52,7 @@ internal class SaveFiles
     public bool WritePrefabReflected<T>(PrefabIdentifier? prefabID, string prefix, T data,
         RootModController rmc)
     {
-        using var log = SmartLog.ForAVS(rmc, $"IO");
+        using var log = SmartLog.ForAVS(rmc, tags: Tags);
         if (prefabID.IsNull())
         {
             log.Error($"PrefabIdentifier is null, cannot write: {prefix}");
@@ -86,7 +86,7 @@ internal class SaveFiles
     public bool WritePrefabData(PrefabIdentifier? prefabID, string prefix, Data data,
         RootModController rmc)
     {
-        using var writer = SmartLog.ForAVS(rmc, $"IO");
+        using var writer = SmartLog.ForAVS(rmc, tags: Tags);
         if (prefabID.IsNull())
         {
             writer.Error($"PrefabIdentifier is null, cannot write: {prefix}");
@@ -109,6 +109,8 @@ internal class SaveFiles
         return WriteJson(fname, json, rmc);
     }
 
+    private static IReadOnlyList<string> Tags { get; } = ["IO"];
+
     /// <summary>
     /// Serializes the specified data to JSON and writes it to a file.
     /// </summary>
@@ -124,7 +126,7 @@ internal class SaveFiles
     internal bool WriteReflected<T>(string innerName, T data,
         RootModController rmc)
     {
-        using var writer = SmartLog.ForAVS(rmc, $"IO");
+        using var writer = SmartLog.ForAVS(rmc, tags: Tags);
         string json;
         try
         {
@@ -169,7 +171,7 @@ internal class SaveFiles
         [NotNullWhen(true)] out T? outData,
         RootModController rmc) where T : class
     {
-        using var log = SmartLog.ForAVS(rmc, $"IO");
+        using var log = SmartLog.ForAVS(rmc, tags: Tags, parameters: [prefabID, prefix]);
         if (prefabID.IsNull())
         {
             log.Error($"PrefabIdentifier is null, cannot read: {prefix}");
@@ -193,7 +195,7 @@ internal class SaveFiles
     /// <param name="rmc">Owning root mod controller.</param>
     public bool ReadPrefabData(PrefabIdentifier? prefabID, string prefix, Data data, RootModController rmc)
     {
-        using var log = SmartLog.ForAVS(rmc, $"IO");
+        using var log = SmartLog.ForAVS(rmc, tags: Tags, parameters: [prefabID, prefix]);
 
         if (prefabID.IsNull())
         {
@@ -224,7 +226,7 @@ internal class SaveFiles
     private bool WriteJson(string innerName, string json,
         RootModController rmc)
     {
-        using var writer = SmartLog.ForAVS(rmc, $"IO");
+        using var writer = SmartLog.ForAVS(rmc, tags: Tags);
         var files = new List<FilePath>();
         try
         {
@@ -283,7 +285,7 @@ internal class SaveFiles
 
     private T? ReadJson<T>(string innerName, RootModController rmc) where T : class
     {
-        using var log = SmartLog.ForAVS(rmc, $"IO");
+        using var log = SmartLog.ForAVS(rmc, tags: Tags, parameters: [innerName]);
         var files = new List<FilePath>();
         try
         {

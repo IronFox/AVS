@@ -45,7 +45,7 @@ public class SaveLoadManagerPatcher
     [HarmonyPatch(nameof(SaveLoadManager.RegisterSaveGame))]
     public static void SaveLoadManagerRegisterSaveGamePostfix(string slotName)
     {
-        using var log = SmartLog.ForAVS(RootModController.AnyInstance, slotName);
+        using var log = SmartLog.ForAVS(RootModController.AnyInstance, parameters: [slotName], tags: [slotName]);
         try
         {
             //hasTechTypeGameInfo.Clear();

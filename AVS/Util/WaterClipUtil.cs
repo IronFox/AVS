@@ -24,7 +24,7 @@ public static class WaterClipUtil
     /// <exception cref="InvalidOperationException">The Seamoth helper was not loaded before this method is called</exception>
     public static void BindProxy(RootModController rmc, GameObject target, Texture3D distanceMap, Bounds localBounds)
     {
-        using var log = SmartLog.ForAVS(rmc, "WCP");
+        using var log = SmartLog.ForAVS(rmc, tags: ["WCP"]);
         var seamoth = SeamothHelper.Seamoth;
         if (seamoth.IsNull())
         {

@@ -100,8 +100,15 @@ namespace AVS.Log
             {
                 var sf = new StackFrame(1 + frameDelta, false);
                 var m = sf.GetMethod();
-                //m.GetParameters();
-                Name = nameOverride ?? (m.DeclaringType?.Name + "." + m.Name);
+                if (m.DeclaringType.IsNotNull())
+                {
+                    if (m.Name == ".ctor")
+                        Name = $"new {m.DeclaringType.Name}";
+                    else
+                        Name = m.DeclaringType.Name + "." + m.Name;
+                }
+                else
+                    Name = m.Name;
             }
             else
                 Name = nameOverride;
@@ -428,10 +435,29 @@ namespace AVS.Log
 
         }
 
-        internal static SmartLog ForAVS(RootModController rmc, params string[] tags)
-            => new SmartLog(rmc, "AVS", 1, tags: tags);
-        internal static SmartLog LazyForAVS(RootModController rmc, IReadOnlyList<string>? tags = null, [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
-            => new SmartLog(rmc, "AVS", 1, tags: tags, forceLazy: true, nameOverride: SmartLog.DeriveCallerName(callerFilePath, memberName));
+        internal static SmartLog ForAVS(RootModController rmc,
+            IReadOnlyList<string>? tags = null,
+            IReadOnlyList<object?>? parameters = null
+            )
+            => new SmartLog(
+                rmc,
+                Log.Domain.AVS,
+                1,
+                tags: tags,
+                parameters: parameters);
+        internal static SmartLog LazyForAVS(RootModController rmc,
+            IReadOnlyList<string>? tags = null,
+            IReadOnlyList<object?>? parameters = null,
+            [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
+            => new SmartLog(
+                rmc,
+                Log.Domain.AVS,
+                1,
+                tags: tags,
+                parameters: parameters,
+                forceLazy: true,
+                nameOverride: SmartLog.DeriveCallerName(callerFilePath, memberName)
+                );
 
         /// <summary>
         /// Derives a fully qualified caller name based on the file path and member name.
@@ -445,6 +471,8 @@ namespace AVS.Log
         {
             if (string.IsNullOrEmpty(callerFilePath) || string.IsNullOrEmpty(memberName))
                 return "";
+            if (memberName == ".ctor")
+                return $"new {Path.GetFileNameWithoutExtension(callerFilePath)}";
             return $"{Path.GetFileNameWithoutExtension(callerFilePath)}.{memberName}";
         }
 

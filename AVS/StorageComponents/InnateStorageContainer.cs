@@ -43,8 +43,9 @@ public class InnateStorageContainer : MonoBehaviour, ICraftTarget //, IProtoEven
 
     private void Init()
     {
-        if (_container.IsNotNull()) return;
-        using var log = SmartLog.ForAVS(av!.Owner, nameof(InnateStorageContainer));
+        if (_container.IsNotNull())
+            return;
+        using var log = SmartLog.ForAVS(av!.Owner);
         log.Debug(
             $"Initializing {this.NiceName()} for {DisplayName.Rendered} ({DisplayName.Localize}) with width {width} and height {height}");
         _container = new ItemsContainer(width, height,
