@@ -18,6 +18,10 @@ namespace AVS.SaveLoad
         /// </summary>
         public string FullName { get; }
         /// <summary>
+        /// Gets the name of the file or directory without the parent directories, including the file extension if applicable.
+        /// </summary>
+        public string Name => Path.GetFileName(FullName);
+        /// <summary>
         /// Initializes a new instance of the <see cref="FilePath"/> class with the specified file path.
         /// </summary>
         public FilePath(string path)

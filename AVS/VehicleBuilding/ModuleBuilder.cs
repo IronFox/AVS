@@ -59,7 +59,7 @@ internal class ModuleBuilder : MonoBehaviour
     public static void LinkVehicleSlots(ref Dictionary<string, uGUI_EquipmentSlot> sourceSlots,
         bool clearExisting = true)
     {
-        using var log = SmartLog.LazyForAVS(RootModController.AnyInstance, parameters: [sourceSlots.Count, clearExisting]);
+        using var log = SmartLog.LazyForAVS(RootModController.AnyInstance, parameters: Params.Of(sourceSlots.Count, clearExisting));
         if (clearExisting)
         {
             log.Write($"Clearing existing vehicle slots, then replacing");
@@ -323,7 +323,7 @@ internal class ModuleBuilder : MonoBehaviour
 
     public void BuildVehicleModuleSlots(RootModController rmc, int modules)
     {
-        using var log = SmartLog.ForAVS(rmc, parameters: [modules]);
+        using var log = SmartLog.ForAVS(rmc, parameters: Params.Of(modules));
         log.Write(nameof(BuildVehicleModuleSlots) + $" ({modules}, {rmc.ModName}) called.");
         if (equipment.IsNull())
         {
@@ -360,7 +360,7 @@ internal class ModuleBuilder : MonoBehaviour
 
     public void LinkModule(RootModController rmc, ref GameObject thisModule)
     {
-        using var log = SmartLog.ForAVS(rmc, parameters: [thisModule]);
+        using var log = SmartLog.ForAVS(rmc, parameters: Params.Of(thisModule));
         //log.Write(nameof(LinkModule) + $" ({thisModule.NiceName()}) called.");
         // add background
         var backgroundTop = thisModule.transform.Find("AvsBackground").SafeGetGameObject();
@@ -382,7 +382,7 @@ internal class ModuleBuilder : MonoBehaviour
 
     public void DistributeModule(RootModController rmc, ref GameObject thisModule, int position)
     {
-        using var log = SmartLog.ForAVS(rmc, parameters: [thisModule, position]);
+        using var log = SmartLog.ForAVS(rmc, parameters: Params.Of(thisModule, position));
 
         //log.Debug(nameof(DistributeModule) + $" ({thisModule.NiceName()}, {position}) called.");
         var row_size = 4;

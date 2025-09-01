@@ -36,7 +36,7 @@ public class uGUI_EquipmentPatcher
     [HarmonyPatch(nameof(uGUI_Equipment.Awake))]
     public static void AwakePostfix(uGUI_Equipment __instance, ref Dictionary<string, uGUI_EquipmentSlot> ___allSlots)
     {
-        using var log = SmartLog.LazyForAVS(RootModController.AnyInstance, parameters: [__instance, ___allSlots.Count]);
+        using var log = SmartLog.LazyForAVS(RootModController.AnyInstance, parameters: Params.Of(__instance, ___allSlots.Count));
 
         ModuleBuilder.Init(ref ___allSlots);
     }
