@@ -1931,7 +1931,7 @@
             Executed when the vehicle is salvaged.
             </summary>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.NewModLog(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object})">
+        <member name="M:AVS.BaseVehicle.AvsVehicle.NewModLog(System.Collections.Generic.IReadOnlyList{System.String},AVS.Log.LogParameters)">
             <summary>
             Creates a new instance of <see cref="T:AVS.Log.SmartLog"/> preconfigured with module-specific tags.
             </summary>
@@ -1939,7 +1939,7 @@
             <param name="parameters">An optional array of parameters to include in the log for contextual information.</param>
             <returns>A new <see cref="T:AVS.Log.SmartLog"/> instance associated with the module and including the specified tags.</returns>
         </member>
-        <member name="M:AVS.BaseVehicle.AvsVehicle.NewLazyModLog(System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object},System.String,System.String)">
+        <member name="M:AVS.BaseVehicle.AvsVehicle.NewLazyModLog(System.Collections.Generic.IReadOnlyList{System.String},AVS.Log.LogParameters,System.String,System.String)">
             <summary>
             Creates a new lazy instance of <see cref="T:AVS.Log.SmartLog"/> preconfigured with module-specific tags.
             Lazy logs defer the output of the log context until it is actually needed, which can improve performance.
@@ -4574,6 +4574,131 @@
             Unity domain
             </summary>
         </member>
+        <member name="T:AVS.Log.Void">
+            <summary>
+            Marker type used to represent an omitted parameter slot in <see cref="T:AVS.Log.LogParameters`4"/>.
+            </summary>
+        </member>
+        <member name="T:AVS.Log.Params">
+            <summary>
+            Provides a set of static methods for creating and working with strongly-typed log parameter objects.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.Params.None">
+            <summary>
+            Shorthand for no parameters.
+            </summary>
+        </member>
+        <member name="M:AVS.Log.Params.Of``1(``0)">
+            <summary>
+            Creates a strongly-typed parameter container with one value.
+            </summary>
+            <typeparam name="T0">The type of the first parameter.</typeparam>
+            <param name="p0">The first parameter value.</param>
+            <returns>A <see cref="T:AVS.Log.LogParameters`4"/> instance containing the provided value.</returns>
+        </member>
+        <member name="M:AVS.Log.Params.Of``2(``0,``1)">
+            <summary>
+            Creates a strongly-typed parameter container with two values.
+            </summary>
+            <typeparam name="T0">The type of the first parameter.</typeparam>
+            <typeparam name="T1">The type of the second parameter.</typeparam>
+            <param name="p0">The first parameter value.</param>
+            <param name="p1">The second parameter value.</param>
+            <returns>A <see cref="T:AVS.Log.LogParameters`4"/> instance containing the provided values.</returns>
+        </member>
+        <member name="M:AVS.Log.Params.Of``3(``0,``1,``2)">
+            <summary>
+            Creates a strongly-typed parameter container with three values.
+            </summary>
+            <typeparam name="T0">The type of the first parameter.</typeparam>
+            <typeparam name="T1">The type of the second parameter.</typeparam>
+            <typeparam name="T2">The type of the third parameter.</typeparam>
+            <param name="p0">The first parameter value.</param>
+            <param name="p1">The second parameter value.</param>
+            <param name="p2">The third parameter value.</param>
+            <returns>A <see cref="T:AVS.Log.LogParameters`4"/> instance containing the provided values.</returns>
+        </member>
+        <member name="M:AVS.Log.Params.Of``4(``0,``1,``2,``3)">
+            <summary>
+            Creates a strongly-typed parameter container with four values.
+            </summary>
+            <typeparam name="T0">The type of the first parameter.</typeparam>
+            <typeparam name="T1">The type of the second parameter.</typeparam>
+            <typeparam name="T2">The type of the third parameter.</typeparam>
+            <typeparam name="T3">The type of the fourth parameter.</typeparam>
+            <param name="p0">The first parameter value.</param>
+            <param name="p1">The second parameter value.</param>
+            <param name="p2">The third parameter value.</param>
+            <param name="p3">The fourth parameter value.</param>
+            <returns>A <see cref="T:AVS.Log.LogParameters`4"/> instance containing the provided values.</returns>
+        </member>
+        <member name="T:AVS.Log.LogParameters">
+            <summary>
+            Base type for strongly-typed log parameter containers.
+            </summary>
+            <remarks>
+            Use the <see cref="T:AVS.Log.Params"/> helper methods to create instances.
+            </remarks>
+        </member>
+        <member name="M:AVS.Log.LogParameters.ToArgumentString">
+            <summary>
+            Builds a comma-separated string of arguments suitable for insertion into a log message.
+            </summary>
+            <returns>A string representation of the contained arguments.</returns>
+        </member>
+        <member name="T:AVS.Log.LogParameters`4">
+            <summary>
+            Strongly-typed container for up to four log parameters.
+            </summary>
+            <typeparam name="T0">Type of the first parameter.</typeparam>
+            <typeparam name="T1">Type of the second parameter.</typeparam>
+            <typeparam name="T2">Type of the third parameter.</typeparam>
+            <typeparam name="T3">Type of the fourth parameter.</typeparam>
+            <param name="P0">The first parameter value.</param>
+            <param name="P1">The second parameter value.</param>
+            <param name="P2">The third parameter value.</param>
+            <param name="P3">The fourth parameter value.</param>
+        </member>
+        <member name="M:AVS.Log.LogParameters`4.#ctor(`0,`1,`2,`3)">
+            <summary>
+            Strongly-typed container for up to four log parameters.
+            </summary>
+            <typeparam name="T0">Type of the first parameter.</typeparam>
+            <typeparam name="T1">Type of the second parameter.</typeparam>
+            <typeparam name="T2">Type of the third parameter.</typeparam>
+            <typeparam name="T3">Type of the fourth parameter.</typeparam>
+            <param name="P0">The first parameter value.</param>
+            <param name="P1">The second parameter value.</param>
+            <param name="P2">The third parameter value.</param>
+            <param name="P3">The fourth parameter value.</param>
+        </member>
+        <member name="P:AVS.Log.LogParameters`4.P0">
+            <summary>The first parameter value.</summary>
+        </member>
+        <member name="P:AVS.Log.LogParameters`4.P1">
+            <summary>The second parameter value.</summary>
+        </member>
+        <member name="P:AVS.Log.LogParameters`4.P2">
+            <summary>The third parameter value.</summary>
+        </member>
+        <member name="P:AVS.Log.LogParameters`4.P3">
+            <summary>The fourth parameter value.</summary>
+        </member>
+        <member name="M:AVS.Log.LogParameters`4.ToString``1(``0)">
+            <summary>
+            Converts a value to a stable, log-friendly string representation.
+            </summary>
+            <typeparam name="T">The value type.</typeparam>
+            <param name="o">The value to convert.</param>
+            <returns>A string suited for logging, handling primitives, strings, Unity objects and enumerables.</returns>
+        </member>
+        <member name="M:AVS.Log.LogParameters`4.ToArgumentString">
+            <summary>
+            Builds a comma-separated string of the non-<see cref="T:AVS.Log.Void"/> parameters in their log-friendly form.
+            </summary>
+            <returns>A string containing the serialized parameters, separated by commas.</returns>
+        </member>
         <member name="T:AVS.Log.MaterialLog">
             <summary>
             Material adaptation logging configuration.
@@ -4730,7 +4855,7 @@
             Gets the date and time when the context was created.
             </summary>
         </member>
-        <member name="M:AVS.Log.SmartLog.#ctor(AVS.RootModController,System.String,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object},System.String,System.Boolean)">
+        <member name="M:AVS.Log.SmartLog.#ctor(AVS.RootModController,System.String,System.Int32,System.Boolean,System.Collections.Generic.IReadOnlyList{System.String},AVS.Log.LogParameters,System.String,System.Boolean)">
             <summary>
             Creates a new disposable log context. The new context becomes the current context.
             </summary>
@@ -4800,7 +4925,7 @@
             "FileName" is the name of the file without its extension. Returns an empty string if either <paramref
             name="callerFilePath"/> or <paramref name="memberName"/> is null or empty.</returns>
         </member>
-        <member name="M:AVS.Log.SmartLog.For(AVS.RootModController,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object})">
+        <member name="M:AVS.Log.SmartLog.For(AVS.RootModController,System.String,System.Collections.Generic.IReadOnlyList{System.String},AVS.Log.LogParameters)">
             <summary>
             Creates a new instance of <see cref="T:AVS.Log.SmartLog"/> configured for the specified domain.
             </summary>
@@ -4810,7 +4935,7 @@
             <param name="parameters">Optional parameters to format into the name of this context.</param>
             <returns>A <see cref="T:AVS.Log.SmartLog"/> instance configured with the specified domain.</returns>
         </member>
-        <member name="M:AVS.Log.SmartLog.LazyFor(AVS.RootModController,System.String,System.Collections.Generic.IReadOnlyList{System.String},System.Collections.Generic.IReadOnlyList{System.Object},System.String,System.String)">
+        <member name="M:AVS.Log.SmartLog.LazyFor(AVS.RootModController,System.String,System.Collections.Generic.IReadOnlyList{System.String},AVS.Log.LogParameters,System.String,System.String)">
             <summary>
             Creates a new instance of <see cref="T:AVS.Log.SmartLog"/> configured for the specified domain using forced laziness.
             </summary>

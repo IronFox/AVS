@@ -23,7 +23,7 @@ public abstract partial class AvsVehicle
 
     internal SmartLog NewLazyAvsLog(
         IReadOnlyList<string>? tags = null,
-        IReadOnlyList<object?>? parameters = null,
+        LogParameters? parameters = null,
         [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
         => new SmartLog(
             Owner,
@@ -35,7 +35,7 @@ public abstract partial class AvsVehicle
             nameOverride: SmartLog.DeriveCallerName(callerFilePath, memberName));
     internal SmartLog NewAvsLog(
         IReadOnlyList<string>? tags = null,
-        IReadOnlyList<object?>? parameters = null
+        LogParameters? parameters = null
         ) => new SmartLog(Owner, "AVS", frameDelta: 1, tags: [$"V{Id}", .. (tags ?? [])], parameters: parameters);
     /// <summary>
     /// Creates a new instance of <see cref="SmartLog"/> preconfigured with module-specific tags.
@@ -45,7 +45,7 @@ public abstract partial class AvsVehicle
     /// <returns>A new <see cref="SmartLog"/> instance associated with the module and including the specified tags.</returns>
     public SmartLog NewModLog(
         IReadOnlyList<string>? tags = null,
-        IReadOnlyList<object?>? parameters = null)
+        LogParameters? parameters = null)
         => new SmartLog(Owner, "Mod", frameDelta: 1, tags: [$"V{Id}", .. (tags ?? [])], parameters: parameters);
     /// <summary>
     /// Creates a new lazy instance of <see cref="SmartLog"/> preconfigured with module-specific tags.
@@ -61,7 +61,7 @@ public abstract partial class AvsVehicle
     /// <returns>A new <see cref="SmartLog"/> instance associated with the module and including the specified tags.</returns>
     public SmartLog NewLazyModLog(
         IReadOnlyList<string>? tags = null,
-        IReadOnlyList<object?>? parameters = null,
+        LogParameters? parameters = null,
         [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
         => new SmartLog(
             Owner,

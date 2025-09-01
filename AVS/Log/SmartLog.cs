@@ -1,7 +1,6 @@
 ﻿using AVS.Interfaces;
 using AVS.Util;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -25,7 +24,7 @@ namespace AVS.Log
         /// </summary>
         public RootModController RMC { get; }
         private bool IsInterruptable { get; }
-        private IReadOnlyList<object?>? Parameters { get; }
+        private LogParameters? Parameters { get; }
 
         /// <summary>
         /// The recursive depth of this log context. Root context has depth 0.
@@ -84,7 +83,7 @@ namespace AVS.Log
             int frameDelta = 0,
             bool isInterruptable = false,
             IReadOnlyList<string>? tags = null,
-            IReadOnlyList<object?>? parameters = null,
+            LogParameters? parameters = null,
             string? nameOverride = null,
             bool forceLazy = false)
         {
@@ -148,68 +147,16 @@ namespace AVS.Log
             }
         }
 
-        private static string ToString(object? o)
-        {
-            switch (o)
-            {
-                case null:
-                    return "null";
-                case string s:
-                    return $"\"{s}\"";
-                case char c:
-                    return $"'{c}'";
-                case float f:
-                    return f.ToString("G9", System.Globalization.CultureInfo.InvariantCulture);
-                case double d:
-                    return d.ToString("G17", System.Globalization.CultureInfo.InvariantCulture);
-                case decimal m:
-                    return m.ToString(System.Globalization.CultureInfo.InvariantCulture);
-                case byte b:
-                    return b.ToString();
-                case sbyte sb:
-                    return sb.ToString();
-                case short sh:
-                    return sh.ToString();
-                case ushort us:
-                    return us.ToString();
-                case int i:
-                    return i.ToString();
-                case uint ui:
-                    return ui.ToString();
-                case long l:
-                    return l.ToString();
-                case ulong ul:
-                    return ul.ToString();
-
-                case bool b:
-                    return b ? "true" : "false";
-                case UnityEngine.Object uo:
-                    return uo.NiceName();
-                case IEnumerable ie:
-                    {
-                        var it = ie.GetEnumerator();
-                        using var e = it as IDisposable;
-                        List<string> asStrings = [];
-                        while (it.MoveNext())
-                        {
-                            asStrings.Add(ToString(it.Current));
-                        }
-                        return "[" + string.Join(", ", asStrings) + "]";
-                    }
-                default:
-                    return $"`{o}`";
-            }
-        }
 
         private string HeadLine
         {
             get
             {
-                if (Parameters.IsNullOrEmpty())
+                if (Parameters.IsNull())
                     return Name;
                 try
                 {
-                    return $"{Name} ({string.Join(", ", Parameters.Select(ToString))})";
+                    return $"{Name} ({string.Join(", ", Parameters.ToArgumentString())})";
                 }
                 catch (FormatException)
                 {
@@ -460,7 +407,7 @@ namespace AVS.Log
 
         internal static SmartLog ForAVS(RootModController rmc,
             IReadOnlyList<string>? tags = null,
-            IReadOnlyList<object?>? parameters = null
+            LogParameters? parameters = null
             )
             => new SmartLog(
                 rmc,
@@ -470,7 +417,7 @@ namespace AVS.Log
                 parameters: parameters);
         internal static SmartLog LazyForAVS(RootModController rmc,
             IReadOnlyList<string>? tags = null,
-            IReadOnlyList<object?>? parameters = null,
+            LogParameters? parameters = null,
             [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
             => new SmartLog(
                 rmc,
@@ -510,7 +457,7 @@ namespace AVS.Log
         /// <returns>A <see cref="SmartLog"/> instance configured with the specified domain.</returns>
         public static SmartLog For(RootModController mainPatcher, string domain = "Mod",
             IReadOnlyList<string>? tags = null,
-            IReadOnlyList<object?>? parameters = null
+            LogParameters? parameters = null
             )
             => new SmartLog(mainPatcher, domain: domain, 1, tags: tags, parameters: parameters);
 
@@ -533,7 +480,7 @@ namespace AVS.Log
             RootModController mainPatcher,
             string domain = "Mod",
             IReadOnlyList<string>? tags = null,
-            IReadOnlyList<object?>? parameters = null,
+            LogParameters? parameters = null,
             [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
             => new SmartLog(mainPatcher,
                 domain: domain,

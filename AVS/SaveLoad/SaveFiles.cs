@@ -171,7 +171,7 @@ internal class SaveFiles
         [NotNullWhen(true)] out T? outData,
         RootModController rmc) where T : class
     {
-        using var log = SmartLog.ForAVS(rmc, tags: Tags, parameters: [prefabID, prefix]);
+        using var log = SmartLog.ForAVS(rmc, tags: Tags, parameters: Params.Of(prefabID, prefix));
         if (prefabID.IsNull())
         {
             log.Error($"PrefabIdentifier is null, cannot read: {prefix}");
@@ -195,7 +195,7 @@ internal class SaveFiles
     /// <param name="rmc">Owning root mod controller.</param>
     public bool ReadPrefabData(PrefabIdentifier? prefabID, string prefix, Data data, RootModController rmc)
     {
-        using var log = SmartLog.ForAVS(rmc, tags: Tags, parameters: [prefabID, prefix]);
+        using var log = SmartLog.ForAVS(rmc, tags: Tags, parameters: Params.Of(prefabID, prefix));
 
         if (prefabID.IsNull())
         {
@@ -285,7 +285,7 @@ internal class SaveFiles
 
     private T? ReadJson<T>(string innerName, RootModController rmc) where T : class
     {
-        using var log = SmartLog.ForAVS(rmc, tags: Tags, parameters: [innerName]);
+        using var log = SmartLog.ForAVS(rmc, tags: Tags, parameters: Params.Of(innerName));
         var files = new List<FilePath>();
         try
         {
