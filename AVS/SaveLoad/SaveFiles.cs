@@ -355,7 +355,7 @@ internal class SaveFiles
                     // Parse dataJson as JToken
                     var rs = JsonConvert.DeserializeObject<T>(dataJson) ??
                              throw new JsonSerializationException($"Failed to deserialize data for {innerName}");
-                    log.Debug($"Successfully read file {file.FullName} with length {dataJson.Length}");
+                    log.Debug($"Successfully read file {file.Name} with length {dataJson.Length}");
                     return rs;
                 }
                 else

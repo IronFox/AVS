@@ -7790,6 +7790,11 @@
             Full file path, including directory and file name.
             </summary>
         </member>
+        <member name="P:AVS.SaveLoad.FilePath.Name">
+            <summary>
+            Gets the name of the file or directory without the parent directories, including the file extension if applicable.
+            </summary>
+        </member>
         <member name="M:AVS.SaveLoad.FilePath.#ctor(System.String)">
             <summary>
             Initializes a new instance of the <see cref="T:AVS.SaveLoad.FilePath"/> class with the specified file path.
