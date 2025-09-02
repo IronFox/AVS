@@ -88,23 +88,17 @@ public readonly record struct SoundSetup(
     public void Validate()
     {
         if (AudioClip.IsNull())
-            throw new ArgumentNullException(nameof(AudioClip));
+            throw new ArgumentNullException(nameof(AudioClip), $"SoundSetup: AudioClip must not be null");
         if (Is3D)
         {
-            if (MinDistance > MaxDistance)
-                throw new ArgumentOutOfRangeException(nameof(MinDistance));
-            if (HalfDistance > MaxDistance - MinDistance)
-                throw new ArgumentOutOfRangeException(nameof(HalfDistance));
-            if (HalfDistance < MinDistance * 2)
-                throw new ArgumentOutOfRangeException(nameof(HalfDistance));
-            if (MinDistance < 0)
-                throw new ArgumentOutOfRangeException(nameof(MinDistance));
-            if (MaxDistance < 0)
-                throw new ArgumentOutOfRangeException(nameof(MaxDistance));
+            if (MinDistance >= MaxDistance)
+                throw new ArgumentOutOfRangeException(nameof(MinDistance), $"SoundSetup: MinDistance must be < MaxDistance");
+            if (MinDistance <= 0)
+                throw new ArgumentOutOfRangeException(nameof(MinDistance), $"SoundSetup: MinDistance must be > 0");
         }
 
         if (Owner.IsNull())
-            throw new ArgumentNullException(nameof(Owner));
+            throw new ArgumentNullException(nameof(Owner), $"SoundSetup: Sound owner GameObject must exist");
     }
 
     /// <summary>
