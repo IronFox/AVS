@@ -91,8 +91,18 @@ public readonly record struct SoundSetup(
             throw new ArgumentNullException(nameof(AudioClip), $"SoundSetup: AudioClip must not be null");
         if (Is3D)
         {
+            if (float.IsNaN(MinDistance) || float.IsInfinity(MinDistance))
+                throw new ArgumentOutOfRangeException(nameof(MinDistance), $"SoundSetup: MinDistance must be a valid, finite number");
+
+            if (float.IsNaN(MaxDistance) || float.IsInfinity(MaxDistance))
+                throw new ArgumentOutOfRangeException(nameof(MaxDistance), $"SoundSetup: MaxDistance must be a valid, finite number");
+
+            if (float.IsNaN(HalfDistance) || float.IsInfinity(HalfDistance))
+                throw new ArgumentOutOfRangeException(nameof(HalfDistance), $"SoundSetup: HalfDistance must be a valid, finite number");
+
             if (MinDistance >= MaxDistance)
                 throw new ArgumentOutOfRangeException(nameof(MinDistance), $"SoundSetup: MinDistance must be < MaxDistance");
+
             if (MinDistance <= 0)
                 throw new ArgumentOutOfRangeException(nameof(MinDistance), $"SoundSetup: MinDistance must be > 0");
         }
