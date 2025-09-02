@@ -45,10 +45,11 @@ internal static class SaveLoadUtils
 
     internal static string GetTransformPath(Transform root, Transform target)
     {
-        if (target == root) return "root";
+        if (target == root)
+            return "root";
         var result = target.name;
         var index = target.parent;
-        while (index != root)
+        while (index && index != root)
         {
             result = $"{index.name}-{result}";
             index = index.parent;

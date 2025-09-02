@@ -263,9 +263,9 @@ public static class GameObjectHelper
     /// Produces the full hierarchy path of a Transform as a single string using / as separator.
     /// Returns "&lt;null&gt;" if the Transform is null.
     /// </summary>
-    public static string PathToString(this Component c, Transform? root = null)
+    public static string PathToString(this Component? c, Transform? root = null)
     {
-        if (!c)
+        if (c.IsNull())
             return "<null>";
         var t = c.transform;
         var list = new List<string>();
