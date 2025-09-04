@@ -156,6 +156,67 @@ public static class PowerRelayPatcher
         //LogOf(av).Debug("EnergyInterface.sources.Sum: " + __result);
         return false;
     }
+
+
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(PowerRelay.ModifyPower))]
+    public static bool ModifyPowerPrefix(PowerRelay __instance, float amount, out float modified, ref bool __result)
+    {
+        modified = 0;
+        if (__instance.IsNull() || __instance.gameObject.IsNull())
+            return true;
+        var av = __instance.gameObject.GetComponent<AvsVehicle>();
+
+        if (av.IsNull())
+            return true;
+
+        try
+        {
+            if (av.energyInterface.IsNull() || av.energyInterface.sources.IsNull())
+            {
+                using var log = NewLogOf(av);
+                log.Error("EnergyInterface is null");
+                return false;
+            }
+            if (GameModeUtils.RequiresPower())
+            {
+                var canProvide = av.energyInterface.TotalCanProvide(out _);
+                var canConsume = av.energyInterface.TotalCanConsume(out _);
+                if (amount < 0 && canProvide < -amount)
+                {
+                    using var log = NewLogOf(av);
+                    log.Warn($"Insufficient power: {-amount} >= {canProvide}");
+                    __result = false;
+                    return false;
+                }
+                if (amount > 0 && canConsume < amount)
+                {
+                    using var log = NewLogOf(av);
+                    log.Warn($"Insufficient capacity to receive: {amount} >= {canConsume}");
+                    __result = false;
+                    return false;
+                }
+                var rs = modified = amount;
+                av.energyInterface.ModifyCharge(amount);
+                __result = true;
+                //log.Debug(() => $"PowerRelay.ModifyPower: {amount} -> {rs} (true)");
+                return false;
+            }
+            else
+            {
+                //log.Debug("GameMode does not require power");
+                modified = 0;
+                __result = true;
+            }
+        }
+        catch (System.Exception ex)
+        {
+            __result = false;
+            using var log = NewLogOf(av);
+            log.Error("ModifyPowerPrefix", ex);
+        }
+        return false;
+    }
 }
 
 /// <summary>
