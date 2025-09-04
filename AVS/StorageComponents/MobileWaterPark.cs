@@ -297,27 +297,19 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         Reinit();
     }
 
-    private class Inhabitant
-    {
-        public string? techTypeAsString;
-        public float enzymeAmount;
-        public float infectedAmount;
-        public float incubationProgress;
-        public float hatchingTime;
-        public float health;
-    }
+    private record Inhabitant(
+        string? techTypeAsString,
+        float enzymeAmount,
+        float infectedAmount,
+        float incubationProgress,
+        float hatchDuration,
+        float health
+    );
 
-    private class LoadingInhabitant
-    {
-        public Inhabitant Inhabitant { get; }
-        public CoroutineTask<GameObject> LoadTask { get; }
-
-        public LoadingInhabitant(Inhabitant inhabitant, CoroutineTask<GameObject> loadTask)
-        {
-            Inhabitant = inhabitant;
-            LoadTask = loadTask;
-        }
-    }
+    private record LoadingInhabitant(
+        Inhabitant Inhabitant,
+        CoroutineTask<GameObject> LoadTask,
+        TechType UndiscoveredTechType);
 
     private class Serialized
     {
@@ -360,16 +352,17 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 continue;
             }
 
+            CreatureEgg? egg = item.item.GetComponent<CreatureEgg>();
+            egg.SafeDo(x => x.UpdateHatchingTime());
             var inhab = new Inhabitant
-            {
-                infectedAmount = item.item.GetComponent<InfectedMixin>().SafeGet(x => x.infectedAmount, 0),
-                enzymeAmount = item.item.GetComponent<Peeper>().SafeGet(x => x.enzymeAmount, 0),
-                health = item.item.GetComponent<LiveMixin>().SafeGet(x => x.health, 0),
-                incubationProgress = item.item.GetComponent<CreatureEgg>().SafeGet(x => x.progress, 0),
-                hatchingTime = item.item.GetComponent<CreatureEgg>()
-                    .SafeGet(x => DayNightCycle.main.timePassedAsFloat - x.timeStartHatching, 0),
-                techTypeAsString = tt.AsString()
-            };
+            (
+                infectedAmount: item.item.GetComponent<InfectedMixin>().SafeGet(x => x.infectedAmount, 0),
+                enzymeAmount: item.item.GetComponent<Peeper>().SafeGet(x => x.enzymeAmount, 0),
+                health: item.item.GetComponent<LiveMixin>().SafeGet(x => x.health, 0),
+                incubationProgress: egg.SafeGet(x => x.progress, 0),
+                hatchDuration: egg.SafeGet(x => x.GetHatchDuration(), 1),
+                techTypeAsString: tt.AsString()
+            );
 
             result.Add((prefabId, inhab));
         }
@@ -420,25 +413,39 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             {
                 log.Write($"Found {data.inhabitants.Count} inhabitants in water park {index}");
                 foreach (var inhabitant in data.inhabitants)
-                    if (TechTypeExtensions.FromString(inhabitant.techTypeAsString, out var tt, true))
+                {
+                    var typeName = inhabitant.techTypeAsString;
+                    TechType undiscoveredTechType = TechType.None;
+                    if (typeName?.EndsWith("Undiscovered") == true)
+                    {
+                        TechTypeExtensions.FromString(typeName, out undiscoveredTechType, true);
+                        typeName = typeName.Substring(0, typeName.Length - "Undiscovered".Length);
+                    }
+
+                    if (TechTypeExtensions.FromString(typeName, out var tt, true))
                     {
                         log.Write($"Loading inhabitant {tt} for water park {index}");
+
                         var load = CraftData.GetPrefabForTechTypeAsync(tt);
                         vehicle.Owner.StartAvsCoroutine(
                             nameof(CraftData) + '.' + nameof(CraftData.GetPrefabForTechTypeAsync),
                             _ => load);
 
-                        itemsToAdd.Add(new LoadingInhabitant
+                        var itm = new LoadingInhabitant
                         (
                             inhabitant,
-                            load
-                        ));
+                            load,
+                            UndiscoveredTechType: undiscoveredTechType
+                        );
+                        itemsToAdd.Add(itm);
+                        log.Debug($"Started loading item {itm} for water park {index}");
                     }
                     else
                     {
                         log.Error(
                             $"Failed to parse tech type {inhabitant.techTypeAsString} for water park {index}, skipping.");
                     }
+                }
             }
 
             log.Write($"Loaded {itemsToAdd.Count} items for water park {index}. Adding them when done");
@@ -508,8 +515,14 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             var egg = thisItem.GetComponent<CreatureEgg>();
             if (egg.IsNotNull())
             {
+                if (item.UndiscoveredTechType != TechType.None)
+                {
+                    egg.overrideEggType = item.UndiscoveredTechType;
+                    egg.isKnown = false;
+                    egg.Subscribe(true);    //in case Awake() was already called
+                }
                 egg.progress = item.Inhabitant.incubationProgress;
-                egg.timeStartHatching = DayNightCycle.main.timePassedAsFloat - item.Inhabitant.hatchingTime;
+                egg.UpdateHatchingTime();
             }
 
             _container!.AddItem(pickupable);
