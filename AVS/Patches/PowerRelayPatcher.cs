@@ -188,9 +188,7 @@ public static class PowerRelayPatcher
     public static bool ModifyPowerPrefix(PowerRelay __instance, float amount, out float modified, ref bool __result)
     {
         modified = 0;
-        if (__instance.IsNull() || __instance.gameObject.IsNull())
-            return true;
-        var av = __instance.gameObject.GetComponent<AvsVehicle>();
+        var av = __instance.SafeGetGameObject().SafeGetComponent<AvsVehicle>();
 
         if (av.IsNull())
             return true;
