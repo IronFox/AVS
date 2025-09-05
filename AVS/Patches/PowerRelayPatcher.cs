@@ -72,7 +72,9 @@ public static class PowerRelayPatcher
     [HarmonyPatch(nameof(PowerRelay.Start))]
     public static bool StartPrefix(PowerRelay __instance)
     {
-        var av = __instance.gameObject.SafeGetComponent<AvsVehicle>();
+        var av = __instance
+            .SafeGetGameObject()
+            .SafeGetComponent<AvsVehicle>();
         using var log = NewLogOf(av);
         if (av.IsNotNull())
         {
@@ -140,9 +142,9 @@ public static class PowerRelayPatcher
     [HarmonyPatch(nameof(PowerRelay.GetMaxPower))]
     public static bool GetMaxPowerPrefix(PowerRelay __instance, ref float __result)
     {
-        if (__instance.IsNull() || __instance.gameObject.IsNull())
-            return true;
-        var av = __instance.gameObject.GetComponent<AvsVehicle>();
+        var av = __instance
+            .SafeGetGameObject()
+            .SafeGetComponent<AvsVehicle>();
         if (av.IsNull())
             return true;
         if (av.energyInterface.IsNull() || av.energyInterface.sources.IsNull())
@@ -188,7 +190,9 @@ public static class PowerRelayPatcher
     public static bool ModifyPowerPrefix(PowerRelay __instance, float amount, out float modified, ref bool __result)
     {
         modified = 0;
-        var av = __instance.SafeGetGameObject().SafeGetComponent<AvsVehicle>();
+        var av = __instance
+            .SafeGetGameObject()
+            .SafeGetComponent<AvsVehicle>();
 
         if (av.IsNull())
             return true;
