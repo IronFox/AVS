@@ -114,6 +114,9 @@
 
   <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
     <Exec Command="..\IncrementBuildNumber\bin\Release\net9.0\IncrementBuildNumber.exe" />
+  </Target>
+
+  <Target Name="RunPreBuildOnRebuild" AfterTargets="Clean">
     <Exec Command="call ..\republicize.bat" />
   </Target>
   
