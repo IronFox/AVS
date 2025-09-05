@@ -228,7 +228,7 @@ public static class PowerRelayPatcher
             }
             else
             {
-                modified = 0;
+                modified = amount;
                 __result = true;
             }
         }
