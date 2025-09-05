@@ -143,7 +143,8 @@ public static class PowerRelayPatcher
         if (__instance.IsNull() || __instance.gameObject.IsNull())
             return true;
         var av = __instance.gameObject.GetComponent<AvsVehicle>();
-        if (av.IsNull()) return true;
+        if (av.IsNull())
+            return true;
         if (av.energyInterface.IsNull() || av.energyInterface.sources.IsNull())
         {
             using var log = NewLogOf(av);
@@ -154,6 +155,89 @@ public static class PowerRelayPatcher
 
         __result = av.energyInterface.sources.Where(x => x.IsNotNull()).Select(x => x.capacity).Sum();
         //LogOf(av).Debug("EnergyInterface.sources.Sum: " + __result);
+        return false;
+    }
+
+
+
+    /// <summary>
+    /// Overrides PowerRelay.ModifyPower to route energy transactions through the AvsVehicle energy interface.
+    /// </summary>
+    /// <param name="__instance">PowerRelay instance executing the call.</param>
+    /// <param name="amount">
+    /// The energy delta to apply. Negative values consume energy; positive values add energy.
+    /// </param>
+    /// <param name="modified">
+    /// Out parameter set to the applied amount when handled by AVS, or 0 if not applied.
+    /// </param>
+    /// <param name="__result">
+    /// Set to true if the operation was successful (or not required by game mode),
+    /// false if the request could not be fulfilled (insufficient capacity or power).
+    /// </param>
+    /// <returns>
+    /// False when the AvsVehicle path handles the modification (suppressing original method),
+    /// true to allow the original game logic when the relay is not part of an AvsVehicle.
+    /// </returns>
+    /// <remarks>
+    /// - Honors GameModeUtils.RequiresPower().
+    /// - Validates both available power (for consumption) and remaining capacity (for charging).
+    /// - Logs errors if the energy interface is unavailable.
+    /// </remarks>
+    [HarmonyPrefix]
+    [HarmonyPatch(nameof(PowerRelay.ModifyPower))]
+    public static bool ModifyPowerPrefix(PowerRelay __instance, float amount, out float modified, ref bool __result)
+    {
+        modified = 0;
+        if (__instance.IsNull() || __instance.gameObject.IsNull())
+            return true;
+        var av = __instance.gameObject.GetComponent<AvsVehicle>();
+
+        if (av.IsNull())
+            return true;
+
+        try
+        {
+            if (av.energyInterface.IsNull() || av.energyInterface.sources.IsNull())
+            {
+                using var log = NewLogOf(av);
+                log.Error("EnergyInterface is null");
+                return false;
+            }
+            if (GameModeUtils.RequiresPower())
+            {
+                var canProvide = av.energyInterface.TotalCanProvide(out _);
+                var canConsume = av.energyInterface.TotalCanConsume(out _);
+                if (amount < 0 && canProvide < -amount)
+                {
+                    using var log = NewLogOf(av);
+                    log.Warn($"Insufficient power: {-amount} >= {canProvide}");
+                    __result = false;
+                    return false;
+                }
+                if (amount > 0 && canConsume < amount)
+                {
+                    using var log = NewLogOf(av);
+                    log.Warn($"Insufficient capacity to receive: {amount} >= {canConsume}");
+                    __result = false;
+                    return false;
+                }
+                var rs = modified = amount;
+                av.energyInterface.ModifyCharge(amount);
+                __result = true;
+                return false;
+            }
+            else
+            {
+                modified = 0;
+                __result = true;
+            }
+        }
+        catch (System.Exception ex)
+        {
+            __result = false;
+            using var log = NewLogOf(av);
+            log.Error("ModifyPowerPrefix", ex);
+        }
         return false;
     }
 }

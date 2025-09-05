@@ -34,6 +34,18 @@ internal static class AvsCraftData
         TechType techType,
         InstanceContainer result, bool ifNotFoundLeaveEmpty = true)
     {
+        var originalType = techType;
+        bool isUndiscoveredEgg = false;
+        if (techType.AsString().EndsWith("EggUndiscovered"))
+        {
+            if (TechTypeExtensions.FromString(techType.AsString().Replace("EggUndiscovered", "Egg"), out var newType, true))    //we can't load undiscovered eggs for some reason
+            {
+                log.Write($"TechType {techType.AsString()} is an undiscovered version of {newType.AsString()}. Remapped");
+                techType = newType;
+                isUndiscoveredEgg = true;
+            }
+        }
+
         log.Write($"Loading prefab for tech type {techType.AsString()} with customOnly={ifNotFoundLeaveEmpty}");
         result.Instance = null;
         var req = PrefabLoader.Request(techType, ifNotFoundLeaveEmpty);
@@ -44,6 +56,22 @@ internal static class AvsCraftData
             log.Error($"Request for {techType.AsString()} produced no instance. This should never happen.");
             //result.Set(null);
             yield break;
+        }
+        if (isUndiscoveredEgg)
+        {
+            var egg = instance.GetComponent<CreatureEgg>();
+            if (egg)
+            {
+                egg.overrideEggType = originalType;
+                egg.eggType = techType; //kinda redundant but apparently sometimes not yet filled. So for logging purposes, we set it here
+                log.Debug($"Loaded egg is {egg.eggType} -> {egg.creatureType}");
+                log.Debug($"Setting egg type to {originalType.AsString()} and isKnown to false");
+
+                //in case Awake was already called:
+                egg.isKnown = false;
+                egg.GetComponent<Pickupable>().SafeDo(x => x.SetTechTypeOverride(originalType));
+                egg.Subscribe(state: true);
+            }
         }
 
         result.Instance = instance;

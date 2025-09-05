@@ -581,7 +581,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
             {
                 log.Write($"Adding {techType} to the reactor");
                 energyDict[techType] = reactant.Energy;
-                yield return av!.Owner.StartAvsCoroutine(nameof(MaterialReactor) + '.' + nameof(AddMaterial), log => AddMaterial(log, techType));
+                yield return AddMaterial(log, techType);
             }
 
         Dictionary<InventoryItem, float> energyDict2 = new();
