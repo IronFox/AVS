@@ -221,84 +221,36 @@ public readonly struct VehicleHatchDefinition
 /// that may be added to a water park.
 /// Eggs will hatch eventually and fish may reproduce.
 /// </summary>
-public readonly struct MobileWaterPark
-{
-    /// <summary>
-    /// The game object that will contain the fish.
-    /// </summary>
-    public Transform ContentContainer { get; }
-
-    /// <summary>
-    /// The park root object
-    /// </summary>
-    public GameObject Root { get; }
-
-    /// <summary>
-    /// The grid height of the total tank storage capacity.
-    /// </summary>
-    public int Height { get; }
-
-    /// <summary>
-    /// The grid width of the total tank storage capacity.
-    /// </summary>
-    public int Width { get; }
-
-    /// <summary>
-    /// The display text for the vehicle storage, which can be localized.
-    /// </summary>
-    public MaybeTranslate? DisplayName { get; }
-
-    /// <summary>
-    /// True if fish in the tank can reproduce.
-    /// </summary>
-    public bool AllowReproduction { get; }
-
-    /// <summary>
-    /// True if eggs in the tank can hatch.
-    /// </summary>
-    public bool HatchEggs { get; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MobileWaterPark"/> class with the specified container, display name,
-    /// dimensions, and behavior settings.
-    /// </summary>
-    /// <param name="root">The <see cref="GameObject"/> that represents the entire water park. This parameter
-    /// cannot be <see langword="null"/>.</param>
-    /// <param name="contentContainer">The transform to contain the actual fish. Cannot be null</param>
-    /// <param name="displayName">An optional display name for the fish tank, which may be translated.  If <see langword="null"/>, no display
-    /// name is assigned.</param>
-    /// <param name="height">The height of the fish tank, measured in arbitrary units.  Must be greater than zero. Defaults to 4.</param>
-    /// <param name="width">The width of the fish tank, measured in arbitrary units.  Must be greater than zero. Defaults to 4.</param>
-    /// <param name="allowReproduction">A value indicating whether fish in the tank are allowed to reproduce.  Defaults to <see langword="true"/>.</param>
-    /// <param name="hatchEggs">A value indicating whether fish eggs in the tank are allowed to hatch.  Defaults to <see langword="true"/>.</param>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="root"/> or <paramref name="contentContainer"/> are <see langword="null"/>.</exception>
-    /// <exception cref="ArgumentOutOfRangeException">Thrown if <paramref name="height"/> or <paramref name="width"/> is less than or equal to zero.</exception>
-    public MobileWaterPark(
-        GameObject root,
-        Transform contentContainer,
-        MaybeTranslate? displayName,
-        int height = 4,
-        int width = 4,
-        bool allowReproduction = true,
-        bool hatchEggs = true
+/// <param name="ContentContainer">The game object that will contain the fish.</param>
+/// <param name="Root">The park root object</param>
+/// <param name="Width">The grid width of the total tank storage capacity.</param>
+/// <param name="Height">The grid height of the total tank storage capacity.</param>
+/// <param name="DisplayName">The display text for the fish tank, which can be localized.</param>
+/// <param name="AllowReproduction">If true, fish in this tank may reproduce.</param>
+/// <param name="HatchEggs">If true, eggs in this tank will hatch eventually.</param>
+/// <param name="CollidersAreLive">Function that returns true if the colliders are active and fish can move.
+/// If the function returns false, fish shall become invisible and immobile so as to now swim out of the containment</param>
+/// <param name="WallLayerMask">A bit-mask that encapsules all tank walls, floor, and ceiling in order to ray cast only the walls. Should not contain layer 0 (fish)</param>
+public readonly record struct MobileWaterPark(
+    Transform ContentContainer,
+    GameObject Root,
+    int Width,
+    int Height,
+    MaybeTranslate? DisplayName,
+    bool AllowReproduction,
+    bool HatchEggs,
+    Func<bool> CollidersAreLive,
+    int WallLayerMask
     )
+{
+    internal static void Validate(MobileWaterPark wp)
     {
-        if (root.IsNull())
-            throw new ArgumentNullException(nameof(root), "Mobile water park root cannot be null.");
-        if (contentContainer.IsNull())
-            throw new ArgumentNullException(nameof(contentContainer),
-                "Mobile water park contentContainer cannot be null.");
-        if (height <= 0)
-            throw new ArgumentOutOfRangeException(nameof(height), "Fish tank height must be greater than zero.");
-        if (width <= 0)
-            throw new ArgumentOutOfRangeException(nameof(width), "Fish tank width must be greater than zero.");
-        Root = root;
-        ContentContainer = contentContainer;
-        DisplayName = displayName;
-        Height = height;
-        Width = width;
-        AllowReproduction = allowReproduction;
-        HatchEggs = hatchEggs;
+        wp.ContentContainer.OrThrow(() => new ArgumentException(nameof(ContentContainer), "Mobile water park contentContainer cannot be null."));
+        wp.Root.OrThrow(() => new ArgumentException(nameof(Root), "Mobile water park root cannot be null."));
+        if (wp.Height <= 0)
+            throw new ArgumentOutOfRangeException(nameof(Height), "Fish tank height must be greater than zero.");
+        if (wp.Width <= 0)
+            throw new ArgumentOutOfRangeException(nameof(Width), "Fish tank width must be greater than zero.");
     }
 }
 

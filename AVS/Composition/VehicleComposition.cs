@@ -1,8 +1,8 @@
 ﻿using AVS.Engines;
-using System;
-using System.Collections.Generic;
 using AVS.Util;
 using AVS.VehicleBuilding;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace AVS.Composition;
@@ -201,6 +201,8 @@ public class VehicleComposition
         SubNameDecals = subNameDecals ?? [];
         LavaLarvaAttachPoints = lavaLarvaAttachPoints ?? [];
         WaterParks = waterParks ?? [];
+
+        WaterParks.ForEach(MobileWaterPark.Validate);
 
         if (Upgrades.IsNull())
             throw new InvalidOperationException(

@@ -50,7 +50,14 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     [SerializeField]
     private bool canHatchEggs = true;
     [SerializeField]
+    private bool allowReproduction;
+    [SerializeField]
     private AvsVehicle? vehicle;
+
+    private Func<bool> ColliderAreLive { get; set; } = () => true;
+
+    [SerializeField]
+    private int wallLayerMask = Physics.AllLayers;
     [SerializeField]
     private Transform? waterPark;
 
@@ -60,6 +67,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     public void Awake()
     {
+        using var log = SmartLog.ForAVS(RootModController.AnyInstance);
+        log.Write($"Awake called for {this.NiceName()} (enabled={enabled}, active={gameObject.activeInHierarchy})");
         Init();
     }
 
@@ -112,6 +121,32 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         return false;
     }
 
+    private record LivingThing(
+        GameObject GameObject,
+        LiveMixin Live,
+        InfectedMixin? Infected,
+        Pickupable Pickupable
+        );
+
+    private record LivingCreature(
+        GameObject GameObject,
+        LiveMixin Live,
+        InfectedMixin? Infected,
+        Creature Creature,
+        WaterParkCreature WpCreature,
+        Pickupable Pickupable
+        ) : LivingThing(GameObject, Live, Infected, Pickupable);
+
+    private record LivingEgg(
+        GameObject GameObject,
+        LiveMixin Live,
+        InfectedMixin? Infected,
+        CreatureEgg Egg,
+        Pickupable Pickupable
+        ) : LivingThing(GameObject, Live, Infected, Pickupable);
+
+    private Queue<LivingThing> LivingThingsToAdd { get; } = new();
+
 
     private void Init()
     {
@@ -119,92 +154,145 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             return;
         using var log = SmartLog.ForAVS(AV.Owner);
         log.Write(
-            $"Initializing {this.NiceName()} for {DisplayName.Rendered} ({DisplayName.Localize}) with width {width} and height {height}");
-        _container = new ItemsContainer(width, height,
-            waterPark, DisplayName.Rendered, null);
-        _container.SetAllowedTechTypes(Array.Empty<TechType>());
-        _container.isAllowedToAdd = IsLivingFishOrEgg;
-        _container.isAllowedToRemove = IsNotHatchingEgg;
-        _container.onAddItem += (item) =>
+            $"(Re)Initializing {this.NiceName()} for {DisplayName.Rendered} ({DisplayName.Localize}) with width {width} and height {height}");
+        if (_container.IsNull() || _container.sizeX != width || _container.sizeY != height)
         {
-            item.item.gameObject.SetActive(false); //keep it off until I can figure this out
+            var oldItems = _container?.ToList() ?? [];
+            _container = new ItemsContainer(width, height,
+                waterPark, DisplayName.Rendered, null);
+            _container.SetAllowedTechTypes([]);
+            _container.isAllowedToAdd = IsLivingFishOrEgg;
+            _container.isAllowedToRemove = IsNotHatchingEgg;
+            _container.onAddItem += MyOnAddItem;
+            _container.onRemoveItem += MyOnRemoveItem;
+            foreach (var item in oldItems)
+                _container.UnsafeAdd(item);
+        }
+        log.Write($"Initialized (enabled={enabled}, active={gameObject.activeInHierarchy})");
+    }
+
+    private void MyOnRemoveItem(InventoryItem item)
+    {
+        item.item.GetComponent<LiveMixin>().SafeDo(x =>
+        {
+            x.invincible = false;
+            x.shielded = false;
+        });
+        item.item.gameObject.SetActive(false); //disable the item so it doesn't cause issues
+    }
+
+    private void MyOnAddItem(InventoryItem item)
+    {
+        using var log = AV.NewLazyAvsLog(parameters: Params.Of(item));
+        item.item.gameObject.SetActive(false); //keep it off until I can figure this out
 
 
-            //if (item.item/* && item.item.transform.parent != waterPark*/)
+        if (item.item/* && item.item.transform.parent != waterPark*/)
+        {
+            var prefabId = item.item.GetComponent<PrefabIdentifier>();
+            if (prefabId.IsNull())
+            {
+                log.Error($"Item {item.item.NiceName()} does not have a valid PrefabIdentifier, skipping.");
+                return;
+            }
+            var embed = item.item;
+            embed.name = prefabId.Id;
+
+            var live = item.item.GetComponent<LiveMixin>();
+            var infect = item.item.GetComponent<InfectedMixin>();
+            if (live.IsNull() || !live.IsAlive())
+            {
+                log.Error($"Item {item.item.NiceName()} is not alive, cannot add to water park.");
+                if (CanWarnAbout(item.item))
+                    ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotAdd_FishIsDead, item.item.GetTechName()));
+                return;
+            }
+
+            //item.item.gameObject.SetActive(true); //enable the item so it can be added to the water park
+
+            //var newLive = embed.GetComponent<LiveMixin>();
+            //newLive.health = live.health; //copy health from the original item
+
+            //var newInfect = embed.GetComponent<InfectedMixin>();
+            //if (newInfect.IsNotNull() && infect.IsNotNull())
             //{
-            //    var prefabId = item.item.GetComponent<PrefabIdentifier>();
-            //    if (prefabId.IsNull())
-            //    {
-            //        LogWriter.Default.Error($"Item {item.item.NiceName()} does not have a valid PrefabIdentifier, skipping.");
-            //        return;
-            //    }
-            //    var live = item.item.GetComponent<LiveMixin>();
-            //    var infect = item.item.GetComponent<InfectedMixin>();
-            //    if (live.IsNull() || !live.IsAlive())
-            //    {
-            //        if (CanWarnAbout(item.item))
-            //            ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotAdd_FishIsDead, item.item.GetTechName()));
-            //        return;
-            //    }
-            //    item.item.gameObject.SetActive(true); //enable the item so it can be added to the water park
-            //    var embed = item.item;
-            //    embed.name = prefabId.Id;
-
-            //    //var newLive = embed.GetComponent<LiveMixin>();
-            //    //newLive.health = live.health; //copy health from the original item
-
-            //    //var newInfect = embed.GetComponent<InfectedMixin>();
-            //    //if (newInfect.IsNotNull() && infect.IsNotNull())
-            //    //{
-            //    //    newInfect.infectedAmount = infect.infectedAmount;
-            //    //}
-
-            //    LogWriter.Default.Debug($"Adding item {embed.NiceName()} from {embed.transform.parent.NiceName()} to water park {waterPark.NiceName()}");
-            //    embed.transform.SetParent(waterPark, false);
-            //    var creature = embed.GetComponent<WaterParkCreature>();
-            //    if (creature.IsNotNull())
-            //    {
-            //        creature.currentWaterPark = new WaterPark();
-            //        //creature.currentWaterPark.internalRadius = 5f;
-            //        creature.OnAddToWP();
-            //        if (embed.transform.parent != waterPark)
-            //        {
-            //            LogWriter.Default.Error($"Creature {embed.NiceName()} was not added to the water park instances, but to {embed.transform.parent.NiceName()}");
-            //            embed.transform.SetParent(waterPark, false);
-            //        }
-            //        creature.transform.position = RandomLocation(false);
-            //        creature.transform.localRotation = Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
-            //        LogWriter.Default.Debug($"Spawned creature {embed.NiceName()} @ {embed.transform.localPosition}");
-            //    }
-            //    else
-            //    {
-            //        var egg = embed.GetComponent<CreatureEgg>();
-            //        if (egg.IsNotNull())
-            //        {
-
-            //            egg.transform.SetParent(waterPark, false);
-            //            egg.transform.position = RandomLocation(true);
-            //            if (canHatchEggs)
-            //            {
-            //                egg.OnAddToWaterPark();
-            //                if (embed.transform.parent != waterPark)
-            //                {
-            //                    LogWriter.Default.Error($"Egg {embed.NiceName()} was not added to the water park instances, but to {embed.transform.parent.NiceName()}");
-            //                    embed.transform.SetParent(waterPark, false);
-            //                }
-
-            //            }
-            //            LogWriter.Default.Debug($"Spawned egg {embed.NiceName()} @ {embed.transform.localPosition}");
-            //        }
-            //    }
+            //    newInfect.infectedAmount = infect.infectedAmount;
             //}
-        };
 
-        _container.onRemoveItem += (item) =>
-        {
-            item.item.gameObject.SetActive(false); //disable the item so it doesn't cause issues
-        };
-        log.Write($"Initialized");
+            log.Debug($"Adding item {embed.NiceName()} from {embed.transform.parent.NiceName()} to water park {waterPark.NiceName()}");
+            //embed.transform.SetParent(waterPark, false);
+            var wpCreature = embed.GetComponent<WaterParkCreature>();
+            var creature = embed.GetComponent<Creature>();
+            if (creature.IsNotNull() && wpCreature.IsNotNull())
+            {
+                creature.friendlyToPlayer = true;
+                creature.cyclopsSonarDetectable = false;
+
+
+                log.Debug($"Item {embed.NiceName()} is a creature, adding as such.");
+                LivingThingsToAdd.Enqueue(new LivingCreature(embed.gameObject, live, infect, creature, wpCreature, embed));
+                //creature.currentWaterPark = new WaterPark();
+                ////creature.currentWaterPark.internalRadius = 5f;
+                //creature.OnAddToWP();
+                //if (embed.transform.parent != waterPark)
+                //{
+                //    LogWriter.Default.Error($"Creature {embed.NiceName()} was not added to the water park instances, but to {embed.transform.parent.NiceName()}");
+                //    embed.transform.SetParent(waterPark, false);
+                //}
+                //creature.transform.position = RandomLocation(false);
+                //creature.transform.localRotation = Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
+                //LogWriter.Default.Debug($"Spawned creature {embed.NiceName()} @ {embed.transform.localPosition}");
+            }
+            else
+            {
+                var egg = embed.GetComponent<CreatureEgg>();
+                if (egg.IsNotNull())
+                {
+                    log.Debug($"Item {embed.NiceName()} is an egg, adding as such.");
+                    LivingThingsToAdd.Enqueue(new LivingEgg(embed.gameObject, live, infect, egg, embed));
+
+                    //egg.transform.SetParent(waterPark, false);
+                    //egg.transform.position = RandomLocation(true);
+                    //if (canHatchEggs)
+                    //{
+                    //    egg.OnAddToWaterPark();
+                    //    if (embed.transform.parent != waterPark)
+                    //    {
+                    //        LogWriter.Default.Error($"Egg {embed.NiceName()} was not added to the water park instances, but to {embed.transform.parent.NiceName()}");
+                    //        embed.transform.SetParent(waterPark, false);
+                    //    }
+
+                    //}
+                    //LogWriter.Default.Debug($"Spawned egg {embed.NiceName()} @ {embed.transform.localPosition}");
+                }
+                else
+                    log.Error($"Item {embed.NiceName()} is neither a creature nor an egg, cannot add to water park.");
+            }
+        }
+    }
+
+    private RayCaster Caster { get; } = new();
+
+    private bool FirstWallHit(Ray ray, out RaycastHit hit)
+    {
+        //RaycastHit hit;
+        var rb = AV.useRigidbody;
+        float d = float.MaxValue;
+        bool rs = false;
+        hit = default;
+
+        Caster.RayCastAll(ray, 20f, wallLayerMask);
+        foreach (var h in Caster)
+            if (h.collider.attachedRigidbody == rb && !h.collider.isTrigger)
+            {
+                if (h.distance < d)
+                {
+                    d = h.distance;
+                    rs = true;
+                    hit = h;
+                }
+            }
+        return rs;
     }
 
     private Vector3 RandomLocation(bool dropToFloor)
@@ -216,8 +304,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         var haveLocation = false;
         RaycastHit hit = default;
         for (var i = 0; i < 100; i++)
-            if (haveLocation = Physics.Raycast(waterPark!.position, ray, out hit, 10f, Physics.AllLayers,
-                    QueryTriggerInteraction.Ignore))
+            if (haveLocation = FirstWallHit(new Ray(waterPark!.position, ray), out hit))
                 break;
         //LogWriter.Default.Debug($"haveLocation: {haveLocation} => {ray}");
 
@@ -226,8 +313,10 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             : waterPark!.position + random;
 
         if (dropToFloor)
-            if (Physics.Raycast(rs, Vector3.down, out hit, 20f, Physics.AllLayers, QueryTriggerInteraction.Ignore))
+        {
+            if (FirstWallHit(new Ray(rs, Vector3.down), out hit))
                 return hit.point + Vector3.up * 0.2f;
+        }
 
         return rs;
     }
@@ -293,17 +382,24 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         height = vp.Height;
         width = vp.Width;
         canHatchEggs = vp.HatchEggs;
+        allowReproduction = vp.AllowReproduction;
         this.vehicle = vehicle;
+        this.ColliderAreLive = vp.CollidersAreLive;
+        this.wallLayerMask = vp.WallLayerMask;
         Reinit();
     }
 
     private record Inhabitant(
-        string? techTypeAsString,
-        float enzymeAmount,
-        float infectedAmount,
-        float incubationProgress,
-        float hatchDuration,
-        float health
+        string? TechTypeAsString,
+        float EnzymeAmount,
+        float InfectedAmount,
+        float IncubationProgress,
+        float HatchDuration,
+        float Health,
+        bool IsFriendlyToPlayer,
+        bool IsBornInside,
+        float Age,
+        bool IsMature
     );
 
     private record LoadingInhabitant(
@@ -311,13 +407,14 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         InstanceContainer Result,
         Coroutine LoadTask);
 
-    private class Serialized
-    {
-        public List<Inhabitant>? inhabitants;
-        public int width;
-        public int height;
-        public bool canHatchEggs;
-    }
+    private record Serialized
+    (
+        List<Inhabitant>? Inhabitants,
+        int Width,
+        int Height,
+        bool CanHatchEggs,
+        bool AllowReproduction
+    );
 
     public void OnProtoSerializeObjectTree(ProtobufSerializer serializer)
     {
@@ -351,17 +448,22 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 log.Error($"Item {item.item.NiceName()} does not have a valid PrefabIdentifier, skipping.");
                 continue;
             }
-
+            Creature? creature = item.item.GetComponent<Creature>();
             CreatureEgg? egg = item.item.GetComponent<CreatureEgg>();
+            WaterParkCreature? wpCreature = item.item.GetComponent<WaterParkCreature>();
             egg.SafeDo(x => x.UpdateHatchingTime());
             var inhab = new Inhabitant
             (
-                infectedAmount: item.item.GetComponent<InfectedMixin>().SafeGet(x => x.infectedAmount, 0),
-                enzymeAmount: item.item.GetComponent<Peeper>().SafeGet(x => x.enzymeAmount, 0),
-                health: item.item.GetComponent<LiveMixin>().SafeGet(x => x.health, 0),
-                incubationProgress: egg.SafeGet(x => x.progress, 0),
-                hatchDuration: egg.SafeGet(x => x.GetHatchDuration(), 1),
-                techTypeAsString: tt.AsString()
+                InfectedAmount: item.item.GetComponent<InfectedMixin>().SafeGet(x => x.infectedAmount, 0),
+                EnzymeAmount: item.item.GetComponent<Peeper>().SafeGet(x => x.enzymeAmount, 0),
+                Health: item.item.GetComponent<LiveMixin>().SafeGet(x => x.health, 0),
+                IncubationProgress: egg.SafeGet(x => x.progress, 0),
+                HatchDuration: egg.SafeGet(x => x.GetHatchDuration(), 1),
+                TechTypeAsString: tt.AsString(),
+                IsFriendlyToPlayer: creature.SafeGet(x => x._friendlyToPlayer, false),
+                IsBornInside: wpCreature.SafeGet(x => x.bornInside, false),
+                Age: wpCreature.SafeGet(x => x.age, 0),
+                IsMature: wpCreature.SafeGet(x => x.isMature, true)
             );
 
             result.Add((prefabId, inhab));
@@ -370,12 +472,13 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         vehicle.PrefabID.WriteReflected(
             $"WP{index}",
             new Serialized
-            {
-                inhabitants = result.Select(x => x.Item2).ToList(),
-                width = width,
-                height = height,
-                canHatchEggs = canHatchEggs
-            },
+            (
+                Inhabitants: result.Select(x => x.Item2).ToList(),
+                Width: width,
+                Height: height,
+                CanHatchEggs: canHatchEggs,
+                AllowReproduction: allowReproduction
+            ),
             vehicle.Owner);
     }
 
@@ -403,18 +506,19 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         log.Write($"Loading water park from file");
         if (vehicle.PrefabID.ReadReflected($"WP{index}", out Serialized? data, vehicle.Owner))
         {
-            height = data.height;
-            width = data.width;
-            canHatchEggs = data.canHatchEggs;
+            height = data.Height;
+            width = data.Width;
+            canHatchEggs = data.CanHatchEggs;
+            allowReproduction = data.AllowReproduction;
             Reinit();
 
             var itemsToAdd = new List<LoadingInhabitant>();
-            if (data.inhabitants.IsNotNull())
+            if (data.Inhabitants.IsNotNull())
             {
-                log.Write($"Found {data.inhabitants.Count} inhabitants in water park {index}");
-                foreach (var inhabitant in data.inhabitants)
+                log.Write($"Found {data.Inhabitants.Count} inhabitants in water park {index}");
+                foreach (var inhabitant in data.Inhabitants)
                 {
-                    if (TechTypeExtensions.FromString(inhabitant.techTypeAsString, out var tt, true))
+                    if (TechTypeExtensions.FromString(inhabitant.TechTypeAsString, out var tt, true))
                     {
                         log.Write($"Loading inhabitant {tt} for water park {index}");
 
@@ -435,7 +539,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     else
                     {
                         log.Error(
-                            $"Failed to parse tech type {inhabitant.techTypeAsString} for water park {index}, skipping.");
+                            $"Failed to parse tech type {inhabitant.TechTypeAsString} for water park {index}, skipping.");
                     }
                 }
             }
@@ -454,7 +558,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     {
         vehicle = vehicle.OrRequired(expectVehicle);
         using var log = vehicle.NewAvsLog();
-        log.Write($"OnVehicleLoaded called for water park {index} with vehicle {vehicle.NiceName()}");
+        log.Write($"OnVehicleLoaded called for water park {index} with vehicle {vehicle.NiceName()} (enabled={enabled}, active={gameObject.activeInHierarchy})");
         if (_container.IsNull())
         {
             log.Error($"MobileWaterPark.OnVehicleLoaded called without a valid container.");
@@ -482,7 +586,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             var thisItem = item.Result.Instance;
             if (thisItem.IsNull())
             {
-                log.Error($"Failed to load item {item.Inhabitant.techTypeAsString} for water park {index}, skipping.");
+                log.Error($"Failed to load item {item.Inhabitant.TechTypeAsString} for water park {index}, skipping.");
                 continue;
             }
 
@@ -494,19 +598,53 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             }
 
             var liveMixin = thisItem.GetComponent<LiveMixin>();
-            if (liveMixin.IsNotNull())
-                liveMixin.health = item.Inhabitant.health;
+            if (liveMixin.IsNull())
+            {
+                log.Error($"Item {thisItem.NiceName()} does not have a LiveMixin component, skipping.");
+                continue;
+            }
+            liveMixin.health = item.Inhabitant.Health;
             var infectedMixin = thisItem.GetComponent<InfectedMixin>();
             if (infectedMixin.IsNotNull())
-                infectedMixin.infectedAmount = item.Inhabitant.infectedAmount;
+                infectedMixin.infectedAmount = item.Inhabitant.InfectedAmount;
             var peeper = thisItem.GetComponent<Peeper>();
             if (peeper.IsNotNull())
-                peeper.enzymeAmount = item.Inhabitant.enzymeAmount;
+                peeper.enzymeAmount = item.Inhabitant.EnzymeAmount;
             var egg = thisItem.GetComponent<CreatureEgg>();
             if (egg.IsNotNull())
             {
-                egg.progress = item.Inhabitant.incubationProgress;
+                egg.progress = item.Inhabitant.IncubationProgress;
                 egg.UpdateHatchingTime();
+                //LivingThingsToAdd.Enqueue(new LivingEgg(thisItem, liveMixin, infectedMixin, egg, pickupable));
+            }
+            else
+            {
+                var wpCreature = thisItem.GetComponent<WaterParkCreature>();
+                var creature = thisItem.GetComponent<Creature>();
+                if (creature.IsNotNull() && wpCreature.IsNotNull())
+                {
+                    creature.friendlyToPlayer = true;// item.Inhabitant.IsFriendlyToPlayer;
+                    if (item.Inhabitant.IsBornInside)
+                        wpCreature.InitializeCreatureBornInWaterPark();
+                    wpCreature.bornInside = item.Inhabitant.IsBornInside;
+                    if (!item.Inhabitant.IsMature)
+                    {
+                        wpCreature.age = item.Inhabitant.Age;
+                        wpCreature.SetMatureTime();
+                    }
+                    else
+                    {
+                        wpCreature.isMature = true;
+                        wpCreature.ResetBreedTime();
+                    }
+
+                    //LivingThingsToAdd.Enqueue(new LivingCreature(thisItem, liveMixin, infectedMixin, creature, wpCreature, pickupable));
+                }
+                else
+                {
+                    log.Error($"Item {thisItem.NiceName()} is neither a creature nor an egg, cannot add to water park.");
+                    continue;
+                }
             }
 
             _container!.AddItem(pickupable);
@@ -514,5 +652,114 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         }
 
         ReAddWhenDone.Clear();
+    }
+
+    private bool collidersLive = false;
+    public void Update()
+    {
+        using var log = vehicle.IsNotNull() ? vehicle.NewLazyAvsLog() : SmartLog.LazyForAVS(RootModController.AnyInstance);
+        //log.Debug($"MobileWaterPark.Udpate called for water park {index} with vehicle {vehicle?.NiceName()}");
+        if (_container != null)
+        {
+            if (ColliderAreLive() != collidersLive)
+            {
+                collidersLive = ColliderAreLive();
+
+                if (!collidersLive)
+                {
+                    foreach (var item in _container.ToList())
+                    {
+                        if (item.item.GetComponent<WaterParkCreature>().IsNotNull())
+                            item.item.gameObject.SetActive(false); //disable the fish so it doesn't cause issues
+                    }
+                }
+                else
+                    foreach (var item in _container.ToList())
+                    {
+                        if (item.item.GetComponent<WaterParkCreature>().IsNotNull())
+                            item.item.gameObject.SetActive(true);
+                    }
+
+            }
+            if (collidersLive)
+            {
+                while (LivingThingsToAdd.Count > 0)
+                {
+                    var thing = LivingThingsToAdd.Dequeue();
+                    thing.Live.invincible = true;
+                    thing.Live.shielded = true;
+                    if (thing is LivingCreature creature)
+                    {
+                        creature.Creature.transform.position = RandomLocation(false);
+                        creature.Creature.transform.localRotation = Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
+                        log.Debug($"Spawning creature {creature.GameObject.NiceName()} @ {creature.GameObject.transform.localPosition}");
+                        creature.GameObject.SetActive(true); //enable the item so it can be added to the water park
+                    }
+                    else if (thing is LivingEgg egg)
+                    {
+                        egg.Egg.transform.position = RandomLocation(true);
+                        log.Debug($"Spawning egg {egg.GameObject.NiceName()} @ {egg.GameObject.transform.localPosition}");
+                        if (canHatchEggs)
+                        {
+                            egg.Egg.OnAddToWaterPark();
+                        }
+                        egg.GameObject.GetComponent<Rigidbody>().SafeDo(x => x.isKinematic = true);
+                        egg.GameObject.SetActive(true); //enable the item so it can be added to the water park
+                    }
+                    else
+                        log.Error($"Unknown living thing {thing?.GetType().Name} cannot be added to water park.");
+                }
+                if (Time.deltaTime > 0)
+                    foreach (var item in _container.ToList())
+                    {
+                        var wpCreature = item.item.GetComponent<WaterParkCreature>();
+                        var creature = item.item.GetComponent<Creature>();
+                        if (wpCreature.IsNotNull() && creature.IsNotNull())
+                        {
+                            creature.Aggression.Value = 0;
+                            creature.Hunger.Value = 0;
+                            creature.Scared.Value = 0;
+                            creature.Happy.Value = 1;
+                            creature.Friendliness.Value = 1;
+
+
+
+                            var dir = (wpCreature.transform.position - waterPark!.position);
+                            var dist = dir.magnitude;
+                            dir /= dist;
+                            if (FirstWallHit(new Ray(waterPark.position, dir), out var hit))
+                            {
+                                var threshold = hit.distance * 0.7f;
+
+                                var distanceFromGlass = Math.Max(0, hit.distance - dist);
+
+                                if (distanceFromGlass < 0.5f)
+                                {
+                                    var force = -dir / (2f * distanceFromGlass + 0.1f) * 0.1f;
+                                    force *= Time.fixedDeltaTime / Time.deltaTime;
+                                    wpCreature.GetComponent<Rigidbody>().SafeDo(x => x.AddForce(force, ForceMode.Acceleration));
+                                }
+
+
+                                if (dist > hit.distance * 0.9f)
+                                {
+                                    //var force = -dir * (dist - threshold) / (20f * distanceFromGlass + 0.1f);
+
+                                    //force *= Time.fixedDeltaTime / Time.deltaTime;
+
+                                    //creature.GetComponent<Rigidbody>().SafeDo(x => x.AddForce(force, ForceMode.Acceleration));
+                                    wpCreature.transform.position = waterPark.position + dir * hit.distance * 0.9f;
+                                    //creature.transform.localEulerAngles = new Vector3(creature.transform.localEulerAngles.x, creature.transform.localEulerAngles.y + 180, creature.transform.localEulerAngles.z);
+                                    //log.Debug($"Corrected creature {creature.NiceName()} position to {creature.transform.localPosition}");
+                                }
+                            }
+                            //                        creature.bornInside
+                        }
+                    }
+            }
+        }
+        else
+            log.Error($"MobileWaterPark.Udpate called without a valid container.");
+
     }
 }
