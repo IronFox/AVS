@@ -84,6 +84,9 @@
     <Reference Include="UnityEngine.PhysicsModule">
       <HintPath>$(SUBNAUTICA_PATH)\Subnautica_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
     </Reference>
+    <Reference Include="UnityEngine.ParticleSystemModule">
+      <HintPath>$(SUBNAUTICA_PATH)\Subnautica_Data\Managed\UnityEngine.ParticleSystemModule.dll</HintPath>
+    </Reference>
     <Reference Include="UnityEngine.TextCoreModule">
       <HintPath>$(SUBNAUTICA_PATH)\Subnautica_Data\Managed\UnityEngine.TextCoreModule.dll</HintPath>
     </Reference>

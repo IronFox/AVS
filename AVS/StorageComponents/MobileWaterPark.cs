@@ -1,4 +1,5 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Interfaces;
 using AVS.Localization;
 using AVS.Log;
 using AVS.Util;
@@ -7,6 +8,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
 
 namespace AVS.StorageComponents;
 
@@ -126,7 +128,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         LiveMixin Live,
         InfectedMixin? Infected,
         Pickupable Pickupable
-        );
+        ) : INullTestableType;
 
     private record LivingCreature(
         GameObject GameObject,
@@ -178,6 +180,10 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             x.invincible = false;
             x.shielded = false;
         });
+        item.item.GetComponent<WaterParkCreature>().SafeDo(x =>
+        {
+            x.SetOutsideState();
+        });
         item.item.gameObject.SetActive(false); //disable the item so it doesn't cause issues
     }
 
@@ -196,7 +202,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 return;
             }
             var embed = item.item;
-            embed.name = prefabId.Id;
+            //embed.name = prefabId.Id;
 
             var live = item.item.GetComponent<LiveMixin>();
             var infect = item.item.GetComponent<InfectedMixin>();
@@ -207,6 +213,23 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Error_MobileWaterPark_CannotAdd_FishIsDead, item.item.GetTechName()));
                 return;
             }
+
+            var peeper = item.item.GetComponent<Peeper>();
+            if (peeper.IsNotNull() && peeper.enzymeAmount > 0)
+            {
+                log.Debug($"Activating enzyme visualization for {item.item.NiceName()}");
+
+                peeper.UpdateEnzymeFX();
+                peeper.enzymeParticles.Play();
+                peeper.enzymeTrail.enabled = true;
+                peeper.healingTrigger.SetActive(value: true);
+                InfectedMixin component = base.gameObject.GetComponent<InfectedMixin>();
+                if ((bool)component)
+                {
+                    component.SetInfectedAmount(0f);
+                }
+            }
+
 
             //item.item.gameObject.SetActive(true); //enable the item so it can be added to the water park
 
@@ -225,7 +248,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             var creature = embed.GetComponent<Creature>();
             if (creature.IsNotNull() && wpCreature.IsNotNull())
             {
-                creature.friendlyToPlayer = true;
+                //creature.friendlyToPlayer = true;
                 creature.cyclopsSonarDetectable = false;
 
 
@@ -399,7 +422,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         bool IsFriendlyToPlayer,
         bool IsBornInside,
         float Age,
-        bool IsMature
+        bool? IsMature
     );
 
     private record LoadingInhabitant(
@@ -606,10 +629,20 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             liveMixin.health = item.Inhabitant.Health;
             var infectedMixin = thisItem.GetComponent<InfectedMixin>();
             if (infectedMixin.IsNotNull())
+            {
+                log.Debug($"Setting infected amount for {thisItem.NiceName()} to {item.Inhabitant.InfectedAmount.ToStr()}");
                 infectedMixin.infectedAmount = item.Inhabitant.InfectedAmount;
+            }
+            else
+                log.Warn($"Item {thisItem.NiceName()} does not have an InfectedMixin component, skipping infected amount.");
             var peeper = thisItem.GetComponent<Peeper>();
             if (peeper.IsNotNull())
+            {
+                log.Debug($"Setting enzyme amount for peeper {thisItem.NiceName()} to {item.Inhabitant.EnzymeAmount.ToStr()}");
                 peeper.enzymeAmount = item.Inhabitant.EnzymeAmount;
+            }
+            else
+                log.Debug($"Item {thisItem.NiceName()} is not a peeper, skipping enzyme amount.");
             var egg = thisItem.GetComponent<CreatureEgg>();
             if (egg.IsNotNull())
             {
@@ -623,11 +656,11 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 var creature = thisItem.GetComponent<Creature>();
                 if (creature.IsNotNull() && wpCreature.IsNotNull())
                 {
-                    creature.friendlyToPlayer = true;// item.Inhabitant.IsFriendlyToPlayer;
+                    creature.friendlyToPlayer = item.Inhabitant.IsFriendlyToPlayer;
                     if (item.Inhabitant.IsBornInside)
                         wpCreature.InitializeCreatureBornInWaterPark();
                     wpCreature.bornInside = item.Inhabitant.IsBornInside;
-                    if (!item.Inhabitant.IsMature)
+                    if (!(item.Inhabitant.IsMature ?? true))
                     {
                         wpCreature.age = item.Inhabitant.Age;
                         wpCreature.SetMatureTime();
@@ -635,7 +668,6 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     else
                     {
                         wpCreature.isMature = true;
-                        wpCreature.ResetBreedTime();
                     }
 
                     //LivingThingsToAdd.Enqueue(new LivingCreature(thisItem, liveMixin, infectedMixin, creature, wpCreature, pickupable));
@@ -690,9 +722,13 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     thing.Live.shielded = true;
                     if (thing is LivingCreature creature)
                     {
+                        SetInsideState(creature);
+                        creature.WpCreature.swimBehaviour = creature.GameObject.GetComponent<SwimBehaviour>();
+                        creature.WpCreature.breedInterval = creature.WpCreature.data.growingPeriod * 0.5f;
+                        creature.WpCreature.ResetBreedTime();
                         creature.Creature.transform.position = RandomLocation(false);
                         creature.Creature.transform.localRotation = Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
-                        log.Debug($"Spawning creature {creature.GameObject.NiceName()} @ {creature.GameObject.transform.localPosition}");
+                        log.Debug($"Spawning creature {creature.GameObject.NiceName()} @ {creature.GameObject.transform.localPosition} with breed interval {creature.WpCreature.breedInterval}");
                         creature.GameObject.SetActive(true); //enable the item so it can be added to the water park
                     }
                     else if (thing is LivingEgg egg)
@@ -712,47 +748,46 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 if (Time.deltaTime > 0)
                     foreach (var item in _container.ToList())
                     {
-                        var wpCreature = item.item.GetComponent<WaterParkCreature>();
-                        var creature = item.item.GetComponent<Creature>();
-                        if (wpCreature.IsNotNull() && creature.IsNotNull())
+                        var living = LivingFrom(item.item);
+                        if (living is LivingCreature creature)
                         {
-                            creature.Aggression.Value = 0;
-                            creature.Hunger.Value = 0;
-                            creature.Scared.Value = 0;
-                            creature.Happy.Value = 1;
-                            creature.Friendliness.Value = 1;
+                            Update(creature);
+                            //creature.Aggression.Value = 0;
+                            //creature.Hunger.Value = 0;
+                            //creature.Scared.Value = 0;
+                            //creature.Happy.Value = 1;
+                            //creature.Friendliness.Value = 1;
 
 
+                            //var dir = (wpCreature.transform.position - waterPark!.position);
+                            //var dist = dir.magnitude;
+                            //dir /= dist;
+                            //if (FirstWallHit(new Ray(waterPark.position, dir), out var hit))
+                            //{
+                            //    var threshold = hit.distance * 0.7f;
 
-                            var dir = (wpCreature.transform.position - waterPark!.position);
-                            var dist = dir.magnitude;
-                            dir /= dist;
-                            if (FirstWallHit(new Ray(waterPark.position, dir), out var hit))
-                            {
-                                var threshold = hit.distance * 0.7f;
+                            //    var distanceFromGlass = Math.Max(0, hit.distance - dist);
 
-                                var distanceFromGlass = Math.Max(0, hit.distance - dist);
-
-                                if (distanceFromGlass < 0.5f)
-                                {
-                                    var force = -dir / (2f * distanceFromGlass + 0.1f) * 0.1f;
-                                    force *= Time.fixedDeltaTime / Time.deltaTime;
-                                    wpCreature.GetComponent<Rigidbody>().SafeDo(x => x.AddForce(force, ForceMode.Acceleration));
-                                }
+                            //    if (distanceFromGlass < 0.5f)
+                            //    {
+                            //        var force = -dir / (2f * distanceFromGlass + 0.1f) * 0.1f;
+                            //        force *= Time.fixedDeltaTime / Time.deltaTime;
+                            //        wpCreature.GetComponent<Rigidbody>().SafeDo(x => x.AddForce(force, ForceMode.Acceleration));
+                            //    }
 
 
-                                if (dist > hit.distance * 0.9f)
-                                {
-                                    //var force = -dir * (dist - threshold) / (20f * distanceFromGlass + 0.1f);
+                            //    if (dist > hit.distance * 0.9f)
+                            //    {
+                            //        //var force = -dir * (dist - threshold) / (20f * distanceFromGlass + 0.1f);
 
-                                    //force *= Time.fixedDeltaTime / Time.deltaTime;
+                            //        //force *= Time.fixedDeltaTime / Time.deltaTime;
 
-                                    //creature.GetComponent<Rigidbody>().SafeDo(x => x.AddForce(force, ForceMode.Acceleration));
-                                    wpCreature.transform.position = waterPark.position + dir * hit.distance * 0.9f;
-                                    //creature.transform.localEulerAngles = new Vector3(creature.transform.localEulerAngles.x, creature.transform.localEulerAngles.y + 180, creature.transform.localEulerAngles.z);
-                                    //log.Debug($"Corrected creature {creature.NiceName()} position to {creature.transform.localPosition}");
-                                }
-                            }
+                            //        //creature.GetComponent<Rigidbody>().SafeDo(x => x.AddForce(force, ForceMode.Acceleration));
+                            //        wpCreature.transform.position = waterPark.position + dir * hit.distance * 0.9f;
+                            //        //creature.transform.localEulerAngles = new Vector3(creature.transform.localEulerAngles.x, creature.transform.localEulerAngles.y + 180, creature.transform.localEulerAngles.z);
+                            //        //log.Debug($"Corrected creature {creature.NiceName()} position to {creature.transform.localPosition}");
+                            //    }
+                            //}
                             //                        creature.bornInside
                         }
                     }
@@ -761,5 +796,225 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         else
             log.Error($"MobileWaterPark.Udpate called without a valid container.");
 
+    }
+
+    private void SetInsideState(LivingCreature creature)
+    {
+        //creature.WpCreature.SetInsideState();
+        using var log = AV.NewLazyAvsLog();
+        if (creature.WpCreature.isInside)
+        {
+            return;
+        }
+        log.Debug($"Setting inside state for {creature.WpCreature.NiceName()}");
+
+        creature.WpCreature.isInside = true;
+
+        Animator animator = creature.WpCreature.gameObject.GetComponent<Creature>().GetAnimator();
+        if (animator != null)
+        {
+            AnimateByVelocity component = animator.GetComponent<AnimateByVelocity>();
+            if (component != null)
+            {
+                creature.WpCreature.outsideMoveMaxSpeed = component.animationMoveMaxSpeed;
+                component.animationMoveMaxSpeed = creature.WpCreature.swimMaxVelocity;
+            }
+        }
+
+        Locomotion component2 = creature.WpCreature.gameObject.GetComponent<Locomotion>();
+        component2.canMoveAboveWater = true;
+        creature.WpCreature.locomotionParametersOverrode = true;
+        creature.WpCreature.locomotionDriftFactor = component2.driftFactor;
+        component2.driftFactor = 0.1f;
+        component2.forwardRotationSpeed = 0.6f;
+        if (creature.WpCreature.swimBehaviour != null)
+        {
+            creature.WpCreature.outsideTurnSpeed = creature.WpCreature.swimBehaviour.turnSpeed;
+            creature.WpCreature.swimBehaviour.turnSpeed = 1f;
+        }
+
+        creature.WpCreature.disabledBehaviours = new List<Behaviour>();
+        Behaviour[] componentsInChildren = creature.WpCreature.GetComponentsInChildren<Behaviour>(includeInactive: true);
+        foreach (Behaviour behaviour in componentsInChildren)
+        {
+            if (behaviour == null)
+            {
+                log.Warn($"Discarded missing behaviour on a WaterParkCreature gameObject {creature.WpCreature.NiceName()}");
+            }
+            else
+            {
+                if (!behaviour.enabled)
+                {
+                    continue;
+                }
+
+                Type type = behaviour.GetType();
+
+                for (int j = 0; j < WaterParkCreature.behavioursToDisableInside.Length; j++)
+                {
+                    if (type.Equals(WaterParkCreature.behavioursToDisableInside[j]) || type.IsSubclassOf(WaterParkCreature.behavioursToDisableInside[j]))
+                    {
+                        log.Debug($"Disabling behaviour {behaviour.GetType().Name} {j + 1}/{WaterParkCreature.behavioursToDisableInside.Length} on {creature.WpCreature.NiceName()}");
+                        behaviour.enabled = false;
+                        creature.WpCreature.disabledBehaviours.Add(behaviour);
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    private LivingThing LivingFrom(Pickupable item)
+    {
+        var live = item.GetComponent<LiveMixin>();
+        var infect = item.GetComponent<InfectedMixin>();
+        var wpCreature = item.GetComponent<WaterParkCreature>();
+        var creature = item.GetComponent<Creature>();
+        var egg = item.GetComponent<CreatureEgg>();
+
+        if (creature.IsNotNull() && wpCreature.IsNotNull())
+            return new LivingCreature(item.gameObject, live, infect, creature, wpCreature, item);
+        else if (egg.IsNotNull())
+            return new LivingEgg(item.gameObject, live, infect, egg, item);
+        else
+            return new LivingThing(item.gameObject, live, infect, item);
+    }
+
+    private void UpdateMovement(LivingCreature creature)
+    {
+        if (Time.time > creature.WpCreature.timeNextSwim)
+        {
+            creature.WpCreature.swimTarget = RandomLocation(false);
+            creature.WpCreature.swimBehaviour.SwimTo(creature.WpCreature.swimTarget, Mathf.Lerp(creature.WpCreature.swimMinVelocity, creature.WpCreature.swimMaxVelocity, creature.WpCreature.age));
+            creature.WpCreature.timeNextSwim = Time.time + creature.WpCreature.swimInterval * UnityEngine.Random.Range(1f, 2f);
+        }
+
+        creature.WpCreature.transform.position = EnsureInside(creature.WpCreature.transform.position);
+        creature.WpCreature.swimTarget = EnsureInside(creature.WpCreature.swimTarget);
+
+    }
+
+    private void Update(LivingCreature creature)
+    {
+        UpdateMovement(creature);
+        double timePassed = DayNightCycle.main.timePassed;
+        if (!creature.WpCreature.isMature)
+        {
+            float a = (float)(creature.WpCreature.matureTime - (double)creature.WpCreature.data.growingPeriod);
+            creature.WpCreature.age = Mathf.InverseLerp(a, (float)creature.WpCreature.matureTime, (float)timePassed);
+            creature.WpCreature.transform.localScale = Mathf.Lerp(creature.WpCreature.data.initialSize, creature.WpCreature.data.maxSize, creature.WpCreature.age) * Vector3.one;
+            if (creature.WpCreature.age == 1f)
+            {
+                creature.WpCreature.isMature = true;
+                if (creature.WpCreature.data.canBreed)
+                {
+                    creature.WpCreature.breedInterval = creature.WpCreature.data.growingPeriod * 0.5f;
+                    if (creature.WpCreature.timeNextBreed < 0f)
+                    {
+                        creature.WpCreature.ResetBreedTime();
+                    }
+                }
+                else
+                {
+
+                    //this is some strange behavior. It seems to reinstantiate itself as an adult...
+                    AssetReferenceGameObject adultPrefab = creature.WpCreature.data.adultPrefab;
+                    if (adultPrefab != null && adultPrefab.RuntimeKeyIsValid())
+                    {
+                        using var log = AV.NewLazyAvsLog();
+                        log.Debug($"Reinstantiating {creature.WpCreature.NiceName()} as an adult.");
+
+                        AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, adultPrefab, creature.WpCreature.transform.position));
+                        _container!.RemoveItem(creature.WpCreature.GetComponent<Pickupable>());
+                        Destroy(creature.WpCreature.gameObject);
+                        return;
+                    }
+                }
+            }
+        }
+
+        if (creature.WpCreature.GetCanBreed() && timePassed > (double)creature.WpCreature.timeNextBreed)
+        {
+            using var log = AV.NewLazyAvsLog();
+            log.Debug($"Creature {creature.WpCreature.NiceName()} is ready to breed.");
+            creature.WpCreature.ResetBreedTime();
+            var breedingPartner = GetBreedingPartner(creature);
+            if (breedingPartner.IsNotNull())
+            {
+                breedingPartner.ResetBreedTime();
+                log.Debug($"Breeding {creature.WpCreature.NiceName()} with {breedingPartner.NiceName()}");
+                if (FirstWallHit(new Ray(creature.WpCreature.transform.position, Vector3.down), out var hit))
+                    AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, creature.WpCreature.data.eggOrChildPrefab, hit.point + Vector3.up * 0.2f));
+                else
+                    AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, creature.WpCreature.data.eggOrChildPrefab, creature.WpCreature.transform.position + Vector3.down));
+            }
+            else
+                log.Debug($"Creature {creature.WpCreature.NiceName()} could not find a breeding partner. Retrying in {creature.WpCreature.breedInterval}");
+        }
+    }
+
+    private WaterParkCreature? GetBreedingPartner(LivingCreature creature)
+    {
+        if (!Container.HasRoomFor(creature.Pickupable))
+        {
+            return null;
+        }
+
+        WaterParkCreature? result = null;
+        float num = float.MaxValue;
+        TechType techType = creature.WpCreature.GetTechType();
+        foreach (var item in Container)
+        {
+            if (!(item.item == creature.Pickupable))
+            {
+                WaterParkCreature? waterParkCreature = item.item.GetComponent<WaterParkCreature>();
+                if (waterParkCreature.IsNotNull()
+                    && waterParkCreature.GetCanBreed()
+                    && waterParkCreature.timeNextBreed < num
+                    && waterParkCreature.GetTechType() == techType)
+                {
+                    num = waterParkCreature.timeNextBreed;
+                    result = waterParkCreature;
+                }
+            }
+        }
+
+        return result;
+    }
+
+    private IEnumerator BornAsync(SmartLog log, AssetReferenceGameObject creaturePrefabReference, Vector3 position)
+    {
+        log.Write($"Spawning new creature from prefab {creaturePrefabReference.RuntimeKey} at {position}");
+        CoroutineTask<GameObject> task = AddressablesUtility.InstantiateAsync(creaturePrefabReference.RuntimeKey as string, null, position, Quaternion.identity, awake: false);
+        yield return task;
+        GameObject result = task.GetResult();
+        WaterParkCreature component = result.GetComponent<WaterParkCreature>();
+        if (component != null)
+        {
+            component.age = 0f;
+            component.bornInside = true;
+            component.InitializeCreatureBornInWaterPark();
+            result.transform.localScale = component.data.initialSize * Vector3.one;
+        }
+
+        Pickupable pickupable = result.EnsureComponent<Pickupable>();
+        result.SetActive(value: true);
+        _container!.AddItem(pickupable);
+        log.Write($"Spawned new creature {result.NiceName()} at {position} and added to water park.");
+    }
+
+    private Vector3 EnsureInside(Vector3 p)
+    {
+        var dir = (p - waterPark!.position);
+        var dist = dir.magnitude;
+        dir /= dist;
+        if (FirstWallHit(new Ray(waterPark.position, dir), out var hit))
+        {
+            if (dist > hit.distance * 0.9f)
+            {
+                return waterPark.position + dir * hit.distance * 0.9f;
+            }
+        }
+        return p;
     }
 }
