@@ -636,7 +636,14 @@ internal static class AvsVehicleBuilder
         SetupDamageComponents(av, seamoth);
         SetupLavaLarvaAttachPoints(av);
         SetupDenyBuildingTags(av);
-        av.collisionModel = av.Com.CollisionModel;
+        try
+        {
+            av.collisionModel = av.Com.CollisionModel;
+        }
+        catch (MissingFieldException ex)
+        {
+            log.Error("Assignment to Vehicle.collisionModel failed. Subnautica will not be able to manage the collision model", ex);
+        }
 
         if (av is Submarine sub3)
         {
