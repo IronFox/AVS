@@ -1,7 +1,7 @@
 ﻿using AVS.Log;
 using AVS.Util;
 
-namespace AVS.StorageComponents;
+namespace AVS.StorageComponents.WaterPark;
 
 internal class WaterParkStorageInput : StorageInput
 {

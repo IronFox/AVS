@@ -231,6 +231,9 @@ public readonly struct VehicleHatchDefinition
 /// <param name="CollidersAreLive">Function that returns true if the colliders are active and fish can move.
 /// If the function returns false, fish shall become invisible and immobile so as to now swim out of the containment</param>
 /// <param name="WallLayerMask">A bit-mask that encapsules all tank walls, floor, and ceiling in order to ray cast only the walls. Should not contain layer 0 (fish)</param>
+/// <param name="TopMargin">Margin at the top of the tank, in meters, that fish cannot enter.</param>
+/// <param name="BottomMargin">Margin at the bottom of the tank, in meters, that fish cannot enter.</param>
+/// <param name="HorizontalMargin">Margin at the sides of the tank, in meters, that fish cannot enter.</param>
 public readonly record struct MobileWaterPark(
     Transform ContentContainer,
     GameObject Root,
@@ -240,7 +243,10 @@ public readonly record struct MobileWaterPark(
     bool AllowReproduction,
     bool HatchEggs,
     Func<bool> CollidersAreLive,
-    int WallLayerMask
+    int WallLayerMask,
+    float TopMargin = 0,
+    float BottomMargin = 0,
+    float HorizontalMargin = 0
     )
 {
     internal static void Validate(MobileWaterPark wp)

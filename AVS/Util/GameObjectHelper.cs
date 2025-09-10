@@ -518,11 +518,13 @@ public static class GameObjectHelper
     /// <typeparam name="T">The type of the object, which must derive from <see cref="UnityEngine.Object"/>.</typeparam>
     /// <param name="item">The object to check for null before executing the action.</param>
     /// <param name="action">The action to execute if <paramref name="item"/> is not null.</param>
-    public static void SafeDo<T>(this T? item, Action<T> action) where T : Object
+    /// <returns><see langword="true"/> if the action was executed; <see langword="false"/> if <paramref name="item"/> was null.</returns>
+    public static bool SafeDo<T>(this T? item, Action<T> action) where T : Object
     {
         if (item.IsNull())
-            return;
+            return false;
         action(item);
+        return true;
     }
 
     /// <summary>

@@ -1,6 +1,7 @@
+using AVS.Util.Math;
+using HarmonyLib;
 using System.Linq;
 using System.Reflection.Emit;
-using HarmonyLib;
 
 namespace AVS.Util;
 
@@ -43,6 +44,20 @@ public static class CodeInstructionExtensions
                 return label.ToStr();
             case CodeInstruction i:
                 return i.ToStr();
+            case int i:
+                return i.ToString();
+            case long l:
+                return l.ToString();
+            case short s:
+                return s.ToString();
+            case byte b:
+                return b.ToString();
+            case float f:
+                return f.ToStr();
+            case double d:
+                return d.ToStr();
+            case bool b:
+                return b ? "true" : "false";
             default:
                 return $"'{o}'";
         }
