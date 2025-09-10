@@ -12,10 +12,13 @@ namespace AVS.StorageComponents.WaterPark
         InfectedMixin Infect,
         Pickupable Pickupable,
         WaterParkCreature WpCreature,
-        Creature Creature
+        Creature Creature,
+        Vector3? InitialPosition
         )
         : WaterParkInhabitant(WaterPark, GameObject, Live, Infect, Pickupable)
     {
+        public bool IsSupposedToBeHealthy { get; set; }
+        public bool IsSupposedToBeHero { get; set; }
         public Vector3 LastSwimTarget { get; private set; }
         public float SwimVelocity => Mathf.Lerp(WpCreature.swimMinVelocity, WpCreature.swimMaxVelocity, WpCreature.age) * 0.2f;
 
@@ -23,16 +26,36 @@ namespace AVS.StorageComponents.WaterPark
         {
             using var log = WaterPark.AV.NewLazyAvsLog();
 
-            log.Debug($"Instantiating creature {Creature.NiceName()} with infect={Infect.GetInfectedAmount()}");
+            var peeper = Creature as Peeper;
+            IsSupposedToBeHealthy = Infect.GetInfectedAmount() == 0f;
+            IsSupposedToBeHero = peeper.IsNotNull() && peeper.isHero;
+            log.Debug($"Instantiating creature {Creature.NiceName()} with healthy={IsSupposedToBeHealthy}, hero={IsSupposedToBeHero}");
 
             WpCreature.SetInsideState();
             WpCreature.swimBehaviour = GameObject.GetComponent<SwimBehaviour>();
-            WpCreature.breedInterval = WpCreature.data.growingPeriod * 0.5f;
+            WpCreature.breedInterval = 30;// WpCreature.data.growingPeriod * 0.5f;
             WpCreature.ResetBreedTime();
             WpCreature.timeNextSwim = 0;
-            Creature.transform.position = WaterPark.RandomLocation(false, Radius);
+            Creature.transform.position = InitialPosition ?? WaterPark.RandomLocation(false, Radius);
+            WaterPark.EnforceEnclosure(Creature.transform, Radius);
             Creature.transform.localRotation = Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
             WpCreature.transform.localScale = WpCreature.data.maxSize * Vector3.one;
+            if (IsSupposedToBeHero)
+            {
+                peeper!.UpdateEnzymeFX();
+                peeper.enzymeParticles.Play();
+                peeper.enzymeTrail.enabled = true;
+                peeper.healingTrigger.SetActive(value: true);
+            }
+            else if (peeper.IsNotNull())
+            {
+                peeper.UpdateEnzymeFX();
+                peeper.enzymeParticles.Stop();
+                peeper.enzymeTrail.enabled = false;
+                peeper.healingTrigger.SetActive(value: false);
+            }
+            if (Infect.renderers.IsNull())
+                log.Warn($"Creature {Creature.NiceName()} has no infected renderers");
             Infect.prevInfectedAmount = -1;
             Infect.UpdateInfectionShading();
             Rigidbody.SafeDo(rb =>
@@ -74,7 +97,7 @@ namespace AVS.StorageComponents.WaterPark
         private void RandomizeSwimTargetNow(float radius)
         {
             using var log = WaterPark.AV.NewLazyAvsLog();
-            LastSwimTarget = WpCreature.swimTarget = WaterPark.RandomLocation(false, radius + 1f);
+            LastSwimTarget = WpCreature.swimTarget = WaterPark.RandomLocation(false, radius + 0.5f);
             WpCreature.swimBehaviour.SwimTo(WpCreature.swimTarget, SwimVelocity);
             log.Debug($"Creature {Creature.NiceName()} swimming to {WpCreature.swimTarget} from {Creature.transform.position} (age={WpCreature.age}, minV={WpCreature.swimMinVelocity}, maxV={WpCreature.swimMaxVelocity})");
             WpCreature.timeNextSwim = Time.time + WpCreature.swimInterval * UnityEngine.Random.Range(1f, 2f);
@@ -112,7 +135,7 @@ namespace AVS.StorageComponents.WaterPark
                         AssetReferenceGameObject adultPrefab = WpCreature.data.adultPrefab;
                         if (adultPrefab != null && adultPrefab.RuntimeKeyIsValid())
                         {
-                            WaterPark.Reincarnate(this, adultPrefab, WpCreature.transform.position);
+                            WaterPark.Reincarnate(this, adultPrefab, Infect.GetInfectedAmount(), Creature is Peeper peeper ? peeper.enzymeAmount : 0, WpCreature.transform.position);
                             return;
                         }
                     }
@@ -137,6 +160,9 @@ namespace AVS.StorageComponents.WaterPark
 
             MonitorSwimTarget(radius);
             ClampPosition(radius);
+
+            if (IsSupposedToBeHealthy)
+                Infect.SetInfectedAmount(0);
             base.OnUpdate();
 
 

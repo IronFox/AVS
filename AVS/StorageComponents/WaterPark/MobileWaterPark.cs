@@ -75,6 +75,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     [SerializeField]
     private Transform? waterPark;
 
+    private Vector3? onAddLocation;
+
     internal AvsVehicle AV => vehicle.OrThrow(() => new InvalidOperationException($"Trying to access MobileWaterPark.av before it has been initialized"));
 
 
@@ -294,8 +296,10 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     infect,
                     embed,
                     wpCreature,
-                    creature
+                    creature,
+                    onAddLocation
                     ));
+                onAddLocation = null;
             }
             else
             {
@@ -303,7 +307,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 if (egg.IsNotNull())
                 {
                     log.Debug($"Item {embed.NiceName()} is an egg, adding as such.");
-                    InhabitantAddQueue.Enqueue(new WaterParkEggInhabitant(this, embed.gameObject, live, infect, egg, embed));
+                    InhabitantAddQueue.Enqueue(new WaterParkEggInhabitant(this, embed.gameObject, live, infect, egg, embed, onAddLocation));
+                    onAddLocation = null;
                 }
                 else
                     log.Error($"Item {embed.NiceName()} is neither a creature nor an egg, cannot add to water park.");
@@ -364,13 +369,20 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         else
             rs = center + random;
 
+
         if (dropToFloor)
         {
-            if (FirstWallHit(new Ray(rs, Vector3.down), out hit))
-                rs = hit.point + Vector3.up * bottomMargin;
+            rs = DropToFloor(rs, worldItemRadius);
         }
         return rs;
         //return EnsureInside(rs, null, worldItemRadius);
+    }
+
+    private Vector3 DropToFloor(Vector3 rs, float worldItemRadius)
+    {
+        if (FirstWallHit(new Ray(rs, Vector3.down), out var hit))
+            return hit.point + Vector3.up * (bottomMargin + worldItemRadius);
+        return rs;
     }
 
     private bool IsNotHatchingEgg(Pickupable pickupable, bool verbose) =>
@@ -817,27 +829,52 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         return result;
     }
 
-    private IEnumerator BornAsync(SmartLog log, AssetReferenceGameObject creaturePrefabReference, Vector3 position)
+    private IEnumerator BornAsync(SmartLog log, AssetReferenceGameObject creaturePrefabReference, Vector3 position, float? infectedAmount, float? enzymeAmount)
     {
         log.Write($"Spawning new creature from prefab {creaturePrefabReference.RuntimeKey} at {position}");
         CoroutineTask<GameObject> task = AddressablesUtility.InstantiateAsync(creaturePrefabReference.RuntimeKey as string, null, position, Quaternion.identity, awake: false);
         yield return task;
         GameObject result = task.GetResult();
-        WaterParkCreature component = result.GetComponent<WaterParkCreature>();
-        if (component != null)
+        WaterParkCreature creature = result.GetComponent<WaterParkCreature>();
+        onAddLocation = position;
+        if (creature.IsNotNull())
         {
-            component.age = 0f;
-            component.bornInside = true;
-            component.InitializeCreatureBornInWaterPark();
-            result.transform.localScale = component.data.initialSize * Vector3.one;
+            creature.age = 0f;
+            creature.bornInside = true;
+            creature.InitializeCreatureBornInWaterPark();
+            result.transform.localScale = creature.data.initialSize * Vector3.one;
+
+            var egg = result.GetComponent<CreatureEgg>();
+            if (egg.IsNotNull())
+            {
+                onAddLocation = DropToFloor(position, GetItemWorldRadius(creature.GetTechType(), result));
+            }
         }
+
+        Peeper? peeper = result.GetComponent<Peeper>();
+        if (peeper.IsNotNull())
+            peeper.enzymeAmount = enzymeAmount ?? 0;
 
         Pickupable pickupable = result.EnsureComponent<Pickupable>();
         result.SetActive(value: true);
+        if (infectedAmount.IsNotNull())
+        {
+            result.GetComponent<InfectedMixin>().SafeDo(x => x.SetInfectedAmount(infectedAmount.Value));
+        }
         _container!.AddItem(pickupable);
         log.Write($"Spawned new creature {result.NiceName()} at {position} and added to water park.");
     }
 
+    internal bool EnforceEnclosure(Transform transform, float radius)
+    {
+        var p = transform.position;
+        if (EnforceEnclosure(ref p, null, radius))
+        {
+            transform.position = p;
+            return true;
+        }
+        return false;
+    }
     internal bool EnforceEnclosure(ref Vector3 p, Rigidbody? rb, float creatureRadius, bool clampVertically = true)
     {
         //using var log = AV.NewLazyAvsLog(parameters: Params.Of(p, creatureRadius));
@@ -912,12 +949,12 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         return radius * go.transform.localScale.x;
     }
 
-    internal void Reincarnate(WaterParkCreatureInhabitant creature, AssetReferenceGameObject adultPrefab, Vector3 position)
+    internal void Reincarnate(WaterParkCreatureInhabitant creature, AssetReferenceGameObject adultPrefab, float infectedAmount, float enzymeAmount, Vector3 position)
     {
         using var log = AV.NewLazyAvsLog();
         log.Debug($"Reinstantiating {creature.WpCreature.NiceName()} as an adult.");
 
-        AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, adultPrefab, creature.WpCreature.transform.position));
+        AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, adultPrefab, creature.WpCreature.transform.position, infectedAmount, enzymeAmount));
         _container!.RemoveItem(creature.Pickupable, forced: true);
         Destroy(creature.GameObject);
     }
@@ -925,8 +962,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     internal void AddChild(SmartLog log, AssetReferenceGameObject eggOrChildPrefab, Vector3 position)
     {
         if (FirstWallHit(new Ray(position, Vector3.down), out var hit))
-            AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, eggOrChildPrefab, hit.point + Vector3.up * bottomMargin));
+            AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, eggOrChildPrefab, hit.point + Vector3.up * bottomMargin, 0, 0));
         else
-            AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, eggOrChildPrefab, position + Vector3.down));
+            AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, eggOrChildPrefab, position + Vector3.down, 0, 0));
     }
 }
