@@ -210,16 +210,19 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     private void MyOnRemoveItem(InventoryItem item)
     {
-        if (Inhabitants.TryGetValue(item.item.GetInstanceID(), out var inhab))
+        using var log = AV.NewLazyAvsLog(parameters: Params.Of(item.item));
+        var iid = item.item.gameObject.GetInstanceID();
+        if (Inhabitants.TryGetValue(iid, out var inhab))
         {
-            Inhabitants.Remove(item.item.GetInstanceID());
+            Inhabitants.Remove(iid);
             inhab.OnDeinstantiate();
         }
         else
-            Inhabitants.Remove(item.item.GetInstanceID());
+            log.Warn($"Item {item.item.NiceName()}/{iid} was not found in inhabitants list of water park {DisplayName.Rendered}, cannot remove.");
 
 
         item.item.gameObject.SetActive(false); //disable the item so it doesn't cause issues
+        log.Debug($"Remaining inhabitants: {Inhabitants.Count}");
     }
 
     private void MyOnAddItem(InventoryItem item)
@@ -340,7 +343,71 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         return rs;
     }
 
-    internal Vector3 RandomLocation(bool dropToFloor, float worldItemRadius)
+    private readonly record struct CreaturePosition(Degrees HAngle, Degrees VAngle, Vector3 Position, float Radius)
+    {
+        public CreaturePosition(Transform t, float radius)
+            : this(Degrees.FromEulerY(t.rotation), Degrees.Zero, t.position, radius)
+        { }
+    }
+
+    private readonly record struct Restricted(CreaturePosition Creature, Degrees MaxHAngleDelta, Degrees MaxVAngleDelta, Degrees MaxVAngle)
+    {
+        private static Degrees Random(Degrees max) => Degrees.RandomIn(-max, max);
+        private static Degrees Random(Degrees min, Degrees max) => Degrees.RandomIn(min, max);
+
+        public Vector3 GetRandomTarget(float distance = 2.5f)
+        {
+            using var log = SmartLog.ForAVS(RootModController.AnyInstance);
+
+            var a = Creature.HAngle + Random(MaxHAngleDelta);
+            var x = a.Rad.Sin;
+            var z = a.Rad.Cos;
+            var maxV = MaxVAngle;
+            var upMax = (Creature.VAngle + maxV).WrapToPlusMinus180().ClampTo(-maxV, maxV);
+            var upMin = (Creature.VAngle - maxV).WrapToPlusMinus180().ClampTo(-maxV, maxV);
+
+            var up = Random(upMin, upMax);
+
+            float y = up.Rad.Sin;
+            float r = up.Rad.Cos;
+            log.Debug($"a={a}, x={x.ToStr()}, z={z.ToStr()}, up={up}, y={y.ToStr()}, r={r.ToStr()}, av={Creature.VAngle}, up={up}, min={upMin}, max={upMax}, maxhr={MaxHAngleDelta}, maxvr={MaxVAngleDelta}, maxva={maxV}");
+
+
+            var dir = new Vector3(x * r, y, z * r);
+            return Creature.Position + dir * distance;
+        }
+    }
+
+    private bool GetAlignedRandomSwimTarget(Restricted creature, out Vector3 target)
+    {
+        target = creature.GetRandomTarget();
+
+        if (EnforceEnclosure(ref target, null, creature.Creature.Radius))
+            return false;
+        return true;
+    }
+
+    internal Vector3 GetRandomSwimTarget(Transform transform, float radius)
+    {
+        var creature = new CreaturePosition(transform, radius);
+        var restricted = new Restricted(creature, Degrees.Thirty, Degrees.Thirty / 2, Degrees.Thirty / 2);
+        var unrestricted = new Restricted(creature, Degrees.OneEighty, Degrees.Ninety, Degrees.Thirty);
+        for (int i = 0; i < 100; i++)
+        {
+
+            if (GetAlignedRandomSwimTarget(restricted, out var target))
+                return target;
+            if (GetAlignedRandomSwimTarget(restricted, out target))
+                return target;
+            if (GetAlignedRandomSwimTarget(restricted, out target))
+                return target; //three times restricted for one unrestricted attempt => usually restricted
+            if (GetAlignedRandomSwimTarget(unrestricted, out target))
+                return target;
+        }
+        throw new InvalidOperationException($"Failed to find a swim target for {transform.NiceName()} in water park {DisplayName.Rendered}");
+    }
+
+    internal Vector3 GetRandomLocation(bool dropToFloor, float worldItemRadius)
     {
         var center = waterPark!.position;
         var random = UnityEngine.Random.insideUnitSphere;
@@ -750,7 +817,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 {
                     var thing = InhabitantAddQueue.Dequeue();
 
-                    Inhabitants[thing.GameObject.GetInstanceID()] = thing;
+                    Inhabitants[thing.InstanceId] = thing;
                     thing.OnInstantiate();
                 }
                 if (Time.deltaTime > 0)
@@ -877,7 +944,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     }
     internal bool EnforceEnclosure(ref Vector3 p, Rigidbody? rb, float creatureRadius, bool clampVertically = true)
     {
-        //using var log = AV.NewLazyAvsLog(parameters: Params.Of(p, creatureRadius));
+        using var log = AV.NewLazyAvsLog(parameters: Params.Of(p, creatureRadius));
         var center = waterPark!.position;
         var dir = p - center;
         var hDir = dir.Flat();
@@ -888,40 +955,62 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         {
             hDir /= hDist;
             var origin = new Vector3(center.x, p.y, center.z);
-            if (FirstWallHit(new Ray(origin, hDir.UnFlat()), out var hit2))
+            var d = hDir.UnFlat();
+            if (FirstWallHit(new Ray(origin, d), out var hit2))
             {
                 float maxDistance = hit2.distance - creatureRadius - horizontalMargin;
                 if (hDist > maxDistance)
                 {
                     p = (origin.Flat() + hDir * (maxDistance - 0.05f)).UnFlat(p.y);
                     rs = true;
-                    rb.SafeDo(x => x.AddForce(-hDir.UnFlat() * push, ForceMode.VelocityChange));
+                    rb.SafeDo(x => x.AddForce(-d * push, ForceMode.VelocityChange));
                 }
+            }
+            else
+            {
+                log.Warn($"No wall hit found horizontally from {origin} towards {d}, cannot enforce horizontal enclosure.");
+                rs = true; //don't know where the wall is, so consider it out of bounds
             }
         }
         if (clampVertically)
         {
-            if (FirstWallHit(new Ray(p, Vector3.up), out var hit) && hit.distance < creatureRadius + topMargin)
+            if (FirstWallHit(new Ray(p, Vector3.up), out var hit))
             {
-
-                rb.SafeDo(x =>
+                if (hit.distance < creatureRadius + topMargin)
                 {
-                    if (x.velocity.y > 0)
-                        x.velocity = x.velocity.Flat();
-                    x.AddForce(Vector3.down * push, ForceMode.VelocityChange);
-                });
-                p = hit.point - Vector3.up * (creatureRadius + topMargin + 0.05f);
+                    rb.SafeDo(x =>
+                    {
+                        if (x.velocity.y > 0)
+                            x.velocity = x.velocity.Flat();
+                        x.AddForce(Vector3.down * push, ForceMode.VelocityChange);
+                    });
+                    p = hit.point - Vector3.up * (creatureRadius + topMargin + 0.05f);
+                    rs = true;
+                }
+            }
+            else
+            {
+                log.Warn($"No wall hit found upwards from {p}, cannot enforce top enclosure.");
                 rs = true;
             }
-            else if (FirstWallHit(new Ray(p, Vector3.down), out hit) && hit.distance < creatureRadius + bottomMargin)
+
+            if (FirstWallHit(new Ray(p, Vector3.down), out hit))
             {
-                rb.SafeDo(x =>
+                if (hit.distance < creatureRadius + bottomMargin)
                 {
-                    if (x.velocity.y < 0)
-                        x.velocity = x.velocity.Flat();
-                    x.AddForce(Vector3.up * push, ForceMode.VelocityChange);
-                });
-                p = hit.point + Vector3.up * (creatureRadius + bottomMargin + 0.05f);
+                    rb.SafeDo(x =>
+                    {
+                        if (x.velocity.y < 0)
+                            x.velocity = x.velocity.Flat();
+                        x.AddForce(Vector3.up * push, ForceMode.VelocityChange);
+                    });
+                    p = hit.point + Vector3.up * (creatureRadius + bottomMargin + 0.05f);
+                    rs = true;
+                }
+            }
+            else
+            {
+                log.Warn($"No wall hit found downwards from {p}, cannot enforce bottom enclosure.");
                 rs = true;
             }
         }
@@ -966,4 +1055,5 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         else
             AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, eggOrChildPrefab, position + Vector3.down, 0, 0));
     }
+
 }

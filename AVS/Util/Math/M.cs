@@ -643,6 +643,55 @@ public static class M
         if (live.maxHealth <= 0 || live.invincible) return "-%";
         return (live.health / live.maxHealth).ToString("#.#%", CultureInfo.CurrentCulture);
     }
+
+
+    /// <summary>
+    /// Clamps the specified value to ensure it falls within the inclusive range defined by the minimum and maximum
+    /// values.
+    /// </summary>
+    /// <typeparam name="T">The type of the value, which must implement <see cref="IComparable{T}"/>.</typeparam>
+    /// <param name="value">The value to clamp.</param>
+    /// <param name="min">The minimum allowable value.</param>
+    /// <param name="max">The maximum allowable value.</param>
+    /// <returns>The clamped value. If <paramref name="value"/> is less than <paramref name="min"/>, <paramref name="min"/> is
+    /// returned. If <paramref name="value"/> is greater than <paramref name="max"/>, <paramref name="max"/> is
+    /// returned. Otherwise, <paramref name="value"/> is returned unchanged.</returns>
+    public static T ClampTo<T>(this T value, T min, T max) where T : IComparable<T>
+    {
+        if (value.CompareTo(min) < 0) return min;
+        if (value.CompareTo(max) > 0) return max;
+        return value;
+    }
+
+    /// <summary>
+    /// Wraps the specified value within the range defined by the minimum and maximum bounds, using the specified loop
+    /// value to adjust the input.
+    /// </summary>
+    /// <remarks>This method ensures that the returned value is within the specified range by repeatedly 
+    /// adding or subtracting the <paramref name="loop"/> value as needed. The behavior assumes  that <paramref
+    /// name="loop"/> is positive and large enough to encompass the range  [<paramref name="min"/>, <paramref
+    /// name="max"/>].</remarks>
+    /// <param name="value">The value to be wrapped.</param>
+    /// <param name="min">The minimum bound of the range.</param>
+    /// <param name="max">The maximum bound of the range.</param>
+    /// <param name="loop">The value to add or subtract to wrap the input within the range.</param>
+    /// <returns>A value equivalent to <paramref name="value"/> that is within the range  [<paramref name="min"/>, <paramref
+    /// name="max"/>].</returns>
+    public static float WrapTo(this float value, float min, float max, float loop)
+    {
+        float range = max - min;
+        if (loop <= 0f || range < 0f)
+            return value; // invalid input, return as is
+
+        value -= min;
+        value = value - loop * Mathf.Floor(value / loop);
+        value += min;
+
+        // Clamp to [min, max] in case of floating point imprecision
+        if (value < min) value = min;
+        if (value > max) value = max;
+        return value;
+    }
 }
 
 

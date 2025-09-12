@@ -17,7 +17,7 @@ namespace AVS.StorageComponents.WaterPark
         internal override void OnInstantiate()
         {
             using var log = WaterPark.AV.NewLazyAvsLog();
-            Egg.transform.position = InitialPosition ?? WaterPark.RandomLocation(true, Radius);
+            Egg.transform.position = InitialPosition ?? WaterPark.GetRandomLocation(true, Radius);
             log.Debug($"Spawning egg {GameObject.NiceName()} @ {GameObject.transform.localPosition}");
             if (WaterPark.hatchEggs)
             {

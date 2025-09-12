@@ -11,6 +11,8 @@ namespace AVS.StorageComponents.WaterPark
         Pickupable Pickupable
         ) : INullTestableType
     {
+
+        public int InstanceId => GameObject.GetInstanceID();
         public float Radius => WaterPark.GetItemWorldRadius(Pickupable.GetTechType(), GameObject);
 
         public bool IsInstantiated { get; private set; }

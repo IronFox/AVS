@@ -9077,6 +9077,15 @@
             Returns "&lt;null&gt;" if the object is null.
             </summary>
         </member>
+        <member name="M:AVS.Util.GameObjectHelper.SanitizeObjectName(System.String)">
+            <summary>
+            Removes any content following the first opening parenthesis in the specified string,  and returns the sanitized
+            object name. If the input is null or empty, returns "&lt;none&gt;".
+            </summary>
+            <param name="text">The string to sanitize. Can be null or empty.</param>
+            <returns>The sanitized object name with content after the first opening parenthesis removed,  or "&lt;none&gt;" if the
+            input is null or empty.</returns>
+        </member>
         <member name="M:AVS.Util.GameObjectHelper.PathToString(UnityEngine.Component,UnityEngine.Transform)">
             <summary>
             Produces the full hierarchy path of a Transform as a single string using / as separator.
@@ -9760,6 +9769,168 @@
             <param name="other">The <see cref="T:AVS.Util.Math.BoundedRangeBuilder"/> whose range will be included. If the specified range is empty, this method
             has no effect.</param>
         </member>
+        <member name="T:AVS.Util.Math.Degrees">
+            <summary>
+            An angle in degrees.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.#ctor(System.Single)">
+            <summary>
+            An angle in degrees.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.Zero">
+            <summary>
+            Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing zero degrees.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.OneEighty">
+            <summary>
+            Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing 180 degrees.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.Thirty">
+            <summary>
+            Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing 30 degrees.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.FortyFive">
+            <summary>
+            Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing an angle of 45 degrees.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.Ninety">
+            <summary>
+            Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing 90 degrees.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.FromEulerY(UnityEngine.Quaternion)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.Degrees"/> instance representing the rotation around the Y-axis  extracted from the
+            specified quaternion.
+            </summary>
+            <param name="rotation">The quaternion from which to extract the Y-axis rotation.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Degrees"/> instance representing the Y-axis rotation in degrees.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.FromEulerX(UnityEngine.Quaternion)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.Degrees"/> instance representing the rotation around the X-axis  extracted from the
+            specified quaternion.
+            </summary>
+            <param name="rotation">The quaternion from which to extract the X-axis rotation.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Degrees"/> instance representing the rotation around the X-axis.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.FromEulerZ(UnityEngine.Quaternion)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.Degrees"/> instance representing the rotation around the Z-axis extracted from the
+            specified quaternion.
+            </summary>
+            <param name="rotation">The quaternion from which to extract the Z-axis rotation.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Degrees"/> instance representing the Z-axis rotation in degrees.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Addition(AVS.Util.Math.Degrees,AVS.Util.Math.Degrees)">
+            <summary>
+            Adds two <see cref="T:AVS.Util.Math.Degrees"/> instances and returns the result.
+            </summary>
+            <param name="a">The first <see cref="T:AVS.Util.Math.Degrees"/> instance to add.</param>
+            <param name="b">The second <see cref="T:AVS.Util.Math.Degrees"/> instance to add.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance representing the sum of <paramref name="a"/> and <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Subtraction(AVS.Util.Math.Degrees,AVS.Util.Math.Degrees)">
+            <summary>
+            Subtracts one <see cref="T:AVS.Util.Math.Degrees"/> instance from another and returns the result.
+            </summary>
+            <param name="a">The minuend, representing the first <see cref="T:AVS.Util.Math.Degrees"/> instance.</param>
+            <param name="b">The subtrahend, representing the second <see cref="T:AVS.Util.Math.Degrees"/> instance to subtract from <paramref
+            name="a"/>.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance representing the difference between <paramref name="a"/> and <paramref
+            name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Multiply(AVS.Util.Math.Degrees,System.Single)">
+            <summary>
+            Multiplies the specified angle by a scalar value.
+            </summary>
+            <param name="a">The angle, in degrees, to be multiplied.</param>
+            <param name="b">The scalar value by which to multiply the angle.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance representing the result of the multiplication.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Multiply(System.Single,AVS.Util.Math.Degrees)">
+            <summary>
+            Multiplies a scalar value by an angle in degrees.
+            </summary>
+            <param name="a">The scalar value to multiply.</param>
+            <param name="b">The angle, in degrees, to be scaled.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance representing the scaled angle.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Division(AVS.Util.Math.Degrees,System.Single)">
+            <summary>
+            Divides the value of the specified <see cref="T:AVS.Util.Math.Degrees"/> instance by a scalar value.
+            </summary>
+            <param name="a">The <see cref="T:AVS.Util.Math.Degrees"/> instance to be divided.</param>
+            <param name="b">The scalar value by which to divide the <paramref name="a"/> value. Must not be zero.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance representing the result of the division.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Division(System.Single,AVS.Util.Math.Degrees)">
+            <summary>
+            Divides a scalar value by an angle, returning a new <see cref="T:AVS.Util.Math.Degrees"/> instance.
+            </summary>
+            <param name="a">The scalar value to divide.</param>
+            <param name="b">The <see cref="T:AVS.Util.Math.Degrees"/> instance representing the divisor.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance representing the result of the division.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_UnaryNegation(AVS.Util.Math.Degrees)">
+            <summary>
+            Negates the value of the specified <see cref="T:AVS.Util.Math.Degrees"/> instance.
+            </summary>
+            <param name="a">The <see cref="T:AVS.Util.Math.Degrees"/> instance to negate.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance with the negated value.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Implicit(AVS.Util.Math.Radians)~AVS.Util.Math.Degrees">
+            <summary>
+            Converts an instance of <see cref="T:AVS.Util.Math.Radians"/> to an instance of <see cref="T:AVS.Util.Math.Degrees"/>.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.CompareTo(AVS.Util.Math.Degrees)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.WrapToPlusMinus180">
+            <summary>
+            Wraps the current angle value to the range of -180 to 180 degrees.
+            </summary>
+            <remarks>This method ensures that the angle remains within the standard range for representing
+            directional angles, wrapping values outside the range of -180 to 180 degrees back into it.</remarks>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance with the angle wrapped to the range of -180 to 180 degrees.</returns>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.Rad">
+            <summary>
+            Gets the current instance of the <see cref="T:AVS.Util.Math.Radians"/> class.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.RandomIn(AVS.Util.Math.Degrees,AVS.Util.Math.Degrees)">
+            <summary>
+            Generates a random angle within the specified range of degrees.
+            </summary>
+            <remarks>The range is inclusive of the lower bound and exclusive of the upper bound. Ensure
+            that <paramref name="a"/> is less than or equal to <paramref name="b"/> to avoid unexpected
+            results.</remarks>
+            <param name="a">The lower bound of the range, in degrees.</param>
+            <param name="b">The upper bound of the range, in degrees.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Degrees"/> instance representing a random angle between <paramref name="a"/> and <paramref
+            name="b"/>.</returns>
+        </member>
+        <member name="T:AVS.Util.Math.IAngle">
+            <summary>
+            Angle representation interface.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.IAngle.Value">
+            <summary>
+            Raw angle value.
+            </summary>
+        </member>
         <member name="T:AVS.Util.Math.IBoundsRange">
             <summary>
             Represents a range defined by a minimum and maximum value.
@@ -10373,6 +10544,35 @@
             <param name="live">Live mixin to produce the health percent of</param>
             <returns>String in the form "[v]%" where [v] is either 1.23 or - </returns>
         </member>
+        <member name="M:AVS.Util.Math.M.ClampTo``1(``0,``0,``0)">
+            <summary>
+            Clamps the specified value to ensure it falls within the inclusive range defined by the minimum and maximum
+            values.
+            </summary>
+            <typeparam name="T">The type of the value, which must implement <see cref="T:System.IComparable`1"/>.</typeparam>
+            <param name="value">The value to clamp.</param>
+            <param name="min">The minimum allowable value.</param>
+            <param name="max">The maximum allowable value.</param>
+            <returns>The clamped value. If <paramref name="value"/> is less than <paramref name="min"/>, <paramref name="min"/> is
+            returned. If <paramref name="value"/> is greater than <paramref name="max"/>, <paramref name="max"/> is
+            returned. Otherwise, <paramref name="value"/> is returned unchanged.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.WrapTo(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Wraps the specified value within the range defined by the minimum and maximum bounds, using the specified loop
+            value to adjust the input.
+            </summary>
+            <remarks>This method ensures that the returned value is within the specified range by repeatedly 
+            adding or subtracting the <paramref name="loop"/> value as needed. The behavior assumes  that <paramref
+            name="loop"/> is positive and large enough to encompass the range  [<paramref name="min"/>, <paramref
+            name="max"/>].</remarks>
+            <param name="value">The value to be wrapped.</param>
+            <param name="min">The minimum bound of the range.</param>
+            <param name="max">The maximum bound of the range.</param>
+            <param name="loop">The value to add or subtract to wrap the input within the range.</param>
+            <returns>A value equivalent to <paramref name="value"/> that is within the range  [<paramref name="min"/>, <paramref
+            name="max"/>].</returns>
+        </member>
         <member name="T:AVS.Util.Math.QuadraticSolution">
             <summary>
             Represents the solution(s) to a quadratic equation, which may include zero, one, or two real roots.
@@ -10532,6 +10732,107 @@
             <summary>
             Gets a value indicating whether all conditions are false.
             </summary>
+        </member>
+        <member name="T:AVS.Util.Math.Radians">
+            <summary>
+            An angle in radians.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.#ctor(System.Single)">
+            <summary>
+            An angle in radians.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Implicit(AVS.Util.Math.Degrees)~AVS.Util.Math.Radians">
+            <summary>
+            Converts degrees to radiants.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Addition(AVS.Util.Math.Radians,AVS.Util.Math.Radians)">
+            <summary>
+            Adds two <see cref="T:AVS.Util.Math.Radians"/> instances together.
+            </summary>
+            <param name="a">The first <see cref="T:AVS.Util.Math.Radians"/> instance to add.</param>
+            <param name="b">The second <see cref="T:AVS.Util.Math.Radians"/> instance to add.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> instance representing the sum of <paramref name="a"/> and <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Subtraction(AVS.Util.Math.Radians,AVS.Util.Math.Radians)">
+            <summary>
+            Subtracts one <see cref="T:AVS.Util.Math.Radians"/> value from another.
+            </summary>
+            <param name="a">The minuend, representing the first <see cref="T:AVS.Util.Math.Radians"/> value.</param>
+            <param name="b">The subtrahend, representing the second <see cref="T:AVS.Util.Math.Radians"/> value to subtract from <paramref name="a"/>.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> instance representing the result of the subtraction.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.CompareTo(AVS.Util.Math.Radians)">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Math.Radians.Sin">
+            <summary>
+            Gets the sine of the current value.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Radians.Cos">
+            <summary>
+            Gets the cosine of the current value.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Multiply(AVS.Util.Math.Radians,System.Single)">
+            <summary>
+            Multiplies the specified <see cref="T:AVS.Util.Math.Radians"/> value by a scalar.
+            </summary>
+            <param name="a">The <see cref="T:AVS.Util.Math.Radians"/> value to be multiplied.</param>
+            <param name="b">The scalar value to multiply by.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> instance representing the product of the original value and the scalar.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Multiply(System.Single,AVS.Util.Math.Radians)">
+            <summary>
+            Multiplies a scalar value by a <see cref="T:AVS.Util.Math.Radians"/> instance, scaling the angle.
+            </summary>
+            <param name="a">The scalar value to multiply.</param>
+            <param name="b">The <see cref="T:AVS.Util.Math.Radians"/> instance representing the angle to be scaled.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> instance representing the scaled angle.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Division(AVS.Util.Math.Radians,System.Single)">
+            <summary>
+            Divides the value of the specified <see cref="T:AVS.Util.Math.Radians"/> instance by a scalar value.
+            </summary>
+            <param name="a">The <see cref="T:AVS.Util.Math.Radians"/> instance to be divided.</param>
+            <param name="b">The scalar value by which to divide the <see cref="T:AVS.Util.Math.Radians"/> value.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> instance representing the result of the division.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Division(System.Single,AVS.Util.Math.Radians)">
+            <summary>
+            Divides a scalar value by a <see cref="T:AVS.Util.Math.Radians"/> value and returns the resulting <see cref="T:AVS.Util.Math.Radians"/>.
+            </summary>
+            <param name="a">The scalar value to divide.</param>
+            <param name="b">The <see cref="T:AVS.Util.Math.Radians"/> value to divide by. Must not have a <see cref="P:AVS.Util.Math.Radians.Value"/> of zero.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> representing the result of the division.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_UnaryNegation(AVS.Util.Math.Radians)">
+            <summary>
+            Negates the value of the specified <see cref="T:AVS.Util.Math.Radians"/> instance.
+            </summary>
+            <param name="a">The <see cref="T:AVS.Util.Math.Radians"/> instance to negate.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> instance with the negated value.</returns>
+        </member>
+        <member name="P:AVS.Util.Math.Radians.Deg">
+            <summary>
+            Gets the current value of the angle in degrees.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.RandomIn(AVS.Util.Math.Radians,AVS.Util.Math.Radians)">
+            <summary>
+            Generates a random angle within the specified range of radians.
+            </summary>
+            <param name="min">The minimum angle, in radians, that the result can be. Must be less than or equal to <paramref name="max"/>.</param>
+            <param name="max">The maximum angle, in radians, that the result can be. Must be greater than or equal to <paramref
+            name="min"/>.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Radians"/> instance representing a random angle between <paramref name="min"/> and <paramref
+            name="max"/> (inclusive).</returns>
         </member>
         <member name="T:AVS.Util.OrderedSet`1">
             <summary>
