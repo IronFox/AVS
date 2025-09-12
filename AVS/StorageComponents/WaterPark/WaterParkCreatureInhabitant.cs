@@ -28,7 +28,8 @@ namespace AVS.StorageComponents.WaterPark
         public Vector3 LastSwimTarget { get; private set; }
         public Vector3 NextSwimTarget { get; private set; }
         public float InterpolationProgress { get; private set; }
-        public float SwimVelocity => Mathf.Lerp(WpCreature.swimMinVelocity, WpCreature.swimMaxVelocity, WpCreature.age);
+        public float SwimVelocity => Mathf.Lerp(WpCreature.swimMinVelocity, WpCreature.swimMaxVelocity, WpCreature.age)
+            * (1f - 0.8f * Creature.Tired.Value);
 
         public float SwimTimeSeconds { get; private set; } = 1;
 
@@ -44,7 +45,7 @@ namespace AVS.StorageComponents.WaterPark
             var peeper = Creature as Peeper;
             IsSupposedToBeHealthy = Infect.GetInfectedAmount() == 0f;
             IsSupposedToBeHero = peeper.IsNotNull() && peeper.isHero;
-            log.Debug($"Instantiating creature {Creature.NiceName()} with healthy={IsSupposedToBeHealthy}, hero={IsSupposedToBeHero}");
+            log.Debug($"Instantiating creature {Creature.NiceName()} with healthy={IsSupposedToBeHealthy}, hero={IsSupposedToBeHero}, age={WpCreature.age}");
 
             SetInsideState();
             NextSwimTarget = LastSwimTarget = WpCreature.swimTarget = GameObject.transform.position;
@@ -217,7 +218,13 @@ namespace AVS.StorageComponents.WaterPark
             if (nextTargetUpdate <= 0f)
             {
                 nextTargetUpdate = 0.1f;
-                WpCreature.swimBehaviour.SwimTo(WpCreature.swimTarget = Vector3.LerpUnclamped(LastSwimTarget, NextSwimTarget, InterpolationProgress), SwimVelocity);
+                WpCreature.swimTarget = Vector3.LerpUnclamped(LastSwimTarget, NextSwimTarget, InterpolationProgress);
+                //if (M.SqrDistance(WpCreature.swimTarget, Creature.transform.position) < (1f + Radius))
+                //{
+                //    WpCreature.swimTarget = Creature.transform.position + (WpCreature.swimTarget - Creature.transform.position).normalized * (1f + Radius);
+                //    WaterPark.EnforceEnclosure(ref WpCreature.swimTarget, null, radius);
+                //}
+                WpCreature.swimBehaviour.SwimTo(WpCreature.swimTarget, SwimVelocity);
                 currentDebugSphere!.transform.position = WpCreature.swimTarget;
             }
 
@@ -237,7 +244,11 @@ namespace AVS.StorageComponents.WaterPark
         {
             using var log = NewLog();
             LastSwimTarget = WpCreature.swimTarget;
-            NextSwimTarget = WaterPark.GetRandomSwimTarget(GameObject.transform, radius);
+            NextSwimTarget = WaterPark.GetRandomSwimTarget(
+                GameObject.transform,
+                radius,
+                velocity: Rigidbody.SafeGet(x => (SwimVelocity + x.velocity.magnitude) / 2f, SwimVelocity)
+                );
             InterpolationProgress = 0;
             //resetSwimToIn = 0.1f;
             log.Debug($"Creature {Creature.NiceName()} swimming to {WpCreature.swimTarget} from {Creature.transform.position} (age={WpCreature.age}, minV={WpCreature.swimMinVelocity}, maxV={WpCreature.swimMaxVelocity})");
@@ -276,6 +287,7 @@ namespace AVS.StorageComponents.WaterPark
 
             Creature.Hunger.Value = 1f; //disable hunger
             Creature.Scared.Value = 0f; //disable fear
+            Creature.Aggression.Value = 0f; //disable aggression
 
             double timePassed = DayNightCycle.main.timePassed;
             if (!WpCreature.isMature)
@@ -337,7 +349,7 @@ namespace AVS.StorageComponents.WaterPark
         private void ClampPosition(float radius)
         {
             var p = GameObject.transform.position;
-            if (WaterPark.EnforceEnclosure(ref p, Rigidbody, radius))
+            if (WaterPark.EnforceEnclosure(ref p, Rigidbody, radius) != MobileWaterPark.EnforcementResult.Inside)
             {
                 using var log = NewLog();
                 //log.Debug($"Creature {Creature.NiceName()} was out of bounds at {WpCreature.transform.position}, clamping to {p}");

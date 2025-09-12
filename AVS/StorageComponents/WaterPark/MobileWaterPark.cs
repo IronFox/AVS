@@ -355,7 +355,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         private static Degrees Random(Degrees max) => Degrees.RandomIn(-max, max);
         private static Degrees Random(Degrees min, Degrees max) => Degrees.RandomIn(min, max);
 
-        public Vector3 GetRandomTarget(float distance = 2.5f)
+        public Vector3 GetRandomTarget(float distance)
         {
             using var log = SmartLog.ForAVS(RootModController.AnyInstance);
 
@@ -378,30 +378,39 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         }
     }
 
-    private bool GetAlignedRandomSwimTarget(Restricted creature, out Vector3 target)
+    private bool GetAlignedRandomSwimTarget(Restricted rest, out Vector3 target, float distance = 2.5f)
     {
-        target = creature.GetRandomTarget();
+        target = rest.GetRandomTarget(distance);
 
-        if (EnforceEnclosure(ref target, null, creature.Creature.Radius))
+        var rs = EnforceEnclosure(ref target, null, rest.Creature.Radius);
+        if (rs == EnforcementResult.Failed)
+            return false;
+        if (rs == EnforcementResult.Inside)
+            return true;
+        if (UnityEngine.Random.value < 0.5f) //50% chance to re-randomize anyway
+            return false;
+        float dist = (target - rest.Creature.Position).sqrMagnitude;
+        if (dist < M.Sqr(distance * 0.75f)) //too close
             return false;
         return true;
     }
 
-    internal Vector3 GetRandomSwimTarget(Transform transform, float radius)
+    internal Vector3 GetRandomSwimTarget(Transform transform, float radius, float velocity, float lookAhead = 5)
     {
         var creature = new CreaturePosition(transform, radius);
         var restricted = new Restricted(creature, Degrees.Thirty, Degrees.Thirty / 2, Degrees.Thirty / 2);
         var unrestricted = new Restricted(creature, Degrees.OneEighty, Degrees.Ninety, Degrees.Thirty);
+        float d = Mathf.Max((velocity * lookAhead), 1f + radius);
         for (int i = 0; i < 100; i++)
         {
 
-            if (GetAlignedRandomSwimTarget(restricted, out var target))
+            if (GetAlignedRandomSwimTarget(restricted, out var target, d))
                 return target;
-            if (GetAlignedRandomSwimTarget(restricted, out target))
+            if (GetAlignedRandomSwimTarget(restricted, out target, d))
                 return target;
-            if (GetAlignedRandomSwimTarget(restricted, out target))
+            if (GetAlignedRandomSwimTarget(restricted, out target, d))
                 return target; //three times restricted for one unrestricted attempt => usually restricted
-            if (GetAlignedRandomSwimTarget(unrestricted, out target))
+            if (GetAlignedRandomSwimTarget(unrestricted, out target, d))
                 return target;
         }
         throw new InvalidOperationException($"Failed to find a swim target for {transform.NiceName()} in water park {DisplayName.Rendered}");
@@ -778,6 +787,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     }
                     else
                     {
+                        wpCreature.age = 1;
                         wpCreature.isMature = true;
                     }
 
@@ -932,25 +942,33 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         log.Write($"Spawned new creature {result.NiceName()} at {position} and added to water park.");
     }
 
-    internal bool EnforceEnclosure(Transform transform, float radius)
+    internal EnforcementResult EnforceEnclosure(Transform transform, float radius)
     {
         var p = transform.position;
-        if (EnforceEnclosure(ref p, null, radius))
+        var rs = EnforceEnclosure(ref p, null, radius);
+        if (rs == EnforcementResult.Clamped)
         {
             transform.position = p;
-            return true;
+            return rs;
         }
-        return false;
+        return rs;
     }
-    internal bool EnforceEnclosure(ref Vector3 p, Rigidbody? rb, float creatureRadius, bool clampVertically = true)
+
+    internal enum EnforcementResult
+    {
+        Inside,
+        Clamped,
+        Failed
+    }
+    internal EnforcementResult EnforceEnclosure(ref Vector3 p, Rigidbody? rb, float creatureRadius, bool clampVertically = true)
     {
         using var log = AV.NewLazyAvsLog(parameters: Params.Of(p, creatureRadius));
         var center = waterPark!.position;
         var dir = p - center;
         var hDir = dir.Flat();
         var hDist = hDir.magnitude;
-        bool rs = false;
-        float push = 2f;
+        EnforcementResult rs = EnforcementResult.Inside;
+        float push = 1f;
         if (hDist > 0.001f)
         {
             hDir /= hDist;
@@ -962,14 +980,14 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 if (hDist > maxDistance)
                 {
                     p = (origin.Flat() + hDir * (maxDistance - 0.05f)).UnFlat(p.y);
-                    rs = true;
+                    rs = EnforcementResult.Clamped;
                     rb.SafeDo(x => x.AddForce(-d * push, ForceMode.VelocityChange));
                 }
             }
             else
             {
                 log.Warn($"No wall hit found horizontally from {origin} towards {d}, cannot enforce horizontal enclosure.");
-                rs = true; //don't know where the wall is, so consider it out of bounds
+                rs = EnforcementResult.Failed; //don't know where the wall is, so consider it out of bounds
             }
         }
         if (clampVertically)
@@ -985,13 +1003,13 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                         x.AddForce(Vector3.down * push, ForceMode.VelocityChange);
                     });
                     p = hit.point - Vector3.up * (creatureRadius + topMargin + 0.05f);
-                    rs = true;
+                    rs = rs != EnforcementResult.Failed ? EnforcementResult.Clamped : rs;
                 }
             }
             else
             {
                 log.Warn($"No wall hit found upwards from {p}, cannot enforce top enclosure.");
-                rs = true;
+                rs = EnforcementResult.Failed;
             }
 
             if (FirstWallHit(new Ray(p, Vector3.down), out hit))
@@ -1005,13 +1023,13 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                         x.AddForce(Vector3.up * push, ForceMode.VelocityChange);
                     });
                     p = hit.point + Vector3.up * (creatureRadius + bottomMargin + 0.05f);
-                    rs = true;
+                    rs = rs != EnforcementResult.Failed ? EnforcementResult.Clamped : rs;
                 }
             }
             else
             {
                 log.Warn($"No wall hit found downwards from {p}, cannot enforce bottom enclosure.");
-                rs = true;
+                rs = EnforcementResult.Failed;
             }
         }
         return rs;
