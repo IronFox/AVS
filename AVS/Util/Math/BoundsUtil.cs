@@ -114,7 +114,16 @@ namespace Assets.Behavior.Util.Math
             return M.MaxAxis(bounds.extents) > 10f;
         }
 
-        private static void RecurseComputeBounds(AVS.RootModController rmc, Matrix4x4 matrixToRoot, Transform transform, ref Bounds bounds, bool includeRenderers, bool includeColliders, Transform? excludeFrom)
+        private static void RecurseComputeBounds(
+            AVS.RootModController rmc,
+            Matrix4x4 matrixToRoot,
+            Transform transform,
+            ref Bounds bounds,
+            bool includeRenderers,
+            bool includeColliders,
+            bool includeInactiveGameObjects,
+            bool includeDisabledColliders,
+            Transform? excludeFrom)
         {
             using var log = SmartLog.LazyForAVS(rmc, parameters: Params.Of(transform, includeRenderers, includeColliders, excludeFrom));
             {
@@ -142,9 +151,9 @@ namespace Assets.Behavior.Util.Math
                 if (includeColliders)
                 {
                     var c = transform.GetComponent<Collider>();
-                    if (c && c.enabled && !c.isTrigger)
+                    if (c && (c.enabled || includeDisabledColliders) && !c.isTrigger)
                     {
-                        //log.Write($"Including {c.NiceName()} @{c.transform.localPosition} @{matrixToRoot}");
+                        //                        log.Debug($"Including {c.NiceName()} @{c.transform.localPosition} @{matrixToRoot}");
                         var wasTooBig = IsTooBig(bounds);
 
 
@@ -182,19 +191,31 @@ namespace Assets.Behavior.Util.Math
                                     log.Error(
                                         $"Computed bounds have gotten too large ({bounds}) after using collider capsule {capsule.center} r{capsule.radius} h{capsule.height} on {t}");
                                 break;
+                            default:
+                                log.Debug($"Ignoring unsupported collider type {c.GetType().Name} on {t}");
+                                break;
 
                         }
 
                     }
+                    //else
+                    //    log.Debug($"Skipping collider {c.NiceName()} on {transform.NiceName()} - no collider, disabled or trigger ({c.SafeGet(x => x.enabled, false)}, {c.SafeGet(x => x.isTrigger, false)})");
                 }
 
                 foreach (var child in transform.SafeGetChildren())
                 {
-                    if (!child.gameObject.activeSelf)
+                    if (!child.gameObject.activeSelf && !includeInactiveGameObjects)
                         continue;
 
-                    RecurseComputeBounds(rmc, matrixToRoot * child.ToLocalMatrix(), child, ref bounds,
-                        includeRenderers: includeRenderers, includeColliders: includeColliders, excludeFrom: excludeFrom);
+                    RecurseComputeBounds(rmc,
+                        matrixToRoot * child.ToLocalMatrix(),
+                        child,
+                        ref bounds,
+                        includeRenderers: includeRenderers,
+                        includeColliders: includeColliders,
+                        excludeFrom: excludeFrom,
+                        includeInactiveGameObjects: includeInactiveGameObjects,
+                        includeDisabledColliders: includeDisabledColliders);
                     //.Where(x => x.enabled)
                     //matrixToRoot = matrixToRoot* transform.ToLocalMatrix();
                 }
@@ -218,8 +239,18 @@ namespace Assets.Behavior.Util.Math
         /// langword="null"/>, no exclusions are applied.</param>
         /// <param name="applyLocalScale">If <see langword="true"/>, the local scale of the root transform is applied to the bounds computation;
         /// otherwise, the scale is ignored.</param>
+        /// <param name="includeDisabledColliders">If <see langword="true"/>, disabled colliders are included during the bounds computation; ignored otherwise</param>
+        /// <param name="includeInactiveGameObjects">If <see langword="true"/>, inactive child transforms are included during the bounds computation; ignored otherwise</param>
         /// <returns>A <see cref="Bounds3"/> representing the computed local bounds of the transform hierarchy.</returns>
-        public static Bounds3 ComputeScaledLocalBounds(this Transform rootTransform, AVS.RootModController rmc, bool includeRenderers, bool includeColliders, Transform? excludeFrom, bool applyLocalScale = true)
+        public static Bounds3 ComputeScaledLocalBounds(
+            this Transform rootTransform,
+            AVS.RootModController rmc,
+            bool includeRenderers,
+            bool includeColliders,
+            Transform? excludeFrom,
+            bool includeDisabledColliders = false,
+            bool applyLocalScale = true,
+            bool includeInactiveGameObjects = false)
         {
             Bounds bounds = new Bounds(Vector3.zero, M.V3(0));
 
@@ -230,7 +261,9 @@ namespace Assets.Behavior.Util.Math
                 ref bounds,
                 includeRenderers: includeRenderers,
                 includeColliders: includeColliders,
-                excludeFrom: excludeFrom);
+                excludeFrom: excludeFrom,
+                includeInactiveGameObjects: includeInactiveGameObjects,
+                includeDisabledColliders: includeDisabledColliders);
 
             return Bounds3.From(bounds);
         }

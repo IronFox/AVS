@@ -1,5 +1,6 @@
 ﻿using AVS.Log;
 using AVS.Util;
+using AVS.Util.Math;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
@@ -12,7 +13,7 @@ internal record WaterParkEggInhabitant(
     InfectedMixin Infect,
     CreatureEgg Egg,
     Pickupable Pickupable,
-    Vector3? InitialPosition) :
+    GlobalPosition? InitialPosition) :
     WaterParkInhabitant(WaterPark, GameObject, GameObject.transform, Live, Infect, Pickupable)
 {
     public bool IsHatching { get; private set; }
@@ -24,7 +25,7 @@ internal record WaterParkEggInhabitant(
     {
         using var log = NewLog();
         Egg.transform.localScale = 0.6f * Vector3.one;
-        Egg.transform.position = InitialPosition ?? WaterPark.GetRandomLocation(true, Radius);
+        Egg.transform.position = (InitialPosition ?? WaterPark.GetRandomLocation(true, Radius)).GlobalCoordinates;
         log.Debug($"Spawning egg {GameObject.NiceName()} @{InitialPosition} => {RootTransform.localPosition} @r={Radius} progress={Egg.progress}");
         if (WaterPark.hatchEggs)
         {
@@ -95,7 +96,7 @@ internal record WaterParkEggInhabitant(
                 ErrorMessage.AddMessage(Language.main.GetFormat("EggDiscovered", Language.main.Get(Egg.eggType.AsString())));
             }
 
-            WaterPark.AddChild(log, Egg.creaturePrefab, Egg.transform.position + Vector3.up);
+            WaterPark.AddChild(log, Egg.creaturePrefab, GlobalPosition.Of(Egg) + Vector3.up);
         }
         WaterPark.DestroyInhabitant(this);
     }

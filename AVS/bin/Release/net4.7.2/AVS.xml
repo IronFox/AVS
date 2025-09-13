@@ -10263,6 +10263,141 @@
             <returns>A <see cref="T:AVS.Util.Math.Degrees"/> instance representing a random angle between <paramref name="a"/> and <paramref
             name="b"/>.</returns>
         </member>
+        <member name="T:AVS.Util.Math.GlobalPosition">
+            <summary>
+            Represents a global position in 3D space.
+            </summary>
+            <remarks>This structure encapsulates a 3D position using a <see cref="T:UnityEngine.Vector3"/>.  It is immutable and
+            can be used to represent positions in a global coordinate system.</remarks>
+            <param name="GlobalCoordinates"></param>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.#ctor(UnityEngine.Vector3)">
+            <summary>
+            Represents a global position in 3D space.
+            </summary>
+            <remarks>This structure encapsulates a 3D position using a <see cref="T:UnityEngine.Vector3"/>.  It is immutable and
+            can be used to represent positions in a global coordinate system.</remarks>
+            <param name="GlobalCoordinates"></param>
+        </member>
+        <member name="P:AVS.Util.Math.GlobalPosition.GlobalCoordinates">
+            <summary></summary>
+        </member>
+        <member name="P:AVS.Util.Math.GlobalPosition.X">
+            <summary>
+            Gets the X-coordinate of the global position.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.GlobalPosition.Y">
+            <summary>
+            Gets the Y-coordinate of the object in global space.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.GlobalPosition.Z">
+            <summary>
+            Gets the Z-coordinate value from the global coordinate system.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.Of(UnityEngine.Transform)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.GlobalPosition"/> instance from the specified <see cref="T:UnityEngine.Transform"/>.
+            </summary>
+            <param name="t">The <see cref="T:UnityEngine.Transform"/> whose position will be used to create the <see cref="T:AVS.Util.Math.GlobalPosition"/>.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the position of the specified <see cref="T:UnityEngine.Transform"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.Of(UnityEngine.RaycastHit)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.GlobalPosition"/> instance from the specified <see cref="T:UnityEngine.RaycastHit"/>.
+            </summary>
+            <param name="hit">The <see cref="T:UnityEngine.RaycastHit"/> containing the point data to initialize the <see cref="T:AVS.Util.Math.GlobalPosition"/>.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the position of the <paramref name="hit"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.Of(UnityEngine.GameObject)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.GlobalPosition"/> instance from the specified <see cref="T:UnityEngine.GameObject"/>.
+            </summary>
+            <param name="go">The <see cref="T:UnityEngine.GameObject"/> from which to create the <see cref="T:AVS.Util.Math.GlobalPosition"/>.</param>
+            <returns>A <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the global position of the specified <see cref="T:UnityEngine.GameObject"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.Of(UnityEngine.Component)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.GlobalPosition"/> instance based on the specified component's transform.
+            </summary>
+            <param name="c">The component whose transform is used to determine the global position. Cannot be <see langword="null"/>.</param>
+            <returns>A <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the global position of the specified component.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.Flat">
+            <summary>
+            Projects the global coordinates onto the Y plane, returning a flattened representation.
+            </summary>
+            <returns>A <see cref="T:UnityEngine.Vector2"/> representing the 2D projection of the global coordinates.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.AtYOf(AVS.Util.Math.GlobalPosition)">
+            <summary>
+            Creates a new <see cref="T:AVS.Util.Math.GlobalPosition"/> with the same X and Z coordinates as the current instance  and
+            the Y coordinate of the specified <paramref name="p"/>.
+            </summary>
+            <param name="p">The <see cref="T:AVS.Util.Math.GlobalPosition"/> whose Y coordinate will be used in the new position.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.GlobalPosition"/> with the updated Y coordinate.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.ToLocal(UnityEngine.Transform)">
+            <summary>
+            Converts the current global position to a local position relative to the specified transform.
+            </summary>
+            <param name="transform">The transform to which the global position will be converted.</param>
+            <returns>A <see cref="T:AVS.Util.Math.LocalPosition"/> representing the position relative to the specified transform.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.ToLocal(UnityEngine.Component)">
+            <summary>
+            Converts the global position of the specified <see cref="T:UnityEngine.Behaviour"/> to a local position.
+            </summary>
+            <param name="c">The <see cref="T:UnityEngine.Component"/> whose global position will be converted.</param>
+            <returns>A <see cref="T:AVS.Util.Math.LocalPosition"/> representing the position of the specified <see cref="T:UnityEngine.Behaviour"/>  relative
+            to the local coordinate system.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.op_Addition(AVS.Util.Math.GlobalPosition,UnityEngine.Vector3)">
+            <summary>
+            Adds a <see cref="T:UnityEngine.Vector3"/> offset to a <see cref="T:AVS.Util.Math.GlobalPosition"/> and returns the resulting position.
+            </summary>
+            <param name="a">The initial <see cref="T:AVS.Util.Math.GlobalPosition"/> to which the offset will be applied.</param>
+            <param name="b">The <see cref="T:UnityEngine.Vector3"/> representing the offset to apply to the global coordinates.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the result of adding the offset <paramref name="b"/> to
+            <paramref name="a"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.op_Subtraction(AVS.Util.Math.GlobalPosition,AVS.Util.Math.GlobalPosition)">
+            <summary>
+            Subtracts the global coordinates of one <see cref="T:AVS.Util.Math.GlobalPosition"/> from another.
+            </summary>
+            <param name="a">The minuend, representing the first <see cref="T:AVS.Util.Math.GlobalPosition"/>.</param>
+            <param name="b">The subtrahend, representing the second <see cref="T:AVS.Util.Math.GlobalPosition"/>.</param>
+            <returns>A <see cref="T:UnityEngine.Vector3"/> representing the difference between the global coordinates of <paramref name="a"/>
+            and <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.FromGlobalCoordinates(System.Nullable{UnityEngine.Vector3})">
+            <summary>
+            Converts a nullable 3D vector representing global coordinates into a <see cref="T:AVS.Util.Math.GlobalPosition"/> object.
+            </summary>
+            <param name="position">The nullable <see cref="T:UnityEngine.Vector3"/> representing the global coordinates. If null, the method returns null.</param>
+            <returns>A <see cref="T:AVS.Util.Math.GlobalPosition"/> object representing the specified global coordinates, or null if <paramref
+            name="position"/> is null.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.RayInDirection(UnityEngine.Vector3)">
+            <summary>
+            Creates a ray originating from the current position and extending in the specified direction.
+            </summary>
+            <param name="dir">The direction vector in which the ray extends. This vector should be normalized for accurate results.</param>
+            <returns>A <see cref="T:UnityEngine.Ray"/> instance starting at the current position and pointing in the specified direction.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.AtGlobalY(System.Single)">
+            <summary>
+            Creates a new <see cref="T:AVS.Util.Math.GlobalPosition"/> with the specified global Y-coordinate,  while retaining the
+            current X and Z coordinates.
+            </summary>
+            <param name="y">The global Y-coordinate to set for the new position.</param>
+            <returns>A <see cref="T:AVS.Util.Math.GlobalPosition"/> instance with the specified Y-coordinate and the current X and Z coordinates.</returns>
+        </member>
         <member name="T:AVS.Util.Math.IAngle">
             <summary>
             Angle representation interface.
@@ -10354,6 +10489,54 @@
             <param name="other">The other object representing a range to compare against.</param>
             <returns><see langword="true"/> if the range of <paramref name="self"/> overlaps with the range of <paramref
             name="other"/>; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="T:AVS.Util.Math.LocalPosition">
+            <summary>
+            Represents a position relative to a specific origin in 3D space.
+            </summary>
+            <remarks>A <see cref="T:AVS.Util.Math.LocalPosition"/> encapsulates a 3D position vector and the associated origin
+            transform. It can be converted to a global position using the <see cref="M:AVS.Util.Math.LocalPosition.ToGlobal"/> method.</remarks>
+            <param name="LocalCoordinates">The local coordinates</param>
+            <param name="Origin">The origin which the coordinates are relative to</param>
+        </member>
+        <member name="M:AVS.Util.Math.LocalPosition.#ctor(UnityEngine.Vector3,UnityEngine.Transform)">
+            <summary>
+            Represents a position relative to a specific origin in 3D space.
+            </summary>
+            <remarks>A <see cref="T:AVS.Util.Math.LocalPosition"/> encapsulates a 3D position vector and the associated origin
+            transform. It can be converted to a global position using the <see cref="M:AVS.Util.Math.LocalPosition.ToGlobal"/> method.</remarks>
+            <param name="LocalCoordinates">The local coordinates</param>
+            <param name="Origin">The origin which the coordinates are relative to</param>
+        </member>
+        <member name="P:AVS.Util.Math.LocalPosition.LocalCoordinates">
+            <summary>The local coordinates</summary>
+        </member>
+        <member name="P:AVS.Util.Math.LocalPosition.Origin">
+            <summary>The origin which the coordinates are relative to</summary>
+        </member>
+        <member name="M:AVS.Util.Math.LocalPosition.LerpUnclamped(AVS.Util.Math.LocalPosition,AVS.Util.Math.LocalPosition,System.Single)">
+            <summary>
+            Linearly interpolates between two <see cref="T:AVS.Util.Math.LocalPosition"/> instances without clamping the interpolation
+            factor.
+            </summary>
+            <remarks>This method does not clamp the value of <paramref name="t"/>. If clamping is
+            required,  consider using an alternative method or manually constrain the value of <paramref
+            name="t"/>.</remarks>
+            <param name="a">The starting <see cref="T:AVS.Util.Math.LocalPosition"/>.</param>
+            <param name="b">The ending <see cref="T:AVS.Util.Math.LocalPosition"/>.</param>
+            <param name="t">The interpolation factor. Values less than 0 extrapolate beyond <paramref name="a"/>,  and values greater
+            than 1 extrapolate beyond <paramref name="b"/>.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.LocalPosition"/> that represents the interpolated position between  <paramref name="a"/>
+            and <paramref name="b"/> based on the interpolation factor <paramref name="t"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.LocalPosition.ToGlobal">
+            <summary>
+            Converts the current local position to a global position.
+            </summary>
+            <returns>A <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the position in global coordinates.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.LocalPosition.ToString">
+            <inheritdoc/>
         </member>
         <member name="T:AVS.Util.Math.M">
             <summary>
@@ -12809,7 +12992,7 @@
             <see cref="T:UnityEngine.CapsuleCollider"/>, and other related types. These methods are designed to simplify  common
             operations such as determining containment, translating bounds, and computing corner points.</remarks>
         </member>
-        <member name="M:Assets.Behavior.Util.Math.BoundsUtil.ComputeScaledLocalBounds(UnityEngine.Transform,AVS.RootModController,System.Boolean,System.Boolean,UnityEngine.Transform,System.Boolean)">
+        <member name="M:Assets.Behavior.Util.Math.BoundsUtil.ComputeScaledLocalBounds(UnityEngine.Transform,AVS.RootModController,System.Boolean,System.Boolean,UnityEngine.Transform,System.Boolean,System.Boolean,System.Boolean)">
             <summary>
             Computes the scaled local bounds of a transform hierarchy, optionally including renderers and colliders.
             </summary>
@@ -12823,6 +13006,8 @@
             langword="null"/>, no exclusions are applied.</param>
             <param name="applyLocalScale">If <see langword="true"/>, the local scale of the root transform is applied to the bounds computation;
             otherwise, the scale is ignored.</param>
+            <param name="includeDisabledColliders">If <see langword="true"/>, disabled colliders are included during the bounds computation; ignored otherwise</param>
+            <param name="includeInactiveGameObjects">If <see langword="true"/>, inactive child transforms are included during the bounds computation; ignored otherwise</param>
             <returns>A <see cref="T:AVS.Util.Math.Bounds3"/> representing the computed local bounds of the transform hierarchy.</returns>
         </member>
     </members>

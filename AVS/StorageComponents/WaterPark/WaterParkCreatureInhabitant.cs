@@ -19,14 +19,15 @@ namespace AVS.StorageComponents.WaterPark
         Pickupable Pickupable,
         WaterParkCreature WpCreature,
         Creature Creature,
-        Vector3? InitialPosition,
+        GlobalPosition? InitialPosition,
         Quaternion? InitialRotation
         )
         : WaterParkInhabitant(WaterPark, GameObject, GameObject.transform, Live, Infect, Pickupable)
     {
         public bool IsSupposedToBeHero { get; set; }
-        public Vector3 LastSwimTarget { get; private set; }
-        public Vector3 NextSwimTarget { get; private set; }
+        public LocalPosition LastSwimTarget { get; private set; }
+        public LocalPosition NextSwimTarget { get; private set; }
+        public LocalPosition LastAppliedSwimTarget { get; private set; }
         public float InterpolationProgress { get; private set; }
         public float SwimVelocity => Mathf.Lerp(WpCreature.swimMinVelocity, WpCreature.swimMaxVelocity, WpCreature.age)
             * (1f - 0.8f * Creature.Tired.Value) * CreatureScale;
@@ -36,6 +37,7 @@ namespace AVS.StorageComponents.WaterPark
 
 
         public Vector3 CurrentScale => Vector3.one * (WpCreature.data.maxSize * CreatureScale);
+
 
 #if WATERPARK_DEBUG
         private Queue<GameObject> debugSpheres = new();
@@ -57,7 +59,7 @@ namespace AVS.StorageComponents.WaterPark
                 WpCreature.data.maxSize = scale; //assume something hacky
             }
             RootTransform.localScale = CurrentScale;
-            RootTransform.position = InitialPosition ?? WaterPark.GetRandomLocation(false, Radius);
+            RootTransform.position = (InitialPosition ?? WaterPark.GetRandomLocation(false, Radius)).GlobalCoordinates;
             RootTransform.rotation = InitialRotation ?? Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
 
             WpCreature.pickupable = Pickupable;
@@ -68,7 +70,11 @@ namespace AVS.StorageComponents.WaterPark
             log.Debug($"Instantiating creature {Creature.NiceName()} @{RootTransform.position}/{RootTransform.localPosition} with healthy={ExpectedInfectionLevel}, hero={IsSupposedToBeHero}, age={WpCreature.age}, radius={Radius.ToStr()}");
 
             SetInsideState();
-            NextSwimTarget = LastSwimTarget = WpCreature.swimTarget = GameObject.transform.position;
+            Creature.ScanCreatureActions();
+            Creature.AllowCreatureUpdates(false);
+
+            LastAppliedSwimTarget = NextSwimTarget = LastSwimTarget = GlobalPosition.Of(GameObject).ToLocal(WaterPark);
+            WpCreature.swimTarget = LastSwimTarget.LocalCoordinates;
             WpCreature.swimBehaviour = GameObject.GetComponent<SwimBehaviour>();
             WpCreature.breedInterval = WpCreature.data.growingPeriod * 0.5f;
             WpCreature.ResetBreedTime();
@@ -76,7 +82,7 @@ namespace AVS.StorageComponents.WaterPark
             if (WaterPark.EnforceEnclosure(Creature.transform, Radius) == MobileWaterPark.EnforcementResult.Failed)
             {
                 log.Warn($"Creature {Creature.NiceName()} with radius {Radius} could not be placed inside the enclosure at {Creature.transform.position}, trying to move.");
-                Creature.transform.position = WaterPark.GetRandomLocation(false, Radius);
+                Creature.transform.position = WaterPark.GetRandomLocation(false, Radius).GlobalCoordinates;
                 if (WaterPark.EnforceEnclosure(Creature.transform, Radius) == MobileWaterPark.EnforcementResult.Failed)
                 {
                     log.Error($"Creature {Creature.NiceName()} radius {Radius} could still not be placed inside the enclosure at {Creature.transform.position}, destroying it.");
@@ -107,7 +113,7 @@ namespace AVS.StorageComponents.WaterPark
             {
                 rb.interpolation = RigidbodyInterpolation.Interpolate;
                 rb.detectCollisions = false;
-                rb.angularDrag = 0.5f;
+                //rb.angularDrag = 0.5f;
             });
 
 #if WATERPARK_DEBUG
@@ -139,12 +145,13 @@ namespace AVS.StorageComponents.WaterPark
                 GameObject.SetActive(value: true);
             }
 
-            Animator animator = GameObject.GetComponent<Creature>().GetAnimator();
+            Animator animator = Creature.GetAnimator();
             if (animator != null)
             {
                 AnimateByVelocity component = animator.GetComponent<AnimateByVelocity>();
                 if (component != null)
                 {
+                    log.Debug($"Overriding max movement speed {component.animationMoveMaxSpeed.ToStr()} with {WpCreature.swimMaxVelocity.ToStr()}");
                     WpCreature.outsideMoveMaxSpeed = component.animationMoveMaxSpeed;
                     component.animationMoveMaxSpeed = WpCreature.swimMaxVelocity;
                 }
@@ -207,6 +214,9 @@ namespace AVS.StorageComponents.WaterPark
                         || type == typeof(AvoidPosition)
                         || type == typeof(SeaDragonAggressiveTowardsSharks)
                         || type == typeof(SeaDragonCurrents)
+
+                        || type == typeof(SwimToMushroom)
+                        || type == typeof(Coil)
 
                         )
                         doDisable = true;
@@ -275,7 +285,10 @@ namespace AVS.StorageComponents.WaterPark
             if (nextTargetUpdate <= 0f)
             {
                 nextTargetUpdate = 0.1f;
-                WpCreature.swimTarget = Vector3.LerpUnclamped(LastSwimTarget, NextSwimTarget, InterpolationProgress);
+                LastAppliedSwimTarget = LocalPosition
+                    .LerpUnclamped(LastSwimTarget, NextSwimTarget, InterpolationProgress);
+                WpCreature.swimTarget = LastAppliedSwimTarget
+                    .ToGlobal().GlobalCoordinates;
                 //if (M.SqrDistance(WpCreature.swimTarget, Creature.transform.position) < (1f + Radius))
                 //{
                 //    WpCreature.swimTarget = Creature.transform.position + (WpCreature.swimTarget - Creature.transform.position).normalized * (1f + Radius);
@@ -291,12 +304,12 @@ namespace AVS.StorageComponents.WaterPark
         private void RandomizeSwimTargetNow(float radius)
         {
             using var log = NewLog(Params.Of(radius));
-            LastSwimTarget = WpCreature.swimTarget;
+            LastSwimTarget = LastAppliedSwimTarget;
             NextSwimTarget = WaterPark.GetRandomSwimTarget(
                 GameObject.transform,
                 radius,
                 velocity: Rigidbody.SafeGet(x => (SwimVelocity + x.velocity.magnitude) / 2f, SwimVelocity)
-                );
+                ).ToLocal(WaterPark);
             InterpolationProgress = 0;
             //resetSwimToIn = 0.1f;
             log.Debug($"Creature {Creature.NiceName()} swimming to {WpCreature.swimTarget} from {Creature.transform.position} (age={WpCreature.age.ToStr()}, minV={WpCreature.swimMinVelocity.ToStr()}, maxV={WpCreature.swimMaxVelocity.ToStr()}), radius={radius.ToStr()}");
@@ -379,7 +392,7 @@ namespace AVS.StorageComponents.WaterPark
                 {
                     breedingPartner.WpCreature.ResetBreedTime();
                     log.Debug($"Breeding {Creature.NiceName()} with {breedingPartner.Creature.NiceName()}");
-                    WaterPark.AddChild(log, WpCreature.data.eggOrChildPrefab, GameObject.transform.position);
+                    WaterPark.AddChild(log, WpCreature.data.eggOrChildPrefab, GlobalPosition.Of(GameObject));
                 }
                 else
                     log.Debug($"Creature {Creature.NiceName()} could not find a breeding partner. Retrying in {WpCreature.breedInterval}");
@@ -402,11 +415,11 @@ namespace AVS.StorageComponents.WaterPark
         private void ClampPosition(float radius)
         {
             using var log = NewLog(Params.Of(radius));
-            var p = RootTransform.position;
+            var p = GlobalPosition.Of(RootTransform);
             if (WaterPark.EnforceEnclosure(ref p, Rigidbody, radius) != MobileWaterPark.EnforcementResult.Inside)
             {
                 //log.Debug($"Creature {Creature.NiceName()} was out of bounds at {WpCreature.transform.position}, clamping to {p}");
-                RootTransform.position = p;
+                RootTransform.position = p.GlobalCoordinates;
                 RandomizeSwimTargetNow(radius);
             }
         }
@@ -450,6 +463,10 @@ namespace AVS.StorageComponents.WaterPark
         internal override void SignalCollidersChanged(bool collidersLive)
         {
             GameObject.SetActive(collidersLive); //disable so it doesn't cause issues
+            if (collidersLive)
+            {
+                //RandomizeSwimTargetNow(Radius);
+            }
         }
     }
 }

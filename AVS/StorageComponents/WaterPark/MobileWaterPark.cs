@@ -81,7 +81,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     [SerializeField]
     private Transform? waterPark;
 
-    private Vector3? onAddLocation;
+    private GlobalPosition? onAddLocation;
     private Quaternion? onAddRotation;
 
     internal AvsVehicle AV => vehicle.OrThrow(() => new InvalidOperationException($"Trying to access MobileWaterPark.av before it has been initialized"));
@@ -320,7 +320,15 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 if (egg.IsNotNull())
                 {
                     log.Debug($"Item {embed.NiceName()} is an egg, adding as such.");
-                    InhabitantAddQueue.Enqueue(new WaterParkEggInhabitant(this, embed.gameObject, live, infect, egg, embed, onAddLocation));
+                    InhabitantAddQueue.Enqueue(
+                        new WaterParkEggInhabitant(
+                            this,
+                            embed.gameObject,
+                            live,
+                            infect,
+                            egg,
+                            embed,
+                            onAddLocation));
                     onAddLocation = null;
                 }
                 else
@@ -353,10 +361,10 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         return rs;
     }
 
-    private readonly record struct CreaturePosition(Degrees HAngle, Degrees VAngle, Vector3 Position, float Radius)
+    private readonly record struct CreaturePosition(Degrees HAngle, Degrees VAngle, GlobalPosition Position, float Radius)
     {
         public CreaturePosition(Transform t, float radius)
-            : this(Degrees.FromEulerY(t.rotation), Degrees.Zero, t.position, radius)
+            : this(Degrees.FromEulerY(t.rotation), Degrees.Zero, GlobalPosition.Of(t), radius)
         { }
     }
 
@@ -365,7 +373,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         private static Degrees Random(Degrees max) => Degrees.RandomIn(-max, max);
         private static Degrees Random(Degrees min, Degrees max) => Degrees.RandomIn(min, max);
 
-        public Vector3 GetRandomTarget(float distance)
+        public GlobalPosition GetRandomTarget(float distance)
         {
             //using var log = SmartLog.ForAVS(RootModController.AnyInstance);
 
@@ -388,7 +396,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         }
     }
 
-    private bool GetAlignedRandomSwimTarget(Restricted rest, out Vector3 target, float distance = 2.5f)
+    private bool GetAlignedRandomSwimTarget(Restricted rest, out GlobalPosition target, float distance = 2.5f)
     {
         target = rest.GetRandomTarget(distance);
 
@@ -405,7 +413,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         return true;
     }
 
-    internal Vector3 GetRandomSwimTarget(Transform transform, float radius, float velocity, float lookAhead = 5)
+    internal GlobalPosition GetRandomSwimTarget(Transform transform, float radius, float velocity, float lookAhead = 5)
     {
         var creature = new CreaturePosition(transform, radius);
         var restricted = new Restricted(creature, Degrees.Thirty, Degrees.Thirty / 2, Degrees.Thirty / 2);
@@ -423,27 +431,27 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             if (GetAlignedRandomSwimTarget(unrestricted, out target, d))
                 return target;
         }
-        return waterPark!.position;
+        return GlobalPosition.Of(waterPark!);
         //        throw new InvalidOperationException($"Failed to find a swim target for {transform.NiceName()} in water park {DisplayName.Rendered}");
     }
 
-    internal Vector3 GetRandomLocation(bool dropToFloor, float worldItemRadius)
+    internal GlobalPosition GetRandomLocation(bool dropToFloor, float worldItemRadius)
     {
         using var log = AV.NewLazyAvsLog(parameters: Params.Of(dropToFloor, worldItemRadius));
-        var center = waterPark!.position;
+        var center = GlobalPosition.Of(waterPark!);
         //var ray = random.normalized;
         var haveLocation = false;
         RaycastHit hit = default;
-        Vector3 rs = default;
+        GlobalPosition rs = default;
         for (var i = 0; i < 100; i++)
         {
             var a = Degrees.RandomIn(Degrees.Zero, Degrees.ThreeSixty).Rad;
             var x = a.Sin;
             var z = a.Cos;
             var ray = new Vector3(x, 0, z); //random point on unit circle
-            if (FirstWallHit(new Ray(center, ray), out hit))
+            if (FirstWallHit(center.RayInDirection(ray), out hit))
             {
-                var dir = hit.point - center;
+                var dir = hit.point - center.GlobalCoordinates;
                 var dist = dir.magnitude;
                 dir /= dist;
                 float maxDist = dist - worldItemRadius - horizontalMargin;
@@ -451,12 +459,12 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 rs = center + dir * randomDist;
                 log.Debug($"Hit wall at {hit.point} after {dist.ToStr()}m, placing item at {rs} after {randomDist.ToStr()}m");
 
-                var ceiling = FirstWallHit(new Ray(rs, Vector3.up), out var ceilingHit);
-                var floor = FirstWallHit(new Ray(rs, Vector3.down), out var floorHit);
+                var ceiling = FirstWallHit(rs.RayInDirection(Vector3.up), out var ceilingHit);
+                var floor = FirstWallHit(rs.RayInDirection(Vector3.down), out var floorHit);
                 if (ceiling && floor)
                 {
                     float y = UnityEngine.Random.Range(floorHit.point.y + bottomMargin + worldItemRadius, ceilingHit.point.y - topMargin - worldItemRadius);
-                    rs.y = y;
+                    rs = rs.AtGlobalY(y);
                     haveLocation = true;
                     break;
                 }
@@ -477,11 +485,11 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         //return EnsureInside(rs, null, worldItemRadius);
     }
 
-    private Vector3 DropToFloor(SmartLog log, Vector3 rs, float worldItemRadius)
+    private GlobalPosition DropToFloor(SmartLog log, GlobalPosition rs, float worldItemRadius)
     {
-        if (FirstWallHit(new Ray(rs, Vector3.down), out var hit))
+        if (FirstWallHit(rs.RayInDirection(Vector3.down), out var hit))
         {
-            var p = hit.point + Vector3.up * (bottomMargin /*+ worldItemRadius*/);
+            var p = GlobalPosition.Of(hit) + Vector3.up * (bottomMargin /*+ worldItemRadius*/);
             log.Debug($"Hit floor at {hit.point} after {hit.distance.ToStr()}m, placing item at {p}");
             return p;
         }
@@ -839,7 +847,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 }
             }
 
-            onAddLocation = item.Inhabitant.GlobalPosition?.Position;
+            onAddLocation = GlobalPosition.FromGlobalCoordinates(item.Inhabitant.GlobalPosition?.Position);
             onAddRotation = item.Inhabitant.GlobalPosition.IsNotNull()
                 ? Quaternion.Euler(item.Inhabitant.GlobalPosition.EulerAngles)
                 : null;
@@ -1050,10 +1058,10 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         return result;
     }
 
-    private IEnumerator BornAsync(SmartLog log, AssetReferenceGameObject creaturePrefabReference, Vector3 position, float? infectedAmount, float? enzymeAmount)
+    private IEnumerator BornAsync(SmartLog log, AssetReferenceGameObject creaturePrefabReference, GlobalPosition position, float? infectedAmount, float? enzymeAmount)
     {
         log.Write($"Spawning new creature from prefab {creaturePrefabReference.RuntimeKey} at {position}");
-        CoroutineTask<GameObject> task = AddressablesUtility.InstantiateAsync(creaturePrefabReference.RuntimeKey as string, null, position, Quaternion.identity, awake: false);
+        CoroutineTask<GameObject> task = AddressablesUtility.InstantiateAsync(creaturePrefabReference.RuntimeKey as string, null, position.GlobalCoordinates, Quaternion.identity, awake: false);
         yield return task;
         GameObject result = task.GetResult();
         WaterParkCreature creature = result.GetComponent<WaterParkCreature>();
@@ -1083,16 +1091,16 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             result.GetComponent<InfectedMixin>().SafeDo(x => x.SetInfectedAmount(infectedAmount.Value));
         }
         _container!.AddItem(pickupable);
-        log.Write($"Spawned new creature {result.NiceName()} at {position}/{transform.InverseTransformPoint(position)} and added to water park.");
+        log.Write($"Spawned new creature {result.NiceName()} at {position}/{position.ToLocal(this)} and added to water park.");
     }
 
     internal EnforcementResult EnforceEnclosure(Transform transform, float radius)
     {
-        var p = transform.position;
+        var p = GlobalPosition.Of(transform);
         var rs = EnforceEnclosure(ref p, null, radius);
         if (rs == EnforcementResult.Clamped)
         {
-            transform.position = p;
+            transform.position = p.GlobalCoordinates;
             return rs;
         }
         return rs;
@@ -1104,10 +1112,10 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         Clamped,
         Failed
     }
-    internal EnforcementResult EnforceEnclosure(ref Vector3 p, Rigidbody? rb, float creatureRadius, bool clampVertically = true, bool expectIssues = false)
+    internal EnforcementResult EnforceEnclosure(ref GlobalPosition p, Rigidbody? rb, float creatureRadius, bool clampVertically = true, bool expectIssues = false)
     {
         using var log = AV.NewLazyAvsLog(parameters: Params.Of(p, creatureRadius));
-        var center = waterPark!.position;
+        var center = GlobalPosition.Of(waterPark!);
         var dir = p - center;
         var hDir = dir.Flat();
         var hDist = hDir.magnitude;
@@ -1116,14 +1124,14 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         if (hDist > 0.001f)
         {
             hDir /= hDist;
-            var origin = new Vector3(center.x, p.y, center.z);
+            var origin = center.AtYOf(p);
             var d = hDir.UnFlat();
-            if (FirstWallHit(new Ray(origin, d), out var hit2))
+            if (FirstWallHit(new Ray(origin.GlobalCoordinates, d), out var hit2))
             {
                 float maxDistance = hit2.distance - creatureRadius - horizontalMargin;
                 if (hDist > maxDistance)
                 {
-                    p = (origin.Flat() + hDir * (maxDistance - 0.05f)).UnFlat(p.y);
+                    p = new((origin.Flat() + hDir * (maxDistance - 0.05f)).UnFlat(p.Y));
                     rs = EnforcementResult.Clamped;
                     rb.SafeDo(x => x.AddForce(-d * push, ForceMode.VelocityChange));
                 }
@@ -1131,13 +1139,13 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             else
             {
                 if (!expectIssues)
-                    log.Warn($"No wall hit found horizontally from {transform.InverseTransformPoint(origin)} towards {d}, cannot enforce horizontal enclosure.");
+                    log.Warn($"No wall hit found horizontally from {origin.ToLocal(transform)} towards {d}, cannot enforce horizontal enclosure.");
                 rs = EnforcementResult.Failed; //don't know where the wall is, so consider it out of bounds
             }
         }
         if (clampVertically)
         {
-            if (FirstWallHit(new Ray(p, Vector3.up), out var hit))
+            if (FirstWallHit(new Ray(p.GlobalCoordinates, Vector3.up), out var hit))
             {
                 if (hit.distance < creatureRadius + topMargin)
                 {
@@ -1147,18 +1155,18 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                             x.velocity = x.velocity.Flat();
                         x.AddForce(Vector3.down * push, ForceMode.VelocityChange);
                     });
-                    p = hit.point - Vector3.up * (creatureRadius + topMargin + 0.05f);
+                    p = new(hit.point - Vector3.up * (creatureRadius + topMargin + 0.05f));
                     rs = rs != EnforcementResult.Failed ? EnforcementResult.Clamped : rs;
                 }
             }
             else
             {
                 if (!expectIssues)
-                    log.Warn($"No wall hit found upwards from {transform.InverseTransformPoint(p)}, cannot enforce top enclosure.");
+                    log.Warn($"No wall hit found upwards from {p.ToLocal(transform)}, cannot enforce top enclosure.");
                 rs = EnforcementResult.Failed;
             }
 
-            if (FirstWallHit(new Ray(p, Vector3.down), out hit))
+            if (FirstWallHit(new Ray(p.GlobalCoordinates, Vector3.down), out hit))
             {
                 if (hit.distance < creatureRadius + bottomMargin)
                 {
@@ -1168,14 +1176,14 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                             x.velocity = x.velocity.Flat();
                         x.AddForce(Vector3.up * push, ForceMode.VelocityChange);
                     });
-                    p = hit.point + Vector3.up * (creatureRadius + bottomMargin + 0.05f);
+                    p = new(hit.point + Vector3.up * (creatureRadius + bottomMargin + 0.05f));
                     rs = rs != EnforcementResult.Failed ? EnforcementResult.Clamped : rs;
                 }
             }
             else
             {
                 if (!expectIssues)
-                    log.Warn($"No wall hit found downwards from {transform.InverseTransformPoint(p)}, cannot enforce bottom enclosure.");
+                    log.Warn($"No wall hit found downwards from {p.ToLocal(transform)}, cannot enforce bottom enclosure.");
                 rs = EnforcementResult.Failed;
             }
         }
@@ -1196,8 +1204,10 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             includeRenderers: false,
             includeColliders: true,
             excludeFrom: null,
-            applyLocalScale: false
+            applyLocalScale: false,
+            includeDisabledColliders: true
             ).Size / 2).MaxAxis();
+        radius = Mathf.Max(0.1f, radius);
         CreatureRadius[key] = radius;
         log.Debug($"Computed world radius for {go.NiceName()} (tech type {key.AsString()}) as {radius.ToStr()}");
         return radius * go.transform.localScale.x;
@@ -1217,16 +1227,33 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         using var log = AV.NewLazyAvsLog();
         log.Debug($"Reinstantiating {creature.WpCreature.NiceName()} as an adult.");
 
-        AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, adultPrefab, creature.WpCreature.transform.position, infectedAmount, enzymeAmount));
+        AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync),
+            log => BornAsync(
+                log,
+                adultPrefab,
+                GlobalPosition.Of(creature.RootTransform),
+                infectedAmount,
+                enzymeAmount));
         DestroyInhabitant(creature);
     }
 
-    internal void AddChild(SmartLog log, AssetReferenceGameObject eggOrChildPrefab, Vector3 position)
+    internal void AddChild(SmartLog log, AssetReferenceGameObject eggOrChildPrefab, GlobalPosition position)
     {
-        if (FirstWallHit(new Ray(position, Vector3.down), out var hit))
-            AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, eggOrChildPrefab, hit.point + Vector3.up * bottomMargin, 0, 0));
+        if (FirstWallHit(position.RayInDirection(Vector3.down), out var hit))
+            AV.Owner.StartAvsCoroutine(
+                nameof(MobileWaterPark) + '.' + nameof(BornAsync),
+                log => BornAsync(
+                    log,
+                    eggOrChildPrefab,
+                    GlobalPosition.Of(hit) + Vector3.up * bottomMargin,
+                    0, 0));
         else
-            AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, eggOrChildPrefab, position + Vector3.down, 0, 0));
+            AV.Owner.StartAvsCoroutine(
+                nameof(MobileWaterPark) + '.' + nameof(BornAsync),
+                log => BornAsync(
+                    log,
+                    eggOrChildPrefab,
+                    position + Vector3.down, 0, 0));
     }
 
 }
