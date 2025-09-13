@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AVS.Util;
+namespace AVS.Util.Containers;
 
 /// <summary>
 /// Represents a collection of unique elements that maintains the order in which items are added.
@@ -61,7 +61,7 @@ public class OrderedSet<T> : ICollection<T>, IReadOnlyCollection<T>, ISet<T>
     /// The order of elements will be lost in the process
     /// </remarks>
     /// <returns>A <see cref="HashSet{T}"/> containing all elements of the <see cref="OrderedSet{T}"/>.</returns>
-    public HashSet<T> ToHashSet() => [..Dict.Keys];
+    public HashSet<T> ToHashSet() => [.. Dict.Keys];
 
     /// <summary>
     /// Converts the local set to a list
