@@ -12,6 +12,8 @@ namespace AVS.StorageComponents.WaterPark
         Pickupable Pickupable
         ) : INullTestableType
     {
+        public float ExpectedInfectionLevel { get; set; }
+
 
         public int InstanceId => GameObject.GetInstanceID();
         public float Radius => WaterPark.GetItemWorldRadius(Pickupable.GetTechType(), GameObject);
@@ -45,6 +47,25 @@ namespace AVS.StorageComponents.WaterPark
         { }
 
         internal virtual void SignalCollidersChanged(bool collidersLive)
-        { }
+        {
+            GameObject.SetActive(collidersLive);
+        }
+
+
+        public const float ConsideredCuredInfectionLevel = 0;
+        public bool CanBeCured => ExpectedInfectionLevel > ConsideredCuredInfectionLevel;
+        public bool IsContagious => ExpectedInfectionLevel > 0.25f;
+        public bool IsLessThanCompletelyInfected => ExpectedInfectionLevel < 1f;
+        public void Cure()
+        {
+            ExpectedInfectionLevel = ConsideredCuredInfectionLevel;
+            Infect.SetInfectedAmount(ConsideredCuredInfectionLevel);
+        }
+
+        internal void ContractInfection()
+        {
+            ExpectedInfectionLevel = 1;
+            Infect.SetInfectedAmount(1);
+        }
     }
 }

@@ -11176,6 +11176,48 @@
             <returns>A <see cref="T:AVS.Util.Math.Radians"/> instance representing a random angle between <paramref name="min"/> and <paramref
             name="max"/> (inclusive).</returns>
         </member>
+        <member name="T:AVS.Util.Math.SVector3">
+            <summary>
+            Serializable substitute for UnityEngine.Vector3
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.SVector3.#ctor(System.Single,System.Single,System.Single)">
+            <summary>
+            Serializable substitute for UnityEngine.Vector3
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.SVector3.Zero">
+            <summary>
+            Gets a vector with all components set to zero.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.SVector3.One">
+            <summary>
+            Gets a vector with all components set to one.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.SVector3.op_Implicit(AVS.Util.Math.SVector3)~UnityEngine.Vector3">
+            <summary>
+            Converts an <see cref="T:AVS.Util.Math.SVector3"/> instance to a <see cref="T:UnityEngine.Vector3"/> instance.
+            </summary>
+            <param name="sv">The <see cref="T:AVS.Util.Math.SVector3"/> instance to convert.</param>
+        </member>
+        <member name="M:AVS.Util.Math.SVector3.op_Implicit(UnityEngine.Vector3)~AVS.Util.Math.SVector3">
+            <summary>
+            Implicitly converts a <see cref="T:UnityEngine.Vector3"/> to an <see cref="T:AVS.Util.Math.SVector3"/>.
+            </summary>
+            <param name="v">The <see cref="T:UnityEngine.Vector3"/> instance to convert.</param>
+        </member>
+        <member name="P:AVS.Util.Math.SVector3.Length">
+            <summary>
+            Gets the length of the vector.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.SVector3.SquaredLength">
+            <summary>
+            Gets the squared length of the vector.
+            </summary>
+        </member>
         <member name="T:AVS.Util.RayCaster">
             <summary>
             Physical helper structure to contain all hits from a ray cast.

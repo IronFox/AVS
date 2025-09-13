@@ -17,15 +17,15 @@ internal record WaterParkEggInhabitant(
 {
     public bool IsHatching { get; private set; }
 
-    private SmartLog NewLog([CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
-        => WaterPark.AV.NewLazyAvsLog(tags: [Egg.name.SanitizeObjectName(), InstanceId.ToString()], callerFilePath: callerFilePath, memberName: memberName);
+    private SmartLog NewLog(LogParameters? p = null, [CallerFilePath] string callerFilePath = "", [CallerMemberName] string memberName = "")
+        => WaterPark.AV.NewLazyAvsLog(tags: [Egg.name.SanitizeObjectName(), InstanceId.ToString()], callerFilePath: callerFilePath, memberName: memberName, parameters: p);
 
     internal override void OnInstantiate()
     {
         using var log = NewLog();
         Egg.transform.localScale = 0.6f * Vector3.one;
         Egg.transform.position = InitialPosition ?? WaterPark.GetRandomLocation(true, Radius);
-        log.Debug($"Spawning egg {GameObject.NiceName()} @{InitialPosition} => {GameObject.transform.localPosition} @r={Radius} progress={Egg.progress}");
+        log.Debug($"Spawning egg {GameObject.NiceName()} @{InitialPosition} => {RootTransform.localPosition} @r={Radius} progress={Egg.progress}");
         if (WaterPark.hatchEggs)
         {
             Egg.insideWaterPark = true;
@@ -35,10 +35,34 @@ internal record WaterParkEggInhabitant(
                 Egg.UpdateHatchingTime();
                 IsHatching = true;
             }
-            Egg.OnAddToWaterPark();
         }
-        GameObject.GetComponent<Rigidbody>().SafeDo(x => x.isKinematic = true);
+        GameObject.GetComponent<Rigidbody>().SafeDo(x =>
+        {
+            x.isKinematic = true;
+            x.detectCollisions = false;
+        });
         base.OnInstantiate();
+    }
+
+    internal override void OnDeinstantiate()
+    {
+        GameObject.GetComponent<Rigidbody>().SafeDo(x =>
+        {
+            x.isKinematic = false;
+            x.detectCollisions = true;
+        });
+        base.OnDeinstantiate();
+    }
+
+    internal override void SignalCollidersChanged(bool collidersLive)
+    {
+        using var log = NewLog(Params.Of(collidersLive));
+        log.Debug($"Setting colliders live={collidersLive} for egg {GameObject.NiceName()} @ {RootTransform.localPosition}");
+        //Egg.enabled = collidersLive;
+        base.SignalCollidersChanged(collidersLive);
+        Egg.animator.enabled = collidersLive;
+        if (collidersLive)
+            Egg.animator.Play(AnimatorHashID.progress, 0, Egg.progress);
     }
 
     internal override void OnUpdate()
@@ -53,6 +77,8 @@ internal record WaterParkEggInhabitant(
                 Hatch();
             }
         }
+        else
+            Egg.animator.SetFloat(AnimatorHashID.progress, Egg.progress);
         base.OnUpdate();
     }
 

@@ -70,8 +70,11 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     internal bool breedCreatures;
     [SerializeField]
     private AvsVehicle? vehicle;
+    [SerializeField]
+    private double timeNextInfectionSpread;
+    public double spreadInfectionInterval = 60.0;
 
-    private Func<bool> ColliderAreLive { get; set; } = () => true;
+    private Func<bool>? CollidersAreLive { get; set; } = null;
 
     [SerializeField]
     internal int wallLayerMask = Physics.AllLayers;
@@ -79,6 +82,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     private Transform? waterPark;
 
     private Vector3? onAddLocation;
+    private Quaternion? onAddRotation;
 
     internal AvsVehicle AV => vehicle.OrThrow(() => new InvalidOperationException($"Trying to access MobileWaterPark.av before it has been initialized"));
 
@@ -219,6 +223,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         {
             Inhabitants.Remove(iid);
             inhab.OnDeinstantiate();
+            UpdateInfectionSpreading();
         }
         else
             log.Warn($"Item {item.item.NiceName()}/{iid} was not found in inhabitants list of water park {DisplayName.Rendered}, cannot remove.");
@@ -303,9 +308,11 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     embed,
                     wpCreature,
                     creature,
-                    onAddLocation
+                    onAddLocation,
+                    onAddRotation
                     ));
                 onAddLocation = null;
+                onAddRotation = null;
             }
             else
             {
@@ -416,7 +423,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             if (GetAlignedRandomSwimTarget(unrestricted, out target, d))
                 return target;
         }
-        throw new InvalidOperationException($"Failed to find a swim target for {transform.NiceName()} in water park {DisplayName.Rendered}");
+        return waterPark!.position;
+        //        throw new InvalidOperationException($"Failed to find a swim target for {transform.NiceName()} in water park {DisplayName.Rendered}");
     }
 
     internal Vector3 GetRandomLocation(bool dropToFloor, float worldItemRadius)
@@ -439,7 +447,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 var dist = dir.magnitude;
                 dir /= dist;
                 float maxDist = dist - worldItemRadius - horizontalMargin;
-                var randomDist = UnityEngine.Random.Range(0, 1) * maxDist;
+                var randomDist = UnityEngine.Random.Range(0f, 1f) * maxDist;
                 rs = center + dir * randomDist;
                 log.Debug($"Hit wall at {hit.point} after {dist.ToStr()}m, placing item at {rs} after {randomDist.ToStr()}m");
 
@@ -548,10 +556,15 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         hatchEggs = vp.HatchEggs;
         breedCreatures = vp.AllowReproduction;
         this.vehicle = vehicle;
-        ColliderAreLive = vp.CollidersAreLive;
+        CollidersAreLive = vp.CollidersAreLive;
         wallLayerMask = vp.WallLayerMask;
         Reinit();
     }
+
+    private record InhabitantPosition(
+        SVector3 Position,
+        SVector3 EulerAngles
+        ) : INullTestableType;
 
     private record Inhabitant(
         string? TechTypeAsString,
@@ -563,7 +576,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         bool IsFriendlyToPlayer,
         bool IsBornInside,
         float Age,
-        bool? IsMature
+        bool? IsMature,
+        InhabitantPosition? GlobalPosition
     );
 
     private record LoadingInhabitant(
@@ -619,7 +633,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             var inhab = new Inhabitant
             (
                 InfectedAmount: item.item.GetComponent<InfectedMixin>().SafeGet(x => x.infectedAmount, 0),
-                EnzymeAmount: item.item.GetComponent<Peeper>().SafeGet(x => x.enzymeAmount, 0),
+                EnzymeAmount: item.item.GetComponent<Peeper>().SafeGet(x => Mathf.Max(x.enzymeAmount, 0), 0),
                 Health: item.item.GetComponent<LiveMixin>().SafeGet(x => x.health, 0),
                 IncubationProgress: egg.SafeGet(x => x.progress, 0),
                 HatchDuration: egg.SafeGet(x => x.GetHatchDuration(), 1),
@@ -627,7 +641,11 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 IsFriendlyToPlayer: creature.SafeGet(x => x._friendlyToPlayer, false),
                 IsBornInside: wpCreature.SafeGet(x => x.bornInside, false),
                 Age: wpCreature.SafeGet(x => x.age, 0),
-                IsMature: wpCreature.SafeGet(x => x.isMature, true)
+                IsMature: wpCreature.SafeGet(x => x.isMature, true),
+                GlobalPosition: new InhabitantPosition(
+                    Position: item.item.transform.position,
+                    EulerAngles: item.item.transform.eulerAngles
+                    )
             );
 
             result.Add((prefabId, inhab));
@@ -821,10 +839,13 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 }
             }
 
+            onAddLocation = item.Inhabitant.GlobalPosition?.Position;
+            onAddRotation = item.Inhabitant.GlobalPosition.IsNotNull()
+                ? Quaternion.Euler(item.Inhabitant.GlobalPosition.EulerAngles)
+                : null;
             _container!.AddItem(pickupable);
             log.Write($"Added item {thisItem.NiceName()} to the water park.");
         }
-
         ReAddWhenDone.Clear();
     }
 
@@ -835,27 +856,43 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         //log.Debug($"MobileWaterPark.Udpate called for water park {index} with vehicle {vehicle?.NiceName()}");
         if (_container.IsNotNull())
         {
-            if (ColliderAreLive() != collidersLive)
+            if (CollidersAreLive.IsNull())
             {
-                collidersLive = ColliderAreLive();
+                log.Error($"MobileWaterPark.Udpate called without a valid ColliderAreLive function.");
+                return;
+            }
+            if (CollidersAreLive() != collidersLive)
+            {
+                collidersLive = CollidersAreLive();
+                log.Write($"Colliders are now {(collidersLive ? "live" : "not live")} for water park {index}. Signalling inhabitants");
 
                 foreach (var inhab in GetAllInhabitants())
                     inhab.SignalCollidersChanged(collidersLive);
             }
             if (collidersLive)
             {
+                bool any = false;
                 while (InhabitantAddQueue.Count > 0)
                 {
                     var thing = InhabitantAddQueue.Dequeue();
 
                     Inhabitants[thing.InstanceId] = thing;
                     thing.OnInstantiate();
+                    any = true;
                 }
+                if (any)
+                    UpdateInfectionSpreading();
                 if (Time.deltaTime > 0)
                     foreach (var inhab in GetAllInhabitants())
                     {
                         inhab.OnUpdate();
                     }
+
+                double timePassed = DayNightCycle.main.timePassed;
+                if (timeNextInfectionSpread > 0.0 && timePassed > timeNextInfectionSpread)
+                {
+                    SpreadInfection();
+                }
             }
         }
         else
@@ -881,20 +918,106 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         }
     }
 
-    private LivingThing LivingFrom(Pickupable item)
-    {
-        var live = item.GetComponent<LiveMixin>();
-        var infect = item.GetComponent<InfectedMixin>();
-        var wpCreature = item.GetComponent<WaterParkCreature>();
-        var creature = item.GetComponent<Creature>();
-        var egg = item.GetComponent<CreatureEgg>();
+    private static string[] InfectionTags { get; } = ["Infect"];
 
-        if (creature.IsNotNull() && wpCreature.IsNotNull())
-            return new LivingCreature(item.gameObject, live, infect, creature, wpCreature, item);
-        else if (egg.IsNotNull())
-            return new LivingEgg(item.gameObject, live, infect, egg, item);
+
+    private void SpreadInfection()
+    {
+        using var log = AV.NewLazyAvsLog(tags: InfectionTags);
+        log.Debug($"Spreading infection in water park {this.NiceName()}");
+        if (InfectCreature())
+        {
+            log.Debug($"Infected a creature in water park {this.NiceName()}, scheduling next spread in {spreadInfectionInterval}");
+            double timePassed = DayNightCycle.main.timePassed;
+            timeNextInfectionSpread = timePassed + spreadInfectionInterval;
+        }
         else
-            return new LivingThing(item.gameObject, live, infect, item);
+        {
+            timeNextInfectionSpread = -1.0;
+        }
+    }
+    private bool InfectCreature()
+    {
+        using var log = AV.NewLazyAvsLog(tags: InfectionTags);
+        bool result = false;
+        foreach (var inhab in GetAllInhabitants())
+        {
+            if (inhab.IsLessThanCompletelyInfected)
+            {
+                log.Debug($"Infecting creature {inhab.GameObject.NiceName()} in water park");
+                inhab.ContractInfection();
+                result = true;
+                break;
+            }
+        }
+
+        return result;
+    }
+
+
+    public bool ContainsHeroPeepers()
+    {
+        foreach (var inhab in GetAllInhabitants())
+        {
+            if (inhab is WaterParkCreatureInhabitant wpc && wpc.GameObject.IsNotNull())
+            {
+                Peeper? peeper = wpc.GameObject.GetComponent<Peeper>();
+                if (peeper.IsNotNull() && peeper.isHero)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    internal void Start()
+    {
+        using var log = AV.NewAvsLog();
+        log.Write($"MobileWaterPark.Start called for water park {index} with vehicle {vehicle?.NiceName()} (enabled={enabled}, active={gameObject.activeInHierarchy})");
+        log.Write($"Next spread event at {timeNextInfectionSpread}");
+
+    }
+
+    private void UpdateInfectionSpreading()
+    {
+        using var log = AV.NewAvsLog(tags: InfectionTags);
+        if (ContainsHeroPeepers())
+        {
+            log.Debug($"Curing all creatures in water park {DisplayName.Rendered} because it contains hero peepers.");
+            CureAllCreatures();
+            timeNextInfectionSpread = -1.0;
+        }
+        else if (timeNextInfectionSpread <= 0.0 && ContainsInfectedCreature())
+        {
+            log.Debug($"Starting infection spreading in water park {DisplayName.Rendered} because it contains infected creatures. Next spread in {spreadInfectionInterval}");
+            timeNextInfectionSpread = DayNightCycle.main.timePassed + spreadInfectionInterval;
+        }
+
+    }
+
+    public void CureAllCreatures()
+    {
+        using var log = AV.NewLazyAvsLog(tags: InfectionTags);
+
+        InfectedMixin? infectedMixin = null;
+        foreach (var inhab in GetAllInhabitants())
+        {
+            infectedMixin = inhab.Infect;
+            if (inhab.CanBeCured)
+            {
+                log.Debug($"Curing creature {inhab.GameObject.NiceName()} in water park");
+                inhab.Cure();
+            }
+        }
+    }
+
+    public bool ContainsInfectedCreature()
+    {
+        foreach (var inhab in GetAllInhabitants())
+            if (inhab.IsContagious)
+                return true;
+
+        return false;
     }
 
 

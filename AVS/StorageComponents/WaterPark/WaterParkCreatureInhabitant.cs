@@ -19,11 +19,11 @@ namespace AVS.StorageComponents.WaterPark
         Pickupable Pickupable,
         WaterParkCreature WpCreature,
         Creature Creature,
-        Vector3? InitialPosition
+        Vector3? InitialPosition,
+        Quaternion? InitialRotation
         )
         : WaterParkInhabitant(WaterPark, GameObject, GameObject.transform, Live, Infect, Pickupable)
     {
-        public bool IsSupposedToBeHealthy { get; set; }
         public bool IsSupposedToBeHero { get; set; }
         public Vector3 LastSwimTarget { get; private set; }
         public Vector3 NextSwimTarget { get; private set; }
@@ -58,11 +58,12 @@ namespace AVS.StorageComponents.WaterPark
             }
             RootTransform.localScale = CurrentScale;
             RootTransform.position = InitialPosition ?? WaterPark.GetRandomLocation(false, Radius);
+            RootTransform.rotation = InitialRotation ?? Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
 
             var peeper = Creature as Peeper;
-            IsSupposedToBeHealthy = Infect.GetInfectedAmount() == 0f;
+            ExpectedInfectionLevel = Infect.GetInfectedAmount();
             IsSupposedToBeHero = peeper.IsNotNull() && peeper.isHero;
-            log.Debug($"Instantiating creature {Creature.NiceName()} @{RootTransform.position}/{RootTransform.localPosition} with healthy={IsSupposedToBeHealthy}, hero={IsSupposedToBeHero}, age={WpCreature.age}, radius={Radius.ToStr()}");
+            log.Debug($"Instantiating creature {Creature.NiceName()} @{RootTransform.position}/{RootTransform.localPosition} with healthy={ExpectedInfectionLevel}, hero={IsSupposedToBeHero}, age={WpCreature.age}, radius={Radius.ToStr()}");
 
             SetInsideState();
             NextSwimTarget = LastSwimTarget = WpCreature.swimTarget = GameObject.transform.position;
@@ -276,7 +277,7 @@ namespace AVS.StorageComponents.WaterPark
 
         private void RandomizeSwimTargetNow(float radius)
         {
-            using var log = NewLog();
+            using var log = NewLog(Params.Of(radius));
             LastSwimTarget = WpCreature.swimTarget;
             NextSwimTarget = WaterPark.GetRandomSwimTarget(
                 GameObject.transform,
@@ -374,8 +375,11 @@ namespace AVS.StorageComponents.WaterPark
             MonitorSwimTarget(radius);
             ClampPosition(radius);
 
-            if (IsSupposedToBeHealthy)
-                Infect.SetInfectedAmount(0);
+            if (ExpectedInfectionLevel != Infect.GetInfectedAmount())
+            {
+                log.Warn($"Creature {Creature.NiceName()} infection level changed from {ExpectedInfectionLevel} to {Infect.GetInfectedAmount()}, resetting to expected.");
+                Infect.SetInfectedAmount(ExpectedInfectionLevel);
+            }
             base.OnUpdate();
 
 
