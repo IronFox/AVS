@@ -405,6 +405,13 @@ public abstract class RootModController : BaseUnityPlugin
         return StartCoroutine(Run(methodName, routine, true));
     }
 
+    internal void StopAllAvsCoroutines()
+    {
+        SmartLog.DropAllInterruptables();
+        StopAllCoroutines();
+
+    }
+
     /// <summary>
     /// Starts a new coroutine with enhanced error handling and logging.
     /// </summary>

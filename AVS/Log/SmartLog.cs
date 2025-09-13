@@ -1,5 +1,6 @@
 ﻿using AVS.Interfaces;
 using AVS.Util;
+using AVS.Util.Containers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -60,11 +61,25 @@ namespace AVS.Log
         /// </summary>
         public DateTime StartTime { get; } = DateTime.Now;
 
-        private static Dictionary<int, SmartLog> InterruptableIndexes { get; } = [];
+        private static SafeDictionary<int, SmartLog> InterruptableIndexes { get; } = [];
         private int InterruptableIndex { get; }
 
         //private bool IsInterruptableSelfOrChild { get; }
         private SmartLog? InterruptableAncestor { get; }
+
+        internal static void DropAllInterruptables()
+        {
+            if (Current.IsNotNull() && Current.InterruptableAncestor.IsNotNull() && !Current.IsInterruptable)
+            {
+                Current.Dispose();
+                Current = null;
+            }
+
+            foreach (var pair in InterruptableIndexes)
+                pair.Value.Dispose();
+
+            InterruptableIndexes.Clear();
+        }
 
         /// <summary>
         /// Creates a new disposable log context. The new context becomes the current context.

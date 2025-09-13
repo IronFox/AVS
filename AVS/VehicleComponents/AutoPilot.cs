@@ -590,7 +590,7 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
                     .ForEach(l => l.Signal(new AutopilotStatusChange(was, DangerStatus)));
         }
 
-        StopAllCoroutines();
+        RootModController.AnyInstance.StopAllAvsCoroutines();
         timeWeStartedWaiting = Time.time;
         RootModController.AnyInstance.StartAvsCoroutine(
             nameof(Autopilot) + '.' + nameof(ResetDangerStatusEventually),
