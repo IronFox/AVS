@@ -6,6 +6,7 @@ namespace AVS.StorageComponents.WaterPark
     internal record WaterParkInhabitant(
         MobileWaterPark WaterPark,
         GameObject GameObject,
+        Transform RootTransform,
         LiveMixin Live,
         InfectedMixin Infect,
         Pickupable Pickupable

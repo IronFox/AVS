@@ -19,6 +19,11 @@ namespace AVS.Util.Math
         public static Degrees OneEighty => new Degrees(180f);
 
         /// <summary>
+        /// Gets a <see cref="Degrees"/> instance representing 360 degrees.
+        /// </summary>
+        public static Degrees ThreeSixty => new Degrees(360f);
+
+        /// <summary>
         /// Gets a <see cref="Degrees"/> instance representing 30 degrees.
         /// </summary>
         public static Degrees Thirty => new Degrees(30f);

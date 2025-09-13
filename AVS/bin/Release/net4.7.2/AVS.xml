@@ -8948,6 +8948,435 @@
             <param name="o"></param>
             <returns></returns>
         </member>
+        <member name="T:AVS.Util.ListExt">
+            <summary>
+            Provides a set of extension methods for operations on collections and lists.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.ListExt.FindIndexOf``1(System.Collections.Generic.IReadOnlyList{``0},System.Func{``0,System.Boolean})">
+            <summary>
+            Finds the index of the first element in the source list that matches the specified predicate.
+            </summary>
+            <typeparam name="T">The type of elements in the source list.</typeparam>
+            <param name="source">The source list to search.</param>
+            <param name="predicate">A function that defines the condition to match the elements.</param>
+            <returns>The zero-based index of the first element that matches the predicate, or -1 if no such element is found.</returns>
+        </member>
+        <member name="M:AVS.Util.ListExt.Last``1(System.Collections.Generic.IReadOnlyList{``0})">
+            <summary>
+            Returns the last element in the source list.
+            </summary>
+            <typeparam name="TSource">The type of elements in the source list.</typeparam>
+            <param name="source">The source list to retrieve the last element from.</param>
+            <returns>The last element in the source list.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown if the source list is empty.</exception>
+        </member>
+        <member name="M:AVS.Util.ListExt.ToRoList``1(``0)">
+            <summary>
+            Converts the specified single object to a read-only list containing that object as its single element.
+            </summary>
+            <typeparam name="TSource">The type of the object to convert.</typeparam>
+            <param name="source">The object to convert into a read-only list.</param>
+            <returns>A read-only list containing the specified object as its only element.</returns>
+        </member>
+        <member name="M:AVS.Util.ListExt.CollectionsEqual``1(System.Collections.Generic.IReadOnlyCollection{``0},System.Collections.Generic.IReadOnlyCollection{``0})">
+            <summary>
+            Determines whether two collections are equal by comparing their elements in sequence.
+            </summary>
+            <typeparam name="TSource">The type of elements in the collections.</typeparam>
+            <param name="first">The first collection to compare.</param>
+            <param name="second">The second collection to compare.</param>
+            <returns>True if the two collections are equal in length and their corresponding elements are equal; otherwise, false.</returns>
+        </member>
+        <member name="M:AVS.Util.ListExt.ToArray``1(System.Collections.Generic.IReadOnlyList{``0})">
+            <summary>
+            Converts an <see cref="T:System.Collections.Generic.IReadOnlyList`1"/> to an array.
+            </summary>
+            <typeparam name="T">The type of elements in the source list.</typeparam>
+            <param name="source">The source list to convert to an array.</param>
+            <returns>An array containing all the elements of the source list, in the same order.</returns>
+        </member>
+        <member name="M:AVS.Util.ListExt.AddRange``1(System.Collections.Generic.HashSet{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Adds a range of items to the specified HashSet and returns the count of items that were successfully added.
+            </summary>
+            <typeparam name="T">The type of elements in the set and the collection.</typeparam>
+            <param name="set">The HashSet to add items to.</param>
+            <param name="items">The collection of items to add to the HashSet.</param>
+            <returns>The number of items successfully added to the HashSet.</returns>
+        </member>
+        <member name="M:AVS.Util.ListExt.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
+            <summary>
+            Executes the specified action for each element in the source collection.
+            </summary>
+            <typeparam name="T">The type of elements in the source collection.</typeparam>
+            <param name="source">The collection of elements to process.</param>
+            <param name="action">The action to perform on each element in the collection.</param>
+        </member>
+        <member name="M:AVS.Util.ListExt.ToHashSet``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Converts the elements of the given enumerable to a HashSet.
+            </summary>
+            <typeparam name="T">The type of elements in the source enumerable.</typeparam>
+            <param name="source">The source enumerable to convert.</param>
+            <returns>A HashSet containing the elements of the source enumerable.</returns>
+        </member>
+        <member name="M:AVS.Util.ListExt.Least``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Single})">
+            <summary>
+            Finds the element in the source sequence that has the least value as determined by the specified selector function.
+            </summary>
+            <typeparam name="T">The type of elements in the source sequence.</typeparam>
+            <param name="source">The source sequence to search.</param>
+            <param name="selector">A function to extract a float value from each element for comparison.</param>
+            <returns>The element in the source sequence with the least value as determined by the selector function.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown if the source sequence contains no elements.</exception>
+        </member>
+        <member name="M:AVS.Util.ListExt.Repeat(System.String,System.Int32)">
+            <summary>
+            Creates a new character array by repeating the specified string a given number of times.
+            </summary>
+            <param name="s">The string to be repeated. Cannot be <see langword="null"/> or empty.</param>
+            <param name="count">The number of times to repeat the string. Must be greater than zero.</param>
+            <returns>A character array containing the repeated string. Returns an empty array if <paramref name="count"/> is less
+            than or equal to zero or if <paramref name="s"/> is <see langword="null"/> or empty.</returns>
+        </member>
+        <member name="T:AVS.Util.Containers.OrderedDict`2">
+            <summary>
+            A dictionary that maintains insertion order of keys.
+            </summary>
+            <typeparam name="K">Key type</typeparam>
+            <typeparam name="V">Value type</typeparam>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.OrderedDict`2"/> class.
+            </summary>
+            <remarks>This constructor creates an empty ordered dictionary, which maintains the insertion
+            order of keys. Keys and values can be added after initialization using the appropriate methods or
+            properties.</remarks>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.OrderedDict`2"/> class with the specified initial capacity.
+            </summary>
+            <param name="capacity">The initial number of elements that the dictionary can contain. Must be greater than or equal to 0.</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="capacity"/> is less than 0.</exception>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedDict`2.Count">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedDict`2.IsReadOnly">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedDict`2.Item(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedDict`2.Keys">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedDict`2.Values">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedDict`2.System#Collections#Generic#IReadOnlyDictionary{K,V}#Values">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.Add(`0,`1)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.TryAdd(`0,`1)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.ContainsKey(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.TryGetValue(`0,`1@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.Remove(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.Clear">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.ValueIs``1(`0)">
+            <summary>
+            Determines whether the value associated with the specified key is of the specified type.
+            </summary>
+            <typeparam name="T">The type to check against the value associated with the key. Must derive from <typeparamref name="V"/>.</typeparam>
+            <param name="key">The key whose associated value is to be checked.</param>
+            <returns><see langword="true"/> if the value associated with the specified key exists and is of type <typeparamref
+            name="T"/>; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.ValueEquals(`0,`1)">
+            <summary>
+            Determines whether the specified key exists in the dictionary and is associated with the specified value.
+            </summary>
+            <remarks>This method uses the default equality comparer for the value type to determine
+            equality.</remarks>
+            <param name="key">The key to locate in the dictionary.</param>
+            <param name="value">The value to compare against the value associated with the specified key.</param>
+            <returns><see langword="true"/> if the dictionary contains the specified key and the associated value equals the
+            specified value;  otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="T:AVS.Util.Containers.OrderedSet`1">
+            <summary>
+            Represents a collection of unique elements that maintains the order in which items are added.
+            </summary>
+            <typeparam name="T">The type of elements in the set.</typeparam>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.#ctor">
+            <summary>
+            Constructs an empty set.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.#ctor(System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Constructs an empty set with a customer comparer.
+            </summary>
+            <param name="comparer">The comparer to use</param>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Constructs a new set from a given set of items
+            </summary>
+            <param name="items">Items to fill into the new set</param>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.#ctor(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Constructs a new set with a customer comparer from a given set of items
+            </summary>
+            <param name="items">Items to fill into the new set</param>
+            <param name="comparer">The comparer to use</param>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.ToHashSet">
+            <summary>
+            Converts the <see cref="T:AVS.Util.Containers.OrderedSet`1"/> to a <see cref="T:System.Collections.Generic.HashSet`1"/> containing the same elements.
+            </summary>
+            <remarks>
+            The order of elements will be lost in the process
+            </remarks>
+            <returns>A <see cref="T:System.Collections.Generic.HashSet`1"/> containing all elements of the <see cref="T:AVS.Util.Containers.OrderedSet`1"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.ToList">
+            <summary>
+            Converts the local set to a list
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.ToArray">
+            <summary>
+            Converts the elements of the set to an array.
+            </summary>
+            <returns>An array containing all elements in the set, preserving their order.</returns>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedSet`1.Count">
+            <summary>
+            Gets the number of elements contained in the <see cref="T:AVS.Util.Containers.OrderedSet`1"/>.
+            </summary>
+            <value>The total count of elements in the set.</value>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedSet`1.IsReadOnly">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.AddRange(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Adds a range of items to the <see cref="T:AVS.Util.Containers.OrderedSet`1"/>.
+            </summary>
+            <param name="items">The collection of elements to add to the set.</param>
+            <returns>The updated <see cref="T:AVS.Util.Containers.OrderedSet`1"/> instance.</returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.UnionWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.IntersectWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.ExceptWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.SymmetricExceptWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.ContainsAll(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Determines whether the current set contains all elements from the specified collection.
+            </summary>
+            <param name="other">The collection of elements to check against the current set.</param>
+            <returns>True if the current set contains all elements from the specified collection; otherwise, false.</returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.ContainsAny(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Determines whether the current set contains any elements from the specified collection.
+            </summary>
+            <param name="other">The collection of elements to check against the current set.</param>
+            <returns>True if the current set contains at least one element from the specified collection; otherwise, false.</returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.IsSubsetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.IsSupersetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.IsProperSupersetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.IsProperSubsetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.Overlaps(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.SetEquals(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.Clear">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.RemoveAll(System.Predicate{`0})">
+            <summary>
+            Removes all elements from the set that match the given predicate.
+            </summary>
+            <param name="match">The predicate function that determines whether an element should be removed.</param>
+            <returns>The current set with the elements removed.</returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.Remove(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.Contains(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.CopyTo(`0[],System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.Add(`0)">
+            <inheritdoc />
+        </member>
+        <member name="T:AVS.Util.Containers.SafeDictionary`2">
+            <summary>
+            A dictionary that allows adding and removing items while iterating over it.
+            Count may return stale values. Items added during the iteration may or may not be part of the iteration itself.
+            Items removed during the iteration that have not yet been iterated over will not be part of the iteration.
+            Pending values are applied after the last iterator was disposed. Iterators must be disposed of properly to ensure this.
+            </summary>
+            <typeparam name="TKey">The key type used in the dictionary</typeparam>
+            <typeparam name="TValue">The value type used in the dictionary</typeparam>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/> class with the default capacity
+            and comparer.
+            </summary>
+            <remarks>This constructor creates an empty dictionary with the default initial capacity and
+            uses the default equality comparer for the key type.</remarks>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/> class with the specified
+            initial capacity.
+            </summary>
+            <param name="capacity">The initial number of elements that the dictionary can contain. Must be greater than or equal to 0.</param>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.#ctor(System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/> class with the specified
+            comparer.
+            </summary>
+            <remarks>This constructor allows you to specify a custom equality comparer for key
+            comparisons, which can be useful for scenarios requiring case-insensitive or culture-specific
+            comparisons.</remarks>
+            <param name="comparer">The <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> implementation to use when comparing keys, or <see langword="null"/>
+            to use the default equality comparer for the type of the key.</param>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.#ctor(System.Int32,System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/> class with the specified
+            initial capacity and an optional key comparer.
+            </summary>
+            <remarks>This constructor initializes the internal data structures with the specified capacity
+            and comparer.  It ensures that pending additions, updates, and removals are tracked separately to support
+            safe concurrent operations.</remarks>
+            <param name="capacity">The initial number of elements that the dictionary can contain before resizing is required. Must be greater
+            than or equal to 0.</param>
+            <param name="comparer">An optional <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> implementation to use for comparing keys.  If <see
+            langword="null"/>, the default equality comparer for the type of the key is used.</param>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.#ctor(System.Collections.Generic.IDictionary{`0,`1})">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/> class  using the specified
+            source dictionary.
+            </summary>
+            <remarks>If the <paramref name="source"/> dictionary contains duplicate keys, an exception may
+            be thrown  depending on the implementation of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/>. Ensure that 
+            the source dictionary does not contain null keys or values if the implementation does not support
+            them.</remarks>
+            <param name="source">The dictionary whose elements are copied to the new <see cref="T:AVS.Util.Containers.SafeDictionary`2"/>.  The keys
+            and values from the source dictionary are added to the new instance.</param>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.#ctor(System.Collections.Generic.IDictionary{`0,`1},System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/> class with the specified source
+            dictionary and an optional key comparer.
+            </summary>
+            <param name="source">The dictionary whose elements are copied to initialize the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/>.
+            Cannot be <see langword="null"/>.</param>
+            <param name="comparer">An optional equality comparer to use for comparing keys. If <see langword="null"/>, the default equality
+            comparer for the key type is used.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="source"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="P:AVS.Util.Containers.SafeDictionary`2.Item(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.SafeDictionary`2.Keys">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.SafeDictionary`2.Values">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.SafeDictionary`2.Count">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.SafeDictionary`2.IsReadOnly">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.Add(`0,`1)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.ContainsKey(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.Remove(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.TryGetValue(`0,`1@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.Clear">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.Add(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.Contains(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.CopyTo(System.Collections.Generic.KeyValuePair{`0,`1}[],System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.Remove(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.GetEnumerator">
+            <inheritdoc/>
+        </member>
         <member name="T:AVS.Util.GameObjectHelper">
             <summary>
             Various utility extensions and methods for querying or manipulating GameObjects and Components.
@@ -9340,98 +9769,6 @@
             Various null testing extensions for non-Unity types
             </summary>
         </member>
-        <member name="T:AVS.Util.ListExt">
-            <summary>
-            Provides a set of extension methods for operations on collections and lists.
-            </summary>
-        </member>
-        <member name="M:AVS.Util.ListExt.FindIndexOf``1(System.Collections.Generic.IReadOnlyList{``0},System.Func{``0,System.Boolean})">
-            <summary>
-            Finds the index of the first element in the source list that matches the specified predicate.
-            </summary>
-            <typeparam name="T">The type of elements in the source list.</typeparam>
-            <param name="source">The source list to search.</param>
-            <param name="predicate">A function that defines the condition to match the elements.</param>
-            <returns>The zero-based index of the first element that matches the predicate, or -1 if no such element is found.</returns>
-        </member>
-        <member name="M:AVS.Util.ListExt.Last``1(System.Collections.Generic.IReadOnlyList{``0})">
-            <summary>
-            Returns the last element in the source list.
-            </summary>
-            <typeparam name="TSource">The type of elements in the source list.</typeparam>
-            <param name="source">The source list to retrieve the last element from.</param>
-            <returns>The last element in the source list.</returns>
-            <exception cref="T:System.InvalidOperationException">Thrown if the source list is empty.</exception>
-        </member>
-        <member name="M:AVS.Util.ListExt.ToRoList``1(``0)">
-            <summary>
-            Converts the specified single object to a read-only list containing that object as its single element.
-            </summary>
-            <typeparam name="TSource">The type of the object to convert.</typeparam>
-            <param name="source">The object to convert into a read-only list.</param>
-            <returns>A read-only list containing the specified object as its only element.</returns>
-        </member>
-        <member name="M:AVS.Util.ListExt.CollectionsEqual``1(System.Collections.Generic.IReadOnlyCollection{``0},System.Collections.Generic.IReadOnlyCollection{``0})">
-            <summary>
-            Determines whether two collections are equal by comparing their elements in sequence.
-            </summary>
-            <typeparam name="TSource">The type of elements in the collections.</typeparam>
-            <param name="first">The first collection to compare.</param>
-            <param name="second">The second collection to compare.</param>
-            <returns>True if the two collections are equal in length and their corresponding elements are equal; otherwise, false.</returns>
-        </member>
-        <member name="M:AVS.Util.ListExt.ToArray``1(System.Collections.Generic.IReadOnlyList{``0})">
-            <summary>
-            Converts an <see cref="T:System.Collections.Generic.IReadOnlyList`1"/> to an array.
-            </summary>
-            <typeparam name="T">The type of elements in the source list.</typeparam>
-            <param name="source">The source list to convert to an array.</param>
-            <returns>An array containing all the elements of the source list, in the same order.</returns>
-        </member>
-        <member name="M:AVS.Util.ListExt.AddRange``1(System.Collections.Generic.HashSet{``0},System.Collections.Generic.IEnumerable{``0})">
-            <summary>
-            Adds a range of items to the specified HashSet and returns the count of items that were successfully added.
-            </summary>
-            <typeparam name="T">The type of elements in the set and the collection.</typeparam>
-            <param name="set">The HashSet to add items to.</param>
-            <param name="items">The collection of items to add to the HashSet.</param>
-            <returns>The number of items successfully added to the HashSet.</returns>
-        </member>
-        <member name="M:AVS.Util.ListExt.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
-            <summary>
-            Executes the specified action for each element in the source collection.
-            </summary>
-            <typeparam name="T">The type of elements in the source collection.</typeparam>
-            <param name="source">The collection of elements to process.</param>
-            <param name="action">The action to perform on each element in the collection.</param>
-        </member>
-        <member name="M:AVS.Util.ListExt.ToHashSet``1(System.Collections.Generic.IEnumerable{``0})">
-            <summary>
-            Converts the elements of the given enumerable to a HashSet.
-            </summary>
-            <typeparam name="T">The type of elements in the source enumerable.</typeparam>
-            <param name="source">The source enumerable to convert.</param>
-            <returns>A HashSet containing the elements of the source enumerable.</returns>
-        </member>
-        <member name="M:AVS.Util.ListExt.Least``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Single})">
-            <summary>
-            Finds the element in the source sequence that has the least value as determined by the specified selector function.
-            </summary>
-            <typeparam name="T">The type of elements in the source sequence.</typeparam>
-            <param name="source">The source sequence to search.</param>
-            <param name="selector">A function to extract a float value from each element for comparison.</param>
-            <returns>The element in the source sequence with the least value as determined by the selector function.</returns>
-            <exception cref="T:System.InvalidOperationException">Thrown if the source sequence contains no elements.</exception>
-        </member>
-        <member name="M:AVS.Util.ListExt.Repeat(System.String,System.Int32)">
-            <summary>
-            Creates a new character array by repeating the specified string a given number of times.
-            </summary>
-            <param name="s">The string to be repeated. Cannot be <see langword="null"/> or empty.</param>
-            <param name="count">The number of times to repeat the string. Must be greater than zero.</param>
-            <returns>A character array containing the repeated string. Returns an empty array if <paramref name="count"/> is less
-            than or equal to zero or if <paramref name="s"/> is <see langword="null"/> or empty.</returns>
-        </member>
         <member name="T:AVS.Util.Math.Bounds2">
             <summary>
             Represents a two-dimensional axis-aligned bounding box defined by ranges along the X and Y axes.
@@ -9787,6 +10124,11 @@
         <member name="P:AVS.Util.Math.Degrees.OneEighty">
             <summary>
             Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing 180 degrees.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.ThreeSixty">
+            <summary>
+            Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing 360 degrees.
             </summary>
         </member>
         <member name="P:AVS.Util.Math.Degrees.Thirty">
@@ -10833,145 +11175,6 @@
             name="min"/>.</param>
             <returns>A <see cref="T:AVS.Util.Math.Radians"/> instance representing a random angle between <paramref name="min"/> and <paramref
             name="max"/> (inclusive).</returns>
-        </member>
-        <member name="T:AVS.Util.OrderedSet`1">
-            <summary>
-            Represents a collection of unique elements that maintains the order in which items are added.
-            </summary>
-            <typeparam name="T">The type of elements in the set.</typeparam>
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.#ctor">
-            <summary>
-            Constructs an empty set.
-            </summary>
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.#ctor(System.Collections.Generic.IEqualityComparer{`0})">
-            <summary>
-            Constructs an empty set with a customer comparer.
-            </summary>
-            <param name="comparer">The comparer to use</param>
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
-            <summary>
-            Constructs a new set from a given set of items
-            </summary>
-            <param name="items">Items to fill into the new set</param>
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.#ctor(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0})">
-            <summary>
-            Constructs a new set with a customer comparer from a given set of items
-            </summary>
-            <param name="items">Items to fill into the new set</param>
-            <param name="comparer">The comparer to use</param>
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.ToHashSet">
-            <summary>
-            Converts the <see cref="T:AVS.Util.OrderedSet`1"/> to a <see cref="T:System.Collections.Generic.HashSet`1"/> containing the same elements.
-            </summary>
-            <remarks>
-            The order of elements will be lost in the process
-            </remarks>
-            <returns>A <see cref="T:System.Collections.Generic.HashSet`1"/> containing all elements of the <see cref="T:AVS.Util.OrderedSet`1"/>.</returns>
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.ToList">
-            <summary>
-            Converts the local set to a list
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.ToArray">
-            <summary>
-            Converts the elements of the set to an array.
-            </summary>
-            <returns>An array containing all elements in the set, preserving their order.</returns>
-        </member>
-        <member name="P:AVS.Util.OrderedSet`1.Count">
-            <summary>
-            Gets the number of elements contained in the <see cref="T:AVS.Util.OrderedSet`1"/>.
-            </summary>
-            <value>The total count of elements in the set.</value>
-        </member>
-        <member name="P:AVS.Util.OrderedSet`1.IsReadOnly">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.AddRange(System.Collections.Generic.IEnumerable{`0})">
-            <summary>
-            Adds a range of items to the <see cref="T:AVS.Util.OrderedSet`1"/>.
-            </summary>
-            <param name="items">The collection of elements to add to the set.</param>
-            <returns>The updated <see cref="T:AVS.Util.OrderedSet`1"/> instance.</returns>
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.UnionWith(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.IntersectWith(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.ExceptWith(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.SymmetricExceptWith(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.ContainsAll(System.Collections.Generic.IEnumerable{`0})">
-            <summary>
-            Determines whether the current set contains all elements from the specified collection.
-            </summary>
-            <param name="other">The collection of elements to check against the current set.</param>
-            <returns>True if the current set contains all elements from the specified collection; otherwise, false.</returns>
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.ContainsAny(System.Collections.Generic.IEnumerable{`0})">
-            <summary>
-            Determines whether the current set contains any elements from the specified collection.
-            </summary>
-            <param name="other">The collection of elements to check against the current set.</param>
-            <returns>True if the current set contains at least one element from the specified collection; otherwise, false.</returns>
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.IsSubsetOf(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.IsSupersetOf(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.IsProperSupersetOf(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.IsProperSubsetOf(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.Overlaps(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.SetEquals(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.Clear">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.RemoveAll(System.Predicate{`0})">
-            <summary>
-            Removes all elements from the set that match the given predicate.
-            </summary>
-            <param name="match">The predicate function that determines whether an element should be removed.</param>
-            <returns>The current set with the elements removed.</returns>
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.Remove(`0)">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.GetEnumerator">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.System#Collections#IEnumerable#GetEnumerator">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.Contains(`0)">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.CopyTo(`0[],System.Int32)">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.Add(`0)">
-            <inheritdoc />
         </member>
         <member name="T:AVS.Util.RayCaster">
             <summary>

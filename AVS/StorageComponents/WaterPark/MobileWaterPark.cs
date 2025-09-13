@@ -4,6 +4,7 @@ using AVS.Interfaces;
 using AVS.Localization;
 using AVS.Log;
 using AVS.Util;
+using AVS.Util.Containers;
 using AVS.Util.Math;
 using System;
 using System.Collections;
@@ -22,7 +23,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 {
     private ItemsContainer? _container = null;
 
-    private Dictionary<int, WaterParkInhabitant> Inhabitants { get; } = [];
+    private SafeDictionary<int, WaterParkInhabitant> Inhabitants { get; } = [];
     private Queue<WaterParkInhabitant> InhabitantAddQueue { get; } = [];
 
     /// <summary>
@@ -59,6 +60,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     private float bottomMargin = 0;
     [SerializeField]
     private float horizontalMargin = 0;
+    [SerializeField]
+    internal float creatureScale = 1f;
 
 
     [SerializeField]
@@ -243,7 +246,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             //embed.name = prefabId.Id;
 
             var live = item.item.GetComponent<LiveMixin>();
-            var infect = item.item.GetComponent<InfectedMixin>();
+            var infect = item.item.gameObject.EnsureComponent<InfectedMixin>();
             if (live.IsNull() || !live.IsAlive())
             {
                 log.Error($"Item {item.item.NiceName()} is not alive, cannot add to water park.");
@@ -357,7 +360,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
         public Vector3 GetRandomTarget(float distance)
         {
-            using var log = SmartLog.ForAVS(RootModController.AnyInstance);
+            //using var log = SmartLog.ForAVS(RootModController.AnyInstance);
 
             var a = Creature.HAngle + Random(MaxHAngleDelta);
             var x = a.Rad.Sin;
@@ -370,7 +373,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
             float y = up.Rad.Sin;
             float r = up.Rad.Cos;
-            log.Debug($"a={a}, x={x.ToStr()}, z={z.ToStr()}, up={up}, y={y.ToStr()}, r={r.ToStr()}, av={Creature.VAngle}, up={up}, min={upMin}, max={upMax}, maxhr={MaxHAngleDelta}, maxvr={MaxVAngleDelta}, maxva={maxV}");
+            //log.Debug($"a={a}, x={x.ToStr()}, z={z.ToStr()}, up={up}, y={y.ToStr()}, r={r.ToStr()}, av={Creature.VAngle}, up={up}, min={upMin}, max={upMax}, maxhr={MaxHAngleDelta}, maxvr={MaxVAngleDelta}, maxva={maxV}");
 
 
             var dir = new Vector3(x * r, y, z * r);
@@ -382,7 +385,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     {
         target = rest.GetRandomTarget(distance);
 
-        var rs = EnforceEnclosure(ref target, null, rest.Creature.Radius);
+        var rs = EnforceEnclosure(ref target, null, rest.Creature.Radius, expectIssues: true);
         if (rs == EnforcementResult.Failed)
             return false;
         if (rs == EnforcementResult.Inside)
@@ -418,46 +421,64 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     internal Vector3 GetRandomLocation(bool dropToFloor, float worldItemRadius)
     {
+        using var log = AV.NewLazyAvsLog(parameters: Params.Of(dropToFloor, worldItemRadius));
         var center = waterPark!.position;
-        var random = UnityEngine.Random.insideUnitSphere;
-        var ray = random.normalized;
+        //var ray = random.normalized;
         var haveLocation = false;
         RaycastHit hit = default;
+        Vector3 rs = default;
         for (var i = 0; i < 100; i++)
         {
-            if (haveLocation = FirstWallHit(new Ray(waterPark!.position, ray), out hit))
-                break;
-            random = UnityEngine.Random.insideUnitSphere;
-            ray = random.normalized;
-        }
-        //LogWriter.Default.Debug($"haveLocation: {haveLocation} => {ray}");
+            var a = Degrees.RandomIn(Degrees.Zero, Degrees.ThreeSixty).Rad;
+            var x = a.Sin;
+            var z = a.Cos;
+            var ray = new Vector3(x, 0, z); //random point on unit circle
+            if (FirstWallHit(new Ray(center, ray), out hit))
+            {
+                var dir = hit.point - center;
+                var dist = dir.magnitude;
+                dir /= dist;
+                float maxDist = dist - worldItemRadius - horizontalMargin;
+                var randomDist = UnityEngine.Random.Range(0, 1) * maxDist;
+                rs = center + dir * randomDist;
+                log.Debug($"Hit wall at {hit.point} after {dist.ToStr()}m, placing item at {rs} after {randomDist.ToStr()}m");
 
-        Vector3 rs;
-        if (haveLocation)
+                var ceiling = FirstWallHit(new Ray(rs, Vector3.up), out var ceilingHit);
+                var floor = FirstWallHit(new Ray(rs, Vector3.down), out var floorHit);
+                if (ceiling && floor)
+                {
+                    float y = UnityEngine.Random.Range(floorHit.point.y + bottomMargin + worldItemRadius, ceilingHit.point.y - topMargin - worldItemRadius);
+                    rs.y = y;
+                    haveLocation = true;
+                    break;
+                }
+            }
+        }
+        if (!haveLocation)
         {
-            var dir = hit.point - center;
-            var dist = dir.magnitude;
-            dir /= dist;
-            float maxDist = dist - worldItemRadius - horizontalMargin;
-            var randomDist = random.magnitude * maxDist;
-            rs = center + dir * randomDist;
+            log.Warn($"Did not find a valid location in water park {DisplayName.Rendered}, placing at center {center}");
+            rs = center;
         }
-        else
-            rs = center + random;
-
-
         if (dropToFloor)
         {
-            rs = DropToFloor(rs, worldItemRadius);
+            log.Debug($"Dropping item to floor from {rs}");
+            rs = DropToFloor(log, rs, worldItemRadius);
+            log.Debug($"Dropped item to floor at {rs}");
         }
         return rs;
         //return EnsureInside(rs, null, worldItemRadius);
     }
 
-    private Vector3 DropToFloor(Vector3 rs, float worldItemRadius)
+    private Vector3 DropToFloor(SmartLog log, Vector3 rs, float worldItemRadius)
     {
         if (FirstWallHit(new Ray(rs, Vector3.down), out var hit))
-            return hit.point + Vector3.up * (bottomMargin + worldItemRadius);
+        {
+            var p = hit.point + Vector3.up * (bottomMargin /*+ worldItemRadius*/);
+            log.Debug($"Hit floor at {hit.point} after {hit.distance.ToStr()}m, placing item at {p}");
+            return p;
+        }
+        else
+            log.Warn($"Did not hit floor when dropping item down from {rs}, leaving at original height.");
         return rs;
     }
 
@@ -733,12 +754,12 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 continue;
             }
 
-            var pickupable = thisItem.GetComponent<Pickupable>();
-            if (pickupable.IsNull())
-            {
-                log.Error($"Item {thisItem.NiceName()} does not have a Pickupable component, skipping.");
-                continue;
-            }
+            var pickupable = thisItem.EnsureComponent<Pickupable>();
+            //if (pickupable.IsNull())
+            //{
+            //    log.Error($"Item {thisItem.NiceName()} does not have a Pickupable component, skipping.");
+            //    continue;
+            //}
 
             var liveMixin = thisItem.GetComponent<LiveMixin>();
             if (liveMixin.IsNull())
@@ -772,7 +793,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             }
             else
             {
-                var wpCreature = thisItem.GetComponent<WaterParkCreature>();
+                var wpCreature = thisItem.EnsureComponent<WaterParkCreature>();
                 var creature = thisItem.GetComponent<Creature>();
                 if (creature.IsNotNull() && wpCreature.IsNotNull())
                 {
@@ -916,15 +937,15 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         onAddLocation = position;
         if (creature.IsNotNull())
         {
+            creature.InitializeCreatureBornInWaterPark();
             creature.age = 0f;
             creature.bornInside = true;
-            creature.InitializeCreatureBornInWaterPark();
             result.transform.localScale = creature.data.initialSize * Vector3.one;
 
             var egg = result.GetComponent<CreatureEgg>();
             if (egg.IsNotNull())
             {
-                onAddLocation = DropToFloor(position, GetItemWorldRadius(creature.GetTechType(), result));
+                onAddLocation = DropToFloor(log, position, GetItemWorldRadius(creature.GetTechType(), result));
             }
         }
 
@@ -939,7 +960,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             result.GetComponent<InfectedMixin>().SafeDo(x => x.SetInfectedAmount(infectedAmount.Value));
         }
         _container!.AddItem(pickupable);
-        log.Write($"Spawned new creature {result.NiceName()} at {position} and added to water park.");
+        log.Write($"Spawned new creature {result.NiceName()} at {position}/{transform.InverseTransformPoint(position)} and added to water park.");
     }
 
     internal EnforcementResult EnforceEnclosure(Transform transform, float radius)
@@ -960,7 +981,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         Clamped,
         Failed
     }
-    internal EnforcementResult EnforceEnclosure(ref Vector3 p, Rigidbody? rb, float creatureRadius, bool clampVertically = true)
+    internal EnforcementResult EnforceEnclosure(ref Vector3 p, Rigidbody? rb, float creatureRadius, bool clampVertically = true, bool expectIssues = false)
     {
         using var log = AV.NewLazyAvsLog(parameters: Params.Of(p, creatureRadius));
         var center = waterPark!.position;
@@ -986,7 +1007,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             }
             else
             {
-                log.Warn($"No wall hit found horizontally from {origin} towards {d}, cannot enforce horizontal enclosure.");
+                if (!expectIssues)
+                    log.Warn($"No wall hit found horizontally from {transform.InverseTransformPoint(origin)} towards {d}, cannot enforce horizontal enclosure.");
                 rs = EnforcementResult.Failed; //don't know where the wall is, so consider it out of bounds
             }
         }
@@ -1008,7 +1030,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             }
             else
             {
-                log.Warn($"No wall hit found upwards from {p}, cannot enforce top enclosure.");
+                if (!expectIssues)
+                    log.Warn($"No wall hit found upwards from {transform.InverseTransformPoint(p)}, cannot enforce top enclosure.");
                 rs = EnforcementResult.Failed;
             }
 
@@ -1028,7 +1051,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             }
             else
             {
-                log.Warn($"No wall hit found downwards from {p}, cannot enforce bottom enclosure.");
+                if (!expectIssues)
+                    log.Warn($"No wall hit found downwards from {transform.InverseTransformPoint(p)}, cannot enforce bottom enclosure.");
                 rs = EnforcementResult.Failed;
             }
         }
@@ -1056,14 +1080,22 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         return radius * go.transform.localScale.x;
     }
 
+    internal void DestroyInhabitant(WaterParkInhabitant inhabitant)
+    {
+        using var log = AV.NewLazyAvsLog();
+
+        log.Debug($"Removing inhabitant {inhabitant.GameObject.NiceName()} from water park.");
+        _container!.RemoveItem(inhabitant.Pickupable, forced: true);
+        Destroy(inhabitant.GameObject);
+    }
+
     internal void Reincarnate(WaterParkCreatureInhabitant creature, AssetReferenceGameObject adultPrefab, float infectedAmount, float enzymeAmount, Vector3 position)
     {
         using var log = AV.NewLazyAvsLog();
         log.Debug($"Reinstantiating {creature.WpCreature.NiceName()} as an adult.");
 
         AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(BornAsync), log => BornAsync(log, adultPrefab, creature.WpCreature.transform.position, infectedAmount, enzymeAmount));
-        _container!.RemoveItem(creature.Pickupable, forced: true);
-        Destroy(creature.GameObject);
+        DestroyInhabitant(creature);
     }
 
     internal void AddChild(SmartLog log, AssetReferenceGameObject eggOrChildPrefab, Vector3 position)
