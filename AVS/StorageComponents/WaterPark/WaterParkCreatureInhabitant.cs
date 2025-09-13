@@ -60,6 +60,8 @@ namespace AVS.StorageComponents.WaterPark
             RootTransform.position = InitialPosition ?? WaterPark.GetRandomLocation(false, Radius);
             RootTransform.rotation = InitialRotation ?? Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
 
+            WpCreature.pickupable = Pickupable;
+
             var peeper = Creature as Peeper;
             ExpectedInfectionLevel = Infect.GetInfectedAmount();
             IsSupposedToBeHero = peeper.IsNotNull() && peeper.isHero;
@@ -233,11 +235,22 @@ namespace AVS.StorageComponents.WaterPark
 
         internal override void OnDeinstantiate()
         {
+            using var log = NewLog();
+            log.Write($"Deinstantiating creature {Creature.NiceName()} ({WpCreature.isInside}), reactivating {WpCreature.disabledBehaviours.Count} disabled behaviours");
             WpCreature.SetOutsideState();
+            var component = Creature.GetAnimator().GetComponent<AnimateByVelocity>();
+            log.Debug($"Max movement speed restored to {component.animationMoveMaxSpeed.ToStr()}");
             Rigidbody.SafeDo(rb =>
             {
                 rb.detectCollisions = true;
             });
+
+            Creature.enabled = true;
+            Creature.AllowCreatureUpdates(true);
+
+
+            RootTransform.localScale = Vector3.one * WpCreature.data.outsideSize;
+            Creature.Start();
 
 #if WATERPARK_DEBUG
             foreach (var sphere in debugSpheres)
