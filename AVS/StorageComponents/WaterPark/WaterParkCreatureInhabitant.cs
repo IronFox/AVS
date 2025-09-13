@@ -63,6 +63,7 @@ namespace AVS.StorageComponents.WaterPark
             RootTransform.rotation = InitialRotation ?? Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
 
             WpCreature.pickupable = Pickupable;
+            WpCreature.infectedMixin = Infect;
 
             var peeper = Creature as Peeper;
             ExpectedInfectionLevel = Infect.GetInfectedAmount();
@@ -256,6 +257,7 @@ namespace AVS.StorageComponents.WaterPark
             });
 
             Creature.enabled = true;
+            Creature.ScanCreatureActions();
             Creature.AllowCreatureUpdates(true);
 
 
