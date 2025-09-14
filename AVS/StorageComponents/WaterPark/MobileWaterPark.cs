@@ -225,6 +225,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             Inhabitants.Remove(iid);
             inhab.OnDeinstantiate();
             UpdateInfectionSpreading();
+            if (collidersLive)
+                Sanitize();
         }
         else
             log.Warn($"Item {item.item.NiceName()}/{iid} was not found in inhabitants list of water park {DisplayName.Rendered}, cannot remove.");
@@ -261,42 +263,11 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 return;
             }
 
-            var peeper = item.item.GetComponent<Peeper>();
-            if (peeper.IsNotNull() && peeper.enzymeAmount > 0)
-            {
-                log.Debug($"Activating enzyme visualization for {item.item.NiceName()}");
-
-                peeper.UpdateEnzymeFX();
-                peeper.enzymeParticles.Play();
-                peeper.enzymeTrail.enabled = true;
-                peeper.healingTrigger.SetActive(value: true);
-                InfectedMixin component = gameObject.GetComponent<InfectedMixin>();
-                if ((bool)component)
-                {
-                    component.SetInfectedAmount(0f);
-                }
-            }
-
-
-            //item.item.gameObject.SetActive(true); //enable the item so it can be added to the water park
-
-            //var newLive = embed.GetComponent<LiveMixin>();
-            //newLive.health = live.health; //copy health from the original item
-
-            //var newInfect = embed.GetComponent<InfectedMixin>();
-            //if (newInfect.IsNotNull() && infect.IsNotNull())
-            //{
-            //    newInfect.infectedAmount = infect.infectedAmount;
-            //}
-
             log.Debug($"Adding item {embed.NiceName()} from {embed.transform.parent.NiceName()} to water park {waterPark.NiceName()}");
-            //embed.transform.SetParent(waterPark, false);
             var wpCreature = embed.GetComponent<WaterParkCreature>();
             var creature = embed.GetComponent<Creature>();
             if (creature.IsNotNull() && wpCreature.IsNotNull())
             {
-                //creature.friendlyToPlayer = true;
-                creature.cyclopsSonarDetectable = false;
 
 
                 log.Debug($"Item {embed.NiceName()} is a creature, adding as such.");
@@ -762,9 +733,46 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             return;
         }
 
+        log.Debug($"Clearing out stray items in water park {index}");
+        foreach (var stray in waterPark.SafeGetChildren())
+        {
+            log.Warn($"Destroying stray object {stray.NiceName()} in water park {index}");
+            Destroy(stray);
+        }
+
+        var strays = Physics.OverlapSphere(waterPark.position, 500f)
+            .Select(x => x.attachedRigidbody)
+            .Distinct()
+            .Select(x => x.SafeGetGameObject())
+            .Where(x => x.SafeGetComponent<InhabitantTag>().IsNotNull())
+            .ToList();
+        log.Debug($"Found {strays.Count} escaped near water park {index}");
+        foreach (var stray in strays)
+        {
+            log.Warn($"Destroying escaped {stray.NiceName()} near water park {index}");
+            Destroy(stray);
+        }
+
+
         vehicle.Owner.StartAvsCoroutine(
             nameof(MobileWaterPark) + '.' + nameof(LoadInhabitants),
             log => LoadInhabitants(log, vehicle));
+    }
+
+    /// <summary>
+    /// Checks if there are any instances in the container that are not tracked as inhabitants
+    /// </summary>
+    private void Sanitize()
+    {
+        using var log = AV.NewLazyAvsLog();
+        log.Debug($"Clearing out stray items in water park {index}");
+        foreach (var stray in waterPark.SafeGetChildren().ToList())
+        {
+            if (Inhabitants.ContainsKey(stray.gameObject.GetInstanceID()))
+                continue;
+            log.Warn($"Destroying stray {stray.NiceName()} in water park {index}");
+            Destroy(stray);
+        }
     }
 
     private IEnumerator LoadInhabitants(SmartLog log, AvsVehicle vehicle)
@@ -870,6 +878,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 log.Error($"MobileWaterPark.Udpate called without a valid ColliderAreLive function.");
                 return;
             }
+            bool collidersChanged = false;
             if (CollidersAreLive() != collidersLive)
             {
                 collidersLive = CollidersAreLive();
@@ -877,6 +886,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
                 foreach (var inhab in GetAllInhabitants())
                     inhab.SignalCollidersChanged(collidersLive);
+                collidersChanged = true;
             }
             if (collidersLive)
             {
@@ -890,7 +900,12 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     any = true;
                 }
                 if (any)
+                {
                     UpdateInfectionSpreading();
+                    Sanitize();
+                }
+                else if (collidersChanged)
+                    Sanitize();
                 if (Time.deltaTime > 0)
                     foreach (var inhab in GetAllInhabitants())
                     {
@@ -1238,7 +1253,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         DestroyInhabitant(creature);
     }
 
-    internal void AddChild(SmartLog log, AssetReferenceGameObject eggOrChildPrefab, GlobalPosition position)
+    internal void AddChildOrEggSpawn(SmartLog log, AssetReferenceGameObject eggOrChildPrefab, GlobalPosition position)
     {
         if (FirstWallHit(position.RayInDirection(Vector3.down), out var hit))
             AV.Owner.StartAvsCoroutine(

@@ -96,7 +96,7 @@ internal record WaterParkEggInhabitant(
                 ErrorMessage.AddMessage(Language.main.GetFormat("EggDiscovered", Language.main.Get(Egg.eggType.AsString())));
             }
 
-            WaterPark.AddChild(log, Egg.creaturePrefab, GlobalPosition.Of(Egg) + Vector3.up);
+            WaterPark.AddChildOrEggSpawn(log, Egg.creaturePrefab, GlobalPosition.Of(Egg) + Vector3.up);
         }
         WaterPark.DestroyInhabitant(this);
     }

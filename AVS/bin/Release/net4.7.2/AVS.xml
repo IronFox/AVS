@@ -8088,6 +8088,11 @@
             The set name color of this vehicle
             </summary>
         </member>
+        <member name="T:AVS.StorageComponents.WaterPark.InhabitantTag">
+            <summary>
+            Tag attached to water park inhabitants (e.g. fish) to identify them as such.
+            </summary>
+        </member>
         <member name="T:AVS.StorageComponents.WaterPark.MobileWaterPark">
             <summary>
             Helper structure for fishtanks that work like an aquapark but can
@@ -8114,6 +8119,11 @@
         <member name="F:AVS.StorageComponents.WaterPark.MobileWaterPark.height">
             <summary>
             Storage container height.
+            </summary>
+        </member>
+        <member name="M:AVS.StorageComponents.WaterPark.MobileWaterPark.Sanitize">
+            <summary>
+            Checks if there are any instances in the container that are not tracked as inhabitants
             </summary>
         </member>
         <member name="T:AVS.InnateStorageContainer">

@@ -25,6 +25,7 @@ namespace AVS.StorageComponents.WaterPark
             Live.invincible = false;
             Live.shielded = false;
             IsInstantiated = false;
+            Object.Destroy(GameObject.GetComponent<InhabitantTag>());
             GameObject.SetActive(false); //disable the item so it doesn't cause issues
         }
 
@@ -33,6 +34,7 @@ namespace AVS.StorageComponents.WaterPark
             Live.invincible = true;
             Live.shielded = true;
             IsInstantiated = true;
+            GameObject.EnsureComponent<InhabitantTag>();
             GameObject.SetActive(true); //enable the item so it can be added to the water park
 
         }

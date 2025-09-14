@@ -29,6 +29,7 @@ namespace AVS.StorageComponents.WaterPark
         public LocalPosition NextSwimTarget { get; private set; }
         public LocalPosition LastAppliedSwimTarget { get; private set; }
         public float InterpolationProgress { get; private set; }
+        public bool SonarDetectable { get; private set; }
         public float SwimVelocity => Mathf.Lerp(WpCreature.swimMinVelocity, WpCreature.swimMaxVelocity, WpCreature.age)
             * (1f - 0.8f * Creature.Tired.Value) * CreatureScale;
 
@@ -65,10 +66,29 @@ namespace AVS.StorageComponents.WaterPark
             WpCreature.pickupable = Pickupable;
             WpCreature.infectedMixin = Infect;
 
+
+
             var peeper = Creature as Peeper;
+
+            if (peeper.IsNotNull() && peeper.enzymeAmount > 0)
+            {
+                log.Debug($"Activating enzyme visualization for {Creature.NiceName()}");
+
+                peeper.UpdateEnzymeFX();
+                peeper.enzymeParticles.Play();
+                peeper.enzymeTrail.enabled = true;
+                peeper.healingTrigger.SetActive(value: true);
+                Infect.SetInfectedAmount(0f);
+            }
+
             ExpectedInfectionLevel = Infect.GetInfectedAmount();
             IsSupposedToBeHero = peeper.IsNotNull() && peeper.isHero;
             log.Debug($"Instantiating creature {Creature.NiceName()} @{RootTransform.position}/{RootTransform.localPosition} with healthy={ExpectedInfectionLevel}, hero={IsSupposedToBeHero}, age={WpCreature.age}, radius={Radius.ToStr()}");
+
+            SonarDetectable = Creature.cyclopsSonarDetectable;
+            Creature.cyclopsSonarDetectable = false;
+
+
 
             SetInsideState();
             Creature.ScanCreatureActions();
@@ -257,10 +277,16 @@ namespace AVS.StorageComponents.WaterPark
             });
 
             Creature.enabled = true;
+            Creature.cyclopsSonarDetectable = SonarDetectable;
+            log.Debug($"Cyclops sonar detectable restored to {Creature.cyclopsSonarDetectable}");
             Creature.ScanCreatureActions();
             Creature.AllowCreatureUpdates(true);
 
-
+            if (RootTransform.parent == WaterPark.transform)
+            {
+                log.Debug($"Detaching creature {Creature.NiceName()} from WaterPark");
+                RootTransform.parent = null;
+            }
             RootTransform.localScale = Vector3.one * WpCreature.data.outsideSize;
             Creature.Start();
 
@@ -394,7 +420,7 @@ namespace AVS.StorageComponents.WaterPark
                 {
                     breedingPartner.WpCreature.ResetBreedTime();
                     log.Debug($"Breeding {Creature.NiceName()} with {breedingPartner.Creature.NiceName()}");
-                    WaterPark.AddChild(log, WpCreature.data.eggOrChildPrefab, GlobalPosition.Of(GameObject));
+                    WaterPark.AddChildOrEggSpawn(log, WpCreature.data.eggOrChildPrefab, GlobalPosition.Of(GameObject));
                 }
                 else
                     log.Debug($"Creature {Creature.NiceName()} could not find a breeding partner. Retrying in {WpCreature.breedInterval}");
