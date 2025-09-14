@@ -27,6 +27,13 @@ namespace AVS.Log
         private bool IsInterruptable { get; }
         private LogParameters? Parameters { get; }
 
+        private static int counter = 0;
+
+        /// <summary>
+        /// Gets the unique identifier for the instance.
+        /// </summary>
+        public int Id { get; } = ++counter;
+
         /// <summary>
         /// The recursive depth of this log context. Root context has depth 0.
         /// </summary>
@@ -130,6 +137,7 @@ namespace AVS.Log
             if (isInterruptable)
             {
                 Depth = 0;
+                Parent = null;
                 //Tags.Add(rmc.ModName);
                 //TagSet.Add("CR");
                 //Name = $"{Name} (coroutine exec)";
@@ -186,10 +194,10 @@ namespace AVS.Log
                 return;
             if (IsDisposed)
             {
-                Logger.Error($"SmartLog.SignalLog failed on {Name}: is disposed");
-                return;
+                throw new ObjectDisposedException(Name, $"[{Id}] SmartLog.SignalLog called on disposed instance");
+                //Logger.Error($"SmartLog.SignalLog failed on {Name}: is disposed");
+                //return;
             }
-            HasStarted = true;
 
             try
             {
@@ -204,7 +212,12 @@ namespace AVS.Log
             }
             catch (Exception ex)
             {
-                Logger.Exception("SmartLog.SignalLog failed", ex);
+                Logger.Exception($"[{Id}] SmartLog.SignalLog failed while trying to log '{HeadLine}': ", ex);
+                throw;
+            }
+            finally
+            {
+                HasStarted = true;
             }
         }
 
@@ -314,6 +327,7 @@ namespace AVS.Log
         {
             if (IsDisposed)
                 return;
+
             IsDisposed = true;
             if (IsInterruptable)
             {
@@ -349,7 +363,7 @@ namespace AVS.Log
             }
             catch (Exception ex)
             {
-                Logger.Exception("SmartLog.SignalLog failed", ex);
+                Logger.Exception($"[{Id}] SmartLog.SignalLog failed while trying to log '{message}': ", ex);
             }
 
         }
@@ -369,7 +383,7 @@ namespace AVS.Log
             }
             catch (Exception ex)
             {
-                Logger.Exception("SmartLog.SignalLog failed", ex);
+                Logger.Exception($"[{Id}] SmartLog.SignalLog failed while trying to warn '{message}': ", ex);
             }
 
         }
@@ -394,7 +408,7 @@ namespace AVS.Log
             }
             catch (Exception ex2)
             {
-                Logger.Exception("SmartLog.SignalLog failed", ex2);
+                Logger.Exception($"[{Id}] SmartLog.SignalLog failed while trying to fail '{message}': ", ex2);
             }
         }
 
@@ -415,7 +429,7 @@ namespace AVS.Log
             }
             catch (Exception ex)
             {
-                Logger.Exception("SmartLog.SignalLog failed", ex);
+                Logger.Exception($"[{Id}] SmartLog.SignalLog failed while trying to debug '{message}': ", ex);
             }
         }
         /// <summary>
@@ -436,7 +450,7 @@ namespace AVS.Log
             }
             catch (Exception ex)
             {
-                Logger.Exception("SmartLog.SignalLog failed", ex);
+                Logger.Exception($"[{Id}] SmartLog.SignalLog failed while trying to debug '{messageFactory()}': ", ex);
             }
         }
 
