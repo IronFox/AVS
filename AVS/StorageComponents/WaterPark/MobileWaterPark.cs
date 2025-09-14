@@ -5,6 +5,7 @@ using AVS.Localization;
 using AVS.Log;
 using AVS.Util;
 using AVS.Util.Containers;
+using AVS.Util.CoroutineHandling;
 using AVS.Util.Math;
 using System;
 using System.Collections;

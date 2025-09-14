@@ -3,6 +3,7 @@ using AVS.Assets;
 using AVS.Log;
 using AVS.Patches.CompatibilityPatches;
 using AVS.Util;
+using AVS.Util.CoroutineHandling;
 using AVS.VehicleBuilding;
 using BepInEx;
 using HarmonyLib;
@@ -429,6 +430,11 @@ public abstract class RootModController : BaseUnityPlugin
         var log = new SmartLog(this, isAvs ? "AVS" : "Mod", 5, true, nameOverride: methodName);
         CoroutineHandle? crh = null;
         var cr = StartCoroutine(Run(routine, false, log, () => crh?.SignalStop()));
+        if (cr.IsNull())
+        {
+            log.Dispose();
+            return InstantQuitCoroutineHandle.Instance;
+        }
         crh = new CoroutineHandle(log, cr, this);
         return crh;
     }

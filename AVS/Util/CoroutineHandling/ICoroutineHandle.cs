@@ -1,6 +1,6 @@
 ﻿using AVS.Interfaces;
 
-namespace AVS.Util
+namespace AVS.Util.CoroutineHandling
 {
     /// <summary>
     /// Represents a handle for managing the lifecycle of a coroutine.

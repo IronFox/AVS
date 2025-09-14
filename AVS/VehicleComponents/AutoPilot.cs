@@ -2,6 +2,7 @@
 using AVS.Interfaces;
 using AVS.Log;
 using AVS.Util;
+using AVS.Util.CoroutineHandling;
 using System;
 using System.Collections;
 using UnityEngine;
@@ -575,7 +576,7 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
     private readonly float MAX_TIME_TO_WAIT = 3f;
     private float timeWeStartedWaiting = 0f;
 
-    public ICoroutineHandle? Started { get; private set; }
+    private ICoroutineHandle? ResetDangerStatusEventuallyHandle { get; set; }
 
     void IVehicleStatusListener.OnNearbyLeviathan()
     {
@@ -591,9 +592,9 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
                 AV.GetComponentsInChildren<IAutopilotEventListener>()
                     .ForEach(l => l.Signal(new AutopilotStatusChange(was, DangerStatus)));
         }
-        Started?.Stop();
+        ResetDangerStatusEventuallyHandle?.Stop();
         timeWeStartedWaiting = Time.time;
-        Started = RootModController.AnyInstance.StartAvsCoroutine(
+        ResetDangerStatusEventuallyHandle = RootModController.AnyInstance.StartAvsCoroutine(
             nameof(Autopilot) + '.' + nameof(ResetDangerStatusEventually),
             ResetDangerStatusEventually);
         if (DangerStatus == AutopilotStatus.LeviathanSafe)

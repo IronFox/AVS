@@ -1,11 +1,22 @@
 ﻿using AVS.Log;
 using UnityEngine;
 
-namespace AVS.Util
+namespace AVS.Util.CoroutineHandling
 {
-    internal record CoroutineHandle(SmartLog Log, Coroutine Coroutine, RootModController StartedOn) : ICoroutineHandle
+    internal class CoroutineHandle : ICoroutineHandle
     {
+        public CoroutineHandle(SmartLog log, Coroutine coroutine, RootModController startedOn)
+        {
+            if (coroutine.IsNull())
+                throw new System.ArgumentNullException(nameof(coroutine));
+            Log = log;
+            Coroutine = coroutine;
+            StartedOn = startedOn;
+        }
         public bool IsRunning { get; private set; } = true;
+        public SmartLog Log { get; }
+        public Coroutine Coroutine { get; }
+        public RootModController StartedOn { get; }
 
         public void SignalStop()
         {

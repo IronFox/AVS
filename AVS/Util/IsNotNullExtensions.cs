@@ -1,4 +1,5 @@
 using AVS.Interfaces;
+using AVS.Util.CoroutineHandling;
 using HarmonyLib;
 using JetBrains.Annotations;
 using System;

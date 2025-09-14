@@ -4,6 +4,7 @@ using AVS.Log;
 using AVS.UpgradeModules;
 using AVS.UpgradeModules.Variations;
 using AVS.Util;
+using AVS.Util.CoroutineHandling;
 using Nautilus.Assets.Gadgets;
 using System;
 using System.Collections;
