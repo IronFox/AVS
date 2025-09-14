@@ -1,4 +1,5 @@
 using AVS.Interfaces;
+using AVS.Util.CoroutineHandling;
 using HarmonyLib;
 using JetBrains.Annotations;
 using System;
@@ -82,4 +83,71 @@ public static class IsNullExtensions
         => s is null;
     public static bool IsNullOrEmpty([NotNullWhen(false)] this string? s)
         => string.IsNullOrEmpty(s);
+
+    public static bool IsNullOrStopped([NotNullWhen(false)] this ICoroutineHandle? crh)
+        => crh is null || !crh.IsRunning;
+
+    public static bool IsNull([NotNullWhen(false)] this Action? a)
+        => a is null;
+
+    public static bool IsNull<T0>([NotNullWhen(false)] this Action<T0>? a)
+        => a is null;
+
+    public static bool IsNull<T0, T1>([NotNullWhen(false)] this Action<T0, T1>? a)
+        => a is null;
+    public static bool IsNull<T0, T1, T2>([NotNullWhen(false)] this Action<T0, T1, T2>? a)
+        => a is null;
+    public static bool IsNull<T0, T1, T2, T3>([NotNullWhen(false)] this Action<T0, T1, T2, T3>? a)
+        => a is null;
+    public static bool IsNull<T0, T1, T2, T3, T4>([NotNullWhen(false)] this Action<T0, T1, T2, T3, T4>? a)
+        => a is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5>([NotNullWhen(false)] this Action<T0, T1, T2, T3, T4, T5>? a)
+        => a is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6>([NotNullWhen(false)] this Action<T0, T1, T2, T3, T4, T5, T6>? a)
+        => a is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7>([NotNullWhen(false)] this Action<T0, T1, T2, T3, T4, T5, T6, T7>? a)
+        => a is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T8>([NotNullWhen(false)] this Action<T0, T1, T2, T3, T4, T5, T6, T7, T8>? a)
+        => a is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>([NotNullWhen(false)] this Action<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9>? a)
+        => a is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>([NotNullWhen(false)] this Action<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>? a)
+        => a is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>([NotNullWhen(false)] this Action<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>? a)
+        => a is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>([NotNullWhen(false)] this Action<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>? a)
+        => a is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>([NotNullWhen(false)] this Action<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>? a)
+        => a is null;
+
+    public static bool IsNull<T>([NotNullWhen(false)] this Func<T>? f)
+        => f is null;
+    public static bool IsNull<T0, T>([NotNullWhen(false)] this Func<T0, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T>([NotNullWhen(false)] this Func<T0, T1, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T2, T>([NotNullWhen(false)] this Func<T0, T1, T2, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T2, T3, T>([NotNullWhen(false)] this Func<T0, T1, T2, T3, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T>([NotNullWhen(false)] this Func<T0, T1, T2, T3, T4, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T>([NotNullWhen(false)] this Func<T0, T1, T2, T3, T4, T5, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T>([NotNullWhen(false)] this Func<T0, T1, T2, T3, T4, T5, T6, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T>([NotNullWhen(false)] this Func<T0, T1, T2, T3, T4, T5, T6, T7, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T8, T>([NotNullWhen(false)] this Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T>([NotNullWhen(false)] this Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T>([NotNullWhen(false)] this Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T>([NotNullWhen(false)] this Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T>([NotNullWhen(false)] this Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T>? f)
+        => f is null;
+    public static bool IsNull<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T>([NotNullWhen(false)] this Func<T0, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T>? f)
+        => f is null;
 }

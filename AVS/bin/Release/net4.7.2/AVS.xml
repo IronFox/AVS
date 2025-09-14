@@ -4832,6 +4832,11 @@
             The owning root mod controller instance.
             </summary>
         </member>
+        <member name="P:AVS.Log.SmartLog.Id">
+            <summary>
+            Gets the unique identifier for the instance.
+            </summary>
+        </member>
         <member name="P:AVS.Log.SmartLog.Depth">
             <summary>
             The recursive depth of this log context. Root context has depth 0.
@@ -4850,6 +4855,21 @@
         <member name="P:AVS.Log.SmartLog.IsDisposed">
             <summary>
             True if this instance has been disposed.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.SmartLog.AnyTags">
+            <summary>
+            Gets a value indicating whether any tags are present (in this or any ancestor).
+            </summary>
+        </member>
+        <member name="P:AVS.Log.SmartLog.CachedTags">
+            <summary>
+            Tags derived from this instance and all ancestors. Cached after first use.
+            </summary>
+        </member>
+        <member name="P:AVS.Log.SmartLog.MyTags">
+            <summary>
+            Tags newly declared on this instance only.
             </summary>
         </member>
         <member name="P:AVS.Log.SmartLog.Tags">
@@ -8075,32 +8095,42 @@
             The set name color of this vehicle
             </summary>
         </member>
-        <member name="T:AVS.StorageComponents.MobileWaterPark">
+        <member name="T:AVS.StorageComponents.WaterPark.InhabitantTag">
+            <summary>
+            Tag attached to water park inhabitants (e.g. fish) to identify them as such.
+            </summary>
+        </member>
+        <member name="T:AVS.StorageComponents.WaterPark.MobileWaterPark">
             <summary>
             Helper structure for fishtanks that work like an aquapark but can
             be mobile.
             </summary>
         </member>
-        <member name="P:AVS.StorageComponents.MobileWaterPark.Container">
+        <member name="P:AVS.StorageComponents.WaterPark.MobileWaterPark.Container">
             <summary>
             Accessor for the storage container.
             Throws an exception if called before Awake() or OnCraftEnd() were called.
             </summary>
         </member>
-        <member name="P:AVS.StorageComponents.MobileWaterPark.DisplayName">
+        <member name="P:AVS.StorageComponents.WaterPark.MobileWaterPark.DisplayName">
             <summary>
             The display name of the storage container.
             Must be reapplied on vehicle awake or it will reset to the default value.
             </summary>
         </member>
-        <member name="F:AVS.StorageComponents.MobileWaterPark.width">
+        <member name="F:AVS.StorageComponents.WaterPark.MobileWaterPark.width">
             <summary>
             Storage container width.
             </summary>
         </member>
-        <member name="F:AVS.StorageComponents.MobileWaterPark.height">
+        <member name="F:AVS.StorageComponents.WaterPark.MobileWaterPark.height">
             <summary>
             Storage container height.
+            </summary>
+        </member>
+        <member name="M:AVS.StorageComponents.WaterPark.MobileWaterPark.Sanitize">
+            <summary>
+            Checks if there are any instances in the container that are not tracked as inhabitants
             </summary>
         </member>
         <member name="T:AVS.InnateStorageContainer">
@@ -8955,53 +8985,462 @@
             <param name="o"></param>
             <returns></returns>
         </member>
-        <member name="T:AVS.Util.CommonExtensions">
+        <member name="T:AVS.Util.ListExt">
             <summary>
-            Contains extension methods for common operations involving float conversions and percentage calculations.
+            Provides a set of extension methods for operations on collections and lists.
             </summary>
         </member>
-        <member name="M:AVS.Util.CommonExtensions.ToStr(System.Single)">
+        <member name="M:AVS.Util.ListExt.FindIndexOf``1(System.Collections.Generic.IReadOnlyList{``0},System.Func{``0,System.Boolean})">
             <summary>
-            Converts a float into a string using the universal decimal sign (.)
+            Finds the index of the first element in the source list that matches the specified predicate.
             </summary>
-            <param name="f">Float to convert</param>
-            <returns>Converted float</returns>
+            <typeparam name="T">The type of elements in the source list.</typeparam>
+            <param name="source">The source list to search.</param>
+            <param name="predicate">A function that defines the condition to match the elements.</param>
+            <returns>The zero-based index of the first element that matches the predicate, or -1 if no such element is found.</returns>
         </member>
-        <member name="M:AVS.Util.CommonExtensions.ToFloat(System.String,System.Single@)">
+        <member name="M:AVS.Util.ListExt.Last``1(System.Collections.Generic.IReadOnlyList{``0})">
             <summary>
-            Parses a string into a float using the universal decimal sign (.)
+            Returns the last element in the source list.
             </summary>
-            <param name="s">String to try parse</param>
-            <param name="f">Resulting float</param>
-            <returns>True on success</returns>
+            <typeparam name="TSource">The type of elements in the source list.</typeparam>
+            <param name="source">The source list to retrieve the last element from.</param>
+            <returns>The last element in the source list.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown if the source list is empty.</exception>
         </member>
-        <member name="M:AVS.Util.CommonExtensions.ToFloat(System.String)">
+        <member name="M:AVS.Util.ListExt.ToRoList``1(``0)">
             <summary>
-            Converts a string into a float using the universal decimal sign (.)
+            Converts the specified single object to a read-only list containing that object as its single element.
             </summary>
-            <param name="s">String to parse</param>
-            <returns>Converted float</returns>
+            <typeparam name="TSource">The type of the object to convert.</typeparam>
+            <param name="source">The object to convert into a read-only list.</param>
+            <returns>A read-only list containing the specified object as its only element.</returns>
         </member>
-        <member name="M:AVS.Util.CommonExtensions.Percentage(System.Single,System.Single)">
+        <member name="M:AVS.Util.ListExt.CollectionsEqual``1(System.Collections.Generic.IReadOnlyCollection{``0},System.Collections.Generic.IReadOnlyCollection{``0})">
             <summary>
-            Produces a percentage string from a float value.
-            If the max value is zero, it returns "-%".
-            Rounds the percentage to two decimal places.
+            Determines whether two collections are equal by comparing their elements in sequence.
             </summary>
-            <param name="x"></param>
-            <param name="max"></param>
-            <returns>String in the form "[v]%" where [v] is either 1.23 or - </returns>
+            <typeparam name="TSource">The type of elements in the collections.</typeparam>
+            <param name="first">The first collection to compare.</param>
+            <param name="second">The second collection to compare.</param>
+            <returns>True if the two collections are equal in length and their corresponding elements are equal; otherwise, false.</returns>
         </member>
-        <member name="M:AVS.Util.CommonExtensions.Percentage(LiveMixin)">
+        <member name="M:AVS.Util.ListExt.ToArray``1(System.Collections.Generic.IReadOnlyList{``0})">
             <summary>
-            Produces a percentage string from a LiveMixin's current health status.
+            Converts an <see cref="T:System.Collections.Generic.IReadOnlyList`1"/> to an array.
+            </summary>
+            <typeparam name="T">The type of elements in the source list.</typeparam>
+            <param name="source">The source list to convert to an array.</param>
+            <returns>An array containing all the elements of the source list, in the same order.</returns>
+        </member>
+        <member name="M:AVS.Util.ListExt.AddRange``1(System.Collections.Generic.HashSet{``0},System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Adds a range of items to the specified HashSet and returns the count of items that were successfully added.
+            </summary>
+            <typeparam name="T">The type of elements in the set and the collection.</typeparam>
+            <param name="set">The HashSet to add items to.</param>
+            <param name="items">The collection of items to add to the HashSet.</param>
+            <returns>The number of items successfully added to the HashSet.</returns>
+        </member>
+        <member name="M:AVS.Util.ListExt.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
+            <summary>
+            Executes the specified action for each element in the source collection.
+            </summary>
+            <typeparam name="T">The type of elements in the source collection.</typeparam>
+            <param name="source">The collection of elements to process.</param>
+            <param name="action">The action to perform on each element in the collection.</param>
+        </member>
+        <member name="M:AVS.Util.ListExt.ToHashSet``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Converts the elements of the given enumerable to a HashSet.
+            </summary>
+            <typeparam name="T">The type of elements in the source enumerable.</typeparam>
+            <param name="source">The source enumerable to convert.</param>
+            <returns>A HashSet containing the elements of the source enumerable.</returns>
+        </member>
+        <member name="M:AVS.Util.ListExt.Least``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Single})">
+            <summary>
+            Finds the element in the source sequence that has the least value as determined by the specified selector function.
+            </summary>
+            <typeparam name="T">The type of elements in the source sequence.</typeparam>
+            <param name="source">The source sequence to search.</param>
+            <param name="selector">A function to extract a float value from each element for comparison.</param>
+            <returns>The element in the source sequence with the least value as determined by the selector function.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown if the source sequence contains no elements.</exception>
+        </member>
+        <member name="M:AVS.Util.ListExt.Repeat(System.String,System.Int32)">
+            <summary>
+            Creates a new character array by repeating the specified string a given number of times.
+            </summary>
+            <param name="s">The string to be repeated. Cannot be <see langword="null"/> or empty.</param>
+            <param name="count">The number of times to repeat the string. Must be greater than zero.</param>
+            <returns>A character array containing the repeated string. Returns an empty array if <paramref name="count"/> is less
+            than or equal to zero or if <paramref name="s"/> is <see langword="null"/> or empty.</returns>
+        </member>
+        <member name="T:AVS.Util.Containers.OrderedDict`2">
+            <summary>
+            A dictionary that maintains insertion order of keys.
+            </summary>
+            <typeparam name="K">Key type</typeparam>
+            <typeparam name="V">Value type</typeparam>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.OrderedDict`2"/> class.
+            </summary>
+            <remarks>This constructor creates an empty ordered dictionary, which maintains the insertion
+            order of keys. Keys and values can be added after initialization using the appropriate methods or
+            properties.</remarks>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.OrderedDict`2"/> class with the specified initial capacity.
+            </summary>
+            <param name="capacity">The initial number of elements that the dictionary can contain. Must be greater than or equal to 0.</param>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="capacity"/> is less than 0.</exception>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedDict`2.Count">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedDict`2.IsReadOnly">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedDict`2.Item(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedDict`2.Keys">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedDict`2.Values">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedDict`2.System#Collections#Generic#IReadOnlyDictionary{K,V}#Values">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.Add(`0,`1)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.TryAdd(`0,`1)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.ContainsKey(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.TryGetValue(`0,`1@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.Remove(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.Clear">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.ValueIs``1(`0)">
+            <summary>
+            Determines whether the value associated with the specified key is of the specified type.
+            </summary>
+            <typeparam name="T">The type to check against the value associated with the key. Must derive from <typeparamref name="V"/>.</typeparam>
+            <param name="key">The key whose associated value is to be checked.</param>
+            <returns><see langword="true"/> if the value associated with the specified key exists and is of type <typeparamref
+            name="T"/>; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedDict`2.ValueEquals(`0,`1)">
+            <summary>
+            Determines whether the specified key exists in the dictionary and is associated with the specified value.
+            </summary>
+            <remarks>This method uses the default equality comparer for the value type to determine
+            equality.</remarks>
+            <param name="key">The key to locate in the dictionary.</param>
+            <param name="value">The value to compare against the value associated with the specified key.</param>
+            <returns><see langword="true"/> if the dictionary contains the specified key and the associated value equals the
+            specified value;  otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="T:AVS.Util.Containers.OrderedSet`1">
+            <summary>
+            Represents a collection of unique elements that maintains the order in which items are added.
+            </summary>
+            <typeparam name="T">The type of elements in the set.</typeparam>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.#ctor">
+            <summary>
+            Constructs an empty set.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.#ctor(System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Constructs an empty set with a customer comparer.
+            </summary>
+            <param name="comparer">The comparer to use</param>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Constructs a new set from a given set of items
+            </summary>
+            <param name="items">Items to fill into the new set</param>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.#ctor(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Constructs a new set with a customer comparer from a given set of items
+            </summary>
+            <param name="items">Items to fill into the new set</param>
+            <param name="comparer">The comparer to use</param>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.ToHashSet">
+            <summary>
+            Converts the <see cref="T:AVS.Util.Containers.OrderedSet`1"/> to a <see cref="T:System.Collections.Generic.HashSet`1"/> containing the same elements.
             </summary>
             <remarks>
-            If the <paramref name="live"/> is null, has no max health or is invincible,
-            it returns "-%".
+            The order of elements will be lost in the process
             </remarks>
-            <param name="live">Live mixin to produce the health percent of</param>
-            <returns>String in the form "[v]%" where [v] is either 1.23 or - </returns>
+            <returns>A <see cref="T:System.Collections.Generic.HashSet`1"/> containing all elements of the <see cref="T:AVS.Util.Containers.OrderedSet`1"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.ToList">
+            <summary>
+            Converts the local set to a list
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.ToArray">
+            <summary>
+            Converts the elements of the set to an array.
+            </summary>
+            <returns>An array containing all elements in the set, preserving their order.</returns>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedSet`1.Count">
+            <summary>
+            Gets the number of elements contained in the <see cref="T:AVS.Util.Containers.OrderedSet`1"/>.
+            </summary>
+            <value>The total count of elements in the set.</value>
+        </member>
+        <member name="P:AVS.Util.Containers.OrderedSet`1.IsReadOnly">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.AddRange(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Adds a range of items to the <see cref="T:AVS.Util.Containers.OrderedSet`1"/>.
+            </summary>
+            <param name="items">The collection of elements to add to the set.</param>
+            <returns>The updated <see cref="T:AVS.Util.Containers.OrderedSet`1"/> instance.</returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.UnionWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.IntersectWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.ExceptWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.SymmetricExceptWith(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.ContainsAll(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Determines whether the current set contains all elements from the specified collection.
+            </summary>
+            <param name="other">The collection of elements to check against the current set.</param>
+            <returns>True if the current set contains all elements from the specified collection; otherwise, false.</returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.ContainsAny(System.Collections.Generic.IEnumerable{`0})">
+            <summary>
+            Determines whether the current set contains any elements from the specified collection.
+            </summary>
+            <param name="other">The collection of elements to check against the current set.</param>
+            <returns>True if the current set contains at least one element from the specified collection; otherwise, false.</returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.IsSubsetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.IsSupersetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.IsProperSupersetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.IsProperSubsetOf(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.Overlaps(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.SetEquals(System.Collections.Generic.IEnumerable{`0})">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.Clear">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.RemoveAll(System.Predicate{`0})">
+            <summary>
+            Removes all elements from the set that match the given predicate.
+            </summary>
+            <param name="match">The predicate function that determines whether an element should be removed.</param>
+            <returns>The current set with the elements removed.</returns>
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.Remove(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.System#Collections#IEnumerable#GetEnumerator">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.Contains(`0)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.CopyTo(`0[],System.Int32)">
+            <inheritdoc />
+        </member>
+        <member name="M:AVS.Util.Containers.OrderedSet`1.Add(`0)">
+            <inheritdoc />
+        </member>
+        <member name="T:AVS.Util.Containers.SafeDictionary`2">
+            <summary>
+            A dictionary that allows adding and removing items while iterating over it.
+            Count may return stale values. Items added during the iteration may or may not be part of the iteration itself.
+            Items removed during the iteration that have not yet been iterated over will not be part of the iteration.
+            Pending values are applied after the last iterator was disposed. Iterators must be disposed of properly to ensure this.
+            </summary>
+            <typeparam name="TKey">The key type used in the dictionary</typeparam>
+            <typeparam name="TValue">The value type used in the dictionary</typeparam>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.#ctor">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/> class with the default capacity
+            and comparer.
+            </summary>
+            <remarks>This constructor creates an empty dictionary with the default initial capacity and
+            uses the default equality comparer for the key type.</remarks>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.#ctor(System.Int32)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/> class with the specified
+            initial capacity.
+            </summary>
+            <param name="capacity">The initial number of elements that the dictionary can contain. Must be greater than or equal to 0.</param>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.#ctor(System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/> class with the specified
+            comparer.
+            </summary>
+            <remarks>This constructor allows you to specify a custom equality comparer for key
+            comparisons, which can be useful for scenarios requiring case-insensitive or culture-specific
+            comparisons.</remarks>
+            <param name="comparer">The <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> implementation to use when comparing keys, or <see langword="null"/>
+            to use the default equality comparer for the type of the key.</param>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.#ctor(System.Int32,System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/> class with the specified
+            initial capacity and an optional key comparer.
+            </summary>
+            <remarks>This constructor initializes the internal data structures with the specified capacity
+            and comparer.  It ensures that pending additions, updates, and removals are tracked separately to support
+            safe concurrent operations.</remarks>
+            <param name="capacity">The initial number of elements that the dictionary can contain before resizing is required. Must be greater
+            than or equal to 0.</param>
+            <param name="comparer">An optional <see cref="T:System.Collections.Generic.IEqualityComparer`1"/> implementation to use for comparing keys.  If <see
+            langword="null"/>, the default equality comparer for the type of the key is used.</param>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.#ctor(System.Collections.Generic.IDictionary{`0,`1})">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/> class  using the specified
+            source dictionary.
+            </summary>
+            <remarks>If the <paramref name="source"/> dictionary contains duplicate keys, an exception may
+            be thrown  depending on the implementation of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/>. Ensure that 
+            the source dictionary does not contain null keys or values if the implementation does not support
+            them.</remarks>
+            <param name="source">The dictionary whose elements are copied to the new <see cref="T:AVS.Util.Containers.SafeDictionary`2"/>.  The keys
+            and values from the source dictionary are added to the new instance.</param>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.#ctor(System.Collections.Generic.IDictionary{`0,`1},System.Collections.Generic.IEqualityComparer{`0})">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/> class with the specified source
+            dictionary and an optional key comparer.
+            </summary>
+            <param name="source">The dictionary whose elements are copied to initialize the <see cref="T:AVS.Util.Containers.SafeDictionary`2"/>.
+            Cannot be <see langword="null"/>.</param>
+            <param name="comparer">An optional equality comparer to use for comparing keys. If <see langword="null"/>, the default equality
+            comparer for the key type is used.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="source"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="P:AVS.Util.Containers.SafeDictionary`2.Item(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.SafeDictionary`2.Keys">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.SafeDictionary`2.Values">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.SafeDictionary`2.Count">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Containers.SafeDictionary`2.IsReadOnly">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.Add(`0,`1)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.ContainsKey(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.Remove(`0)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.TryGetValue(`0,`1@)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.Clear">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.Add(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.Contains(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.CopyTo(System.Collections.Generic.KeyValuePair{`0,`1}[],System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.Remove(System.Collections.Generic.KeyValuePair{`0,`1})">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Containers.SafeDictionary`2.GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="T:AVS.Util.CoroutineHandling.ICoroutineHandle">
+            <summary>
+            Represents a handle for managing the lifecycle of a coroutine.
+            </summary>
+            <remarks>This interface provides functionality to check the running state of a coroutine  and to stop
+            it when necessary. It is typically used to control and monitor  coroutines in systems that support asynchronous
+            or time-based operations.</remarks>
+        </member>
+        <member name="P:AVS.Util.CoroutineHandling.ICoroutineHandle.IsRunning">
+            <summary>
+            Gets a value indicating whether the process or operation is currently running.
+            The result will turn false if the coroutine is either manually stopped or has completed its execution.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.CoroutineHandling.ICoroutineHandle.Stop">
+            <summary>
+            Stops the current operation or process, if it is running.
+            </summary>
+            <remarks>This method halts the operation gracefully. Ensure that any necessary cleanup or
+            state-saving  is performed before calling this method, as the operation will not resume after being
+            stopped.</remarks>
+        </member>
+        <member name="M:AVS.Util.CoroutineHandling.ICoroutineHandle.WaitUntilDone">
+            <summary>
+            Returns a yieldable object that can be used to wait until the coroutine has completed its execution.
+            </summary>
+            <returns>Yieldable object</returns>
         </member>
         <member name="T:AVS.Util.GameObjectHelper">
             <summary>
@@ -9131,6 +9570,15 @@
             Includes the object's name, type, and instance ID.
             Returns "&lt;null&gt;" if the object is null.
             </summary>
+        </member>
+        <member name="M:AVS.Util.GameObjectHelper.SanitizeObjectName(System.String)">
+            <summary>
+            Removes any content following the first opening parenthesis in the specified string,  and returns the sanitized
+            object name. If the input is null or empty, returns "&lt;none&gt;".
+            </summary>
+            <param name="text">The string to sanitize. Can be null or empty.</param>
+            <returns>The sanitized object name with content after the first opening parenthesis removed,  or "&lt;none&gt;" if the
+            input is null or empty.</returns>
         </member>
         <member name="M:AVS.Util.GameObjectHelper.PathToString(UnityEngine.Component,UnityEngine.Transform)">
             <summary>
@@ -9269,6 +9717,7 @@
             <typeparam name="T">The type of the object, which must derive from <see cref="T:UnityEngine.Object"/>.</typeparam>
             <param name="item">The object to check for null before executing the action.</param>
             <param name="action">The action to execute if <paramref name="item"/> is not null.</param>
+            <returns><see langword="true"/> if the action was executed; <see langword="false"/> if <paramref name="item"/> was null.</returns>
         </member>
         <member name="M:AVS.Util.GameObjectHelper.SafeGet``2(``0,System.Func{``0,``1},``1)">
             <summary>
@@ -9385,236 +9834,1662 @@
             Various null testing extensions for non-Unity types
             </summary>
         </member>
-        <member name="T:AVS.Util.ListExt">
+        <member name="T:AVS.Util.Math.Bounds2">
             <summary>
-            Provides a set of extension methods for operations on collections and lists.
+            Represents a two-dimensional axis-aligned bounding box defined by ranges along the X and Y axes.
+            </summary>
+            <remarks>This structure is immutable and provides properties to access the center, size, and boundaries 
+            (minimum and maximum points) of the bounding box. It is useful for spatial calculations,  such as collision
+            detection or defining regions in 2D space.</remarks>
+            <param name="X"></param>
+            <param name="Y"></param>
+        </member>
+        <member name="M:AVS.Util.Math.Bounds2.#ctor(AVS.Util.Math.BoundsRange,AVS.Util.Math.BoundsRange)">
+            <summary>
+            Represents a two-dimensional axis-aligned bounding box defined by ranges along the X and Y axes.
+            </summary>
+            <remarks>This structure is immutable and provides properties to access the center, size, and boundaries 
+            (minimum and maximum points) of the bounding box. It is useful for spatial calculations,  such as collision
+            detection or defining regions in 2D space.</remarks>
+            <param name="X"></param>
+            <param name="Y"></param>
+        </member>
+        <member name="P:AVS.Util.Math.Bounds2.X">
+            <summary></summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bounds2.Y">
+            <summary></summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bounds2.Center">
+            <summary>
+            Gets the center point as a two-dimensional vector.
             </summary>
         </member>
-        <member name="M:AVS.Util.ListExt.FindIndexOf``1(System.Collections.Generic.IReadOnlyList{``0},System.Func{``0,System.Boolean})">
+        <member name="P:AVS.Util.Math.Bounds2.Size">
             <summary>
-            Finds the index of the first element in the source list that matches the specified predicate.
-            </summary>
-            <typeparam name="T">The type of elements in the source list.</typeparam>
-            <param name="source">The source list to search.</param>
-            <param name="predicate">A function that defines the condition to match the elements.</param>
-            <returns>The zero-based index of the first element that matches the predicate, or -1 if no such element is found.</returns>
-        </member>
-        <member name="M:AVS.Util.ListExt.Last``1(System.Collections.Generic.IReadOnlyList{``0})">
-            <summary>
-            Returns the last element in the source list.
-            </summary>
-            <typeparam name="TSource">The type of elements in the source list.</typeparam>
-            <param name="source">The source list to retrieve the last element from.</param>
-            <returns>The last element in the source list.</returns>
-            <exception cref="T:System.InvalidOperationException">Thrown if the source list is empty.</exception>
-        </member>
-        <member name="M:AVS.Util.ListExt.ToRoList``1(``0)">
-            <summary>
-            Converts the specified single object to a read-only list containing that object as its single element.
-            </summary>
-            <typeparam name="TSource">The type of the object to convert.</typeparam>
-            <param name="source">The object to convert into a read-only list.</param>
-            <returns>A read-only list containing the specified object as its only element.</returns>
-        </member>
-        <member name="M:AVS.Util.ListExt.CollectionsEqual``1(System.Collections.Generic.IReadOnlyCollection{``0},System.Collections.Generic.IReadOnlyCollection{``0})">
-            <summary>
-            Determines whether two collections are equal by comparing their elements in sequence.
-            </summary>
-            <typeparam name="TSource">The type of elements in the collections.</typeparam>
-            <param name="first">The first collection to compare.</param>
-            <param name="second">The second collection to compare.</param>
-            <returns>True if the two collections are equal in length and their corresponding elements are equal; otherwise, false.</returns>
-        </member>
-        <member name="M:AVS.Util.ListExt.ToArray``1(System.Collections.Generic.IReadOnlyList{``0})">
-            <summary>
-            Converts an <see cref="T:System.Collections.Generic.IReadOnlyList`1"/> to an array.
-            </summary>
-            <typeparam name="T">The type of elements in the source list.</typeparam>
-            <param name="source">The source list to convert to an array.</param>
-            <returns>An array containing all the elements of the source list, in the same order.</returns>
-        </member>
-        <member name="M:AVS.Util.ListExt.AddRange``1(System.Collections.Generic.HashSet{``0},System.Collections.Generic.IEnumerable{``0})">
-            <summary>
-            Adds a range of items to the specified HashSet and returns the count of items that were successfully added.
-            </summary>
-            <typeparam name="T">The type of elements in the set and the collection.</typeparam>
-            <param name="set">The HashSet to add items to.</param>
-            <param name="items">The collection of items to add to the HashSet.</param>
-            <returns>The number of items successfully added to the HashSet.</returns>
-        </member>
-        <member name="M:AVS.Util.ListExt.ForEach``1(System.Collections.Generic.IEnumerable{``0},System.Action{``0})">
-            <summary>
-            Executes the specified action for each element in the source collection.
-            </summary>
-            <typeparam name="T">The type of elements in the source collection.</typeparam>
-            <param name="source">The collection of elements to process.</param>
-            <param name="action">The action to perform on each element in the collection.</param>
-        </member>
-        <member name="M:AVS.Util.ListExt.ToHashSet``1(System.Collections.Generic.IEnumerable{``0})">
-            <summary>
-            Converts the elements of the given enumerable to a HashSet.
-            </summary>
-            <typeparam name="T">The type of elements in the source enumerable.</typeparam>
-            <param name="source">The source enumerable to convert.</param>
-            <returns>A HashSet containing the elements of the source enumerable.</returns>
-        </member>
-        <member name="M:AVS.Util.ListExt.Least``1(System.Collections.Generic.IEnumerable{``0},System.Func{``0,System.Single})">
-            <summary>
-            Finds the element in the source sequence that has the least value as determined by the specified selector function.
-            </summary>
-            <typeparam name="T">The type of elements in the source sequence.</typeparam>
-            <param name="source">The source sequence to search.</param>
-            <param name="selector">A function to extract a float value from each element for comparison.</param>
-            <returns>The element in the source sequence with the least value as determined by the selector function.</returns>
-            <exception cref="T:System.InvalidOperationException">Thrown if the source sequence contains no elements.</exception>
-        </member>
-        <member name="M:AVS.Util.ListExt.Repeat(System.String,System.Int32)">
-            <summary>
-            Creates a new character array by repeating the specified string a given number of times.
-            </summary>
-            <param name="s">The string to be repeated. Cannot be <see langword="null"/> or empty.</param>
-            <param name="count">The number of times to repeat the string. Must be greater than zero.</param>
-            <returns>A character array containing the repeated string. Returns an empty array if <paramref name="count"/> is less
-            than or equal to zero or if <paramref name="s"/> is <see langword="null"/> or empty.</returns>
-        </member>
-        <member name="T:AVS.Util.OrderedSet`1">
-            <summary>
-            Represents a collection of unique elements that maintains the order in which items are added.
-            </summary>
-            <typeparam name="T">The type of elements in the set.</typeparam>
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.#ctor">
-            <summary>
-            Constructs an empty set.
+            Gets the size represented as a two-dimensional vector.
             </summary>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.#ctor(System.Collections.Generic.IEqualityComparer{`0})">
+        <member name="P:AVS.Util.Math.Bounds2.Min">
             <summary>
-            Constructs an empty set with a customer comparer.
+            Gets the minimum values of the X and Y components as a <see cref="T:UnityEngine.Vector2"/>.
             </summary>
-            <param name="comparer">The comparer to use</param>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.#ctor(System.Collections.Generic.IEnumerable{`0})">
+        <member name="P:AVS.Util.Math.Bounds2.Max">
             <summary>
-            Constructs a new set from a given set of items
+            Gets the maximum values of the X and Y components as a <see cref="T:UnityEngine.Vector2"/>.
             </summary>
-            <param name="items">Items to fill into the new set</param>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.#ctor(System.Collections.Generic.IEnumerable{`0},System.Collections.Generic.IEqualityComparer{`0})">
+        <member name="M:AVS.Util.Math.Bounds2.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Math.Bounds2.From(System.Collections.Generic.IEnumerable{UnityEngine.Vector2})">
             <summary>
-            Constructs a new set with a customer comparer from a given set of items
+            Creates a <see cref="T:AVS.Util.Math.Bounds2"/> instance that encompasses the specified collection of vertices.
             </summary>
-            <param name="items">Items to fill into the new set</param>
-            <param name="comparer">The comparer to use</param>
+            <param name="vertices">A collection of <see cref="T:UnityEngine.Vector2"/> points to calculate the bounds for. Must not be null or empty.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Bounds2"/> that represents the smallest bounding box containing all the specified vertices.</returns>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.ToHashSet">
+        <member name="T:AVS.Util.Math.Bounds3">
             <summary>
-            Converts the <see cref="T:AVS.Util.OrderedSet`1"/> to a <see cref="T:System.Collections.Generic.HashSet`1"/> containing the same elements.
+            Represents a three-dimensional axis-aligned bounding box defined by ranges along the X, Y, and Z axes.
+            </summary>
+            <remarks>The <see cref="T:AVS.Util.Math.Bounds3"/> structure provides methods and properties for working with 3D bounding
+            boxes,  including calculating the center, size, and extents, as well as performing operations such as translation 
+            and containment checks. It is immutable and designed for efficient comparisons and transformations.</remarks>
+            <param name="X"></param>
+            <param name="Y"></param>
+            <param name="Z"></param>
+        </member>
+        <member name="M:AVS.Util.Math.Bounds3.#ctor(AVS.Util.Math.BoundsRange,AVS.Util.Math.BoundsRange,AVS.Util.Math.BoundsRange)">
+            <summary>
+            Represents a three-dimensional axis-aligned bounding box defined by ranges along the X, Y, and Z axes.
+            </summary>
+            <remarks>The <see cref="T:AVS.Util.Math.Bounds3"/> structure provides methods and properties for working with 3D bounding
+            boxes,  including calculating the center, size, and extents, as well as performing operations such as translation 
+            and containment checks. It is immutable and designed for efficient comparisons and transformations.</remarks>
+            <param name="X"></param>
+            <param name="Y"></param>
+            <param name="Z"></param>
+        </member>
+        <member name="P:AVS.Util.Math.Bounds3.X">
+            <summary></summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bounds3.Y">
+            <summary></summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bounds3.Z">
+            <summary></summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bounds3.Center">
+            <summary>
+            Gets the center point of the object as a three-dimensional vector.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bounds3.Size">
+            <summary>
+            Gets the size of the object as a three-dimensional vector.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bounds3.Min">
+            <summary>
+            Gets the minimum values of the X, Y, and Z components as a <see cref="T:UnityEngine.Vector3"/>.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bounds3.Max">
+            <summary>
+            Gets the maximum values of the X, Y, and Z components as a <see cref="T:UnityEngine.Vector3"/>.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Bounds3.From(UnityEngine.Bounds)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.Bounds3"/> instance from the specified <see cref="T:UnityEngine.Bounds"/>.
+            </summary>
+            <param name="b">The <see cref="T:UnityEngine.Bounds"/> object to convert. Represents the minimum and maximum points of a 3D bounding box.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Bounds3"/> instance that corresponds to the specified <see cref="T:UnityEngine.Bounds"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Bounds3.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Math.Bounds3.TranslatedBy(UnityEngine.Vector3)">
+            <summary>
+            Returns a new <see cref="T:AVS.Util.Math.Bounds3"/> instance translated by the specified vector.
+            </summary>
+            <param name="delta">The translation vector, where each component specifies the amount to translate along the corresponding axis.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Bounds3"/> instance translated by the specified vector.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Bounds3.Contains(AVS.Util.Math.Bounds3)">
+            <summary>
+            Determines whether the current <see cref="T:AVS.Util.Math.Bounds3"/> fully contains the specified <paramref name="other"/>
+            bounds.
+            </summary>
+            <param name="other">The <see cref="T:AVS.Util.Math.Bounds3"/> to check for containment within the current bounds.</param>
+            <returns><see langword="true"/> if the specified <paramref name="other"/> bounds are fully contained within the current
+            bounds; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Bounds3.ContainsCentered(AVS.Util.Math.Bounds3)">
+            <summary>
+            Determines whether the specified Bounds3 is fully contained within this Bounds3
+            assuming it was at the same center.
+            </summary>
+            <param name="other">The Bounds3 instance to check for containment.</param>
+            <returns>True if the specified Bounds3 is fully contained within this Bounds3, if it were located in the same center.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Bounds3.CenterBox(UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Creates a new axis-aligned bounding box centered at the specified position with the given size.
+            </summary>
+            <param name="center">The center point of the bounding box, represented as a <see cref="T:UnityEngine.Vector3"/>.</param>
+            <param name="size">The dimensions of the bounding box, represented as a <see cref="T:UnityEngine.Vector3"/>. Each component must be non-negative.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Bounds3"/> instance representing the axis-aligned bounding box.</returns>
+        </member>
+        <member name="T:AVS.Util.Math.BoundsBuilder2">
+            <summary>
+            Represents a two-dimensional, mutable bounding box defined by two bounded ranges.
+            </summary>
+            <remarks>This class provides functionality for dynamically constructing and modifying a bounding box in two
+            dimensions. It supports operations such as including points or collections of points to expand the bounds, and
+            provides properties for accessing the bounds' minimum, maximum, center, size, and area. The bounds can also be
+            "baked" into an immutable <see cref="T:AVS.Util.Math.Bounds2"/> instance.</remarks>
+        </member>
+        <member name="P:AVS.Util.Math.BoundsBuilder2.X">
+            <summary>
+            Gets the builder for defining a bounded range along the X axis.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.BoundsBuilder2.Y">
+            <summary>
+            Gets the builder for defining a bounded range along the Y axis.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.BoundsBuilder2.Id">
+            <summary>
+            Gets the unique identifier for the entity.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.BoundsBuilder2.Min">
+            <summary>
+            Gets the minimum values of the X and Y components as a <see cref="T:UnityEngine.Vector2"/>.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.BoundsBuilder2.Max">
+            <summary>
+            Gets the maximum values of the X and Y components as a <see cref="T:UnityEngine.Vector2"/>.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.BoundsBuilder2.Center">
+            <summary>
+            Gets the center point as a two-dimensional vector.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.BoundsBuilder2.Size">
+            <summary>
+            Gets the size represented as a two-dimensional vector, where each component is the center value of the
+            corresponding axis.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.BoundsBuilder2.Area">
+            <summary>
+            Gets the area calculated as the product of the center values of the X and Y components.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.BoundsBuilder2.Baked">
+            <summary>
+            Gets the precomputed bounds based on the current X and Y ranges.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.BoundsBuilder2.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Math.BoundsBuilder2.Empty">
+            <summary>
+            Gets an empty instance of <see cref="T:AVS.Util.Math.BoundsBuilder2"/> with no defined ranges.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.BoundsBuilder2.Include(UnityEngine.Vector2)">
+            <summary>
+            Expands the bounds to include the specified 2D vector.
+            </summary>
+            <param name="v">The 2D vector to include in the bounds.</param>
+            <returns>The updated <see cref="T:AVS.Util.Math.BoundsBuilder2"/> instance, allowing for method chaining.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.BoundsBuilder2.Include(System.Collections.Generic.IEnumerable{UnityEngine.Vector2})">
+            <summary>
+            Expands the bounds to include the specified collection of vertices.
+            </summary>
+            <param name="vertices">A collection of <see cref="T:UnityEngine.Vector2"/> instances to include in the bounds.</param>
+            <returns>The current <see cref="T:AVS.Util.Math.BoundsBuilder2"/> instance, allowing for method chaining.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.BoundsBuilder2.From(System.Collections.Generic.IEnumerable{UnityEngine.Vector2})">
+            <summary>
+            Creates a new <see cref="T:AVS.Util.Math.BoundsBuilder2"/> instance that encompasses the specified vertices.
+            </summary>
+            <param name="vertices">A collection of <see cref="T:UnityEngine.Vector2"/> points to include in the bounds.  The collection must not be null.</param>
+            <returns>A <see cref="T:AVS.Util.Math.BoundsBuilder2"/> instance that includes the specified vertices.</returns>
+        </member>
+        <member name="T:AVS.Util.Math.BoundsRange">
+            <summary>
+            Represents a range of floating-point values defined by a minimum and maximum boundary.
             </summary>
             <remarks>
-            The order of elements will be lost in the process
+            A <see cref="T:AVS.Util.Math.BoundsRange"/> is an immutable structure used to describe a contiguous range of
+            values. It provides properties for analyzing the range, such as size, center, and whether
+            the range is empty. Methods for checking if a value or another range overlaps with this
+            instance are also available.
             </remarks>
-            <returns>A <see cref="T:System.Collections.Generic.HashSet`1"/> containing all elements of the <see cref="T:AVS.Util.OrderedSet`1"/>.</returns>
+            <seealso cref="T:System.IEquatable`1"/>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.ToList">
+        <member name="M:AVS.Util.Math.BoundsRange.#ctor(System.Single,System.Single)">
             <summary>
-            Converts the local set to a list
+            Represents a range of floating-point values defined by a minimum and maximum boundary.
             </summary>
-            <returns></returns>
+            <remarks>
+            A <see cref="T:AVS.Util.Math.BoundsRange"/> is an immutable structure used to describe a contiguous range of
+            values. It provides properties for analyzing the range, such as size, center, and whether
+            the range is empty. Methods for checking if a value or another range overlaps with this
+            instance are also available.
+            </remarks>
+            <seealso cref="T:System.IEquatable`1"/>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.ToArray">
+        <member name="M:AVS.Util.Math.BoundsRange.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Math.BoundsRange.TranslatedBy(System.Single)">
             <summary>
-            Converts the elements of the set to an array.
+            Returns a new <see cref="T:AVS.Util.Math.BoundsRange"/> instance translated by the specified delta.
             </summary>
-            <returns>An array containing all elements in the set, preserving their order.</returns>
+            <param name="delta">The amount by which to translate the range. Positive values shift the range upward, and negative values shift it
+            downward.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.BoundsRange"/> with both the minimum and maximum values adjusted by the specified delta.</returns>
         </member>
-        <member name="P:AVS.Util.OrderedSet`1.Count">
+        <member name="M:AVS.Util.Math.BoundsRange.Centered(System.Single,System.Single)">
             <summary>
-            Gets the number of elements contained in the <see cref="T:AVS.Util.OrderedSet`1"/>.
+            Creates a <see cref="T:AVS.Util.Math.BoundsRange"/> instance that is centered on the specified value and has the specified size.
             </summary>
-            <value>The total count of elements in the set.</value>
+            <param name="center">The central point of the range.</param>
+            <param name="size">The total size or width of the range. Must be a non-negative value.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.BoundsRange"/> instance centered at the specified value with the given size.</returns>
         </member>
-        <member name="P:AVS.Util.OrderedSet`1.IsReadOnly">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.AddRange(System.Collections.Generic.IEnumerable{`0})">
+        <member name="T:AVS.Util.Math.BoundedRangeBuilder">
             <summary>
-            Adds a range of items to the <see cref="T:AVS.Util.OrderedSet`1"/>.
+            Represents a utility class to construct and manage a bounded range of floating-point values.
             </summary>
-            <param name="items">The collection of elements to add to the set.</param>
-            <returns>The updated <see cref="T:AVS.Util.OrderedSet`1"/> instance.</returns>
+            <remarks>
+            A bounded range is defined by a minimum and maximum value. This class provides methods to
+            calculate properties like size and center of the range, check its emptiness, and include
+            additional values or other bounded ranges to dynamically extend its boundaries.
+            </remarks>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.UnionWith(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.IntersectWith(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.ExceptWith(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.SymmetricExceptWith(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.ContainsAll(System.Collections.Generic.IEnumerable{`0})">
+        <member name="P:AVS.Util.Math.BoundedRangeBuilder.Min">
             <summary>
-            Determines whether the current set contains all elements from the specified collection.
+            Gets the minimum value in the dataset.
             </summary>
-            <param name="other">The collection of elements to check against the current set.</param>
-            <returns>True if the current set contains all elements from the specified collection; otherwise, false.</returns>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.ContainsAny(System.Collections.Generic.IEnumerable{`0})">
+        <member name="P:AVS.Util.Math.BoundedRangeBuilder.Max">
             <summary>
-            Determines whether the current set contains any elements from the specified collection.
+            Gets the maximum value allowed for the operation.
             </summary>
-            <param name="other">The collection of elements to check against the current set.</param>
-            <returns>True if the current set contains at least one element from the specified collection; otherwise, false.</returns>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.IsSubsetOf(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.IsSupersetOf(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.IsProperSupersetOf(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.IsProperSubsetOf(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.Overlaps(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.SetEquals(System.Collections.Generic.IEnumerable{`0})">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.Clear">
-            <inheritdoc />
-        </member>
-        <member name="M:AVS.Util.OrderedSet`1.RemoveAll(System.Predicate{`0})">
+        <member name="P:AVS.Util.Math.BoundedRangeBuilder.Empty">
             <summary>
-            Removes all elements from the set that match the given predicate.
+            Gets an empty <see cref="T:AVS.Util.Math.BoundedRangeBuilder"/> instance with no valid range.
             </summary>
-            <param name="match">The predicate function that determines whether an element should be removed.</param>
-            <returns>The current set with the elements removed.</returns>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.Remove(`0)">
-            <inheritdoc />
+        <member name="M:AVS.Util.Math.BoundedRangeBuilder.#ctor(System.Single,System.Single)">
+            <summary>
+            Initializes a new instance of the <see cref="T:AVS.Util.Math.BoundedRangeBuilder"/> class with the specified minimum and maximum
+            values.
+            </summary>
+            <remarks>The <paramref name="min"/> and <paramref name="max"/> parameters define the bounds of the
+            range.  Ensure that <paramref name="max"/> is not less than <paramref name="min"/> to avoid invalid range
+            definitions.</remarks>
+            <param name="min">The minimum value of the range.</param>
+            <param name="max">The maximum value of the range. Must be greater than or equal to <paramref name="min"/>.</param>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.GetEnumerator">
-            <inheritdoc />
+        <member name="P:AVS.Util.Math.BoundedRangeBuilder.Range">
+            <summary>
+            Gets the bounds of the current range as an instance of <see cref="T:AVS.Util.Math.BoundsRange"/>.
+            </summary>
+            <remarks>
+            The range is defined by its minimum and maximum values. This property provides
+            a compact representation of the current range.
+            </remarks>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.System#Collections#IEnumerable#GetEnumerator">
-            <inheritdoc />
+        <member name="M:AVS.Util.Math.BoundedRangeBuilder.Include(System.Single)">
+            <summary>
+            Updates the range to include the specified value.
+            </summary>
+            <param name="value">The value to include in the range. If the value is less than the current minimum, the minimum is updated. If the
+            value is greater than the current maximum, the maximum is updated.</param>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.Contains(`0)">
-            <inheritdoc />
+        <member name="M:AVS.Util.Math.BoundedRangeBuilder.Include(AVS.Util.Math.BoundedRangeBuilder)">
+            <summary>
+            Expands the current range to include the range defined by the specified <see cref="T:AVS.Util.Math.BoundedRangeBuilder"/>.
+            </summary>
+            <remarks>After calling this method, the current range will encompass the minimum and maximum values of
+            both the original range and the specified range.</remarks>
+            <param name="other">The <see cref="T:AVS.Util.Math.BoundedRangeBuilder"/> whose range will be included. If the specified range is empty, this method
+            has no effect.</param>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.CopyTo(`0[],System.Int32)">
-            <inheritdoc />
+        <member name="T:AVS.Util.Math.Degrees">
+            <summary>
+            An angle in degrees.
+            </summary>
         </member>
-        <member name="M:AVS.Util.OrderedSet`1.Add(`0)">
-            <inheritdoc />
+        <member name="M:AVS.Util.Math.Degrees.#ctor(System.Single)">
+            <summary>
+            An angle in degrees.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.Zero">
+            <summary>
+            Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing zero degrees.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.OneEighty">
+            <summary>
+            Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing 180 degrees.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.ThreeSixty">
+            <summary>
+            Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing 360 degrees.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.Thirty">
+            <summary>
+            Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing 30 degrees.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.FortyFive">
+            <summary>
+            Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing an angle of 45 degrees.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.Ninety">
+            <summary>
+            Gets a <see cref="T:AVS.Util.Math.Degrees"/> instance representing 90 degrees.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.FromEulerY(UnityEngine.Quaternion)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.Degrees"/> instance representing the rotation around the Y-axis  extracted from the
+            specified quaternion.
+            </summary>
+            <param name="rotation">The quaternion from which to extract the Y-axis rotation.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Degrees"/> instance representing the Y-axis rotation in degrees.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.FromEulerX(UnityEngine.Quaternion)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.Degrees"/> instance representing the rotation around the X-axis  extracted from the
+            specified quaternion.
+            </summary>
+            <param name="rotation">The quaternion from which to extract the X-axis rotation.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Degrees"/> instance representing the rotation around the X-axis.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.FromEulerZ(UnityEngine.Quaternion)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.Degrees"/> instance representing the rotation around the Z-axis extracted from the
+            specified quaternion.
+            </summary>
+            <param name="rotation">The quaternion from which to extract the Z-axis rotation.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Degrees"/> instance representing the Z-axis rotation in degrees.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Addition(AVS.Util.Math.Degrees,AVS.Util.Math.Degrees)">
+            <summary>
+            Adds two <see cref="T:AVS.Util.Math.Degrees"/> instances and returns the result.
+            </summary>
+            <param name="a">The first <see cref="T:AVS.Util.Math.Degrees"/> instance to add.</param>
+            <param name="b">The second <see cref="T:AVS.Util.Math.Degrees"/> instance to add.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance representing the sum of <paramref name="a"/> and <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Subtraction(AVS.Util.Math.Degrees,AVS.Util.Math.Degrees)">
+            <summary>
+            Subtracts one <see cref="T:AVS.Util.Math.Degrees"/> instance from another and returns the result.
+            </summary>
+            <param name="a">The minuend, representing the first <see cref="T:AVS.Util.Math.Degrees"/> instance.</param>
+            <param name="b">The subtrahend, representing the second <see cref="T:AVS.Util.Math.Degrees"/> instance to subtract from <paramref
+            name="a"/>.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance representing the difference between <paramref name="a"/> and <paramref
+            name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Multiply(AVS.Util.Math.Degrees,System.Single)">
+            <summary>
+            Multiplies the specified angle by a scalar value.
+            </summary>
+            <param name="a">The angle, in degrees, to be multiplied.</param>
+            <param name="b">The scalar value by which to multiply the angle.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance representing the result of the multiplication.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Multiply(System.Single,AVS.Util.Math.Degrees)">
+            <summary>
+            Multiplies a scalar value by an angle in degrees.
+            </summary>
+            <param name="a">The scalar value to multiply.</param>
+            <param name="b">The angle, in degrees, to be scaled.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance representing the scaled angle.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Division(AVS.Util.Math.Degrees,System.Single)">
+            <summary>
+            Divides the value of the specified <see cref="T:AVS.Util.Math.Degrees"/> instance by a scalar value.
+            </summary>
+            <param name="a">The <see cref="T:AVS.Util.Math.Degrees"/> instance to be divided.</param>
+            <param name="b">The scalar value by which to divide the <paramref name="a"/> value. Must not be zero.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance representing the result of the division.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Division(System.Single,AVS.Util.Math.Degrees)">
+            <summary>
+            Divides a scalar value by an angle, returning a new <see cref="T:AVS.Util.Math.Degrees"/> instance.
+            </summary>
+            <param name="a">The scalar value to divide.</param>
+            <param name="b">The <see cref="T:AVS.Util.Math.Degrees"/> instance representing the divisor.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance representing the result of the division.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_UnaryNegation(AVS.Util.Math.Degrees)">
+            <summary>
+            Negates the value of the specified <see cref="T:AVS.Util.Math.Degrees"/> instance.
+            </summary>
+            <param name="a">The <see cref="T:AVS.Util.Math.Degrees"/> instance to negate.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance with the negated value.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.op_Implicit(AVS.Util.Math.Radians)~AVS.Util.Math.Degrees">
+            <summary>
+            Converts an instance of <see cref="T:AVS.Util.Math.Radians"/> to an instance of <see cref="T:AVS.Util.Math.Degrees"/>.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.CompareTo(AVS.Util.Math.Degrees)">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.WrapToPlusMinus180">
+            <summary>
+            Wraps the current angle value to the range of -180 to 180 degrees.
+            </summary>
+            <remarks>This method ensures that the angle remains within the standard range for representing
+            directional angles, wrapping values outside the range of -180 to 180 degrees back into it.</remarks>
+            <returns>A new <see cref="T:AVS.Util.Math.Degrees"/> instance with the angle wrapped to the range of -180 to 180 degrees.</returns>
+        </member>
+        <member name="P:AVS.Util.Math.Degrees.Rad">
+            <summary>
+            Gets the current instance of the <see cref="T:AVS.Util.Math.Radians"/> class.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Degrees.RandomIn(AVS.Util.Math.Degrees,AVS.Util.Math.Degrees)">
+            <summary>
+            Generates a random angle within the specified range of degrees.
+            </summary>
+            <remarks>The range is inclusive of the lower bound and exclusive of the upper bound. Ensure
+            that <paramref name="a"/> is less than or equal to <paramref name="b"/> to avoid unexpected
+            results.</remarks>
+            <param name="a">The lower bound of the range, in degrees.</param>
+            <param name="b">The upper bound of the range, in degrees.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Degrees"/> instance representing a random angle between <paramref name="a"/> and <paramref
+            name="b"/>.</returns>
+        </member>
+        <member name="T:AVS.Util.Math.GlobalPosition">
+            <summary>
+            Represents a global position in 3D space.
+            </summary>
+            <remarks>This structure encapsulates a 3D position using a <see cref="T:UnityEngine.Vector3"/>.  It is immutable and
+            can be used to represent positions in a global coordinate system.</remarks>
+            <param name="GlobalCoordinates"></param>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.#ctor(UnityEngine.Vector3)">
+            <summary>
+            Represents a global position in 3D space.
+            </summary>
+            <remarks>This structure encapsulates a 3D position using a <see cref="T:UnityEngine.Vector3"/>.  It is immutable and
+            can be used to represent positions in a global coordinate system.</remarks>
+            <param name="GlobalCoordinates"></param>
+        </member>
+        <member name="P:AVS.Util.Math.GlobalPosition.GlobalCoordinates">
+            <summary></summary>
+        </member>
+        <member name="P:AVS.Util.Math.GlobalPosition.X">
+            <summary>
+            Gets the X-coordinate of the global position.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.GlobalPosition.Y">
+            <summary>
+            Gets the Y-coordinate of the object in global space.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.GlobalPosition.Z">
+            <summary>
+            Gets the Z-coordinate value from the global coordinate system.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.Of(UnityEngine.Transform)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.GlobalPosition"/> instance from the specified <see cref="T:UnityEngine.Transform"/>.
+            </summary>
+            <param name="t">The <see cref="T:UnityEngine.Transform"/> whose position will be used to create the <see cref="T:AVS.Util.Math.GlobalPosition"/>.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the position of the specified <see cref="T:UnityEngine.Transform"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.Of(UnityEngine.RaycastHit)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.GlobalPosition"/> instance from the specified <see cref="T:UnityEngine.RaycastHit"/>.
+            </summary>
+            <param name="hit">The <see cref="T:UnityEngine.RaycastHit"/> containing the point data to initialize the <see cref="T:AVS.Util.Math.GlobalPosition"/>.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the position of the <paramref name="hit"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.Of(UnityEngine.GameObject)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.GlobalPosition"/> instance from the specified <see cref="T:UnityEngine.GameObject"/>.
+            </summary>
+            <param name="go">The <see cref="T:UnityEngine.GameObject"/> from which to create the <see cref="T:AVS.Util.Math.GlobalPosition"/>.</param>
+            <returns>A <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the global position of the specified <see cref="T:UnityEngine.GameObject"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.Of(UnityEngine.Component)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.GlobalPosition"/> instance based on the specified component's transform.
+            </summary>
+            <param name="c">The component whose transform is used to determine the global position. Cannot be <see langword="null"/>.</param>
+            <returns>A <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the global position of the specified component.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.Flat">
+            <summary>
+            Projects the global coordinates onto the Y plane, returning a flattened representation.
+            </summary>
+            <returns>A <see cref="T:UnityEngine.Vector2"/> representing the 2D projection of the global coordinates.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.AtYOf(AVS.Util.Math.GlobalPosition)">
+            <summary>
+            Creates a new <see cref="T:AVS.Util.Math.GlobalPosition"/> with the same X and Z coordinates as the current instance  and
+            the Y coordinate of the specified <paramref name="p"/>.
+            </summary>
+            <param name="p">The <see cref="T:AVS.Util.Math.GlobalPosition"/> whose Y coordinate will be used in the new position.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.GlobalPosition"/> with the updated Y coordinate.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.ToLocal(UnityEngine.Transform)">
+            <summary>
+            Converts the current global position to a local position relative to the specified transform.
+            </summary>
+            <param name="transform">The transform to which the global position will be converted.</param>
+            <returns>A <see cref="T:AVS.Util.Math.LocalPosition"/> representing the position relative to the specified transform.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.ToLocal(UnityEngine.Component)">
+            <summary>
+            Converts the global position of the specified <see cref="T:UnityEngine.Behaviour"/> to a local position.
+            </summary>
+            <param name="c">The <see cref="T:UnityEngine.Component"/> whose global position will be converted.</param>
+            <returns>A <see cref="T:AVS.Util.Math.LocalPosition"/> representing the position of the specified <see cref="T:UnityEngine.Behaviour"/>  relative
+            to the local coordinate system.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.op_Addition(AVS.Util.Math.GlobalPosition,UnityEngine.Vector3)">
+            <summary>
+            Adds a <see cref="T:UnityEngine.Vector3"/> offset to a <see cref="T:AVS.Util.Math.GlobalPosition"/> and returns the resulting position.
+            </summary>
+            <param name="a">The initial <see cref="T:AVS.Util.Math.GlobalPosition"/> to which the offset will be applied.</param>
+            <param name="b">The <see cref="T:UnityEngine.Vector3"/> representing the offset to apply to the global coordinates.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the result of adding the offset <paramref name="b"/> to
+            <paramref name="a"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.op_Subtraction(AVS.Util.Math.GlobalPosition,AVS.Util.Math.GlobalPosition)">
+            <summary>
+            Subtracts the global coordinates of one <see cref="T:AVS.Util.Math.GlobalPosition"/> from another.
+            </summary>
+            <param name="a">The minuend, representing the first <see cref="T:AVS.Util.Math.GlobalPosition"/>.</param>
+            <param name="b">The subtrahend, representing the second <see cref="T:AVS.Util.Math.GlobalPosition"/>.</param>
+            <returns>A <see cref="T:UnityEngine.Vector3"/> representing the difference between the global coordinates of <paramref name="a"/>
+            and <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.FromGlobalCoordinates(System.Nullable{UnityEngine.Vector3})">
+            <summary>
+            Converts a nullable 3D vector representing global coordinates into a <see cref="T:AVS.Util.Math.GlobalPosition"/> object.
+            </summary>
+            <param name="position">The nullable <see cref="T:UnityEngine.Vector3"/> representing the global coordinates. If null, the method returns null.</param>
+            <returns>A <see cref="T:AVS.Util.Math.GlobalPosition"/> object representing the specified global coordinates, or null if <paramref
+            name="position"/> is null.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.RayInDirection(UnityEngine.Vector3)">
+            <summary>
+            Creates a ray originating from the current position and extending in the specified direction.
+            </summary>
+            <param name="dir">The direction vector in which the ray extends. This vector should be normalized for accurate results.</param>
+            <returns>A <see cref="T:UnityEngine.Ray"/> instance starting at the current position and pointing in the specified direction.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.AtGlobalY(System.Single)">
+            <summary>
+            Creates a new <see cref="T:AVS.Util.Math.GlobalPosition"/> with the specified global Y-coordinate,  while retaining the
+            current X and Z coordinates.
+            </summary>
+            <param name="y">The global Y-coordinate to set for the new position.</param>
+            <returns>A <see cref="T:AVS.Util.Math.GlobalPosition"/> instance with the specified Y-coordinate and the current X and Z coordinates.</returns>
+        </member>
+        <member name="T:AVS.Util.Math.IAngle">
+            <summary>
+            Angle representation interface.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.IAngle.Value">
+            <summary>
+            Raw angle value.
+            </summary>
+        </member>
+        <member name="T:AVS.Util.Math.IBoundsRange">
+            <summary>
+            Represents a range defined by a minimum and maximum value.
+            </summary>
+            <remarks>This interface is typically used to describe the bounds of a dataset or a range of values.
+            Implementations of this interface should ensure that <see cref="P:AVS.Util.Math.IBoundsRange.Min"/> is less than or equal to <see
+            cref="P:AVS.Util.Math.IBoundsRange.Max"/>.</remarks>
+        </member>
+        <member name="P:AVS.Util.Math.IBoundsRange.Min">
+            <summary>
+            Gets the minimum value in the dataset.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.IBoundsRange.Max">
+            <summary>
+            Gets the maximum value in the dataset.
+            </summary>
+        </member>
+        <member name="T:AVS.Util.Math.BoundsRangeExt">
+            <summary>
+            Provides extension methods for working with objects that implement the <see cref="T:AVS.Util.Math.IBoundsRange"/> interface.
+            </summary>
+            <remarks>This static class includes methods for calculating the size, center, and emptiness of a range
+            defined by minimum and maximum values. These methods are designed to operate on any type that implements the
+            <see cref="T:AVS.Util.Math.IBoundsRange"/> interface.</remarks>
+        </member>
+        <member name="M:AVS.Util.Math.BoundsRangeExt.GetSize``1(``0)">
+            <summary>
+            Gets the size, calculated as the difference between the maximum and minimum values.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.BoundsRangeExt.GetCenter``1(``0)">
+            <summary>
+            Gets the center point of the range represented by the minimum and maximum values.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.BoundsRangeExt.IsEmpty``1(``0)">
+            <summary>
+            Gets a value indicating whether the range is empty.
+            </summary>
+            <remarks>A range is considered empty if the minimum value is greater than the maximum value.</remarks>
+        </member>
+        <member name="M:AVS.Util.Math.BoundsRangeExt.Contains``1(``0,System.Single)">
+            <summary>
+            Determines whether the specified value is within the range defined by this instance.
+            </summary>
+            <param name="value">The value to check for inclusion in the range.</param>
+            <param name="self">The instance of <see cref="T:AVS.Util.Math.IBoundsRange"/> to check against.</param>
+            <returns><see langword="true"/> if the specified value is within the range; otherwise, <see langword="false"/>
+            </returns>
+        </member>
+        <member name="M:AVS.Util.Math.BoundsRangeExt.Contains``2(``0,``1)">
+            <summary>
+            Determines whether the specified range is fully contained within the current range.
+            </summary>
+            <param name="other">The <see cref="T:AVS.Util.Math.BoundsRange"/> to check for containment.</param>
+            <param name="self">The instance of <see cref="T:AVS.Util.Math.IBoundsRange"/> to check against.</param>
+            <returns><see langword="true"/> if the specified range is fully contained within the current range; otherwise, <see
+            langword="false"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.BoundsRangeExt.ContainsCentered``2(``0,``1)">
+            <summary>
+            Determines whether the given <see cref="T:AVS.Util.Math.BoundsRange"/> is fully contained within this <see cref="T:AVS.Util.Math.BoundsRange"/>, assuming it is centered within this range.
+            </summary>
+            <param name="other">The range to check for containment.</param>
+            <param name="self">The instance of <see cref="T:AVS.Util.Math.IBoundsRange"/> to check against.</param>
+            <returns>True if the specified range would fit while located in the same center, otherwise false.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.BoundsRangeExt.Overlaps``2(``0,``1)">
+            <summary>
+            Determines whether the range represented by the current instance overlaps with the range of another object.
+            </summary>
+            <remarks>Two ranges are considered to overlap if their boundaries intersect, meaning the
+            minimum value of one range is less than or equal to the maximum value of the other range, and vice
+            versa.</remarks>
+            <typeparam name="T0">The type of the current instance, which must implement <see cref="T:AVS.Util.Math.IBoundsRange"/>.</typeparam>
+            <typeparam name="T1">The type of the other object, which must implement <see cref="T:AVS.Util.Math.IBoundsRange"/>.</typeparam>
+            <param name="self">The current instance representing a range.</param>
+            <param name="other">The other object representing a range to compare against.</param>
+            <returns><see langword="true"/> if the range of <paramref name="self"/> overlaps with the range of <paramref
+            name="other"/>; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="T:AVS.Util.Math.LocalPosition">
+            <summary>
+            Represents a position relative to a specific origin in 3D space.
+            </summary>
+            <remarks>A <see cref="T:AVS.Util.Math.LocalPosition"/> encapsulates a 3D position vector and the associated origin
+            transform. It can be converted to a global position using the <see cref="M:AVS.Util.Math.LocalPosition.ToGlobal"/> method.</remarks>
+            <param name="LocalCoordinates">The local coordinates</param>
+            <param name="Origin">The origin which the coordinates are relative to</param>
+        </member>
+        <member name="M:AVS.Util.Math.LocalPosition.#ctor(UnityEngine.Vector3,UnityEngine.Transform)">
+            <summary>
+            Represents a position relative to a specific origin in 3D space.
+            </summary>
+            <remarks>A <see cref="T:AVS.Util.Math.LocalPosition"/> encapsulates a 3D position vector and the associated origin
+            transform. It can be converted to a global position using the <see cref="M:AVS.Util.Math.LocalPosition.ToGlobal"/> method.</remarks>
+            <param name="LocalCoordinates">The local coordinates</param>
+            <param name="Origin">The origin which the coordinates are relative to</param>
+        </member>
+        <member name="P:AVS.Util.Math.LocalPosition.LocalCoordinates">
+            <summary>The local coordinates</summary>
+        </member>
+        <member name="P:AVS.Util.Math.LocalPosition.Origin">
+            <summary>The origin which the coordinates are relative to</summary>
+        </member>
+        <member name="M:AVS.Util.Math.LocalPosition.LerpUnclamped(AVS.Util.Math.LocalPosition,AVS.Util.Math.LocalPosition,System.Single)">
+            <summary>
+            Linearly interpolates between two <see cref="T:AVS.Util.Math.LocalPosition"/> instances without clamping the interpolation
+            factor.
+            </summary>
+            <remarks>This method does not clamp the value of <paramref name="t"/>. If clamping is
+            required,  consider using an alternative method or manually constrain the value of <paramref
+            name="t"/>.</remarks>
+            <param name="a">The starting <see cref="T:AVS.Util.Math.LocalPosition"/>.</param>
+            <param name="b">The ending <see cref="T:AVS.Util.Math.LocalPosition"/>.</param>
+            <param name="t">The interpolation factor. Values less than 0 extrapolate beyond <paramref name="a"/>,  and values greater
+            than 1 extrapolate beyond <paramref name="b"/>.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.LocalPosition"/> that represents the interpolated position between  <paramref name="a"/>
+            and <paramref name="b"/> based on the interpolation factor <paramref name="t"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.LocalPosition.ToGlobal">
+            <summary>
+            Converts the current local position to a global position.
+            </summary>
+            <returns>A <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the position in global coordinates.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.LocalPosition.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="T:AVS.Util.Math.M">
+            <summary>
+            Math utility functions
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.M.Sqrt2">
+            <summary>
+            The square root of 2
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.M.FlatNormalized(UnityEngine.Vector3)">
+            <summary>
+            Projects a 3D vector onto the XZ plane and returns the resulting 2D vector normalized.
+            </summary>
+            <param name="source">The 3D vector to project and normalize.</param>
+            <returns>A normalized 2D vector representing the projection of the input vector onto the XZ plane.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Flat(UnityEngine.Vector3)">
+            <summary>
+            Projects a 3D vector onto a 2D plane by discarding the Y component.
+            </summary>
+            <param name="source">The 3D vector to project onto the XZ plane.</param>
+            <returns>A 2D vector containing the X and Z components of the source vector.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.UnFlat(UnityEngine.Vector2,System.Single)">
+            <summary>
+            Converts a 2D vector into a 3D vector by setting the Y component to <paramref name="y"/>.
+            </summary>
+            <param name="flat">The 2D vector to convert, where <c>x</c> becomes the X component and <c>y</c> becomes the Z component of the
+            resulting 3D vector.</param>
+            <param name="y">The Y component of the resulting 3D vector. Defaults to 0 if not specified.</param>
+            <returns>A 3D vector with the X and Z components derived from the input vector and the Y component set to 0.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.FlatNormal(UnityEngine.Vector2)">
+            <summary>
+            Calculates a 2D vector that is perpendicular to the specified vector.
+            </summary>
+            <param name="flatAxis">The input vector for which to calculate the perpendicular vector.</param>
+            <returns>A <see cref="T:UnityEngine.Vector2"/> that is perpendicular to <paramref name="flatAxis"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.V3(System.Single)">
+            <summary>
+            Creates a new <see cref="T:UnityEngine.Vector3"/> instance with all components set to the specified value.
+            </summary>
+            <param name="v">The value to assign to the X, Y, and Z components of the vector.</param>
+            <returns>A <see cref="T:UnityEngine.Vector3"/> where all components are equal to <paramref name="v"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.V3(System.Single,System.Single,System.Single)">
+            <summary>
+            Creates a new <see cref="T:UnityEngine.Vector3"/> instance with the specified X, Y, and Z components.
+            </summary>
+            <param name="x">The X component of the vector.</param>
+            <param name="y">The Y component of the vector.</param>
+            <param name="z">The Z component of the vector.</param>
+            <returns>A <see cref="T:UnityEngine.Vector3"/> with the specified components.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.V4(System.Single)">
+            <summary>
+            Creates a new <see cref="T:UnityEngine.Vector4"/> instance with all components set to the specified value.
+            </summary>
+            <param name="v">The value to assign to all components of the vector.</param>
+            <returns>A <see cref="T:UnityEngine.Vector4"/> where each component is equal to <paramref name="v"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.V4(System.Single,System.Single)">
+            <summary>
+            Creates a new <see cref="T:UnityEngine.Vector4"/> instance with the first three components set to the specified value and the
+            fourth component set to a separate value.
+            </summary>
+            <param name="xyz">The value to assign to the X, Y, and Z components of the vector.</param>
+            <param name="w">The value to assign to the W component of the vector.</param>
+            <returns>A <see cref="T:UnityEngine.Vector4"/> where the X, Y, and Z components are set to <paramref name="xyz"/> and the W component
+            is set to <paramref name="w"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.V4(UnityEngine.Vector3,System.Single)">
+            <summary>
+            Creates a new <see cref="T:UnityEngine.Vector4"/> instance from a <see cref="T:UnityEngine.Vector3"/> and a specified w-component.
+            </summary>
+            <param name="v">The <see cref="T:UnityEngine.Vector3"/> representing the x, y, and z components of the resulting <see cref="T:UnityEngine.Vector4"/>.</param>
+            <param name="w">The w-component to include in the resulting <see cref="T:UnityEngine.Vector4"/>.</param>
+            <returns>A <see cref="T:UnityEngine.Vector4"/> with the x, y, and z components from <paramref name="v"/> and the w-component set to
+            <paramref name="w"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.V4(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Creates a new <see cref="T:UnityEngine.Vector4"/> instance with the specified components.
+            </summary>
+            <param name="x">The value for the X component of the vector.</param>
+            <param name="y">The value for the Y component of the vector.</param>
+            <param name="z">The value for the Z component of the vector.</param>
+            <param name="w">The value for the W component of the vector.</param>
+            <returns>A <see cref="T:UnityEngine.Vector4"/> initialized with the specified X, Y, Z, and W components.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Saturate(System.Single)">
+            <summary>
+            Clamps the specified value to the range [0, 1].
+            </summary>
+            <param name="x">The value to clamp.</param>
+            <returns>The clamped value, which will be between 0 and 1 inclusive.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Interpolate(System.Single,System.Single,System.Single)">
+            <summary>
+            Performs linear interpolation between two values.
+            </summary>
+            <param name="a">The starting value of the interpolation.</param>
+            <param name="b">The ending value of the interpolation.</param>
+            <param name="t">The interpolation factor, where 0 represents <paramref name="a"/> and 1 represents <paramref name="b"/>. Values
+            outside the range [0, 1] will extrapolate beyond the start or end values.</param>
+            <returns>The interpolated value, calculated as a weighted average of <paramref name="a"/> and <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Interpolate(UnityEngine.Vector3,UnityEngine.Vector3,System.Single)">
+            <summary>
+            Linearly interpolates between two vectors without clamping the interpolation factor.
+            </summary>
+            <param name="a">The starting vector.</param>
+            <param name="b">The ending vector.</param>
+            <param name="t">The interpolation factor. Values less than 0 extrapolate beyond <paramref name="a"/>,  and values greater than 1
+            extrapolate beyond <paramref name="b"/>.</param>
+            <returns>A vector that is the linear interpolation of <paramref name="a"/> and <paramref name="b"/>  based on the
+            interpolation factor <paramref name="t"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Sqr(System.Single)">
+            <summary>
+            Calculates the square of the specified number.
+            </summary>
+            <param name="x">The number to be squared.</param>
+            <returns>The square of <paramref name="x"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Sqr(UnityEngine.Vector3)">
+            <summary>
+            Calculates the squared magnitude of the specified vector.
+            </summary>
+            <param name="x">The vector for which to calculate the squared magnitude.</param>
+            <returns>The squared magnitude of the vector, equivalent to the dot product of the vector with itself.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Abs(System.Single)">
+            <summary>
+            Returns the absolute value of the specified single-precision floating-point number.
+            </summary>
+            <param name="x">A single-precision floating-point number.</param>
+            <returns>The absolute value of <paramref name="x"/>. If <paramref name="x"/> is negative, the result is -<paramref
+            name="x"/>; otherwise, it is <paramref name="x"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Abs(UnityEngine.Vector3)">
+            <summary>
+            Returns a new <see cref="T:UnityEngine.Vector3"/> with each component set to the absolute value of the corresponding component
+            in the input vector.
+            </summary>
+            <param name="v">The input vector whose components will be converted to their absolute values.</param>
+            <returns>A <see cref="T:UnityEngine.Vector3"/> where each component is the absolute value of the corresponding component in <paramref
+            name="v"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.MaxAxis(UnityEngine.Vector3)">
+            <summary>
+            Returns the largest component of the specified vector.
+            </summary>
+            <param name="v">The vector from which to determine the maximum component.</param>
+            <returns>The largest value among the <see cref="F:UnityEngine.Vector3.x"/>, <see cref="F:UnityEngine.Vector3.y"/>, and <see cref="F:UnityEngine.Vector3.z"/>
+            components of the vector.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Max(System.Single,System.Single)">
+            <summary>
+            Returns the larger of two single-precision floating-point numbers.
+            </summary>
+            <param name="x">The first of two single-precision floating-point numbers to compare.</param>
+            <param name="y">The second of two single-precision floating-point numbers to compare.</param>
+            <returns>The larger of <paramref name="x"/> and <paramref name="y"/>. If the values are equal, <paramref name="x"/> is
+            returned.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Max(System.Single,System.Single,System.Single)">
+            <summary>
+            Returns the largest value among the three specified single-precision floating-point numbers.
+            </summary>
+            <param name="x">The first value to compare.</param>
+            <param name="y">The second value to compare.</param>
+            <param name="z">The third value to compare.</param>
+            <returns>The largest of the three specified values.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Max(UnityEngine.Vector3,System.Single)">
+            <summary>
+            Returns a new <see cref="T:UnityEngine.Vector3"/> where each component is the maximum value between the corresponding
+            component of <paramref name="x"/> and <paramref name="y"/>.
+            </summary>
+            <param name="x">The input <see cref="T:UnityEngine.Vector3"/> to compare.</param>
+            <param name="y">The scalar value to compare against each component of <paramref name="x"/>.</param>
+            <returns>A <see cref="T:UnityEngine.Vector3"/> where each component is the greater of the corresponding component of <paramref
+            name="x"/> and <paramref name="y"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Max(UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Returns a <see cref="T:UnityEngine.Vector3"/> whose components are the maximum values of the corresponding components of two
+            specified vectors.
+            </summary>
+            <param name="a">The first vector to compare.</param>
+            <param name="b">The second vector to compare.</param>
+            <returns>A <see cref="T:UnityEngine.Vector3"/> where each component is the greater value of the corresponding components in <paramref
+            name="a"/> and <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Min(System.Single,System.Single)">
+            <summary>
+            Returns the smaller of two single-precision floating-point numbers.
+            </summary>
+            <param name="x">The first of two numbers to compare.</param>
+            <param name="y">The second of two numbers to compare.</param>
+            <returns>The smaller of <paramref name="x"/> and <paramref name="y"/>. If the values are equal, <paramref name="x"/> is
+            returned.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Smoothstep(System.Single,System.Single,System.Single)">
+            <summary>
+            Interpolates smoothly from 0 to 1 based on x compared to a and b.
+            https://developer.download.nvidia.com/cg/smoothstep.html
+            </summary>
+            <param name="a">Minimum reference value(s)</param>
+            <param name="b">Maximum reference value(s)</param>
+            <param name="x">Value to compute from</param>
+            <returns>Interpolated value in [0,1]</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Smooth(System.Single)">
+            <summary>
+            Uses the interpolation mechanic of <see cref="M:AVS.Util.Math.M.Smoothstep(System.Single,System.Single,System.Single)" />
+            to transform a value in [0,1] to a smooth version in [0,1]
+            </summary>
+            <param name="t">Input value in [0,1]. Values outside this range are clamped</param>
+            <returns>Smooth value</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.LinearStep(System.Single,System.Single,System.Single)">
+            <summary>
+            Performs a linear interpolation step between two values based on a given input.
+            </summary>
+            <remarks>This method does not clamp the result to the range [0, 1]. If clamping is required, the
+            caller must handle it explicitly.</remarks>
+            <param name="a">The starting value of the range.</param>
+            <param name="b">The ending value of the range. Must be greater than <paramref name="a"/>.</param>
+            <param name="x">The input value to interpolate. Typically expected to be within the range [<paramref name="a"/>, <paramref
+            name="b"/>].</param>
+            <returns>A value representing the normalized position of <paramref name="x"/> within the range [<paramref name="a"/>,
+            <paramref name="b"/>]. Returns a value less than 0 if <paramref name="x"/> is less than <paramref name="a"/>, or
+            greater than 1 if <paramref name="x"/> exceeds <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Dot(UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Calculates the dot product of two 3D vectors.
+            </summary>
+            <param name="right">The first vector in the dot product operation.</param>
+            <param name="delta">The second vector in the dot product operation.</param>
+            <returns>The dot product of the two vectors as a single-precision floating-point value.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Distance(UnityEngine.Ray,UnityEngine.Vector3)">
+            <summary>
+            Calculates the distance from a point to a ray and the position along the ray where the distance is measured.
+            </summary>
+            <remarks>The returned <see cref="T:AVS.Util.Math.RayDistance"/> includes: <list type="bullet"> <item>
+            <description><c>Along</c>: The scalar value representing the position along the ray's direction
+            vector.</description> </item> <item> <description><c>Distance</c>: The perpendicular distance from the point to
+            the ray.</description> </item> </list> The ray's direction is assumed to be normalized. If the direction is not
+            normalized, the <c>Along</c> value  will be scaled accordingly.</remarks>
+            <param name="ray">The ray to measure the distance from. The ray is defined by an origin and a direction.</param>
+            <param name="point">The point in 3D space to measure the distance to.</param>
+            <returns>A <see cref="T:AVS.Util.Math.RayDistance"/> object containing the position along the ray and the perpendicular distance  from
+            the point to the ray.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Distance(UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Calculates the Euclidean distance between two 3D points.
+            </summary>
+            <param name="a">The first point represented as a <see cref="T:UnityEngine.Vector3"/>.</param>
+            <param name="b">The second point represented as a <see cref="T:UnityEngine.Vector3"/>.</param>
+            <returns>The distance between the two points as a <see cref="T:System.Single"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.SqrDistance(UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Calculates the squared distance between two 3D points.
+            </summary>
+            <remarks>The squared distance is calculated without taking the square root, making it more efficient 
+            than calculating the actual distance. This is useful in scenarios where the exact distance  is not required,
+            such as comparing relative distances.</remarks>
+            <param name="a">The first point represented as a <see cref="T:UnityEngine.Vector3"/>.</param>
+            <param name="b">The second point represented as a <see cref="T:UnityEngine.Vector3"/>.</param>
+            <returns>The squared distance between the two points as a <see cref="T:System.Single"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.DegToRad(System.Single)">
+            <summary>
+            Converts an angle from degrees to radians.
+            </summary>
+            <param name="deg">The angle in degrees to convert.</param>
+            <returns>The equivalent angle in radians.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.RadToDeg(System.Single)">
+            <summary>
+            Converts an angle from radians to degrees.
+            </summary>
+            <param name="rad">The angle in radians to convert.</param>
+            <returns>The equivalent angle in degrees.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.SolveQuadraticEquation(System.Single,System.Single,System.Single)">
+            <summary>
+            Solves a quadratic equation of the form ax² + bx + c = 0 and returns the solution(s), if any.
+            </summary>
+            <remarks>This method handles special cases where the quadratic coefficient (<paramref name="a"/>) is
+            approximately zero: - If both <paramref name="a"/> and <paramref name="b"/> are approximately zero, the equation
+            is invalid, and no solutions are returned. - If <paramref name="a"/> is approximately zero but <paramref
+            name="b"/> is not, the equation is treated as a linear equation, and a single solution is returned.</remarks>
+            <param name="a">The coefficient of the quadratic term (x²). Must not be approximately zero.</param>
+            <param name="b">The coefficient of the linear term (x).</param>
+            <param name="c">The constant term.</param>
+            <returns>A <see cref="T:AVS.Util.Math.QuadraticSolution"/> object representing the solution(s) to the quadratic equation. If the equation
+            has no real solutions, the result will indicate no solutions. If the equation has one solution, the result will
+            contain that solution. If the equation has two solutions, the result will contain both solutions.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Round(System.Single,System.Int32)">
+            <summary>
+            Rounds the specified floating-point value to the given number of fractional digits.
+            </summary>
+            <param name="v">The floating-point value to round.</param>
+            <param name="digits">The number of fractional digits to round to. Must be zero or greater.</param>
+            <returns>The rounded value with the specified number of fractional digits.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.V2(System.Single)">
+            <summary>
+            Creates a new <see cref="T:UnityEngine.Vector2"/> instance with both components set to the specified value.
+            </summary>
+            <param name="v">The value to assign to both the X and Y components of the vector.</param>
+            <returns>A <see cref="T:UnityEngine.Vector2"/> where both components are equal to <paramref name="v"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.V2(System.Single,System.Single)">
+            <summary>
+            Creates a new <see cref="T:UnityEngine.Vector2"/> instance with the specified X and Y components.
+            </summary>
+            <param name="x">The X component of the vector.</param>
+            <param name="y">The Y component of the vector.</param>
+            <returns>A <see cref="T:UnityEngine.Vector2"/> with the specified X and Y components.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Pow(UnityEngine.Vector3,System.Single)">
+            <summary>
+            Raises each component of the specified vector to the given power.
+            </summary>
+            <param name="v">The vector whose components will be raised to the specified power.</param>
+            <param name="exp">The exponent to which each component of the vector is raised.</param>
+            <returns>A new <see cref="T:UnityEngine.Vector3"/> where each component is the result of raising the corresponding component of
+            <paramref name="v"/> to the power of <paramref name="exp"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Mult(UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Multiplies the corresponding components of two vectors.
+            </summary>
+            <param name="v">The first vector to multiply.</param>
+            <param name="w">The second vector to multiply.</param>
+            <returns>A <see cref="T:UnityEngine.Vector3"/> where each component is the product of the corresponding components of <paramref
+            name="v"/> and <paramref name="w"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Mult(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Computes the component-wise product of three 3D vectors.
+            </summary>
+            <param name="u">The first vector to multiply.</param>
+            <param name="v">The second vector to multiply.</param>
+            <param name="w">The third vector to multiply.</param>
+            <returns>A <see cref="T:UnityEngine.Vector3"/> representing the component-wise product of <paramref name="u"/>, <paramref name="v"/>,
+            and <paramref name="w"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Mult(UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Multiplies the corresponding components of four <see cref="T:UnityEngine.Vector3"/> instances.
+            </summary>
+            <param name="u">The first <see cref="T:UnityEngine.Vector3"/> instance.</param>
+            <param name="v">The second <see cref="T:UnityEngine.Vector3"/> instance.</param>
+            <param name="w">The third <see cref="T:UnityEngine.Vector3"/> instance.</param>
+            <param name="x">The fourth <see cref="T:UnityEngine.Vector3"/> instance.</param>
+            <returns>A new <see cref="T:UnityEngine.Vector3"/> where each component is the product of the corresponding components of  <paramref
+            name="u"/>, <paramref name="v"/>, <paramref name="w"/>, and <paramref name="x"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.SignedMin(System.Single,System.Single)">
+            <summary>
+            Returns the signed minimum of the specified value and a limit.
+            </summary>
+            <remarks>This method ensures that the result has the same sign as <paramref name="signedValue"/>.  If
+            the absolute value of <paramref name="signedValue"/> is less than or equal to <paramref name="limit"/>,  the
+            result is <paramref name="signedValue"/>. Otherwise, the result is the product of the sign of  <paramref
+            name="signedValue"/> and <paramref name="limit"/>.</remarks>
+            <param name="signedValue">The value whose sign is preserved and whose magnitude is compared to the limit.</param>
+            <param name="limit">The maximum allowable magnitude for the result. Must be non-negative.</param>
+            <returns>The result of clamping the magnitude of <paramref name="signedValue"/> to the specified <paramref
+            name="limit"/>,  while preserving its sign.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Push(UnityEngine.Vector3,UnityEngine.Vector3,System.Single)">
+            <summary>
+            Adjusts the position of a vector to ensure it is at least a specified minimum distance from a reference point.
+            </summary>
+            <remarks>If the distance between <paramref name="from"/> and <paramref name="what"/> is zero, the
+            method returns <paramref name="what"/> unchanged.</remarks>
+            <param name="from">The reference point from which the distance is measured.</param>
+            <param name="what">The vector to adjust if it is too close to the reference point.</param>
+            <param name="toMinDistance">The minimum allowable distance between <paramref name="from"/> and <paramref name="what"/>.</param>
+            <returns>The adjusted vector if <paramref name="what"/> is closer than <paramref name="toMinDistance"/> to <paramref
+            name="from"/>; otherwise, returns <paramref name="what"/> unchanged.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Clamp(System.Single,System.Single,System.Single)">
+            <summary>
+            Clamps a value to ensure it falls within the specified range.
+            </summary>
+            <param name="value">The value to clamp.</param>
+            <param name="min">The minimum allowable value.</param>
+            <param name="max">The maximum allowable value.</param>
+            <returns>The clamped value, which will be no less than <paramref name="min"/> and no greater than <paramref name="max"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Greater(UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Compares the components of two <see cref="T:UnityEngine.Vector3"/> instances and determines if each component of the first
+            vector is greater than the corresponding component of the second vector.
+            </summary>
+            <param name="a">The first <see cref="T:UnityEngine.Vector3"/> to compare.</param>
+            <param name="b">The second <see cref="T:UnityEngine.Vector3"/> to compare.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Bool3"/> where each component indicates whether the corresponding component of <paramref name="a"/>
+            is greater than that of <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.GreaterOrEqual(UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Compares two <see cref="T:UnityEngine.Vector3"/> instances component-wise to determine if each component of the first vector 
+            is greater than or equal to the corresponding component of the second vector.
+            </summary>
+            <param name="a">The first <see cref="T:UnityEngine.Vector3"/> to compare.</param>
+            <param name="b">The second <see cref="T:UnityEngine.Vector3"/> to compare.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Bool3"/> where each component indicates whether the corresponding component of <paramref name="a"/>
+            is greater than or equal to the corresponding component of <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Equal(UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Determines whether the corresponding components of two <see cref="T:UnityEngine.Vector3"/> instances are equal.
+            </summary>
+            <param name="a">The first <see cref="T:UnityEngine.Vector3"/> instance to compare.</param>
+            <param name="b">The second <see cref="T:UnityEngine.Vector3"/> instance to compare.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Bool3"/> instance where each component indicates whether the corresponding components of <paramref
+            name="a"/> and <paramref name="b"/> are equal.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Less(UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Compares the components of two <see cref="T:UnityEngine.Vector3"/> instances and determines if each component of the first
+            vector is less than the corresponding component of the second vector.
+            </summary>
+            <param name="a">The first <see cref="T:UnityEngine.Vector3"/> to compare.</param>
+            <param name="b">The second <see cref="T:UnityEngine.Vector3"/> to compare.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Bool3"/> where each component indicates whether the corresponding component of <paramref name="a"/>
+            is less than the corresponding component of <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.LessOrEqual(UnityEngine.Vector3,UnityEngine.Vector3)">
+            <summary>
+            Compares two <see cref="T:UnityEngine.Vector3"/> instances component-wise and determines if each component of the first vector
+            is less than or equal to the corresponding component of the second vector.
+            </summary>
+            <param name="a">The first <see cref="T:UnityEngine.Vector3"/> to compare.</param>
+            <param name="b">The second <see cref="T:UnityEngine.Vector3"/> to compare.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Bool3"/> where each component indicates whether the corresponding component of <paramref name="a"/>
+            is less than or equal to the corresponding component of <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.ToStr(System.Single)">
+            <summary>
+            Converts the specified single-precision floating-point value to its string representation  using the invariant
+            culture.
+            </summary>
+            <param name="v">The single-precision floating-point value to convert.</param>
+            <returns>A string representation of the specified value formatted using the invariant culture.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.ToStr(System.Double)">
+            <summary>
+            Converts the specified double-precision floating-point value to its string representation  using the invariant
+            culture.
+            </summary>
+            <param name="v">The double-precision floating-point value to convert.</param>
+            <returns>A string representation of the specified value formatted using the invariant culture.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Gray(System.Single)">
+            <summary>
+            Creates a grayscale color with the specified intensity.
+            </summary>
+            <param name="intensity">The intensity of the grayscale color. Must be a value between 0.0 and 1.0, where 0.0 represents black and 1.0
+            represents white.</param>
+            <returns>A <see cref="M:AVS.Util.Math.M.Color(UnityEngine.Color,System.Single)"/> instance representing the grayscale color with the specified intensity.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Color(UnityEngine.Color,System.Single)">
+            <summary>
+            Creates a new <see cref="M:AVS.Util.Math.M.Color(UnityEngine.Color,System.Single)"/> instance with the specified alpha value while preserving the original color's
+            RGB components.
+            </summary>
+            <param name="color">The base color whose red, green, and blue components will be used.</param>
+            <param name="alpha">The alpha (transparency) value to apply to the new color. Must be between 0.0 and 1.0, inclusive.</param>
+            <returns>A new <see cref="M:AVS.Util.Math.M.Color(UnityEngine.Color,System.Single)"/> instance with the same RGB components as <paramref name="color"/> and the specified
+            alpha value.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.ScaleRGB(UnityEngine.Color,System.Single)">
+            <summary>
+            Scales the red, green, and blue components of the specified color by the given factor.
+            </summary>
+            <param name="color">The color whose RGB components will be scaled.</param>
+            <param name="scale">The factor by which to scale the RGB components. Must be a non-negative value.</param>
+            <returns>A new <see cref="M:AVS.Util.Math.M.Color(UnityEngine.Color,System.Single)"/> with the scaled RGB components. The alpha component remains unchanged.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.ToFloat(System.String,System.Single@)">
+            <summary>
+            Parses a string into a float using the universal decimal sign (.)
+            </summary>
+            <param name="s">String to try parse</param>
+            <param name="f">Resulting float</param>
+            <returns>True on success</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.ToFloat(System.String)">
+            <summary>
+            Converts a string into a float using the universal decimal sign (.)
+            </summary>
+            <param name="s">String to parse</param>
+            <returns>Converted float</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Percentage(System.Single,System.Single)">
+            <summary>
+            Produces a percentage string from a float value.
+            If the max value is zero, it returns "-%".
+            Rounds the percentage to two decimal places.
+            </summary>
+            <param name="x"></param>
+            <param name="max"></param>
+            <returns>String in the form "[v]%" where [v] is either 1.23 or - </returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.Percentage(LiveMixin)">
+            <summary>
+            Produces a percentage string from a LiveMixin's current health status.
+            </summary>
+            <remarks>
+            If the <paramref name="live"/> is null, has no max health or is invincible,
+            it returns "-%".
+            </remarks>
+            <param name="live">Live mixin to produce the health percent of</param>
+            <returns>String in the form "[v]%" where [v] is either 1.23 or - </returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.ClampTo``1(``0,``0,``0)">
+            <summary>
+            Clamps the specified value to ensure it falls within the inclusive range defined by the minimum and maximum
+            values.
+            </summary>
+            <typeparam name="T">The type of the value, which must implement <see cref="T:System.IComparable`1"/>.</typeparam>
+            <param name="value">The value to clamp.</param>
+            <param name="min">The minimum allowable value.</param>
+            <param name="max">The maximum allowable value.</param>
+            <returns>The clamped value. If <paramref name="value"/> is less than <paramref name="min"/>, <paramref name="min"/> is
+            returned. If <paramref name="value"/> is greater than <paramref name="max"/>, <paramref name="max"/> is
+            returned. Otherwise, <paramref name="value"/> is returned unchanged.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.M.WrapTo(System.Single,System.Single,System.Single,System.Single)">
+            <summary>
+            Wraps the specified value within the range defined by the minimum and maximum bounds, using the specified loop
+            value to adjust the input.
+            </summary>
+            <remarks>This method ensures that the returned value is within the specified range by repeatedly 
+            adding or subtracting the <paramref name="loop"/> value as needed. The behavior assumes  that <paramref
+            name="loop"/> is positive and large enough to encompass the range  [<paramref name="min"/>, <paramref
+            name="max"/>].</remarks>
+            <param name="value">The value to be wrapped.</param>
+            <param name="min">The minimum bound of the range.</param>
+            <param name="max">The maximum bound of the range.</param>
+            <param name="loop">The value to add or subtract to wrap the input within the range.</param>
+            <returns>A value equivalent to <paramref name="value"/> that is within the range  [<paramref name="min"/>, <paramref
+            name="max"/>].</returns>
+        </member>
+        <member name="T:AVS.Util.Math.QuadraticSolution">
+            <summary>
+            Represents the solution(s) to a quadratic equation, which may include zero, one, or two real roots.
+            </summary>
+            <remarks>This type encapsulates the roots of a quadratic equation as nullable floating-point values. If a root
+            is not present, the corresponding value will be <see langword="null" />. Use the provided properties and methods to
+            determine the nature of the solution.</remarks>
+            <param name="X0">The first solution, if any. Never <see langword="null" /> if <paramref name="X1"/> is not <see langword="null" /></param>
+            <param name="X1">The second solution, if any. Always <see langword="null" /> if <paramref name="X0"/> is <see langword="null" /></param>
+        </member>
+        <member name="M:AVS.Util.Math.QuadraticSolution.#ctor(System.Nullable{System.Single},System.Nullable{System.Single})">
+            <summary>
+            Represents the solution(s) to a quadratic equation, which may include zero, one, or two real roots.
+            </summary>
+            <remarks>This type encapsulates the roots of a quadratic equation as nullable floating-point values. If a root
+            is not present, the corresponding value will be <see langword="null" />. Use the provided properties and methods to
+            determine the nature of the solution.</remarks>
+            <param name="X0">The first solution, if any. Never <see langword="null" /> if <paramref name="X1"/> is not <see langword="null" /></param>
+            <param name="X1">The second solution, if any. Always <see langword="null" /> if <paramref name="X0"/> is <see langword="null" /></param>
+        </member>
+        <member name="P:AVS.Util.Math.QuadraticSolution.X0">
+            <summary>The first solution, if any. Never <see langword="null" /> if <paramref name="X1"/> is not <see langword="null" /></summary>
+        </member>
+        <member name="P:AVS.Util.Math.QuadraticSolution.X1">
+            <summary>The second solution, if any. Always <see langword="null" /> if <paramref name="X0"/> is <see langword="null" /></summary>
+        </member>
+        <member name="P:AVS.Util.Math.QuadraticSolution.HasAnySolution">
+            <summary>
+            Gets a value indicating whether any solution exists.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.QuadraticSolution.SmallestNonNegative">
+            <summary>
+            Gets the smallest non-negative value among <see cref="P:AVS.Util.Math.QuadraticSolution.X0"/> and <see cref="P:AVS.Util.Math.QuadraticSolution.X1"/>, or <c>null</c> if neither
+            value is non-negative.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.QuadraticSolution.Two(System.Single,System.Single)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.QuadraticSolution"/> instance representing the two solutions of a quadratic equation.
+            </summary>
+            <param name="x0">The first solution of the quadratic equation.</param>
+            <param name="x1">The second solution of the quadratic equation.</param>
+            <returns>A <see cref="T:AVS.Util.Math.QuadraticSolution"/> containing the specified solutions.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.QuadraticSolution.One(System.Single)">
+            <summary>
+            Creates a <see cref="T:AVS.Util.Math.QuadraticSolution"/> representing a single real root of a quadratic equation.
+            </summary>
+            <param name="x">The value of the single real root.</param>
+            <returns>A <see cref="T:AVS.Util.Math.QuadraticSolution"/> instance containing the specified root and no additional solutions.</returns>
+        </member>
+        <member name="T:AVS.Util.Math.RayDistance">
+            <summary>
+            Represents the distances associated with a ray, including the distance along the ray and the distance to the closest
+            point on the ray.
+            </summary>
+            <remarks>This structure encapsulates two distance measurements related to a ray: <list type="bullet"> <item>
+            <description><see cref="P:AVS.Util.Math.RayDistance.DistanceAlongRay"/>: The distance from the ray's origin to a specific point along the
+            ray.</description> </item> <item> <description><see cref="P:AVS.Util.Math.RayDistance.DistanceToClosesPointOnRay"/>: The perpendicular distance
+            from a point to the closest point on the ray.</description> </item> </list> Use this structure to represent and work
+            with ray-related distance calculations in geometric or physics-based computations.</remarks>
+            <param name="DistanceAlongRay">The distance from the ray's origin to a specific point along the ray.</param>
+            <param name="DistanceToClosesPointOnRay">The perpendicular distance from a point to the closest point on the ray.</param>
+        </member>
+        <member name="M:AVS.Util.Math.RayDistance.#ctor(System.Single,System.Single)">
+            <summary>
+            Represents the distances associated with a ray, including the distance along the ray and the distance to the closest
+            point on the ray.
+            </summary>
+            <remarks>This structure encapsulates two distance measurements related to a ray: <list type="bullet"> <item>
+            <description><see cref="P:AVS.Util.Math.RayDistance.DistanceAlongRay"/>: The distance from the ray's origin to a specific point along the
+            ray.</description> </item> <item> <description><see cref="P:AVS.Util.Math.RayDistance.DistanceToClosesPointOnRay"/>: The perpendicular distance
+            from a point to the closest point on the ray.</description> </item> </list> Use this structure to represent and work
+            with ray-related distance calculations in geometric or physics-based computations.</remarks>
+            <param name="DistanceAlongRay">The distance from the ray's origin to a specific point along the ray.</param>
+            <param name="DistanceToClosesPointOnRay">The perpendicular distance from a point to the closest point on the ray.</param>
+        </member>
+        <member name="P:AVS.Util.Math.RayDistance.DistanceAlongRay">
+            <summary>The distance from the ray's origin to a specific point along the ray.</summary>
+        </member>
+        <member name="P:AVS.Util.Math.RayDistance.DistanceToClosesPointOnRay">
+            <summary>The perpendicular distance from a point to the closest point on the ray.</summary>
+        </member>
+        <member name="T:AVS.Util.Math.Bool3">
+            <summary>
+            Represents a three-dimensional boolean value, where each dimension (X, Y, Z) is independently true or false.
+            </summary>
+            <remarks>This struct provides logical operations for three boolean values, such as AND, OR, and NOT, as well
+            as properties to evaluate aggregate conditions (e.g., whether all values are true, any value is true, or none are
+            true). It is immutable and implements <see cref="T:System.IEquatable`1"/> for equality comparison.</remarks>
+            <param name="X"></param>
+            <param name="Y"></param>
+            <param name="Z"></param>
+        </member>
+        <member name="M:AVS.Util.Math.Bool3.#ctor(System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Represents a three-dimensional boolean value, where each dimension (X, Y, Z) is independently true or false.
+            </summary>
+            <remarks>This struct provides logical operations for three boolean values, such as AND, OR, and NOT, as well
+            as properties to evaluate aggregate conditions (e.g., whether all values are true, any value is true, or none are
+            true). It is immutable and implements <see cref="T:System.IEquatable`1"/> for equality comparison.</remarks>
+            <param name="X"></param>
+            <param name="Y"></param>
+            <param name="Z"></param>
+        </member>
+        <member name="P:AVS.Util.Math.Bool3.X">
+            <summary></summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bool3.Y">
+            <summary></summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bool3.Z">
+            <summary></summary>
+        </member>
+        <member name="M:AVS.Util.Math.Bool3.And(AVS.Util.Math.Bool3)">
+            <summary>
+            Performs a logical AND operation between this instance and the specified <see cref="T:AVS.Util.Math.Bool3"/> instance.
+            </summary>
+            <param name="other">The <see cref="T:AVS.Util.Math.Bool3"/> instance to logically AND with this instance.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Bool3"/> instance where each component is the result of a logical AND operation  between the
+            corresponding components of this instance and the <paramref name="other"/> instance.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Bool3.Or(AVS.Util.Math.Bool3)">
+            <summary>
+            Performs a logical OR operation between the corresponding components of this instance and the specified <see
+            cref="T:AVS.Util.Math.Bool3"/>.
+            </summary>
+            <param name="other">The <see cref="T:AVS.Util.Math.Bool3"/> instance to combine with this instance.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Bool3"/> instance where each component is the result of a logical OR operation between the
+            corresponding components of this instance and <paramref name="other"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Bool3.op_LogicalNot(AVS.Util.Math.Bool3)">
+            <summary>
+            Negates the logical values of the components of the specified <see cref="T:AVS.Util.Math.Bool3"/> instance.
+            </summary>
+            <param name="b">The <see cref="T:AVS.Util.Math.Bool3"/> instance to negate.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Bool3"/> instance with each component set to the logical negation of the corresponding
+            component in <paramref name="b"/>.</returns>
+        </member>
+        <member name="P:AVS.Util.Math.Bool3.All">
+            <summary>
+            Gets a value indicating whether all conditions are satisfied.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bool3.NotAll">
+            <summary>
+            Gets a value indicating whether at least one of the conditions X, Y, or Z is not satisfied.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bool3.Any">
+            <summary>
+            Gets a value indicating whether any of the specified conditions are true.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Bool3.None">
+            <summary>
+            Gets a value indicating whether all conditions are false.
+            </summary>
+        </member>
+        <member name="T:AVS.Util.Math.Radians">
+            <summary>
+            An angle in radians.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.#ctor(System.Single)">
+            <summary>
+            An angle in radians.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Implicit(AVS.Util.Math.Degrees)~AVS.Util.Math.Radians">
+            <summary>
+            Converts degrees to radiants.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Addition(AVS.Util.Math.Radians,AVS.Util.Math.Radians)">
+            <summary>
+            Adds two <see cref="T:AVS.Util.Math.Radians"/> instances together.
+            </summary>
+            <param name="a">The first <see cref="T:AVS.Util.Math.Radians"/> instance to add.</param>
+            <param name="b">The second <see cref="T:AVS.Util.Math.Radians"/> instance to add.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> instance representing the sum of <paramref name="a"/> and <paramref name="b"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Subtraction(AVS.Util.Math.Radians,AVS.Util.Math.Radians)">
+            <summary>
+            Subtracts one <see cref="T:AVS.Util.Math.Radians"/> value from another.
+            </summary>
+            <param name="a">The minuend, representing the first <see cref="T:AVS.Util.Math.Radians"/> value.</param>
+            <param name="b">The subtrahend, representing the second <see cref="T:AVS.Util.Math.Radians"/> value to subtract from <paramref name="a"/>.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> instance representing the result of the subtraction.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.ToString">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.CompareTo(AVS.Util.Math.Radians)">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.Math.Radians.Sin">
+            <summary>
+            Gets the sine of the current value.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.Radians.Cos">
+            <summary>
+            Gets the cosine of the current value.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Multiply(AVS.Util.Math.Radians,System.Single)">
+            <summary>
+            Multiplies the specified <see cref="T:AVS.Util.Math.Radians"/> value by a scalar.
+            </summary>
+            <param name="a">The <see cref="T:AVS.Util.Math.Radians"/> value to be multiplied.</param>
+            <param name="b">The scalar value to multiply by.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> instance representing the product of the original value and the scalar.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Multiply(System.Single,AVS.Util.Math.Radians)">
+            <summary>
+            Multiplies a scalar value by a <see cref="T:AVS.Util.Math.Radians"/> instance, scaling the angle.
+            </summary>
+            <param name="a">The scalar value to multiply.</param>
+            <param name="b">The <see cref="T:AVS.Util.Math.Radians"/> instance representing the angle to be scaled.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> instance representing the scaled angle.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Division(AVS.Util.Math.Radians,System.Single)">
+            <summary>
+            Divides the value of the specified <see cref="T:AVS.Util.Math.Radians"/> instance by a scalar value.
+            </summary>
+            <param name="a">The <see cref="T:AVS.Util.Math.Radians"/> instance to be divided.</param>
+            <param name="b">The scalar value by which to divide the <see cref="T:AVS.Util.Math.Radians"/> value.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> instance representing the result of the division.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_Division(System.Single,AVS.Util.Math.Radians)">
+            <summary>
+            Divides a scalar value by a <see cref="T:AVS.Util.Math.Radians"/> value and returns the resulting <see cref="T:AVS.Util.Math.Radians"/>.
+            </summary>
+            <param name="a">The scalar value to divide.</param>
+            <param name="b">The <see cref="T:AVS.Util.Math.Radians"/> value to divide by. Must not have a <see cref="P:AVS.Util.Math.Radians.Value"/> of zero.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> representing the result of the division.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.op_UnaryNegation(AVS.Util.Math.Radians)">
+            <summary>
+            Negates the value of the specified <see cref="T:AVS.Util.Math.Radians"/> instance.
+            </summary>
+            <param name="a">The <see cref="T:AVS.Util.Math.Radians"/> instance to negate.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.Radians"/> instance with the negated value.</returns>
+        </member>
+        <member name="P:AVS.Util.Math.Radians.Deg">
+            <summary>
+            Gets the current value of the angle in degrees.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.Radians.RandomIn(AVS.Util.Math.Radians,AVS.Util.Math.Radians)">
+            <summary>
+            Generates a random angle within the specified range of radians.
+            </summary>
+            <param name="min">The minimum angle, in radians, that the result can be. Must be less than or equal to <paramref name="max"/>.</param>
+            <param name="max">The maximum angle, in radians, that the result can be. Must be greater than or equal to <paramref
+            name="min"/>.</param>
+            <returns>A <see cref="T:AVS.Util.Math.Radians"/> instance representing a random angle between <paramref name="min"/> and <paramref
+            name="max"/> (inclusive).</returns>
+        </member>
+        <member name="T:AVS.Util.Math.SVector3">
+            <summary>
+            Serializable substitute for UnityEngine.Vector3
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.SVector3.#ctor(System.Single,System.Single,System.Single)">
+            <summary>
+            Serializable substitute for UnityEngine.Vector3
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.SVector3.Zero">
+            <summary>
+            Gets a vector with all components set to zero.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.SVector3.One">
+            <summary>
+            Gets a vector with all components set to one.
+            </summary>
+        </member>
+        <member name="M:AVS.Util.Math.SVector3.op_Implicit(AVS.Util.Math.SVector3)~UnityEngine.Vector3">
+            <summary>
+            Converts an <see cref="T:AVS.Util.Math.SVector3"/> instance to a <see cref="T:UnityEngine.Vector3"/> instance.
+            </summary>
+            <param name="sv">The <see cref="T:AVS.Util.Math.SVector3"/> instance to convert.</param>
+        </member>
+        <member name="M:AVS.Util.Math.SVector3.op_Implicit(UnityEngine.Vector3)~AVS.Util.Math.SVector3">
+            <summary>
+            Implicitly converts a <see cref="T:UnityEngine.Vector3"/> to an <see cref="T:AVS.Util.Math.SVector3"/>.
+            </summary>
+            <param name="v">The <see cref="T:UnityEngine.Vector3"/> instance to convert.</param>
+        </member>
+        <member name="P:AVS.Util.Math.SVector3.Length">
+            <summary>
+            Gets the length of the vector.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.Math.SVector3.SquaredLength">
+            <summary>
+            Gets the squared length of the vector.
+            </summary>
+        </member>
+        <member name="T:AVS.Util.RayCaster">
+            <summary>
+            Physical helper structure to contain all hits from a ray cast.
+            </summary>
+        </member>
+        <member name="P:AVS.Util.RayCaster.Item(System.Int32)">
+            <inheritdoc/>
+        </member>
+        <member name="P:AVS.Util.RayCaster.Count">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.RayCaster.GetEnumerator">
+            <inheritdoc/>
+        </member>
+        <member name="M:AVS.Util.RayCaster.RayCastAll(UnityEngine.Ray,System.Single,System.Int32,UnityEngine.QueryTriggerInteraction)">
+            <summary>
+            Raycasts all objects in the scene and returns the number of hits.
+            </summary>
+            <remarks>The results are stored in the local instance</remarks>
+            <param name="ray">Ray to cast</param>
+            <param name="maxDistance">Max hit distance along the ray</param>
+            <param name="layerMask">Collider layer mask</param>
+            <param name="queryTriggerInteraction">Whether to hit trigger colliders</param>
+            <returns>Number of detected hits that are stored in the local structure</returns>
         </member>
         <member name="T:AVS.Util.Shaders">
             <summary>
@@ -9850,58 +11725,77 @@
             that may be added to a water park.
             Eggs will hatch eventually and fish may reproduce.
             </summary>
+            <param name="ContentContainer">The game object that will contain the fish.</param>
+            <param name="Root">The park root object</param>
+            <param name="Width">The grid width of the total tank storage capacity.</param>
+            <param name="Height">The grid height of the total tank storage capacity.</param>
+            <param name="DisplayName">The display text for the fish tank, which can be localized.</param>
+            <param name="AllowReproduction">If true, fish in this tank may reproduce.</param>
+            <param name="HatchEggs">If true, eggs in this tank will hatch eventually.</param>
+            <param name="CollidersAreLive">Function that returns true if the colliders are active and fish can move.
+            If the function returns false, fish shall become invisible and immobile so as to now swim out of the containment</param>
+            <param name="WallLayerMask">A bit-mask that encapsules all tank walls, floor, and ceiling in order to ray cast only the walls. Should not contain layer 0 (fish)</param>
+            <param name="TopMargin">Margin at the top of the tank, in meters, that fish cannot enter.</param>
+            <param name="BottomMargin">Margin at the bottom of the tank, in meters, that fish cannot enter.</param>
+            <param name="HorizontalMargin">Margin at the sides of the tank, in meters, that fish cannot enter.</param>
+        </member>
+        <member name="M:AVS.VehicleBuilding.MobileWaterPark.#ctor(UnityEngine.Transform,UnityEngine.GameObject,System.Int32,System.Int32,System.Nullable{AVS.Localization.MaybeTranslate},System.Boolean,System.Boolean,System.Func{System.Boolean},System.Int32,System.Single,System.Single,System.Single)">
+            <summary>
+            Definition of a fish tank within a vehicle.
+            The fish tank can accommodate fish and other aquatic life
+            that may be added to a water park.
+            Eggs will hatch eventually and fish may reproduce.
+            </summary>
+            <param name="ContentContainer">The game object that will contain the fish.</param>
+            <param name="Root">The park root object</param>
+            <param name="Width">The grid width of the total tank storage capacity.</param>
+            <param name="Height">The grid height of the total tank storage capacity.</param>
+            <param name="DisplayName">The display text for the fish tank, which can be localized.</param>
+            <param name="AllowReproduction">If true, fish in this tank may reproduce.</param>
+            <param name="HatchEggs">If true, eggs in this tank will hatch eventually.</param>
+            <param name="CollidersAreLive">Function that returns true if the colliders are active and fish can move.
+            If the function returns false, fish shall become invisible and immobile so as to now swim out of the containment</param>
+            <param name="WallLayerMask">A bit-mask that encapsules all tank walls, floor, and ceiling in order to ray cast only the walls. Should not contain layer 0 (fish)</param>
+            <param name="TopMargin">Margin at the top of the tank, in meters, that fish cannot enter.</param>
+            <param name="BottomMargin">Margin at the bottom of the tank, in meters, that fish cannot enter.</param>
+            <param name="HorizontalMargin">Margin at the sides of the tank, in meters, that fish cannot enter.</param>
         </member>
         <member name="P:AVS.VehicleBuilding.MobileWaterPark.ContentContainer">
-            <summary>
-            The game object that will contain the fish.
-            </summary>
+            <summary>The game object that will contain the fish.</summary>
         </member>
         <member name="P:AVS.VehicleBuilding.MobileWaterPark.Root">
-            <summary>
-            The park root object
-            </summary>
-        </member>
-        <member name="P:AVS.VehicleBuilding.MobileWaterPark.Height">
-            <summary>
-            The grid height of the total tank storage capacity.
-            </summary>
+            <summary>The park root object</summary>
         </member>
         <member name="P:AVS.VehicleBuilding.MobileWaterPark.Width">
-            <summary>
-            The grid width of the total tank storage capacity.
-            </summary>
+            <summary>The grid width of the total tank storage capacity.</summary>
+        </member>
+        <member name="P:AVS.VehicleBuilding.MobileWaterPark.Height">
+            <summary>The grid height of the total tank storage capacity.</summary>
         </member>
         <member name="P:AVS.VehicleBuilding.MobileWaterPark.DisplayName">
-            <summary>
-            The display text for the vehicle storage, which can be localized.
-            </summary>
+            <summary>The display text for the fish tank, which can be localized.</summary>
         </member>
         <member name="P:AVS.VehicleBuilding.MobileWaterPark.AllowReproduction">
-            <summary>
-            True if fish in the tank can reproduce.
-            </summary>
+            <summary>If true, fish in this tank may reproduce.</summary>
         </member>
         <member name="P:AVS.VehicleBuilding.MobileWaterPark.HatchEggs">
-            <summary>
-            True if eggs in the tank can hatch.
-            </summary>
+            <summary>If true, eggs in this tank will hatch eventually.</summary>
         </member>
-        <member name="M:AVS.VehicleBuilding.MobileWaterPark.#ctor(UnityEngine.GameObject,UnityEngine.Transform,System.Nullable{AVS.Localization.MaybeTranslate},System.Int32,System.Int32,System.Boolean,System.Boolean)">
-            <summary>
-            Initializes a new instance of the <see cref="T:AVS.VehicleBuilding.MobileWaterPark"/> class with the specified container, display name,
-            dimensions, and behavior settings.
-            </summary>
-            <param name="root">The <see cref="T:UnityEngine.GameObject"/> that represents the entire water park. This parameter
-            cannot be <see langword="null"/>.</param>
-            <param name="contentContainer">The transform to contain the actual fish. Cannot be null</param>
-            <param name="displayName">An optional display name for the fish tank, which may be translated.  If <see langword="null"/>, no display
-            name is assigned.</param>
-            <param name="height">The height of the fish tank, measured in arbitrary units.  Must be greater than zero. Defaults to 4.</param>
-            <param name="width">The width of the fish tank, measured in arbitrary units.  Must be greater than zero. Defaults to 4.</param>
-            <param name="allowReproduction">A value indicating whether fish in the tank are allowed to reproduce.  Defaults to <see langword="true"/>.</param>
-            <param name="hatchEggs">A value indicating whether fish eggs in the tank are allowed to hatch.  Defaults to <see langword="true"/>.</param>
-            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="root"/> or <paramref name="contentContainer"/> are <see langword="null"/>.</exception>
-            <exception cref="T:System.ArgumentOutOfRangeException">Thrown if <paramref name="height"/> or <paramref name="width"/> is less than or equal to zero.</exception>
+        <member name="P:AVS.VehicleBuilding.MobileWaterPark.CollidersAreLive">
+            <summary>Function that returns true if the colliders are active and fish can move.
+            If the function returns false, fish shall become invisible and immobile so as to now swim out of the containment</summary>
+        </member>
+        <member name="P:AVS.VehicleBuilding.MobileWaterPark.WallLayerMask">
+            <summary>A bit-mask that encapsules all tank walls, floor, and ceiling in order to ray cast only the walls. Should not contain layer 0 (fish)</summary>
+        </member>
+        <member name="P:AVS.VehicleBuilding.MobileWaterPark.TopMargin">
+            <summary>Margin at the top of the tank, in meters, that fish cannot enter.</summary>
+        </member>
+        <member name="P:AVS.VehicleBuilding.MobileWaterPark.BottomMargin">
+            <summary>Margin at the bottom of the tank, in meters, that fish cannot enter.</summary>
+        </member>
+        <member name="P:AVS.VehicleBuilding.MobileWaterPark.HorizontalMargin">
+            <summary>Margin at the sides of the tank, in meters, that fish cannot enter.</summary>
         </member>
         <member name="T:AVS.VehicleBuilding.VehicleStorage">
             <summary>
@@ -11153,6 +13047,33 @@
         </member>
         <member name="P:System.Diagnostics.CodeAnalysis.MaybeNullWhenAttribute.ReturnValue">
             <summary>Gets the return value condition.</summary>
+        </member>
+        <member name="T:Assets.Behavior.Util.Math.BoundsUtil">
+            <summary>
+            Provides utility methods for working with <see cref="T:UnityEngine.Bounds"/> and related types, such as calculating bounds
+            relationships, transforming bounds, and retrieving corner points.
+            </summary>
+            <remarks>This class includes extension methods for <see cref="T:UnityEngine.Bounds"/>, <see cref="T:UnityEngine.BoxCollider"/>, 
+            <see cref="T:UnityEngine.CapsuleCollider"/>, and other related types. These methods are designed to simplify  common
+            operations such as determining containment, translating bounds, and computing corner points.</remarks>
+        </member>
+        <member name="M:Assets.Behavior.Util.Math.BoundsUtil.ComputeScaledLocalBounds(UnityEngine.Transform,AVS.RootModController,System.Boolean,System.Boolean,UnityEngine.Transform,System.Boolean,System.Boolean,System.Boolean)">
+            <summary>
+            Computes the scaled local bounds of a transform hierarchy, optionally including renderers and colliders.
+            </summary>
+            <param name="rootTransform">The root transform of the hierarchy for which to compute the bounds.</param>
+            <param name="rmc">The root mod controller used to manage the hierarchy during bounds computation.</param>
+            <param name="includeRenderers">If <see langword="true"/>, the bounds will include the contributions of renderers in the hierarchy;
+            otherwise, renderers are ignored.</param>
+            <param name="includeColliders">If <see langword="true"/>, the bounds will include the contributions of colliders in the hierarchy;
+            otherwise, colliders are ignored.</param>
+            <param name="excludeFrom">An optional transform to exclude from the bounds computation, along with its children. If <see
+            langword="null"/>, no exclusions are applied.</param>
+            <param name="applyLocalScale">If <see langword="true"/>, the local scale of the root transform is applied to the bounds computation;
+            otherwise, the scale is ignored.</param>
+            <param name="includeDisabledColliders">If <see langword="true"/>, disabled colliders are included during the bounds computation; ignored otherwise</param>
+            <param name="includeInactiveGameObjects">If <see langword="true"/>, inactive child transforms are included during the bounds computation; ignored otherwise</param>
+            <returns>A <see cref="T:AVS.Util.Math.Bounds3"/> representing the computed local bounds of the transform hierarchy.</returns>
         </member>
     </members>
 </doc>

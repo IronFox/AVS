@@ -3,6 +3,7 @@ using AVS.Assets;
 using AVS.Log;
 using AVS.Patches.CompatibilityPatches;
 using AVS.Util;
+using AVS.Util.CoroutineHandling;
 using AVS.VehicleBuilding;
 using BepInEx;
 using HarmonyLib;
@@ -400,9 +401,16 @@ public abstract class RootModController : BaseUnityPlugin
     /// <param name="routine">The routine being executed</param>
     /// <param name="methodName">Name of the method or context for logging purposes.</param>
     /// <returns>The coroutine executing the enumerator</returns>
-    internal Coroutine StartAvsCoroutine(string methodName, Func<SmartLog, IEnumerator> routine)
+    internal ICoroutineHandle StartAvsCoroutine(string methodName, Func<SmartLog, IEnumerator> routine)
     {
-        return StartCoroutine(Run(methodName, routine, true));
+        return Start(methodName, true, routine);
+    }
+
+    internal void StopAllAvsCoroutines()
+    {
+        SmartLog.DropAllInterruptables();
+        StopAllCoroutines();
+
     }
 
     /// <summary>
@@ -411,14 +419,28 @@ public abstract class RootModController : BaseUnityPlugin
     /// <param name="routine">The routine being executed</param>
     /// <param name="methodName">Name of the method or context for logging purposes.</param>
     /// <returns>The coroutine executing the enumerator</returns>
-    public Coroutine StartModCoroutine(string methodName, Func<SmartLog, IEnumerator> routine)
+    public ICoroutineHandle StartModCoroutine(string methodName, Func<SmartLog, IEnumerator> routine)
     {
-        return StartCoroutine(Run(methodName, routine, false));
+        return Start(methodName, false, routine);
     }
 
-    private IEnumerator Run(string methodName, Func<SmartLog, IEnumerator> factory, bool isAvs)
+
+    private ICoroutineHandle Start(string methodName, bool isAvs, Func<SmartLog, IEnumerator> routine)
     {
-        using var log = new SmartLog(this, isAvs ? "AVS" : "Mod", 5, true, nameOverride: methodName);
+        var log = new SmartLog(this, isAvs ? "AVS" : "Mod", 5, true, nameOverride: methodName);
+        CoroutineHandle? crh = null;
+        var cr = StartCoroutine(Run(routine, false, log, () => crh?.SignalStop()));
+        if (cr.IsNull())
+        {
+            log.Dispose();
+            return InstantQuitCoroutineHandle.Instance;
+        }
+        crh = new CoroutineHandle(log, cr, this);
+        return crh;
+    }
+
+    private IEnumerator Run(Func<SmartLog, IEnumerator> factory, bool isAvs, SmartLog log, Action onDone)
+    {
         var routine = factory(log);
         while (true)
         {
@@ -427,7 +449,7 @@ public abstract class RootModController : BaseUnityPlugin
             {
                 if (!routine.MoveNext())
                 {
-                    //log.Write("Coroutine finished");
+                    onDone();
                     yield break;
                 }
                 current = routine.Current;
@@ -435,6 +457,7 @@ public abstract class RootModController : BaseUnityPlugin
             catch (Exception e)
             {
                 log.Error("Exception in coroutine", e);
+                onDone();
                 yield break;
             }
             log.Interrupt();

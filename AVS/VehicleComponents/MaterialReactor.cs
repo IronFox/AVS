@@ -3,6 +3,8 @@ using AVS.Interfaces;
 using AVS.Localization;
 using AVS.Log;
 using AVS.Util;
+using AVS.Util.CoroutineHandling;
+using AVS.Util.Math;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -145,7 +147,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
     private readonly Dictionary<InventoryItem, float> currentEnergies = new();
     private readonly Dictionary<TechType, TechType> spentMaterialIndex = new();
     private ItemsContainer? container;
-    private Coroutine? outputReactorDataCoroutine = null;
+    private ICoroutineHandle? outputReactorDataCoroutine = null;
     private bool isInitialized = false;
     private const string newSaveFileName = "Reactor";
 
@@ -415,7 +417,7 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
                 main.SetText(HandReticle.TextType.HandSubscript,
                     Translator.Get(TranslationKey.HandHoverSub_Reactor_ShowWhitelist), false,
                     GameInput.Button.RightHand);
-                if (GameInput.GetButtonDown(GameInput.Button.RightHand) && outputReactorDataCoroutine.IsNull())
+                if (GameInput.GetButtonDown(GameInput.Button.RightHand) && outputReactorDataCoroutine.IsNullOrStopped())
                     outputReactorDataCoroutine = av.Owner.StartAvsCoroutine(
                         nameof(MaterialReactor) + '.' + nameof(OutputReactorData),
                         _ => OutputReactorData());
@@ -445,8 +447,6 @@ public class MaterialReactor : HandTarget, IHandTarget, IProtoTreeEventListener
                     : pair.Key.AsString(),
                 4f);
         }
-
-        outputReactorDataCoroutine = null;
     }
 
     private void OnClosePDA(PDA pda)

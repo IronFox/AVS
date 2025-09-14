@@ -1,6 +1,7 @@
 ﻿using AVS.Interfaces;
 using AVS.Log;
 using AVS.Util;
+using AVS.Util.Math;
 using FMOD;
 using Nautilus.Utility;
 using System;

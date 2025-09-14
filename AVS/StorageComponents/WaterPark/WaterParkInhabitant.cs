@@ -1,0 +1,73 @@
+﻿using AVS.Interfaces;
+using UnityEngine;
+
+namespace AVS.StorageComponents.WaterPark
+{
+    internal record WaterParkInhabitant(
+        MobileWaterPark WaterPark,
+        GameObject GameObject,
+        Transform RootTransform,
+        LiveMixin Live,
+        InfectedMixin Infect,
+        Pickupable Pickupable
+        ) : INullTestableType
+    {
+        public float ExpectedInfectionLevel { get; set; }
+
+
+        public int InstanceId => GameObject.GetInstanceID();
+        public float Radius => WaterPark.GetItemWorldRadius(Pickupable.GetTechType(), GameObject);
+
+        public bool IsInstantiated { get; private set; }
+
+        internal virtual void OnDeinstantiate()
+        {
+            Live.invincible = false;
+            Live.shielded = false;
+            IsInstantiated = false;
+            Object.Destroy(GameObject.GetComponent<InhabitantTag>());
+            GameObject.SetActive(false); //disable the item so it doesn't cause issues
+        }
+
+        internal virtual void OnInstantiate()
+        {
+            Live.invincible = true;
+            Live.shielded = true;
+            IsInstantiated = true;
+            GameObject.EnsureComponent<InhabitantTag>();
+            GameObject.SetActive(true); //enable the item so it can be added to the water park
+
+        }
+
+        internal virtual void OnUpdate()
+        { }
+
+        internal virtual void OnLateUpdate()
+        { }
+
+        internal virtual void OnFixedUpdate()
+        { }
+
+        internal virtual void SignalCollidersChanged(bool collidersLive)
+        {
+            GameObject.SetActive(collidersLive);
+        }
+
+
+        public const float ConsideredCuredInfectionLevel = 0;
+        public bool CanBeCured => ExpectedInfectionLevel > ConsideredCuredInfectionLevel;
+        public bool IsContagious => ExpectedInfectionLevel > 0.25f;
+        public bool IsLessThanCompletelyInfected => ExpectedInfectionLevel < 1f;
+        public void Cure()
+        {
+            ExpectedInfectionLevel = ConsideredCuredInfectionLevel;
+            Infect.SetInfectedAmount(ConsideredCuredInfectionLevel);
+        }
+
+        internal void ContractInfection()
+        {
+            ExpectedInfectionLevel = 1;
+            Infect.SetInfectedAmount(1);
+        }
+    }
+}

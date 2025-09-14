@@ -251,8 +251,17 @@ public static class GameObjectHelper
     }
 
 
-    private static string SanitizeObjectName(string text)
+    /// <summary>
+    /// Removes any content following the first opening parenthesis in the specified string,  and returns the sanitized
+    /// object name. If the input is null or empty, returns "&lt;none&gt;".
+    /// </summary>
+    /// <param name="text">The string to sanitize. Can be null or empty.</param>
+    /// <returns>The sanitized object name with content after the first opening parenthesis removed,  or "&lt;none&gt;" if the
+    /// input is null or empty.</returns>
+    public static string SanitizeObjectName(this string? text)
     {
+        if (text.IsNullOrEmpty())
+            return "<none>";
         var num = text.IndexOf('(');
         if (num >= 0)
             text = text.Substring(0, num);
@@ -518,11 +527,13 @@ public static class GameObjectHelper
     /// <typeparam name="T">The type of the object, which must derive from <see cref="UnityEngine.Object"/>.</typeparam>
     /// <param name="item">The object to check for null before executing the action.</param>
     /// <param name="action">The action to execute if <paramref name="item"/> is not null.</param>
-    public static void SafeDo<T>(this T? item, Action<T> action) where T : Object
+    /// <returns><see langword="true"/> if the action was executed; <see langword="false"/> if <paramref name="item"/> was null.</returns>
+    public static bool SafeDo<T>(this T? item, Action<T> action) where T : Object
     {
         if (item.IsNull())
-            return;
+            return false;
         action(item);
+        return true;
     }
 
     /// <summary>

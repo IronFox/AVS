@@ -3,6 +3,7 @@ using AVS.Configuration;
 using AVS.Localization;
 using AVS.Log;
 using AVS.StorageComponents;
+using AVS.StorageComponents.WaterPark;
 using AVS.Util;
 using AVS.VehicleComponents;
 using System;
@@ -11,7 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using UnityEngine;
-using MobileWaterPark = AVS.StorageComponents.MobileWaterPark;
+using MobileWaterPark = AVS.StorageComponents.WaterPark.MobileWaterPark;
 
 namespace AVS.BaseVehicle;
 
@@ -379,10 +380,13 @@ public abstract partial class AvsVehicle
         }
     }
 
+    private List<MobileWaterPark> WaterParks { get; } = [];
+
     internal bool ReSetupWaterParks()
     {
         var iter = 0;
         using var log = NewAvsLog();
+        WaterParks.Clear();
         try
         {
             log.Debug($"Setting up {Com.WaterParks.Count} Mobile Water Parks");
@@ -409,6 +413,10 @@ public abstract partial class AvsVehicle
                 inp.openSound = storageOpenSound;
                 inp.closeSound = storageCloseSound;
                 vp.Root.SetActive(true);
+
+                vp.ContentContainer.gameObject.SetActive(true);
+                cont.enabled = true;
+                WaterParks.Add(cont);
 
                 SaveLoad.SaveLoadUtils.EnsureUniqueNameAmongSiblings(vp.Root.transform);
             }

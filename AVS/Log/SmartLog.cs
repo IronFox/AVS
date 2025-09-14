@@ -1,5 +1,6 @@
 ﻿using AVS.Interfaces;
 using AVS.Util;
+using AVS.Util.Containers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,6 +27,13 @@ namespace AVS.Log
         private bool IsInterruptable { get; }
         private LogParameters? Parameters { get; }
 
+        private static int counter = 0;
+
+        /// <summary>
+        /// Gets the unique identifier for the instance.
+        /// </summary>
+        public int Id { get; } = ++counter;
+
         /// <summary>
         /// The recursive depth of this log context. Root context has depth 0.
         /// </summary>
@@ -48,23 +56,50 @@ namespace AVS.Log
 
         private bool HasStarted { get; set; }
 
-        private OrderedSet<string> TagSet { get; } = [];
+        /// <summary>
+        /// Gets a value indicating whether any tags are present (in this or any ancestor).
+        /// </summary>
+        private bool AnyTags { get; }
+
+        /// <summary>
+        /// Tags derived from this instance and all ancestors. Cached after first use.
+        /// </summary>
+        private IReadOnlyList<string>? CachedTags { get; set; }
+
+        /// <summary>
+        /// Tags newly declared on this instance only.
+        /// </summary>
+        private IReadOnlyList<string>? MyTags { get; }
 
         /// <summary>
         /// The tags associated with this log context.
         /// </summary>
-        public IReadOnlyList<string> Tags => TagSet.ToList();
+        public IReadOnlyList<string> Tags => GetTags();
 
         /// <summary>
         /// Gets the date and time when the context was created.
         /// </summary>
         public DateTime StartTime { get; } = DateTime.Now;
 
-        private static Dictionary<int, SmartLog> InterruptableIndexes { get; } = [];
+        private static SafeDictionary<int, SmartLog> InterruptableIndexes { get; } = [];
         private int InterruptableIndex { get; }
 
         //private bool IsInterruptableSelfOrChild { get; }
         private SmartLog? InterruptableAncestor { get; }
+
+        internal static void DropAllInterruptables()
+        {
+            if (Current.IsNotNull() && Current.InterruptableAncestor.IsNotNull() && !Current.IsInterruptable)
+            {
+                Current.Dispose();
+                Current = null;
+            }
+
+            foreach (var pair in InterruptableIndexes)
+                pair.Value.Dispose();
+
+            InterruptableIndexes.Clear();
+        }
 
         /// <summary>
         /// Creates a new disposable log context. The new context becomes the current context.
@@ -90,9 +125,7 @@ namespace AVS.Log
             Previous = Current;
             Parent = Current;
             Depth = (Parent.IsNotNull() ? Parent.Depth + 1 : 0);
-            if (Parent.IsNotNull())
-                TagSet.AddRange(Parent.Tags);
-
+            AnyTags = Parent?.AnyTags ?? false;
             Domain = domain ?? Parent?.Domain ?? "";
 
             if (nameOverride.IsNullOrEmpty())
@@ -119,8 +152,11 @@ namespace AVS.Log
                 //TagSet.Add("CR");
                 //Name = $"{Name} (coroutine exec)";
             }
-            if (tags.IsNotNull())
-                TagSet.AddRange(tags);
+            if (!tags.IsNullOrEmpty())
+            {
+                MyTags = tags;
+                AnyTags = true;
+            }
             RMC = rmc;
             Current = this;
             IsInterruptable = isInterruptable;
@@ -147,6 +183,36 @@ namespace AVS.Log
             }
         }
 
+        private bool HasNonEmptyTagSet => MyTags.IsNotNull() || (Parent?.HasNonEmptyTagSet ?? false);
+
+        private IReadOnlyList<string> GetTags()
+        {
+            if (!AnyTags)
+                return [];
+            if (CachedTags.IsNull())
+            {
+                if (MyTags.IsNull())
+                    CachedTags = Parent?.GetTags() ?? [];
+                else
+                {
+                    if (Parent.IsNull())
+                    {
+                        CachedTags = MyTags;
+                    }
+                    else
+                    {
+                        OrderedSet<string> tagSet = [];
+                        if (Parent.IsNotNull())
+                            tagSet.AddRange(Parent.GetTags());
+                        if (MyTags.IsNotNull())
+                            tagSet.AddRange(MyTags);
+                        CachedTags = [.. tagSet];
+                    }
+                }
+            }
+            return CachedTags;
+        }
+
 
         private string HeadLine
         {
@@ -171,14 +237,14 @@ namespace AVS.Log
                 return;
             if (IsDisposed)
             {
-                Logger.Error($"SmartLog.SignalLog failed on {Name}: is disposed");
-                return;
+                throw new ObjectDisposedException(Name, $"[{Id}] SmartLog.SignalLog called on disposed instance");
+                //Logger.Error($"SmartLog.SignalLog failed on {Name}: is disposed");
+                //return;
             }
-            HasStarted = true;
 
             try
             {
-                if (Parent.IsNotNull())
+                if (!IsInterruptable && Parent.IsNotNull())
                 {
                     Parent.SignalLog();
                 }
@@ -189,7 +255,12 @@ namespace AVS.Log
             }
             catch (Exception ex)
             {
-                Logger.Exception("SmartLog.SignalLog failed", ex);
+                Logger.Exception($"[{Id}] SmartLog.SignalLog failed while trying to log '{HeadLine}': ", ex);
+                throw;
+            }
+            finally
+            {
+                HasStarted = true;
             }
         }
 
@@ -299,6 +370,7 @@ namespace AVS.Log
         {
             if (IsDisposed)
                 return;
+
             IsDisposed = true;
             if (IsInterruptable)
             {
@@ -334,7 +406,7 @@ namespace AVS.Log
             }
             catch (Exception ex)
             {
-                Logger.Exception("SmartLog.SignalLog failed", ex);
+                Logger.Exception($"[{Id}] SmartLog.SignalLog failed while trying to log '{message}': ", ex);
             }
 
         }
@@ -354,7 +426,7 @@ namespace AVS.Log
             }
             catch (Exception ex)
             {
-                Logger.Exception("SmartLog.SignalLog failed", ex);
+                Logger.Exception($"[{Id}] SmartLog.SignalLog failed while trying to warn '{message}': ", ex);
             }
 
         }
@@ -379,7 +451,7 @@ namespace AVS.Log
             }
             catch (Exception ex2)
             {
-                Logger.Exception("SmartLog.SignalLog failed", ex2);
+                Logger.Exception($"[{Id}] SmartLog.SignalLog failed while trying to fail '{message}': ", ex2);
             }
         }
 
@@ -400,7 +472,7 @@ namespace AVS.Log
             }
             catch (Exception ex)
             {
-                Logger.Exception("SmartLog.SignalLog failed", ex);
+                Logger.Exception($"[{Id}] SmartLog.SignalLog failed while trying to debug '{message}': ", ex);
             }
         }
         /// <summary>
@@ -421,7 +493,7 @@ namespace AVS.Log
             }
             catch (Exception ex)
             {
-                Logger.Exception("SmartLog.SignalLog failed", ex);
+                Logger.Exception($"[{Id}] SmartLog.SignalLog failed while trying to debug '{messageFactory()}': ", ex);
             }
         }
 

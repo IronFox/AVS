@@ -1,6 +1,7 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Localization;
 using AVS.Util;
+using AVS.Util.Math;
 using HarmonyLib;
 using System.Collections;
 using System.Collections.Generic;
