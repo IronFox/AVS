@@ -35,7 +35,7 @@ namespace AVS.StorageComponents.WaterPark
         public float SwimTimeSeconds { get; private set; } = 1;
         public float CreatureScale => Mathf.Lerp(WpCreature.data.initialSize / WpCreature.data.maxSize, 1f, WpCreature.age) * WaterPark.creatureScale;
 
-
+        public float BreedInterval => WpCreature.data.growingPeriod * 0.5f;
         public Vector3 CurrentScale => Vector3.one * (WpCreature.data.maxSize * CreatureScale);
 
 
@@ -77,7 +77,7 @@ namespace AVS.StorageComponents.WaterPark
             LastAppliedSwimTarget = NextSwimTarget = LastSwimTarget = GlobalPosition.Of(GameObject).ToLocal(WaterPark);
             WpCreature.swimTarget = LastSwimTarget.LocalCoordinates;
             WpCreature.swimBehaviour = GameObject.GetComponent<SwimBehaviour>();
-            WpCreature.breedInterval = WpCreature.data.growingPeriod * 0.5f;
+            WpCreature.breedInterval = BreedInterval;
             WpCreature.ResetBreedTime();
             WpCreature.timeNextSwim = 0;
             if (WaterPark.EnforceEnclosure(Creature.transform, Radius) == MobileWaterPark.EnforcementResult.Failed)
@@ -366,7 +366,7 @@ namespace AVS.StorageComponents.WaterPark
                     WpCreature.isMature = true;
                     if (WpCreature.data.canBreed)
                     {
-                        WpCreature.breedInterval = WpCreature.data.growingPeriod * 0.5f;
+                        WpCreature.breedInterval = BreedInterval;
                         if (WpCreature.timeNextBreed < 0f)
                         {
                             WpCreature.ResetBreedTime();
