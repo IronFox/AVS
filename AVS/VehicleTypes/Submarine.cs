@@ -367,9 +367,7 @@ public abstract class Submarine : AvsVehicle
     private IEnumerator SpawnFabricator(SmartLog log, RootModController rmc, Transform location)
     {
         var result = new InstanceContainer();
-        yield return rmc.StartAvsCoroutine(
-            nameof(AvsCraftData) + '.' + nameof(AvsCraftData.InstantiateFromPrefabAsync),
-            log2 => AvsCraftData.InstantiateFromPrefabAsync(log2, TechType.Fabricator, result));
+        yield return AvsCraftData.InstantiateFromPrefabAsync(log, TechType.Fabricator, result);
         fabricator = result.Instance;
         if (fabricator.IsNull())
         {
@@ -581,9 +579,7 @@ public abstract class Submarine : AvsVehicle
 
         if (console.IsNull())
         {
-            yield return Owner.StartAvsCoroutine(
-                nameof(Builder) + '.' + nameof(Builder.BeginAsync),
-                _ => Builder.BeginAsync(TechType.BaseUpgradeConsole));
+            yield return Builder.BeginAsync(TechType.BaseUpgradeConsole);
             Builder.ghostModel.GetComponentInChildren<BaseGhost>().OnPlace();
             console = Resources.FindObjectsOfTypeAll<BaseUpgradeConsoleGeometry>().ToList()
                 .Find(x => x.gameObject.name.Contains("Short")).gameObject;

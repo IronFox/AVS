@@ -103,8 +103,8 @@ public class NavigationLightsController : BaseLightController
     private bool position = false;
     private Coroutine? white = null;
     private Coroutine? red = null;
-    private Coroutine? port = null;
-    private Coroutine? starboard = null;
+    private ICoroutineHandle? port = null;
+    private ICoroutineHandle? starboard = null;
     internal const float lightBrightness = 1f;
     internal const float strobeBrightness = 30f;
     private List<Material> positionMats = new();
@@ -157,7 +157,7 @@ public class NavigationLightsController : BaseLightController
             case LightClass.Ports:
                 if (port.IsNotNull())
                 {
-                    StopCoroutine(port);
+                    port.Stop();
                     port = null;
                 }
 
@@ -166,7 +166,7 @@ public class NavigationLightsController : BaseLightController
             case LightClass.Starboards:
                 if (starboard.IsNotNull())
                 {
-                    StopCoroutine(starboard);
+                    starboard.Stop();
                     starboard = null;
                 }
 

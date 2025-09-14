@@ -83,6 +83,9 @@ public static class IsNullExtensions
     public static bool IsNullOrEmpty([NotNullWhen(false)] this string? s)
         => string.IsNullOrEmpty(s);
 
+    public static bool IsNullOrStopped([NotNullWhen(false)] this ICoroutineHandle? crh)
+        => crh is null || !crh.IsRunning;
+
     public static bool IsNull([NotNullWhen(false)] this Action? a)
         => a is null;
 

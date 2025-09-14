@@ -56,6 +56,11 @@ public static class IsNotNullExtensions
     public static bool IsNotNull<T>([NotNullWhen(true)] this T? item) where T : struct
         => item.HasValue;
 
+
+    public static bool IsNotNullAndRunning([NotNullWhen(true)] this ICoroutineHandle? crh)
+        => crh?.IsRunning == true;
+
+
     public static bool IsNotNull([NotNullWhen(true)] this Action? acc)
         => acc is not null;
 

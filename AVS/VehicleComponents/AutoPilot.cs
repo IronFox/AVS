@@ -575,26 +575,27 @@ public class Autopilot : MonoBehaviour, IVehicleStatusListener, IPlayerListener,
     private readonly float MAX_TIME_TO_WAIT = 3f;
     private float timeWeStartedWaiting = 0f;
 
+    public ICoroutineHandle? Started { get; private set; }
+
     void IVehicleStatusListener.OnNearbyLeviathan()
     {
         using var log = AV.NewAvsLog();
         log.Debug("OnNearbyLeviathan");
 
-        IEnumerator ResetDangerStatusEventually()
+        IEnumerator ResetDangerStatusEventually(SmartLog log)
         {
-            yield return new WaitUntil(() => Mathf.Abs(Time.time - timeWeStartedWaiting) >= MAX_TIME_TO_WAIT);
+            yield return new WaitForSeconds(MAX_TIME_TO_WAIT);// WaitUntil(() => Mathf.Abs(Time.time - timeWeStartedWaiting) >= MAX_TIME_TO_WAIT);
             var was = DangerStatus;
             DangerStatus = AutopilotStatus.LeviathanSafe;
             if (was != DangerStatus)
                 AV.GetComponentsInChildren<IAutopilotEventListener>()
                     .ForEach(l => l.Signal(new AutopilotStatusChange(was, DangerStatus)));
         }
-
-        RootModController.AnyInstance.StopAllAvsCoroutines();
+        Started?.Stop();
         timeWeStartedWaiting = Time.time;
-        RootModController.AnyInstance.StartAvsCoroutine(
+        Started = RootModController.AnyInstance.StartAvsCoroutine(
             nameof(Autopilot) + '.' + nameof(ResetDangerStatusEventually),
-            _ => ResetDangerStatusEventually());
+            ResetDangerStatusEventually);
         if (DangerStatus == AutopilotStatus.LeviathanSafe)
         {
             var was = DangerStatus;

@@ -313,7 +313,7 @@ internal class ToggleableTracker
     /// </summary>
     internal void OnToggle(Vehicle vehicle, int slotId, bool active)
     {
-        var remove = ToggledActions.Where(x => !x.Value.IsValid).Select(x => x.Key).ToList();
+        var remove = ToggledActions.Where(x => !x.Value.IsOngoing).Select(x => x.Key).ToList();
         foreach (var r in remove)
             ToggledActions.Remove(r);
         var key = new VehicleSlotId(vehicle, slotId);
@@ -396,7 +396,7 @@ public static class UpgradeRegistrar
 
     internal class ActiveToggle : IToggleState
     {
-        private Coroutine Action { get; }
+        private ICoroutineHandle? Action { get; }
         public ToggleableModule Module { get; }
         public RootModController RMC { get; }
         public Vehicle Vehicle { get; }
@@ -411,10 +411,13 @@ public static class UpgradeRegistrar
             Vehicle = vehicle;
             StartTime = Time.time;
             SlotID = slotId;
-            Action = vehicle.StartCoroutine(Routine());
+            Action = rmc.StartAvsCoroutine($"ActiveToggle.Routine", Routine);
         }
 
-        public bool IsValid => Action.IsNotNull() && Vehicle.IsNotNull();
+        public bool IsOngoing =>
+               Action.IsNotNull()
+            && Action.IsRunning
+            && Vehicle.IsNotNull();
 
         public int SlotID { get; }
 
@@ -434,7 +437,7 @@ public static class UpgradeRegistrar
         public void Deactivate()
         {
             if (Action.IsNotNull() && Vehicle.IsNotNull())
-                Vehicle.StopCoroutine(Action);
+                Action.Stop();
             UntoggleAndSignal();
         }
 
@@ -467,9 +470,8 @@ public static class UpgradeRegistrar
         private void UpdateEventTime()
             => EventTime = Time.time - StartTime;
 
-        private IEnumerator Routine()
+        private IEnumerator Routine(SmartLog log)
         {
-            using var log = SmartLog.ForAVS(RMC);
             IsActive = true;
             var isAvsVehicle = Vehicle.SafeGetComponent<AvsVehicle>();
             try

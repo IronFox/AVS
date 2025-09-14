@@ -9,9 +9,9 @@ internal class Scuttler : MonoBehaviour
 {
     private Vector3 scuttlePosition = Vector3.zero;
     private Vector3 initialLandRayCast = Vector3.zero;
-    private Coroutine? scuttleCor;
-    private Coroutine? establish;
-    private Coroutine? check;
+    private ICoroutineHandle? scuttleCor;
+    private ICoroutineHandle? establish;
+    private ICoroutineHandle? check;
 
     public void Scuttle(RootModController rmc)
     {
@@ -22,9 +22,9 @@ internal class Scuttler : MonoBehaviour
 
     public void Unscuttle(RootModController rmc)
     {
-        rmc.StopCoroutine(scuttleCor);
-        rmc.StopCoroutine(establish);
-        rmc.StopCoroutine(check);
+        scuttleCor?.Stop();
+        establish?.Stop();
+        check?.Stop();
         gameObject.GetComponent<Rigidbody>().isKinematic = false;
     }
 

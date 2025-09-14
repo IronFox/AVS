@@ -591,7 +591,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     private record LoadingInhabitant(
         Inhabitant Inhabitant,
         InstanceContainer Result,
-        Coroutine LoadTask);
+        ICoroutineHandle LoadTask);
 
     private record Serialized
     (
@@ -772,7 +772,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         foreach (var item in ReAddWhenDone)
         {
             //try to load the item
-            yield return item.LoadTask;
+            yield return item.LoadTask.WaitUntilDone();
             var thisItem = item.Result.Instance;
             if (thisItem.IsNull())
             {

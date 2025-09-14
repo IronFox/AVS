@@ -174,6 +174,7 @@ internal class ModuleBuilder : MonoBehaviour
         log.Write($"Begin");
         yield return BuildGenericModules(log);
         yield return BuildAllSlotsInternal(log);
+        log.Debug($"End");
     }
 
 

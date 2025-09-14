@@ -116,7 +116,7 @@ public static class VehicleRegistrar
         }
         else
         {
-            yield return rmc.StartAvsCoroutine(nameof(VehicleRegistrar) + '.' + nameof(InternalRegisterVehicle), log => InternalRegisterVehicle(log, rmc, av, verbose));
+            yield return InternalRegisterVehicle(log, rmc, av, verbose);
         }
     }
 
