@@ -56,12 +56,25 @@ namespace AVS.Log
 
         private bool HasStarted { get; set; }
 
-        private OrderedSet<string> TagSet { get; } = [];
+        /// <summary>
+        /// Gets a value indicating whether any tags are present (in this or any ancestor).
+        /// </summary>
+        private bool AnyTags { get; }
+
+        /// <summary>
+        /// Tags derived from this instance and all ancestors. Cached after first use.
+        /// </summary>
+        private IReadOnlyList<string>? CachedTags { get; set; }
+
+        /// <summary>
+        /// Tags newly declared on this instance only.
+        /// </summary>
+        private IReadOnlyList<string>? MyTags { get; }
 
         /// <summary>
         /// The tags associated with this log context.
         /// </summary>
-        public IReadOnlyList<string> Tags => TagSet.ToList();
+        public IReadOnlyList<string> Tags => GetTags();
 
         /// <summary>
         /// Gets the date and time when the context was created.
@@ -112,9 +125,7 @@ namespace AVS.Log
             Previous = Current;
             Parent = Current;
             Depth = (Parent.IsNotNull() ? Parent.Depth + 1 : 0);
-            if (Parent.IsNotNull())
-                TagSet.AddRange(Parent.Tags);
-
+            AnyTags = Parent?.AnyTags ?? false;
             Domain = domain ?? Parent?.Domain ?? "";
 
             if (nameOverride.IsNullOrEmpty())
@@ -137,13 +148,15 @@ namespace AVS.Log
             if (isInterruptable)
             {
                 Depth = 0;
-                Parent = null;
                 //Tags.Add(rmc.ModName);
                 //TagSet.Add("CR");
                 //Name = $"{Name} (coroutine exec)";
             }
-            if (tags.IsNotNull())
-                TagSet.AddRange(tags);
+            if (!tags.IsNullOrEmpty())
+            {
+                MyTags = tags;
+                AnyTags = true;
+            }
             RMC = rmc;
             Current = this;
             IsInterruptable = isInterruptable;
@@ -168,6 +181,36 @@ namespace AVS.Log
             {
                 SignalLog();
             }
+        }
+
+        private bool HasNonEmptyTagSet => MyTags.IsNotNull() || (Parent?.HasNonEmptyTagSet ?? false);
+
+        private IReadOnlyList<string> GetTags()
+        {
+            if (!AnyTags)
+                return [];
+            if (CachedTags.IsNull())
+            {
+                if (MyTags.IsNull())
+                    CachedTags = Parent?.GetTags() ?? [];
+                else
+                {
+                    if (Parent.IsNull())
+                    {
+                        CachedTags = MyTags;
+                    }
+                    else
+                    {
+                        OrderedSet<string> tagSet = [];
+                        if (Parent.IsNotNull())
+                            tagSet.AddRange(Parent.GetTags());
+                        if (MyTags.IsNotNull())
+                            tagSet.AddRange(MyTags);
+                        CachedTags = [.. tagSet];
+                    }
+                }
+            }
+            return CachedTags;
         }
 
 
@@ -201,7 +244,7 @@ namespace AVS.Log
 
             try
             {
-                if (Parent.IsNotNull())
+                if (!IsInterruptable && Parent.IsNotNull())
                 {
                     Parent.SignalLog();
                 }
