@@ -39,6 +39,9 @@ namespace AVS.StorageComponents.WaterPark
         public float BreedInterval => WpCreature.data.growingPeriod * 0.5f;
         public Vector3 CurrentScale => Vector3.one * (WpCreature.data.maxSize * CreatureScale);
 
+        public Crash? Crash { get; private set; }
+
+        public bool WillNotSwimOnItsOwn => Crash.IsNotNull();
 
 #if WATERPARK_DEBUG
         private Queue<GameObject> debugSpheres = new();
@@ -134,7 +137,8 @@ namespace AVS.StorageComponents.WaterPark
             {
                 rb.interpolation = RigidbodyInterpolation.Interpolate;
                 rb.detectCollisions = false;
-                //rb.angularDrag = 0.5f;
+                if (WillNotSwimOnItsOwn)
+                    rb.isKinematic = true;
             });
 
 #if WATERPARK_DEBUG
@@ -190,6 +194,25 @@ namespace AVS.StorageComponents.WaterPark
                 WpCreature.swimBehaviour.turnSpeed = 1f;
             }
 
+            if (Creature is Crash crash)
+            {
+                Crash = crash;
+                log.Debug($"Creature is crash");
+                if (!crash.waterParkCreature)
+                {
+                    log.Warn($"Setting Crash.waterParkCreature component");
+                    crash.waterParkCreature = WpCreature;
+                }
+                if (!WpCreature.bornInside)
+                {
+                    log.Warn($"Creature Crash was not born inside, setting bornInside=true");
+                    WpCreature.bornInside = true;
+                }
+                Crash.CancelInvoke("Inflate");
+                Crash.CancelInvoke("AnimateInflate");
+                Crash.CancelInvoke("Detonate");
+            }
+
             WpCreature.disabledBehaviours = new List<Behaviour>();
             Behaviour[] componentsInChildren = WpCreature.GetComponentsInChildren<Behaviour>(includeInactive: true);
             foreach (Behaviour behaviour in componentsInChildren)
@@ -239,6 +262,8 @@ namespace AVS.StorageComponents.WaterPark
                         || type == typeof(CreatureFollowPlayer)
                         || type == typeof(CreatureFriend)
 
+                        || type == typeof(AggressiveWhenSeePlayer)
+                        || type == typeof(ProtectCrashHome)
 
                         || type == typeof(SwimToMushroom)
                         || type == typeof(Coil)
@@ -278,7 +303,12 @@ namespace AVS.StorageComponents.WaterPark
             Rigidbody.SafeDo(rb =>
             {
                 rb.detectCollisions = true;
+                if (WillNotSwimOnItsOwn)
+                    rb.isKinematic = false;
             });
+
+            GameObject.name.Replace(NameTag, "");
+
 
             Creature.enabled = true;
             Creature.cyclopsSonarDetectable = SonarDetectable;
@@ -314,7 +344,7 @@ namespace AVS.StorageComponents.WaterPark
 
             InterpolationProgress += Time.deltaTime / SwimTimeSeconds;
             nextTargetUpdate -= Time.deltaTime;
-            if (nextTargetUpdate <= 0f)
+            if (nextTargetUpdate <= 0f || WillNotSwimOnItsOwn)
             {
                 nextTargetUpdate = 0.1f;
                 LastAppliedSwimTarget = LocalPosition
@@ -330,6 +360,15 @@ namespace AVS.StorageComponents.WaterPark
 #if WATERPARK_DEBUG
                 currentDebugSphere!.transform.position = WpCreature.swimTarget;
 #endif
+            }
+
+            if (WillNotSwimOnItsOwn)
+            {
+                var target = WpCreature.swimTarget;
+                var delta = target - RootTransform.position;
+                if (delta.sqrMagnitude > 0.01f)
+                    RootTransform.position += delta.normalized * SwimVelocity * Time.deltaTime;
+                RootTransform.LookAt(target, Vector3.up);
             }
         }
 
@@ -381,6 +420,13 @@ namespace AVS.StorageComponents.WaterPark
             RootTransform.localScale = CurrentScale;
 
             UpdateMovement(radius);
+
+            if (Crash.IsNotNull())
+            {
+                Crash.CancelInvoke("Inflate");
+                Crash.CancelInvoke("AnimateInflate");
+                Crash.CancelInvoke("Detonate");
+            }
 
             Creature.Hunger.Value = 1f; //disable hunger
             Creature.Scared.Value = 0f; //disable fear
