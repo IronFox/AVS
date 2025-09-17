@@ -500,5 +500,29 @@ namespace AVS.StorageComponents.WaterPark
                 //RandomizeSwimTargetNow(Radius);
             }
         }
+
+        internal static bool IsLikelyWaterParkCreature(GameObject? x, MobileWaterPark checkFor)
+        {
+            if (x.IsNull())
+                return false;
+
+            var pu = x.GetComponent<Pickupable>();
+            if (pu.IsNull())
+                return false;
+            var wpc = x.GetComponent<WaterParkCreature>();
+            if (wpc.IsNull())
+                return false;
+            if (wpc.data.IsNull())
+                return false;
+            if (!wpc.data.isPickupableOutside)
+            {
+                var wp = x.GetComponentInParent<MobileWaterPark>();
+                return wp.IsNull() || wp == checkFor;
+            }
+            else
+                if (!WaterParkInhabitant.IsLikely(x, checkFor))
+                return false;   //no way to identify
+            return true;
+        }
     }
 }

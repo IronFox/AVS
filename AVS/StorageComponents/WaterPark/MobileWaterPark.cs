@@ -744,12 +744,19 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             Destroy(stray.gameObject);
         }
 
-        var strays = Physics.OverlapSphere(waterPark.position, 500f)
+        var candidates = Physics.OverlapSphere(waterPark.position, 500f)
             .Select(x => x.attachedRigidbody)
             .Distinct()
             .Select(x => x.SafeGetGameObject())
-            .Where(x => x.SafeGetComponent<InhabitantTag>().IsNotNull())
+            .Where(x => x.IsNotNull())
             .ToList();
+
+        var strays = candidates.Where(x =>
+        x.SafeGetComponent<InhabitantTag>().IsNotNull()
+        || WaterParkCreatureInhabitant.IsLikelyWaterParkCreature(x, this)
+        ).ToList();
+
+
         log.Debug($"Found {strays.Count} escaped near water park {index}");
         foreach (var stray in strays)
         {
@@ -777,6 +784,27 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             log.Warn($"Destroying stray {stray.NiceName()} in water park {index}");
             Destroy(stray.gameObject);
         }
+
+        var candidates = Physics.OverlapSphere(waterPark!.position, 500f)
+            .Select(x => x.attachedRigidbody)
+            .Distinct()
+            .Select(x => x.SafeGetGameObject())
+            .Where(x => x.IsNotNull())
+            .ToList();
+
+        var strays = candidates.Where(x =>
+            !Inhabitants.ContainsKey(x!.GetInstanceID()) &&
+            WaterParkCreatureInhabitant.IsLikelyWaterParkCreature(x, this)
+        ).ToList();
+
+
+        log.Debug($"Found {strays.Count} escaped near water park {index}");
+        foreach (var stray in strays)
+        {
+            log.Warn($"Destroying escaped {stray.NiceName()} near water park {index}");
+            Destroy(stray);
+        }
+
     }
 
     private IEnumerator LoadInhabitants(SmartLog log, AvsVehicle vehicle)
@@ -1091,6 +1119,19 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             creature.InitializeCreatureBornInWaterPark();
             creature.age = 0f;
             creature.bornInside = true;
+            var crash = creature.GetComponent<Crash>();
+            if (crash.IsNotNull())
+            {
+                if (crash.waterParkCreature != creature)
+                {
+                    log.Warn($"Creature {creature.NiceName()} has a Crash component, but its waterParkCreature field does not point to the creature itself, fixing.");
+                    crash.waterParkCreature = creature;
+                }
+                else
+                    log.Write($"Crash properly initialized. bornInside is {crash.waterParkCreature.bornInside}");
+
+            }
+
             result.transform.localScale = creature.data.initialSize * Vector3.one;
 
             var egg = result.GetComponent<CreatureEgg>();
