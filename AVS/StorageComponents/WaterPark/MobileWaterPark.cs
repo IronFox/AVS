@@ -609,7 +609,11 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             Creature? creature = item.item.GetComponent<Creature>();
             CreatureEgg? egg = item.item.GetComponent<CreatureEgg>();
             WaterParkCreature? wpCreature = item.item.GetComponent<WaterParkCreature>();
-            egg.SafeDo(x => x.UpdateHatchingTime());
+            egg.SafeDo(x =>
+            {
+                //x.progress = Mathf.Max(0.99f, x.progress);
+                x.UpdateHatchingTime();
+            });
             var inhab = new Inhabitant
             (
                 InfectedAmount: item.item.GetComponent<InfectedMixin>().SafeGet(x => x.infectedAmount, 0),
@@ -737,7 +741,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         foreach (var stray in waterPark.SafeGetChildren())
         {
             log.Warn($"Destroying stray object {stray.NiceName()} in water park {index}");
-            Destroy(stray);
+            Destroy(stray.gameObject);
         }
 
         var strays = Physics.OverlapSphere(waterPark.position, 500f)
@@ -771,7 +775,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             if (Inhabitants.ContainsKey(stray.gameObject.GetInstanceID()))
                 continue;
             log.Warn($"Destroying stray {stray.NiceName()} in water park {index}");
-            Destroy(stray);
+            Destroy(stray.gameObject);
         }
     }
 
