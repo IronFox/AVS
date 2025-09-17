@@ -236,6 +236,10 @@ namespace AVS.StorageComponents.WaterPark
                         || type == typeof(SeaDragonAggressiveTowardsSharks)
                         || type == typeof(SeaDragonCurrents)
 
+                        || type == typeof(CreatureFollowPlayer)
+                        || type == typeof(CreatureFriend)
+
+
                         || type == typeof(SwimToMushroom)
                         || type == typeof(Coil)
 
