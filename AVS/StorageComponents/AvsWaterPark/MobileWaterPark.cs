@@ -14,7 +14,7 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.AddressableAssets;
 
-namespace AVS.StorageComponents.WaterPark;
+namespace AVS.StorageComponents.AvsWaterPark;
 
 /// <summary>
 /// Helper structure for fishtanks that work like an aquapark but can
@@ -372,11 +372,12 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     {
         target = rest.GetRandomTarget(distance);
 
-        var rs = EnforceEnclosure(ref target, null, rest.Creature.Radius, expectIssues: true);
-        if (rs == EnforcementResult.Failed)
+        var rs = EnforceEnclosure(target, null, rest.Creature.Radius, expectIssues: true);
+        if (rs.Result == EnforcementResult.Failed)
             return false;
-        if (rs == EnforcementResult.Inside)
+        if (rs.Result == EnforcementResult.Inside)
             return true;
+        target = rs.Position;
         if (UnityEngine.Random.value < 0.5f) //50% chance to re-randomize anyway
             return false;
         float dist = (target - rest.Creature.Position).sqrMagnitude;
@@ -1157,14 +1158,13 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     internal EnforcementResult EnforceEnclosure(Transform transform, float radius)
     {
-        var p = GlobalPosition.Of(transform);
-        var rs = EnforceEnclosure(ref p, null, radius);
-        if (rs == EnforcementResult.Clamped)
+        var rs = EnforceEnclosure(GlobalPosition.Of(transform), null, radius);
+        if (rs.Result == EnforcementResult.Clamped)
         {
-            transform.position = p.GlobalCoordinates;
-            return rs;
+            transform.position = rs.Position.GlobalCoordinates;
+            return rs.Result;
         }
-        return rs;
+        return rs.Result;
     }
 
     internal enum EnforcementResult
@@ -1173,7 +1173,12 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         Clamped,
         Failed
     }
-    internal EnforcementResult EnforceEnclosure(ref GlobalPosition p, Rigidbody? rb, float creatureRadius, bool clampVertically = true, bool expectIssues = false)
+
+    internal readonly record struct Enforced(
+        GlobalPosition Position,
+        EnforcementResult Result
+        );
+    internal Enforced EnforceEnclosure(GlobalPosition p, Rigidbody? rb, float creatureRadius, bool clampVertically = true, bool expectIssues = false, bool cascade = true)
     {
         using var log = AV.NewLazyAvsLog(parameters: Params.Of(p, creatureRadius));
         var center = GlobalPosition.Of(waterPark!);
@@ -1194,7 +1199,8 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 {
                     p = new((origin.Flat() + hDir * (maxDistance - 0.05f)).UnFlat(p.Y));
                     rs = EnforcementResult.Clamped;
-                    rb.SafeDo(x => x.AddForce(-d * push, ForceMode.VelocityChange));
+                    if (cascade)
+                        rb.SafeDo(x => x.AddForce(-d * push, ForceMode.VelocityChange));
                 }
             }
             else
@@ -1210,13 +1216,16 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             {
                 if (hit.distance < creatureRadius + topMargin)
                 {
-                    rb.SafeDo(x =>
-                    {
-                        if (x.velocity.y > 0)
-                            x.velocity = x.velocity.Flat();
-                        x.AddForce(Vector3.down * push, ForceMode.VelocityChange);
-                    });
+                    if (cascade)
+                        rb.SafeDo(x =>
+                        {
+                            if (x.velocity.y > 0)
+                                x.velocity = x.velocity.Flat();
+                            x.AddForce(Vector3.down * push, ForceMode.VelocityChange);
+                        });
                     p = new(hit.point - Vector3.up * (creatureRadius + topMargin + 0.05f));
+                    if (rs == EnforcementResult.Failed && cascade)
+                        return EnforceEnclosure(p, rb, creatureRadius, clampVertically: clampVertically, expectIssues: expectIssues, cascade: false);
                     rs = rs != EnforcementResult.Failed ? EnforcementResult.Clamped : rs;
                 }
             }
@@ -1231,13 +1240,17 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             {
                 if (hit.distance < creatureRadius + bottomMargin)
                 {
-                    rb.SafeDo(x =>
-                    {
-                        if (x.velocity.y < 0)
-                            x.velocity = x.velocity.Flat();
-                        x.AddForce(Vector3.up * push, ForceMode.VelocityChange);
-                    });
+                    if (cascade)
+                        rb.SafeDo(x =>
+                        {
+                            if (x.velocity.y < 0)
+                                x.velocity = x.velocity.Flat();
+                            x.AddForce(Vector3.up * push, ForceMode.VelocityChange);
+                        });
                     p = new(hit.point + Vector3.up * (creatureRadius + bottomMargin + 0.05f));
+                    if (rs == EnforcementResult.Failed && cascade)
+                        return EnforceEnclosure(p, rb, creatureRadius, clampVertically: clampVertically, expectIssues: expectIssues, cascade: false);
+
                     rs = rs != EnforcementResult.Failed ? EnforcementResult.Clamped : rs;
                 }
             }
@@ -1248,7 +1261,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 rs = EnforcementResult.Failed;
             }
         }
-        return rs;
+        return new(p, rs);
     }
 
 

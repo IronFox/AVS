@@ -31,6 +31,22 @@ namespace AVS.Util.Math
         }
 
         /// <summary>
+        /// Linearly interpolates between two <see cref="LocalPosition"/> instances based on the specified interpolation
+        /// factor.
+        /// </summary>
+        /// <param name="a">The starting <see cref="LocalPosition"/>.</param>
+        /// <param name="b">The ending <see cref="LocalPosition"/>.</param>
+        /// <param name="t">The interpolation factor, where 0 represents <paramref name="a"/>, 1 represents <paramref name="b"/>,  and
+        /// values in between represent a proportional interpolation. Values outside the range [0, 1] will  extrapolate
+        /// beyond the start or end points.</param>
+        /// <returns>A new <see cref="LocalPosition"/> that represents the interpolated position between <paramref name="a"/> 
+        /// and <paramref name="b"/>.</returns>
+        public static LocalPosition Lerp(LocalPosition a, LocalPosition b, float t)
+        {
+            return new LocalPosition(Vector3.Lerp(a.LocalCoordinates, b.LocalCoordinates, t), a.Origin);
+        }
+
+        /// <summary>
         /// Converts the current local position to a global position.
         /// </summary>
         /// <returns>A <see cref="GlobalPosition"/> representing the position in global coordinates.</returns>

@@ -8088,40 +8088,40 @@
             The set name color of this vehicle
             </summary>
         </member>
-        <member name="T:AVS.StorageComponents.WaterPark.InhabitantTag">
+        <member name="T:AVS.StorageComponents.AvsWaterPark.InhabitantTag">
             <summary>
             Tag attached to water park inhabitants (e.g. fish) to identify them as such.
             </summary>
         </member>
-        <member name="T:AVS.StorageComponents.WaterPark.MobileWaterPark">
+        <member name="T:AVS.StorageComponents.AvsWaterPark.MobileWaterPark">
             <summary>
             Helper structure for fishtanks that work like an aquapark but can
             be mobile.
             </summary>
         </member>
-        <member name="P:AVS.StorageComponents.WaterPark.MobileWaterPark.Container">
+        <member name="P:AVS.StorageComponents.AvsWaterPark.MobileWaterPark.Container">
             <summary>
             Accessor for the storage container.
             Throws an exception if called before Awake() or OnCraftEnd() were called.
             </summary>
         </member>
-        <member name="P:AVS.StorageComponents.WaterPark.MobileWaterPark.DisplayName">
+        <member name="P:AVS.StorageComponents.AvsWaterPark.MobileWaterPark.DisplayName">
             <summary>
             The display name of the storage container.
             Must be reapplied on vehicle awake or it will reset to the default value.
             </summary>
         </member>
-        <member name="F:AVS.StorageComponents.WaterPark.MobileWaterPark.width">
+        <member name="F:AVS.StorageComponents.AvsWaterPark.MobileWaterPark.width">
             <summary>
             Storage container width.
             </summary>
         </member>
-        <member name="F:AVS.StorageComponents.WaterPark.MobileWaterPark.height">
+        <member name="F:AVS.StorageComponents.AvsWaterPark.MobileWaterPark.height">
             <summary>
             Storage container height.
             </summary>
         </member>
-        <member name="M:AVS.StorageComponents.WaterPark.MobileWaterPark.Sanitize">
+        <member name="M:AVS.StorageComponents.AvsWaterPark.MobileWaterPark.Sanitize">
             <summary>
             Checks if there are any instances in the container that are not tracked as inhabitants
             </summary>
@@ -10586,6 +10586,19 @@
             than 1 extrapolate beyond <paramref name="b"/>.</param>
             <returns>A new <see cref="T:AVS.Util.Math.LocalPosition"/> that represents the interpolated position between  <paramref name="a"/>
             and <paramref name="b"/> based on the interpolation factor <paramref name="t"/>.</returns>
+        </member>
+        <member name="M:AVS.Util.Math.LocalPosition.Lerp(AVS.Util.Math.LocalPosition,AVS.Util.Math.LocalPosition,System.Single)">
+            <summary>
+            Linearly interpolates between two <see cref="T:AVS.Util.Math.LocalPosition"/> instances based on the specified interpolation
+            factor.
+            </summary>
+            <param name="a">The starting <see cref="T:AVS.Util.Math.LocalPosition"/>.</param>
+            <param name="b">The ending <see cref="T:AVS.Util.Math.LocalPosition"/>.</param>
+            <param name="t">The interpolation factor, where 0 represents <paramref name="a"/>, 1 represents <paramref name="b"/>,  and
+            values in between represent a proportional interpolation. Values outside the range [0, 1] will  extrapolate
+            beyond the start or end points.</param>
+            <returns>A new <see cref="T:AVS.Util.Math.LocalPosition"/> that represents the interpolated position between <paramref name="a"/> 
+            and <paramref name="b"/>.</returns>
         </member>
         <member name="M:AVS.Util.Math.LocalPosition.ToGlobal">
             <summary>

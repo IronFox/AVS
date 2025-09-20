@@ -2,7 +2,7 @@
 using AVS.Util;
 using UnityEngine;
 
-namespace AVS.StorageComponents.WaterPark
+namespace AVS.StorageComponents.AvsWaterPark
 {
     internal record WaterParkInhabitant(
         MobileWaterPark WaterPark,
@@ -83,9 +83,17 @@ namespace AVS.StorageComponents.WaterPark
                 return false;
             if (live.invincible)
                 return true;
-            var wp = x.GetComponentInParent<MobileWaterPark>();
-            return wp.IsNull() || wp == checkFor;
+            return !IsForeign(x, checkFor);
 
+        }
+
+        protected static bool IsForeign(GameObject x, MobileWaterPark checkFor)
+        {
+            var wp1 = x.GetComponentInParent<WaterPark>();
+            if (wp1.IsNotNull())
+                return true;
+            var wp2 = x.GetComponentInParent<MobileWaterPark>();
+            return wp2.IsNotNull() && wp2 != checkFor;
         }
     }
 }
