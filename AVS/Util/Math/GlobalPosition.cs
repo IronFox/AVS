@@ -68,6 +68,12 @@ namespace AVS.Util.Math
         /// <param name="p">The <see cref="GlobalPosition"/> whose Y coordinate will be used in the new position.</param>
         /// <returns>A new <see cref="GlobalPosition"/> with the updated Y coordinate.</returns>
         public GlobalPosition AtYOf(GlobalPosition p) => AtGlobalY(p.Y);
+        /// <summary>
+        /// Calculates the global position at the specified Y-coordinate of the given transform.
+        /// </summary>
+        /// <param name="t">The transform whose Y-coordinate is used to determine the global position.</param>
+        /// <returns>A <see cref="GlobalPosition"/> representing the position at the specified Y-coordinate.</returns>
+        public GlobalPosition AtYOf(Transform t) => AtGlobalY(t.position.y);
 
 
         /// <summary>

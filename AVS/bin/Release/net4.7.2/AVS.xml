@@ -10397,6 +10397,13 @@
             <param name="p">The <see cref="T:AVS.Util.Math.GlobalPosition"/> whose Y coordinate will be used in the new position.</param>
             <returns>A new <see cref="T:AVS.Util.Math.GlobalPosition"/> with the updated Y coordinate.</returns>
         </member>
+        <member name="M:AVS.Util.Math.GlobalPosition.AtYOf(UnityEngine.Transform)">
+            <summary>
+            Calculates the global position at the specified Y-coordinate of the given transform.
+            </summary>
+            <param name="t">The transform whose Y-coordinate is used to determine the global position.</param>
+            <returns>A <see cref="T:AVS.Util.Math.GlobalPosition"/> representing the position at the specified Y-coordinate.</returns>
+        </member>
         <member name="M:AVS.Util.Math.GlobalPosition.ToLocal(UnityEngine.Transform)">
             <summary>
             Converts the current global position to a local position relative to the specified transform.
@@ -11471,6 +11478,9 @@
             <summary>
             Gets the squared length of the vector.
             </summary>
+        </member>
+        <member name="M:AVS.Util.Math.SVector3.ToString">
+            <inheritdoc/>
         </member>
         <member name="T:AVS.Util.RayCaster">
             <summary>

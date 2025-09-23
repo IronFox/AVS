@@ -20,10 +20,14 @@ namespace AVS.StorageComponents.AvsWaterPark
         WaterParkCreature WpCreature,
         Creature Creature,
         GlobalPosition? InitialPosition,
-        Quaternion? InitialRotation
+        Quaternion? InitialRotation,
+        float? InitialInfection
         )
         : WaterParkInhabitant(WaterPark, GameObject, GameObject.transform, Live, Infect, Pickupable)
     {
+
+        public override string ToString()
+            => Creature.NiceName();
         public bool IsSupposedToBeHero { get; set; }
         public LocalPosition LastSwimTarget { get; private set; }
         public LocalPosition NextSwimTarget { get; private set; }
@@ -65,14 +69,19 @@ namespace AVS.StorageComponents.AvsWaterPark
                 WpCreature.data.maxSize = scale; //assume something hacky
             }
             RootTransform.localScale = CurrentScale;
+            log.Debug($"Creature radius={Radius.ToStr()}, creatureScale={CreatureScale.ToStr()}, waterpark scale={WaterPark.creatureScale.ToStr()}");
             RootTransform.position = (InitialPosition ?? WaterPark.GetRandomLocation(false, Radius)).GlobalCoordinates;
             RootTransform.rotation = InitialRotation ?? Quaternion.Euler(0, UnityEngine.Random.Range(0, 360), 0);
 
             WpCreature.pickupable = Pickupable;
             WpCreature.infectedMixin = Infect;
 
-            Creature.enabled = false;
-            EmulateCreatureStart();
+            if (Creature is not CrabSnake)
+            {
+                Creature.enabled = false;
+                EmulateCreatureStart();
+            }
+            RootTransform.localScale = CurrentScale;
 
 
             var peeper = Creature as Peeper;
@@ -88,9 +97,14 @@ namespace AVS.StorageComponents.AvsWaterPark
                 Infect.SetInfectedAmount(0f);
             }
 
-            ExpectedInfectionLevel = Infect.GetInfectedAmount();
+            ExpectedInfectionLevel = InitialInfection ?? Infect.GetInfectedAmount();
+            if (InitialInfection.IsNotNull() && Infect.GetInfectedAmount() != InitialInfection.Value)
+            {
+                log.Debug($"Resetting current infection of {Creature.NiceName()} to from {Infect.GetInfectedAmount()} to {InitialInfection}");
+                Infect.SetInfectedAmount(InitialInfection.Value);
+            }
             IsSupposedToBeHero = peeper.IsNotNull() && peeper.isHero;
-            log.Debug($"Instantiating creature {Creature.NiceName()} @{RootTransform.position}/{RootTransform.localPosition} with healthy={ExpectedInfectionLevel}, hero={IsSupposedToBeHero}, age={WpCreature.age}, radius={Radius.ToStr()}");
+            log.Debug($"Instantiating creature {Creature.NiceName()} @{RootTransform.position}/{RootTransform.localPosition} with infect={ExpectedInfectionLevel}, hero={IsSupposedToBeHero}, age={WpCreature.age}, radius={Radius.ToStr()}");
 
             SonarDetectable = Creature.cyclopsSonarDetectable;
             Creature.cyclopsSonarDetectable = false;
@@ -98,11 +112,13 @@ namespace AVS.StorageComponents.AvsWaterPark
 
 
             SetInsideState();
+            RootTransform.localScale = CurrentScale;
+
             //Creature.ScanCreatureActions();
             //Creature.AllowCreatureUpdates(false);
 
             var p = GlobalPosition.Of(RootTransform);
-            var rs = WaterPark.EnforceEnclosure(p, null, Radius);
+            var rs = WaterPark.EnforcePointEnclosure(p, null, Radius);
             if (rs.Result != MobileWaterPark.EnforcementResult.Inside)
                 p = rs.Position;
             LastAppliedSwimTarget = NextSwimTarget = LastSwimTarget = p.ToLocal(WaterPark);
@@ -111,13 +127,13 @@ namespace AVS.StorageComponents.AvsWaterPark
             WpCreature.breedInterval = BreedInterval;
             WpCreature.ResetBreedTime();
             WpCreature.timeNextSwim = 0;
-            if (WaterPark.EnforceEnclosure(Creature.transform, Radius) == MobileWaterPark.EnforcementResult.Failed)
+            if (WaterPark.EnforceTransformEnclosure(Creature.transform, Radius) == MobileWaterPark.EnforcementResult.Failed)
             {
-                log.Warn($"Creature {Creature.NiceName()} with radius {Radius} could not be placed inside the enclosure at {Creature.transform.position}, trying to move.");
+                log.Warn($"Creature {Creature.NiceName()} with radius {Radius.ToStr()} could not be placed inside the enclosure at {Creature.transform.position}, trying to move.");
                 Creature.transform.position = WaterPark.GetRandomLocation(false, Radius).GlobalCoordinates;
-                if (WaterPark.EnforceEnclosure(Creature.transform, Radius) == MobileWaterPark.EnforcementResult.Failed)
+                if (WaterPark.EnforceTransformEnclosure(Creature.transform, Radius) == MobileWaterPark.EnforcementResult.Failed)
                 {
-                    log.Error($"Creature {Creature.NiceName()} radius {Radius} could still not be placed inside the enclosure at {Creature.transform.position}, destroying it.");
+                    log.Error($"Creature {Creature.NiceName()} radius {Radius.ToStr()} could still not be placed inside the enclosure at {Creature.transform.position}, destroying it.");
                     WaterPark.DestroyInhabitant(this);
                     return;
                 }
@@ -224,6 +240,8 @@ namespace AVS.StorageComponents.AvsWaterPark
                 Creature.InitializeOnce();
                 Creature.isInitialized = true;
             }
+
+
 
             //DeferredSchedulerUtils.Schedule(this);
         }
@@ -418,18 +436,18 @@ namespace AVS.StorageComponents.AvsWaterPark
                 LastAppliedSwimTarget = LocalPosition
                     .Lerp(LastSwimTarget, NextSwimTarget, InterpolationProgress);
                 var target = LastAppliedSwimTarget.ToGlobal();
-                var rs = WaterPark.EnforceEnclosure(target, null, radius);
+                var rs = WaterPark.EnforcePointEnclosure(target, null, radius);
                 if (rs.Result != MobileWaterPark.EnforcementResult.Inside)
                 {
                     using var log = NewLog(Params.Of(radius));
                     log.Warn($"Creature {Creature.NiceName()} swim target {target.ToLocal(WaterPark)}->{rs.Position.ToLocal(WaterPark)} was not in WP confines.");
 
-                    var rs2 = WaterPark.EnforceEnclosure(NextSwimTarget.ToGlobal(), null, radius);
+                    var rs2 = WaterPark.EnforcePointEnclosure(NextSwimTarget.ToGlobal(), null, radius);
                     if (rs2.Result != MobileWaterPark.EnforcementResult.Inside)
                     {
                         log.Warn($"Creature {Creature.NiceName()} next swim target {NextSwimTarget}->{rs2.Position.ToLocal(WaterPark)} was not in WP confines");
                     }
-                    rs2 = WaterPark.EnforceEnclosure(LastSwimTarget.ToGlobal(), null, radius);
+                    rs2 = WaterPark.EnforcePointEnclosure(LastSwimTarget.ToGlobal(), null, radius);
                     if (rs2.Result != MobileWaterPark.EnforcementResult.Inside)
                     {
                         log.Warn($"Creature {Creature.NiceName()} last swim target {LastSwimTarget}->{rs2.Position.ToLocal(WaterPark)} was not in WP confines");
@@ -462,11 +480,18 @@ namespace AVS.StorageComponents.AvsWaterPark
         {
             using var log = NewLog(Params.Of(radius));
             LastSwimTarget = LastAppliedSwimTarget;
-            NextSwimTarget = WaterPark.GetRandomSwimTarget(
+            var t = WaterPark.GetRandomSwimTarget(
                 GameObject.transform,
                 radius,
                 velocity: Rigidbody.SafeGet(x => (SwimVelocity + x.velocity.magnitude) / 2f, SwimVelocity)
-                ).ToLocal(WaterPark);
+                );
+            var c = WaterPark.EnforcePointEnclosure(t, null, radius);
+            if (c.Result != MobileWaterPark.EnforcementResult.Inside)
+            {
+                log.Warn($"Creature {Creature.NiceName()} random swim target {t.ToLocal(WaterPark)}->{c.Position.ToLocal(WaterPark)} was not in WP confines, using enforced position.");
+                t = c.Position;
+            }
+            NextSwimTarget = t.ToLocal(WaterPark);
             InterpolationProgress = 0;
             //resetSwimToIn = 0.1f;
             log.Debug($"Creature {Creature.NiceName()} swimming to {WpCreature.swimTarget} from {GlobalPosition.Of(RootTransform).ToLocal(WaterPark)} (age={WpCreature.age.ToStr()}, radius={radius.ToStr()}");
@@ -624,7 +649,7 @@ namespace AVS.StorageComponents.AvsWaterPark
         {
             using var log = NewLog(Params.Of(radius));
             var p = GlobalPosition.Of(RootTransform);
-            var rs = WaterPark.EnforceEnclosure(p, Rigidbody, radius);
+            var rs = WaterPark.EnforcePointEnclosure(p, Rigidbody, radius);
             if (rs.Result != MobileWaterPark.EnforcementResult.Inside)
             {
                 //log.Debug($"Creature {Creature.NiceName()} was out of bounds at {WpCreature.transform.position}, clamping to {p}");

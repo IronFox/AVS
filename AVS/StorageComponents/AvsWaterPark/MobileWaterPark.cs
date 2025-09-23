@@ -84,6 +84,10 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     private GlobalPosition? onAddLocation;
     private Quaternion? onAddRotation;
+    private float? onAddInfection;
+
+    private static float SanitizeInterval { get; } = 30f;
+    private float TimeToNextSanitize { get; set; } = SanitizeInterval;
 
     internal AvsVehicle AV => vehicle.OrThrow(() => new InvalidOperationException($"Trying to access MobileWaterPark.av before it has been initialized"));
 
@@ -281,10 +285,12 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     wpCreature,
                     creature,
                     onAddLocation,
-                    onAddRotation
+                    onAddRotation,
+                    onAddInfection
                     ));
                 onAddLocation = null;
                 onAddRotation = null;
+                onAddInfection = null;
             }
             else
             {
@@ -372,7 +378,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
     {
         target = rest.GetRandomTarget(distance);
 
-        var rs = EnforceEnclosure(target, null, rest.Creature.Radius, expectIssues: true);
+        var rs = EnforcePointEnclosure(target, null, rest.Creature.Radius, expectIssues: true);
         if (rs.Result == EnforcementResult.Failed)
             return false;
         if (rs.Result == EnforcementResult.Inside)
@@ -388,7 +394,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
 
     internal GlobalPosition GetRandomSwimTarget(Transform transform, float radius, float velocity, float lookAhead = 5)
     {
-        var creature = new CreaturePosition(transform, radius);
+        var creature = new CreaturePosition(transform, radius + 0.1f);
         var restricted = new Restricted(creature, Degrees.Thirty, Degrees.Thirty / 2, Degrees.Thirty / 2);
         var unrestricted = new Restricted(creature, Degrees.OneEighty, Degrees.Ninety, Degrees.Thirty);
         float d = Mathf.Max((velocity * lookAhead), 1f + radius);
@@ -888,7 +894,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     continue;
                 }
             }
-
+            onAddInfection = item.Inhabitant.InfectedAmount;
             onAddLocation = GlobalPosition.FromGlobalCoordinates(item.Inhabitant.GlobalPosition?.Position);
             onAddRotation = item.Inhabitant.GlobalPosition.IsNotNull()
                 ? Quaternion.Euler(item.Inhabitant.GlobalPosition.EulerAngles)
@@ -939,6 +945,15 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 }
                 else if (collidersChanged)
                     Sanitize();
+                else
+                {
+                    TimeToNextSanitize -= Time.deltaTime;
+                    if (TimeToNextSanitize <= 0f)
+                    {
+                        Sanitize();
+                        TimeToNextSanitize = SanitizeInterval;
+                    }
+                }
                 if (Time.deltaTime > 0)
                     foreach (var inhab in GetAllInhabitants())
                     {
@@ -1044,10 +1059,14 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             CureAllCreatures();
             timeNextInfectionSpread = -1.0;
         }
-        else if (timeNextInfectionSpread <= 0.0 && ContainsInfectedCreature())
+        else if (timeNextInfectionSpread <= 0.0)
         {
-            log.Debug($"Starting infection spreading in water park {DisplayName.Rendered} because it contains infected creatures. Next spread in {spreadInfectionInterval}");
-            timeNextInfectionSpread = DayNightCycle.main.timePassed + spreadInfectionInterval;
+            var infected = ContainsInfectedCreature();
+            if (infected.IsNotNull())
+            {
+                log.Debug($"Starting infection spreading in water park {DisplayName.Rendered} because it contains infected creature {infected}. Next spread in {spreadInfectionInterval}");
+                timeNextInfectionSpread = DayNightCycle.main.timePassed + spreadInfectionInterval;
+            }
         }
 
     }
@@ -1068,13 +1087,13 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         }
     }
 
-    public bool ContainsInfectedCreature()
+    public WaterParkInhabitant? ContainsInfectedCreature()
     {
         foreach (var inhab in GetAllInhabitants())
             if (inhab.IsContagious)
-                return true;
+                return inhab;
 
-        return false;
+        return null;
     }
 
 
@@ -1156,9 +1175,9 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         log.Write($"Spawned new creature {result.NiceName()} at {position}/{position.ToLocal(this)} and added to water park.");
     }
 
-    internal EnforcementResult EnforceEnclosure(Transform transform, float radius)
+    internal EnforcementResult EnforceTransformEnclosure(Transform transform, float radius)
     {
-        var rs = EnforceEnclosure(GlobalPosition.Of(transform), null, radius);
+        var rs = EnforcePointEnclosure(GlobalPosition.Of(transform), null, radius);
         if (rs.Result == EnforcementResult.Clamped)
         {
             transform.position = rs.Position.GlobalCoordinates;
@@ -1178,7 +1197,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         GlobalPosition Position,
         EnforcementResult Result
         );
-    internal Enforced EnforceEnclosure(GlobalPosition p, Rigidbody? rb, float creatureRadius, bool clampVertically = true, bool expectIssues = false, bool cascade = true)
+    internal Enforced EnforcePointEnclosure(GlobalPosition p, Rigidbody? rb, float creatureRadius, bool clampVertically = true, bool expectIssues = false, bool cascade = true)
     {
         using var log = AV.NewLazyAvsLog(parameters: Params.Of(p, creatureRadius));
         var center = GlobalPosition.Of(waterPark!);
@@ -1186,7 +1205,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         var hDir = dir.Flat();
         var hDist = hDir.magnitude;
         EnforcementResult rs = EnforcementResult.Inside;
-        float push = 1f;
+        float push = 0.25f;
         if (hDist > 0.001f)
         {
             hDir /= hDist;
@@ -1199,6 +1218,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                 {
                     p = new((origin.Flat() + hDir * (maxDistance - 0.05f)).UnFlat(p.Y));
                     rs = EnforcementResult.Clamped;
+                    //log.Debug($"Clamped horizontal position to {p.ToLocal(transform)} (max distance {maxDistance.ToStr()})");
                     if (cascade)
                         rb.SafeDo(x => x.AddForce(-d * push, ForceMode.VelocityChange));
                 }
@@ -1216,17 +1236,18 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             {
                 if (hit.distance < creatureRadius + topMargin)
                 {
-                    if (cascade)
-                        rb.SafeDo(x =>
-                        {
-                            if (x.velocity.y > 0)
-                                x.velocity = x.velocity.Flat();
-                            x.AddForce(Vector3.down * push, ForceMode.VelocityChange);
-                        });
+                    //if (cascade)
+                    //    rb.SafeDo(x =>
+                    //    {
+                    //        if (x.velocity.y > 0)
+                    //            x.velocity = x.velocity.Flat();
+                    //        x.AddForce(Vector3.down * push, ForceMode.VelocityChange);
+                    //    });
                     p = new(hit.point - Vector3.up * (creatureRadius + topMargin + 0.05f));
                     if (rs == EnforcementResult.Failed && cascade)
-                        return EnforceEnclosure(p, rb, creatureRadius, clampVertically: clampVertically, expectIssues: expectIssues, cascade: false);
+                        return EnforcePointEnclosure(p, rb, creatureRadius, clampVertically: clampVertically, expectIssues: expectIssues, cascade: false);
                     rs = rs != EnforcementResult.Failed ? EnforcementResult.Clamped : rs;
+                    //log.Debug($"Ceiling collision @{hit.distance}/{creatureRadius}+{topMargin}");
                 }
             }
             else
@@ -1240,22 +1261,31 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             {
                 if (hit.distance < creatureRadius + bottomMargin)
                 {
-                    if (cascade)
-                        rb.SafeDo(x =>
-                        {
-                            if (x.velocity.y < 0)
-                                x.velocity = x.velocity.Flat();
-                            x.AddForce(Vector3.up * push, ForceMode.VelocityChange);
-                        });
+                    //if (cascade)
+                    //    rb.SafeDo(x =>
+                    //    {
+                    //        if (x.velocity.y < 0)
+                    //            x.velocity = x.velocity.Flat();
+                    //        x.AddForce(Vector3.up * push, ForceMode.VelocityChange);
+                    //    });
                     p = new(hit.point + Vector3.up * (creatureRadius + bottomMargin + 0.05f));
                     if (rs == EnforcementResult.Failed && cascade)
-                        return EnforceEnclosure(p, rb, creatureRadius, clampVertically: clampVertically, expectIssues: expectIssues, cascade: false);
+                        return EnforcePointEnclosure(p, rb, creatureRadius, clampVertically: clampVertically, expectIssues: expectIssues, cascade: false);
 
                     rs = rs != EnforcementResult.Failed ? EnforcementResult.Clamped : rs;
+                    //log.Debug($"Floor collision @{hit.distance}/{creatureRadius}+{bottomMargin}");
                 }
             }
             else
             {
+                if (cascade)
+                {
+                    //log.Debug($"No floor hit found downwards from {p.ToLocal(transform)}, trying from center height");
+                    p = p.AtYOf(transform);
+                    var rs2 = EnforcePointEnclosure(p, rb, creatureRadius, clampVertically: clampVertically, expectIssues: expectIssues, cascade: false);
+                    return rs2 with { Result = rs2.Result == EnforcementResult.Failed ? EnforcementResult.Failed : EnforcementResult.Clamped };
+                }
+
                 if (!expectIssues)
                     log.Warn($"No wall hit found downwards from {p.ToLocal(transform)}, cannot enforce bottom enclosure.");
                 rs = EnforcementResult.Failed;

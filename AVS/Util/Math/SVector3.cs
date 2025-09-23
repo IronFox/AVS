@@ -40,5 +40,8 @@ namespace AVS.Util.Math
         /// </summary>
         [JsonIgnore]
         public float SquaredLength => X * X + Y * Y + Z * Z;
+
+        /// <inheritdoc/>
+        public override string ToString() => $"({X.ToStr()}, {Y.ToStr()}, {Z.ToStr()})";
     }
 }
