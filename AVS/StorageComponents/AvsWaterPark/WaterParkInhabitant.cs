@@ -1,7 +1,8 @@
 ﻿using AVS.Interfaces;
+using AVS.Util;
 using UnityEngine;
 
-namespace AVS.StorageComponents.WaterPark
+namespace AVS.StorageComponents.AvsWaterPark
 {
     internal record WaterParkInhabitant(
         MobileWaterPark WaterPark,
@@ -22,6 +23,7 @@ namespace AVS.StorageComponents.WaterPark
 
         internal virtual void OnDeinstantiate()
         {
+            GameObject.name = GameObject.name.Replace(NameTag, "");
             Live.invincible = false;
             Live.shielded = false;
             IsInstantiated = false;
@@ -31,6 +33,7 @@ namespace AVS.StorageComponents.WaterPark
 
         internal virtual void OnInstantiate()
         {
+            GameObject.name += NameTag;
             Live.invincible = true;
             Live.shielded = true;
             IsInstantiated = true;
@@ -68,6 +71,29 @@ namespace AVS.StorageComponents.WaterPark
         {
             ExpectedInfectionLevel = 1;
             Infect.SetInfectedAmount(1);
+        }
+        public static string NameTag { get; } = "[[Avs.MWP.Inhabitant]]";
+
+        protected static bool IsLikely(GameObject x, MobileWaterPark checkFor)
+        {
+            if (x.name.IndexOf(NameTag) < 0)
+                return false;
+            var live = x.GetComponent<LiveMixin>();
+            if (live.IsNull())
+                return false;
+            if (live.invincible)
+                return true;
+            return !IsForeign(x, checkFor);
+
+        }
+
+        protected static bool IsForeign(GameObject x, MobileWaterPark checkFor)
+        {
+            var wp1 = x.GetComponentInParent<WaterPark>();
+            if (wp1.IsNotNull())
+                return true;
+            var wp2 = x.GetComponentInParent<MobileWaterPark>();
+            return wp2.IsNotNull() && wp2 != checkFor;
         }
     }
 }

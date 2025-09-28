@@ -4,7 +4,7 @@ using AVS.Util.Math;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 
-namespace AVS.StorageComponents.WaterPark;
+namespace AVS.StorageComponents.AvsWaterPark;
 
 internal record WaterParkEggInhabitant(
     MobileWaterPark WaterPark,

@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace AVS.StorageComponents.WaterPark
+namespace AVS.StorageComponents.AvsWaterPark
 {
     /// <summary>
     /// Tag attached to water park inhabitants (e.g. fish) to identify them as such.
