@@ -408,7 +408,14 @@ namespace AVS.StorageComponents.AvsWaterPark
                 RootTransform.parent = null;
             }
             RootTransform.localScale = Vector3.one * WpCreature.data.outsideSize;
-            Creature.Start();
+            try
+            {
+                Creature.Start();
+            }
+            catch (Exception ex)
+            {
+                log.Error($"Exception while calling Start() on creature {Creature.NiceName()}: {ex.Message}", ex);
+            }
 
 #if WATERPARK_DEBUG
             foreach (var sphere in debugSpheres)
