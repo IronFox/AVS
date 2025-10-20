@@ -23,10 +23,16 @@ public readonly record struct SoundSettings(
     {
         if (!SigDif(Pitch, other.Pitch)
             && !SigDif(Volume, other.Volume)
+            && (VolumeIsZero(Volume) == VolumeIsZero(other.Volume))
            )
             return false;
 
         return true;
+    }
+
+    internal static bool VolumeIsZero(float v)
+    {
+        return v < 0.001f;
     }
 
     /// <summary>
