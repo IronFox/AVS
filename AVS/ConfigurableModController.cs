@@ -75,7 +75,7 @@ namespace AVS
                 try
                 {
 
-                    if (EnumHandler.TryAddEntry<GameInput.Button>($"AVS_{ModName}_Button_{f.Name}", out var builder))
+                    if (EnumHandler.TryAddEntry<GameInput.Button>($"AVS.{ModName}.Button.{f.Name}", out var builder))
                     {
                         bool anyTranslation = false;
                         if (!b.LabelLocalizationKey.IsNullOrEmpty() && languages.Count > 0)
