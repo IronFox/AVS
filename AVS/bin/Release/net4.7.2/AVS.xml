@@ -1188,6 +1188,31 @@
             <param name="other">The other <see cref="T:AVS.Audio.SoundSetup"/> to compare with.</param>
             <returns>True if both setups use the same AudioClip and looping setting; otherwise, false.</returns>
         </member>
+        <member name="T:AVS.Audio.Volume">
+            <summary>
+            Game sound volume access helper. Necessary only when creating sounds outside the control of AVS
+            </summary>
+        </member>
+        <member name="P:AVS.Audio.Volume.Master">
+            <summary>
+            Gets the current master volume level for the sound system.
+            </summary>
+        </member>
+        <member name="P:AVS.Audio.Volume.Music">
+            <summary>
+            Gets the current music volume level.
+            </summary>
+        </member>
+        <member name="P:AVS.Audio.Volume.Voice">
+            <summary>
+            Gets the current global voice volume level.
+            </summary>
+        </member>
+        <member name="P:AVS.Audio.Volume.Ambient">
+            <summary>
+            Gets the current ambient sound volume level.
+            </summary>
+        </member>
         <member name="T:AVS.BaseVehicle.AvsVehicle">
             <summary>
             AvsVehicle is the primary abstract class provided by AVS. 

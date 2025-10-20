@@ -194,12 +194,10 @@ internal record FModSound(
 
     internal bool Update(float timeDelta)
     {
-        if (timeDelta <= 0)
-            return true;
         Vector3 vpos = Vector3.zero, velocity = Vector3.zero;
         try
         {
-            if (Is3D)
+            if (Is3D && timeDelta > 0)
             {
                 var position = Component.transform.position;
                 velocity = (position - lastPosition) / timeDelta;
