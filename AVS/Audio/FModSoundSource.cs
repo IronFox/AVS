@@ -79,8 +79,8 @@ public static class FModSoundCreator
                 throw new InvalidOperationException(
                     $"AudioUtils.TryPlaySound(sound, \"bus:/master\", out var channel) failed");
 
-            Check($"Channel.setVolume({cfg.Settings.Volume})", channel.setVolume(0));
-            Check($"Channel.setPitch({cfg.Settings.Pitch})", channel.setPitch(0.01f));
+            Check($"Channel.setVolume(0)", channel.setVolume(0));
+            Check($"Channel.setPitch(0.01)", channel.setPitch(0.01f));
             if (cfg.Is3D)
             {
                 Check($"Channel.set3DMinMaxDistance({cfg.MinDistance}, {cfg.MaxDistance})",
