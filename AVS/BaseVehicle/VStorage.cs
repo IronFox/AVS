@@ -105,7 +105,7 @@ public abstract partial class AvsVehicle
                      x.Container.GetComponent<InnateStorageContainer>().Container))
             if (container.IsNotNull() && container.HasRoomFor(pickup))
             {
-                var arg = Language.main.Get(pickup.GetTechName());
+                var arg = DefaultTranslator.IntlTranslate(pickup.GetTechName());
                 ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Report_AddedToStorage, arg));
                 uGUI_IconNotifier.main.Play(pickup.GetTechType(), uGUI_IconNotifier.AnimationType.From, null);
                 pickup.Initialize();
@@ -118,7 +118,7 @@ public abstract partial class AvsVehicle
         foreach (var container in ModularStorageInput.GetAllModularStorageContainers(this))
             if (container.HasRoomFor(pickup))
             {
-                var arg = Language.main.Get(pickup.GetTechName());
+                var arg = DefaultTranslator.IntlTranslate(pickup.GetTechName());
                 ErrorMessage.AddMessage(Translator.GetFormatted(TranslationKey.Report_AddedToStorage, arg));
                 uGUI_IconNotifier.main.Play(pickup.GetTechType(), uGUI_IconNotifier.AnimationType.From, null);
                 pickup.Initialize();

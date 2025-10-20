@@ -24,7 +24,7 @@ internal class VehicleBatteryInput : HandTarget, IHandTarget
         if (!string.IsNullOrEmpty(displayName))
         {
             if (displayNameLocalized)
-                text = Language.main.Get(displayName);
+                text = DefaultTranslator.IntlTranslate(displayName);
             else
                 text = displayName!;
         }

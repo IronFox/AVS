@@ -40,7 +40,7 @@ namespace AVS.Localization
         /// </summary>
         public string Rendered => string.IsNullOrEmpty(Text)
             ? "<none>"
-            : Localize ? Language.main.Get(Text) : Text;
+            : Localize ? DefaultTranslator.IntlTranslate(Text) : Text;
 
         /// <summary>
         /// Creates a new instance of MaybeTranslate.

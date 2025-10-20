@@ -142,7 +142,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
             return false;
         var creature = pickupable.GetComponent<WaterParkCreature>();
         var live = pickupable.GetComponent<LiveMixin>();
-        var localizedName = Language.main.Get(pickupable.GetTechName());
+        var localizedName = DefaultTranslator.IntlTranslate(pickupable.GetTechName());
         if (creature.IsNotNull())
         {
             if (live.IsNotNull() && live.IsAlive())

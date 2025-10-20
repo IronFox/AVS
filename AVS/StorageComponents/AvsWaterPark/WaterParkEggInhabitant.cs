@@ -1,4 +1,5 @@
-﻿using AVS.Log;
+﻿using AVS.Localization;
+using AVS.Log;
 using AVS.Util;
 using AVS.Util.Math;
 using System.Runtime.CompilerServices;
@@ -93,7 +94,7 @@ internal record WaterParkEggInhabitant(
         {
             if (KnownTech.Add(Egg.eggType, verbose: false))
             {
-                ErrorMessage.AddMessage(Language.main.GetFormat("EggDiscovered", Language.main.Get(Egg.eggType.AsString())));
+                ErrorMessage.AddMessage(DefaultTranslator.IntlTranslate("EggDiscovered", Language.main.Get(Egg.eggType.AsString())));
             }
 
             WaterPark.AddChildOrEggSpawn(log, Egg.creaturePrefab, GlobalPosition.Of(Egg) + Vector3.up);

@@ -1,6 +1,7 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Configuration;
 using AVS.Interfaces;
+using AVS.Localization;
 using AVS.Util;
 using AVS.Util.Math;
 using System;
@@ -351,6 +352,6 @@ public class VoiceQueue : MonoBehaviour, IScuttleListener
 
     private void CreateSubtitle(string textTranslationKey)
     {
-        Logger.PDANote($"{av!.subName.hullName.text}: {Language.main.Get(textTranslationKey)}");
+        Logger.PDANote($"{av!.subName.hullName.text}: {DefaultTranslator.IntlTranslate(textTranslationKey)}");
     }
 }
