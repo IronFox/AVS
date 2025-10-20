@@ -88,7 +88,7 @@ namespace AVS
                                     lang.Dict.TryGetValue(b.TooltipLocalizationKey, out toolTipTranslated);
                                 if (!translated.IsNullOrEmpty())
                                 {
-                                    builder = builder.CreateInput(translated, tooltip: toolTipTranslated??"", language: lang.Name);
+                                    builder = builder.CreateInput(displayName: translated, tooltip: toolTipTranslated??"", language: lang.Name);
                                     anyTranslation = true;
                                 }
                             }
