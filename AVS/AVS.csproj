@@ -37,6 +37,9 @@
     <Reference Include="Nautilus">
       <HintPath>$(SUBNAUTICA_PATH)\BepInEx\plugins\Nautilus\Nautilus.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.InputSystem">
+      <HintPath>$(SUBNAUTICA_PATH)\Subnautica_Data\Managed\Unity.InputSystem.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>$(SUBNAUTICA_PATH)\Subnautica_Data\Managed\Newtonsoft.Json.dll</HintPath>

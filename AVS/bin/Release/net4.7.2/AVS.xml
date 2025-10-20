@@ -2434,6 +2434,68 @@
             <param name="waterParks">Mobile water parks. Optional.</param>
             <param name="engine">The engine that powers the vehicle. Must not be null.</param>
         </member>
+        <member name="T:AVS.ConfigurableModController`1">
+            <summary>
+            A variant of RootModController that supports configuration via a ConfigType.
+            </summary>
+            <typeparam name="ConfigType">Configuration type to register</typeparam>
+        </member>
+        <member name="M:AVS.ConfigurableModController`1.TryGetConfig">
+            <summary>
+            Attempts to retrieve the current configuration, if available.
+            </summary>
+            <returns>The current configuration if it has been set; otherwise, <see
+            langword="null"/>.</returns>
+        </member>
+        <member name="P:AVS.ConfigurableModController`1.PluginConfig">
+            <summary>
+            The configuration instance registered with all controllers of same config type
+            </summary>
+        </member>
+        <member name="M:AVS.ConfigurableModController`1.LoadLanguagesAndConfig(System.String)">
+            <inheritdoc/>
+        </member>
+        <member name="T:AVS.Configuration.BindableButtonAttribute">
+            <summary>
+            Specifies that a field represents a bindable button input in a config structure, providing metadata for input binding systems. <br />
+            The field must be of type <see cref="T:GameInput.Button"/> to store and link the button binding information. <br />
+            <b>To prevent serialization issues, ensure that field is also attributed with [JsonProperty].</b>
+            </summary>
+            <remarks>Add this attribute to automatically create a config entry bindable via the options menu</remarks>
+        </member>
+        <member name="M:AVS.Configuration.BindableButtonAttribute.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the BindableButtonAttribute class with the specified button name.
+            </summary>
+            <param name="name">The name of the button to associate with this attribute. Cannot be null or empty.</param>
+        </member>
+        <member name="P:AVS.Configuration.BindableButtonAttribute.Name">
+            <summary>
+            Gets the name associated with the current instance.
+            </summary>
+        </member>
+        <member name="P:AVS.Configuration.BindableButtonAttribute.LabelLocalizationKey">
+            <summary>
+            Gets or sets the translation key for the button label. If null, the Name property will be used as the (english) label.
+            </summary>
+        </member>
+        <member name="P:AVS.Configuration.BindableButtonAttribute.TooltipLocalizationKey">
+            <summary>
+            Gets or sets the localization key used to retrieve the tooltip text for this element. If null, no tooltip will be shown.
+            </summary>
+        </member>
+        <member name="P:AVS.Configuration.BindableButtonAttribute.KeyboardDefault">
+            <summary>
+            Gets or sets the default keyboard binding path.
+            <see cref="T:Nautilus.Handlers.GameInputHandler.Paths.Keyboard"/> and <see cref="T:Nautilus.Handlers.GameInputHandler.Paths.Mouse"/> can be used to retrieve default paths.
+            </summary>
+        </member>
+        <member name="P:AVS.Configuration.BindableButtonAttribute.GamepadDefault">
+            <summary>
+            Gets or sets the default controller binding path
+            <see cref="T:Nautilus.Handlers.GameInputHandler.Paths.Gamepad"/> can be used to retrieve default paths.
+            </summary>
+        </member>
         <member name="T:AVS.Configuration.RecipeIngredient">
             <summary>
             Ingredient of a recipe, including its type and quantity.
@@ -9008,6 +9070,28 @@
             <typeparam name="TSource">The type of the object to convert.</typeparam>
             <param name="source">The object to convert into a read-only list.</param>
             <returns>A read-only list containing the specified object as its only element.</returns>
+        </member>
+        <member name="M:AVS.Util.ListExt.ToRoList``1(System.Collections.Generic.IEnumerable{``0})">
+            <summary>
+            Creates a read-only list containing the elements of the specified sequence.
+            </summary>
+            <remarks>The returned list is a snapshot of the source sequence at the time this method is
+            called. Subsequent changes to the source sequence are not reflected in the returned list.</remarks>
+            <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+            <param name="source">The sequence of elements to copy to a read-only list. Cannot be null.</param>
+            <returns>An <see cref="T:System.Collections.Generic.IReadOnlyList`1"/> containing the elements of the source sequence in order. The
+            returned list is read-only and will be empty if the source sequence contains no elements.</returns>
+        </member>
+        <member name="M:AVS.Util.ListExt.ToRoList``1(System.Collections.Generic.List{``0})">
+            <summary>
+            Returns a read-only view of the specified list as an IReadOnlyList&lt;TSource&gt;.
+            </summary>
+            <remarks>The returned IReadOnlyList&lt;TSource&gt; reflects changes made to the underlying list.
+            This method does not create a copy of the list; modifications to the original list will be visible through
+            the returned read-only view.</remarks>
+            <typeparam name="TSource">The type of elements in the source list.</typeparam>
+            <param name="source">The list to wrap as a read-only list. Cannot be null.</param>
+            <returns>An IReadOnlyList&lt;TSource&gt; that provides a read-only view of the source list.</returns>
         </member>
         <member name="M:AVS.Util.ListExt.CollectionsEqual``1(System.Collections.Generic.IReadOnlyCollection{``0},System.Collections.Generic.IReadOnlyCollection{``0})">
             <summary>

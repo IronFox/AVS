@@ -54,6 +54,33 @@ namespace AVS.Util
         {
             return [source];
         }
+        /// <summary>
+        /// Creates a read-only list containing the elements of the specified sequence.
+        /// </summary>
+        /// <remarks>The returned list is a snapshot of the source sequence at the time this method is
+        /// called. Subsequent changes to the source sequence are not reflected in the returned list.</remarks>
+        /// <typeparam name="TSource">The type of the elements in the source sequence.</typeparam>
+        /// <param name="source">The sequence of elements to copy to a read-only list. Cannot be null.</param>
+        /// <returns>An <see cref="IReadOnlyList{TSource}"/> containing the elements of the source sequence in order. The
+        /// returned list is read-only and will be empty if the source sequence contains no elements.</returns>
+        public static IReadOnlyList<TSource> ToRoList<TSource>(this IEnumerable<TSource> source)
+        {
+            return source.ToList();
+        }
+
+        /// <summary>
+        /// Returns a read-only view of the specified list as an IReadOnlyList&lt;TSource&gt;.
+        /// </summary>
+        /// <remarks>The returned IReadOnlyList&lt;TSource&gt; reflects changes made to the underlying list.
+        /// This method does not create a copy of the list; modifications to the original list will be visible through
+        /// the returned read-only view.</remarks>
+        /// <typeparam name="TSource">The type of elements in the source list.</typeparam>
+        /// <param name="source">The list to wrap as a read-only list. Cannot be null.</param>
+        /// <returns>An IReadOnlyList&lt;TSource&gt; that provides a read-only view of the source list.</returns>
+        public static IReadOnlyList<TSource> ToRoList<TSource>(this List<TSource> source)
+        {
+            return source;
+        }
 
         /// <summary>
         /// Determines whether two collections are equal by comparing their elements in sequence.
