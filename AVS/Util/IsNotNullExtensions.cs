@@ -21,6 +21,9 @@ public static class IsNotNullExtensions
     public static bool IsNotNull<K, V>([NotNullWhen(true)] this Dictionary<K, V>? en)
         => en is not null;
 
+    public static bool IsNotNull([NotNullWhen(true)] this Attribute? a)
+        => a is not null;
+
     public static bool IsNotNull<K, V>([NotNullWhen(true)] this IReadOnlyDictionary<K, V>? en)
         => en is not null;
 

@@ -33,7 +33,7 @@ public class BedPatcher
     public static void BedEnterInUseModePostfix(Bed __instance)
     {
         var sub = Player.main.GetVehicle() as VehicleTypes.Submarine;
-        if (sub.IsNotNull() && __instance.inUseMode == Bed.InUseMode.Sleeping)
+        if (sub.IsNotNull() && sub.ApplyBedPatcher && __instance.inUseMode == Bed.InUseMode.Sleeping)
         {
             // freeze the sub
             initialSubRotation = sub.transform.rotation;
@@ -54,7 +54,7 @@ public class BedPatcher
     public static void UpdatePostfix(Bed __instance)
     {
         var sub = Player.main.GetVehicle() as VehicleTypes.Submarine;
-        if (sub.IsNotNull() && __instance.inUseMode == Bed.InUseMode.Sleeping)
+        if (sub.IsNotNull() && sub.ApplyBedPatcher && __instance.inUseMode == Bed.InUseMode.Sleeping)
         {
             sub.transform.rotation = initialSubRotation;
             sub.transform.position = initialSubPosition;

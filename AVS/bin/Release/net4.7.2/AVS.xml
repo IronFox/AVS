@@ -969,6 +969,12 @@
             <param name="pt">The ping type.</param>
             <param name="pingSprite">The <see cref="T:UnityEngine.Sprite"/> to register.</param>
         </member>
+        <member name="T:AVS.Attributes.ImmobileWhenNotControlledAttribute">
+            <summary>
+            Declares that a vehicle cannot move when not controlled by the player.
+            Affects the bed patcher.
+            </summary>
+        </member>
         <member name="T:AVS.Audio.AsyncPromise`1">
             <summary>
             Represents an asynchronous operation that will eventually yield a value of type <typeparamref name="T"/>.

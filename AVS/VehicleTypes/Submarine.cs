@@ -1,4 +1,5 @@
-﻿using AVS.BaseVehicle;
+﻿using AVS.Attributes;
+using AVS.BaseVehicle;
 using AVS.Composition;
 using AVS.Configuration;
 using AVS.Localization;
@@ -12,6 +13,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
@@ -42,6 +44,7 @@ public abstract class Submarine : AvsVehicle
     /// <param name="config">Configuration to use</param>
     public Submarine(VehicleConfiguration config) : base(config)
     {
+
     }
 
     /// <summary>
@@ -91,11 +94,17 @@ public abstract class Submarine : AvsVehicle
     ///     This is used to manage UI elements for editing colors and associated settings.
     /// </summary>
     public GameObject? ActualEditScreen { get; private set; }
+    internal bool ApplyBedPatcher { get; private set; }
 
     /// <inheritdoc />
     public override void Awake()
     {
         using var log = NewAvsLog();
+
+        ApplyBedPatcher = GetType().GetCustomAttribute<ImmobileWhenNotControlledAttribute>().IsNull();
+        log.Write(
+            $"ApplyBedPatcher := {ApplyBedPatcher}");
+
         base.Awake();
         Floodlights = AvAttached.EnsureSelfDestructing<FloodlightsController>(this, log);
         Interiorlights = AvAttached.EnsureSelfDestructing<InteriorLightsController>(this, log);
