@@ -1,10 +1,10 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Log;
 using AVS.StorageComponents;
 using AVS.Util;
 using HarmonyLib;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection.Emit;
 
 // PURPOSE: allow the Cyclops dock terminal to display AvsVehicle data. 
@@ -37,17 +37,32 @@ public static class CyclopsPatcher
     [HarmonyPatch(nameof(CyclopsVehicleStorageTerminalManager.VehicleDocked))]
     private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
     {
-        var codes = new List<CodeInstruction>(instructions);
-        var newCodes = new List<CodeInstruction>(codes.Count);
-        var myNOP = new CodeInstruction(OpCodes.Nop);
-        for (var i = 0; i < codes.Count; i++) newCodes.Add(myNOP);
-        for (var i = 0; i < codes.Count; i++)
-            if (codes[i].opcode == OpCodes.Callvirt && codes[i].operand.ToString().ToLower().Contains("energymixin"))
-                newCodes[i] = CodeInstruction.Call(typeof(AvsVehicle), nameof(AvsVehicle.GetEnergyMixinFromVehicle));
-            else
-                newCodes[i] = codes[i];
+        using var log = SmartLog.LazyForAVS(RootModController.AnyInstance);
 
-        return newCodes.AsEnumerable();
+        var codes = new List<CodeInstruction>(instructions);
+
+        int insertAt = codes.FindIndex(c =>
+            c.opcode == OpCodes.Callvirt && c.operand.ToString().ToLower().Contains("energymixin") && c.operand.ToString().ToLower().Contains("getcomponent"));
+        if (insertAt == -1)
+        {
+            log.Warn("Could not find target instruction to insert after; attempting fallback search.");
+            insertAt = codes.FindIndex(c =>
+                c.operand.ToString().ToLower().Contains("energymixin"));
+        }
+        if (insertAt >= 0)
+        {
+            // (re)load vehicle (this) to end of stack. 
+            var c0 = new CodeInstruction(OpCodes.Ldloc_0);
+            codes.Insert(insertAt + 1, c0);
+            // Stack now expected: energyMixin, vehicle
+            var c1 = CodeInstruction.Call(typeof(AvsVehicle), nameof(AvsVehicle.GetEnergyMixinFromVehicle));
+            codes.Insert(insertAt + 2, c1);
+            // Stack now expected: energyMixin
+        }
+        else
+            log.Warn("Could not find target instruction to insert after; no changes made.");
+
+        return codes;
     }
 
     /// <summary>

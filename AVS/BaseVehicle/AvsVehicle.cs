@@ -638,21 +638,13 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
     /// Retrieves the <see cref="EnergyMixin"/> from the given vehicle.
     /// </summary>
     /// <remarks>Called via reflection</remarks>
+    /// <param name="mixin">Previously determined energy mixin</param>
     /// <param name="veh">Vehicle to retrieve the energy mixin from</param>
-    /// <returns>Energy mixin. Every vehicle should have one</returns>
-    public static EnergyMixin GetEnergyMixinFromVehicle(Vehicle veh)
+    /// <returns>Resolved energy mixin</returns>
+    public static EnergyMixin GetEnergyMixinFromVehicle(EnergyMixin mixin, Vehicle veh)
     {
-        if (!(veh is AvsVehicle mod))
-        {
-            var em = veh.GetComponent<EnergyMixin>();
-            if (em.IsNull())
-                throw new InvalidOperationException(
-                    $"Vehicle {veh.name} does not have an EnergyMixin component. This is expected of any vehicle.");
-            return em;
-        }
-        else
-        {
+        if (veh is AvsVehicle mod)
             return mod.energyInterface.sources.First();
-        }
+        return mixin;
     }
 }
