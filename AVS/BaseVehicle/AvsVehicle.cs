@@ -643,8 +643,8 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
     /// <returns>Resolved energy mixin</returns>
     public static EnergyMixin GetEnergyMixinFromVehicle(EnergyMixin mixin, Vehicle veh)
     {
-        if (veh is AvsVehicle mod)
-            return mod.energyInterface.sources.First();
+        if (veh is AvsVehicle av)
+            return av.energyInterface.sources.First();
         return mixin;
     }
 }
