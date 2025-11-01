@@ -40,7 +40,7 @@ public static class CyclopsPatcher
         using var log = SmartLog.LazyForAVS(RootModController.AnyInstance);
 
         var codes = new List<CodeInstruction>(instructions);
-
+        var origianalCount = codes.Count;
         int insertAt = codes.FindIndex(c =>
             c.opcode == OpCodes.Callvirt && c.operand.ToString().ToLower().Contains("energymixin") && c.operand.ToString().ToLower().Contains("getcomponent"));
         if (insertAt == -1)
@@ -58,6 +58,9 @@ public static class CyclopsPatcher
             var c1 = CodeInstruction.Call(typeof(AvsVehicle), nameof(AvsVehicle.GetEnergyMixinFromVehicle));
             codes.Insert(insertAt + 2, c1);
             // Stack now expected: energyMixin
+            log.Debug(() => $"Inserted instructions at #{insertAt + 1}/{origianalCount}:");
+            log.Debug(() => $"    {c0}");
+            log.Debug(() => $"    {c1}");
         }
         else
             log.Warn("Could not find target instruction to insert after; no changes made.");

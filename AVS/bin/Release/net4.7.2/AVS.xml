@@ -1459,10 +1459,10 @@
             <summary>
             Retrieves the <see cref="T:EnergyMixin"/> from the given vehicle.
             </summary>
-            <remarks>Called via reflection</remarks>\
+            <remarks>Called via reflection</remarks>
             <param name="mixin">Previously determined energy mixin</param>
             <param name="veh">Vehicle to retrieve the energy mixin from</param>
-            <returns>Energy mixin. Every vehicle should have one</returns>
+            <returns>Resolved energy mixin</returns>
         </member>
         <member name="M:AVS.BaseVehicle.AvsVehicle.SetBaseColor(AVS.VehicleComponents.VehicleColor)">
             <summary>
