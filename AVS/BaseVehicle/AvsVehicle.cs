@@ -237,7 +237,7 @@ public abstract partial class AvsVehicle : Vehicle, ICraftTarget, IProtoTreeEven
             log.Write($"Re-initializing modular storages");
             ReSetupModularStorages(); //preserve labels. Also adapt to changes in language to some extent
             log.Write($"Re-initializing mobile water parks");
-            ReSetupWaterParks();
+            ReSetupWaterParks(true);
             log.Write($"Checking energy interface");
             CheckEnergyInterface();
         }

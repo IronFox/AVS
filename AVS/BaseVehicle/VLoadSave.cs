@@ -278,7 +278,7 @@ public abstract partial class AvsVehicle
     public virtual void OnFinishedLoading()
     {
         using var log = NewAvsLog();
-        ReSetupWaterParks();
+        ReSetupWaterParks(false);
         foreach (var wp in Com.WaterParks)
         {
             var waterPark = wp.ContentContainer.GetComponent<StorageComponents.AvsWaterPark.MobileWaterPark>();

@@ -95,11 +95,24 @@ public class PrefabLoader
     /// Instantiates a new game object from the prefab instance
     /// Null if the prefab has not (yet) been loaded
     /// </summary>
-    public GameObject? Instantiate()
+    /// <param name="parent">Optional parent transform for the instantiated object.
+    /// If set, the instantiated object will have localPosition and localRotation set to default
+    /// </param>
+    public GameObject? Instantiate(Transform? parent = null)
     {
         var prefab = Prefab;
         if (!prefab)
             return null;
+        if (parent.IsNotNull())
+        {
+            var go = Object.Instantiate(prefab, parent, false);
+            go.SafeGetTransform().SafeDo(x =>
+            {
+                x.localPosition = Vector3.zero;
+                x.localRotation = Quaternion.identity;
+            });
+            return go;
+        }
         return Object.Instantiate(prefab);
     }
 

@@ -1,4 +1,5 @@
 ﻿using Assets.Behavior.Util.Math;
+using AVS.Assets;
 using AVS.BaseVehicle;
 using AVS.Interfaces;
 using AVS.Localization;
@@ -7,6 +8,7 @@ using AVS.Util;
 using AVS.Util.Containers;
 using AVS.Util.CoroutineHandling;
 using AVS.Util.Math;
+using AVS.VehicleBuilding;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -1358,6 +1360,64 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     log,
                     eggOrChildPrefab,
                     position + Vector3.down, 0, 0));
+    }
+
+    private IEnumerator SetPlant(SmartLog log, IGrouping<TechType, WaterParkPlant> group, PrefabLoader loader)
+    {
+        yield return loader.WaitUntilLoaded();
+
+        if (loader.Prefab.IsNull())
+        {
+            log.Error($"Failed to load plant prefab for tech type {group.Key.AsString()}, skipping.");
+            yield break;
+        }
+        foreach (var plant in group)
+        {
+            if (plant.PlantRoot.IsNull())
+                continue;
+
+            plant.PlantRoot.DestroyChildren();
+            plant.PlantRoot.DestroyComponents();
+
+            var go = loader.Instantiate(plant.PlantRoot);
+            if (go.IsNotNull())
+            {
+                go.transform.SafeDo(x =>
+                {
+                    if (plant.PlantType == TechType.PurpleTentacle
+                    || plant.PlantType == TechType.SmallFanCluster)
+                    {
+                        x.localRotation = Quaternion.Euler(-90, 0, 0);
+                    }
+                });
+                //go.GetComponent<Plantable>().SafeDo(x =>
+                //{
+                //    x.isSeedling = false;
+                //    x.underwater = true;
+                //    x.aboveWater = false;
+                //    x.size = Plantable.PlantSize.Large;
+                //    x.plantAge = 1000;
+                //    x.modelScale = Vector3.one;
+                //});
+                go.SetActive(true);
+                //foreach (var r in go.GetComponentsInChildren<Renderer>(includeInactive: true))
+                //{
+                //    r.enabled = true;
+                //    r.gameObject.SetActive(true);
+                //}
+            }
+        }
+        log.Write($"Set {group.Count()} plants of type {group.Key.AsString()}");
+    }
+
+    internal void InstantiatePlants(IReadOnlyList<WaterParkPlant> plants)
+    {
+        foreach (var group in plants.GroupBy(x => x.PlantType))
+        {
+            var loader = PrefabLoader.Request(group.Key, ifNotFoundLeaveEmpty: true);
+            AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(SetPlant),
+                            log => SetPlant(log, group, loader));
+        }
     }
 
 }

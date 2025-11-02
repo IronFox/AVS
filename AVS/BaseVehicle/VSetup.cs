@@ -382,7 +382,7 @@ public abstract partial class AvsVehicle
 
     private List<MobileWaterPark> WaterParks { get; } = [];
 
-    internal bool ReSetupWaterParks()
+    internal bool ReSetupWaterParks(bool setupPlants)
     {
         var iter = 0;
         using var log = NewAvsLog();
@@ -398,6 +398,10 @@ public abstract partial class AvsVehicle
                 log.Debug("Setting up Mobile Water Park " + cont.NiceName() + $" '{cont.DisplayName}'");
                 var name = vp.DisplayName ?? Text.Untranslated("Innate Vehicle Storage " + iter);
                 cont.Setup(this, name, vp, iter + 1);
+
+                if (setupPlants && vp.Plants.IsNotNull())
+                    cont.InstantiatePlants(vp.Plants);
+
                 var storageCloseSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1")
                     .GetComponent<SeamothStorageInput>().closeSound;
                 var storageOpenSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1")

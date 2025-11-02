@@ -880,11 +880,14 @@
             Singleton instance set to never expire. Do <b>NOT</b> destroy this object
             </remarks>
         </member>
-        <member name="M:AVS.Assets.PrefabLoader.Instantiate">
+        <member name="M:AVS.Assets.PrefabLoader.Instantiate(UnityEngine.Transform)">
             <summary>
             Instantiates a new game object from the prefab instance
             Null if the prefab has not (yet) been loaded
             </summary>
+            <param name="parent">Optional parent transform for the instantiated object.
+            If set, the instantiated object will have localPosition and localRotation set to default
+            </param>
         </member>
         <member name="P:AVS.Assets.PrefabLoader.CanLoad">
             <summary>
@@ -9896,6 +9899,15 @@
             </remarks>
             <param name="transform">Parent transform to destroy all children of</param>
         </member>
+        <member name="M:AVS.Util.GameObjectHelper.DestroyComponents(UnityEngine.Transform)">
+            <summary>
+            Destroys all components attached to the specified Transform, except for the Transform itself.
+            </summary>
+            <remarks>This method removes all components from the GameObject associated with the given Transform,
+            leaving only the Transform component intact. Use with caution, as destroying essential components may affect the
+            GameObject's behavior.</remarks>
+            <param name="transform">The Transform whose attached components will be destroyed. Cannot be null.</param>
+        </member>
         <member name="M:AVS.Util.GameObjectHelper.IsNull(UnityEngine.Object)">
             <summary>
             Safely checks if a Unity object is null
@@ -11850,6 +11862,116 @@
             Represents the definition of a vehicle hatch, including its transform locations for entry, exit, and surface exit.
             </summary>
         </member>
+        <member name="T:AVS.VehicleBuilding.WaterParkPlant">
+            <summary>
+            Represents a plant instance placed within a water park, including its container transform and plant type.
+            </summary>
+            <param name="PlantRoot">The transform that specifies the location, orientation, and scale of the plant within the water park.</param>
+            <param name="PlantType">
+            The type of plant represented, used to identify its species or behavior.
+            Suitable plants are:<br />
+            <ul>
+            <li><b><see cref="F:TechType.AcidMushroom"></see> (Acid Mushroom)</b><br /></li>
+            <li><see cref="F:TechType.BluePalm"></see> (Blue Palm)<br /></li>
+            <li><see cref="F:TechType.BloodVine"></see> (Bloodvine, tall)<br /></li>
+            <li><see cref="F:TechType.SmallKoosh"></see> (Bulb Bush)<br /></li>
+            <li><see cref="F:TechType.PurpleBranches"></see> (Cave Bush)<br /></li>
+            <li><see cref="F:TechType.Creepvine"></see> (tall)<br /></li>
+            <li><see cref="F:TechType.WhiteMushroom"></see> (Deep Shroom)<br /></li>
+            <li><see cref="F:TechType.EyesPlant"></see> (Eye Stalk)<br /></li>
+            <li><see cref="F:TechType.FernPalm"></see> (Fern Palm)<br /></li>
+            <li><see cref="F:TechType.RedRollPlant"></see> (Furled Papyrus)<br /></li>
+            <li><see cref="F:TechType.GabeSFeather"></see> (Gabe's Feather)<br /></li>
+            <li><see cref="F:TechType.RedGreenTentacle"></see> (Ghost Weed)<br /></li>
+            <li><see cref="F:TechType.OrangePetalsPlant"></see> (Grub Basket)<br /></li>
+            <li><see cref="F:TechType.SnakeMushroom"></see> (Jellyshroom)<br /></li>
+            <li><see cref="F:TechType.MembrainTree"></see> (Membrain Tree)<br /></li>
+            <li><see cref="F:TechType.SmallFan"></see> (Pygmy Fan)<br /></li>
+            <li><see cref="F:TechType.SmallFanCluster"></see> (Pygmy Fan Cluster)<br /></li>
+            <li><see cref="F:TechType.RedBush"></see> (Redwort)<br /></li>
+            <li><see cref="F:TechType.RedConePlant"></see> (Regress Shell)<br /></li>
+            <li><see cref="F:TechType.ShellGrass"></see> (Spiked Horn Grass)<br /></li>
+            <li><see cref="F:TechType.SpottedLeavesPlant"></see> (Spotted Dockleaf)<br /></li>
+            <li><see cref="F:TechType.PurpleFan"></see> (Veined Nettle)<br /></li>
+            <li><see cref="F:TechType.PurpleStalk"></see> (Violet Beau)<br /></li>
+            <li><see cref="F:TechType.PurpleTentacle"></see> (Writhing Weed)<br /></li>
+            <li><see cref="F:TechType.BloodGrass"></see> (Blood Grass)<br /></li>
+            </ul>
+            </param>
+        </member>
+        <member name="M:AVS.VehicleBuilding.WaterParkPlant.#ctor(UnityEngine.Transform,TechType)">
+            <summary>
+            Represents a plant instance placed within a water park, including its container transform and plant type.
+            </summary>
+            <param name="PlantRoot">The transform that specifies the location, orientation, and scale of the plant within the water park.</param>
+            <param name="PlantType">
+            The type of plant represented, used to identify its species or behavior.
+            Suitable plants are:<br />
+            <ul>
+            <li><b><see cref="F:TechType.AcidMushroom"></see> (Acid Mushroom)</b><br /></li>
+            <li><see cref="F:TechType.BluePalm"></see> (Blue Palm)<br /></li>
+            <li><see cref="F:TechType.BloodVine"></see> (Bloodvine, tall)<br /></li>
+            <li><see cref="F:TechType.SmallKoosh"></see> (Bulb Bush)<br /></li>
+            <li><see cref="F:TechType.PurpleBranches"></see> (Cave Bush)<br /></li>
+            <li><see cref="F:TechType.Creepvine"></see> (tall)<br /></li>
+            <li><see cref="F:TechType.WhiteMushroom"></see> (Deep Shroom)<br /></li>
+            <li><see cref="F:TechType.EyesPlant"></see> (Eye Stalk)<br /></li>
+            <li><see cref="F:TechType.FernPalm"></see> (Fern Palm)<br /></li>
+            <li><see cref="F:TechType.RedRollPlant"></see> (Furled Papyrus)<br /></li>
+            <li><see cref="F:TechType.GabeSFeather"></see> (Gabe's Feather)<br /></li>
+            <li><see cref="F:TechType.RedGreenTentacle"></see> (Ghost Weed)<br /></li>
+            <li><see cref="F:TechType.OrangePetalsPlant"></see> (Grub Basket)<br /></li>
+            <li><see cref="F:TechType.SnakeMushroom"></see> (Jellyshroom)<br /></li>
+            <li><see cref="F:TechType.MembrainTree"></see> (Membrain Tree)<br /></li>
+            <li><see cref="F:TechType.SmallFan"></see> (Pygmy Fan)<br /></li>
+            <li><see cref="F:TechType.SmallFanCluster"></see> (Pygmy Fan Cluster)<br /></li>
+            <li><see cref="F:TechType.RedBush"></see> (Redwort)<br /></li>
+            <li><see cref="F:TechType.RedConePlant"></see> (Regress Shell)<br /></li>
+            <li><see cref="F:TechType.ShellGrass"></see> (Spiked Horn Grass)<br /></li>
+            <li><see cref="F:TechType.SpottedLeavesPlant"></see> (Spotted Dockleaf)<br /></li>
+            <li><see cref="F:TechType.PurpleFan"></see> (Veined Nettle)<br /></li>
+            <li><see cref="F:TechType.PurpleStalk"></see> (Violet Beau)<br /></li>
+            <li><see cref="F:TechType.PurpleTentacle"></see> (Writhing Weed)<br /></li>
+            <li><see cref="F:TechType.BloodGrass"></see> (Blood Grass)<br /></li>
+            </ul>
+            </param>
+        </member>
+        <member name="P:AVS.VehicleBuilding.WaterParkPlant.PlantRoot">
+            <summary>The transform that specifies the location, orientation, and scale of the plant within the water park.</summary>
+        </member>
+        <member name="P:AVS.VehicleBuilding.WaterParkPlant.PlantType">
+            <summary>
+            The type of plant represented, used to identify its species or behavior.
+            Suitable plants are:<br />
+            <ul>
+            <li><b><see cref="F:TechType.AcidMushroom"></see> (Acid Mushroom)</b><br /></li>
+            <li><see cref="F:TechType.BluePalm"></see> (Blue Palm)<br /></li>
+            <li><see cref="F:TechType.BloodVine"></see> (Bloodvine, tall)<br /></li>
+            <li><see cref="F:TechType.SmallKoosh"></see> (Bulb Bush)<br /></li>
+            <li><see cref="F:TechType.PurpleBranches"></see> (Cave Bush)<br /></li>
+            <li><see cref="F:TechType.Creepvine"></see> (tall)<br /></li>
+            <li><see cref="F:TechType.WhiteMushroom"></see> (Deep Shroom)<br /></li>
+            <li><see cref="F:TechType.EyesPlant"></see> (Eye Stalk)<br /></li>
+            <li><see cref="F:TechType.FernPalm"></see> (Fern Palm)<br /></li>
+            <li><see cref="F:TechType.RedRollPlant"></see> (Furled Papyrus)<br /></li>
+            <li><see cref="F:TechType.GabeSFeather"></see> (Gabe's Feather)<br /></li>
+            <li><see cref="F:TechType.RedGreenTentacle"></see> (Ghost Weed)<br /></li>
+            <li><see cref="F:TechType.OrangePetalsPlant"></see> (Grub Basket)<br /></li>
+            <li><see cref="F:TechType.SnakeMushroom"></see> (Jellyshroom)<br /></li>
+            <li><see cref="F:TechType.MembrainTree"></see> (Membrain Tree)<br /></li>
+            <li><see cref="F:TechType.SmallFan"></see> (Pygmy Fan)<br /></li>
+            <li><see cref="F:TechType.SmallFanCluster"></see> (Pygmy Fan Cluster)<br /></li>
+            <li><see cref="F:TechType.RedBush"></see> (Redwort)<br /></li>
+            <li><see cref="F:TechType.RedConePlant"></see> (Regress Shell)<br /></li>
+            <li><see cref="F:TechType.ShellGrass"></see> (Spiked Horn Grass)<br /></li>
+            <li><see cref="F:TechType.SpottedLeavesPlant"></see> (Spotted Dockleaf)<br /></li>
+            <li><see cref="F:TechType.PurpleFan"></see> (Veined Nettle)<br /></li>
+            <li><see cref="F:TechType.PurpleStalk"></see> (Violet Beau)<br /></li>
+            <li><see cref="F:TechType.PurpleTentacle"></see> (Writhing Weed)<br /></li>
+            <li><see cref="F:TechType.BloodGrass"></see> (Blood Grass)<br /></li>
+            </ul>
+            </summary>
+        </member>
         <member name="T:AVS.VehicleBuilding.MobileWaterPark">
             <summary>
             Definition of a fish tank within a vehicle.
@@ -11865,13 +11987,14 @@
             <param name="AllowReproduction">If true, fish in this tank may reproduce.</param>
             <param name="HatchEggs">If true, eggs in this tank will hatch eventually.</param>
             <param name="CollidersAreLive">Function that returns true if the colliders are active and fish can move.
-            If the function returns false, fish shall become invisible and immobile so as to now swim out of the containment</param>
+            If the function returns false, fish shall become invisible and immobile so as to not swim out of the containment</param>
             <param name="WallLayerMask">A bit-mask that encapsules all tank walls, floor, and ceiling in order to ray cast only the walls. Should not contain layer 0 (fish)</param>
             <param name="TopMargin">Margin at the top of the tank, in meters, that fish cannot enter.</param>
             <param name="BottomMargin">Margin at the bottom of the tank, in meters, that fish cannot enter.</param>
             <param name="HorizontalMargin">Margin at the sides of the tank, in meters, that fish cannot enter.</param>
+            <param name="Plants">List of plants to place in the water park.</param>
         </member>
-        <member name="M:AVS.VehicleBuilding.MobileWaterPark.#ctor(UnityEngine.Transform,UnityEngine.GameObject,System.Int32,System.Int32,System.Nullable{AVS.Localization.MaybeTranslate},System.Boolean,System.Boolean,System.Func{System.Boolean},System.Int32,System.Single,System.Single,System.Single)">
+        <member name="M:AVS.VehicleBuilding.MobileWaterPark.#ctor(UnityEngine.Transform,UnityEngine.GameObject,System.Int32,System.Int32,System.Nullable{AVS.Localization.MaybeTranslate},System.Boolean,System.Boolean,System.Func{System.Boolean},System.Int32,System.Collections.Generic.IReadOnlyList{AVS.VehicleBuilding.WaterParkPlant},System.Single,System.Single,System.Single)">
             <summary>
             Definition of a fish tank within a vehicle.
             The fish tank can accommodate fish and other aquatic life
@@ -11886,11 +12009,12 @@
             <param name="AllowReproduction">If true, fish in this tank may reproduce.</param>
             <param name="HatchEggs">If true, eggs in this tank will hatch eventually.</param>
             <param name="CollidersAreLive">Function that returns true if the colliders are active and fish can move.
-            If the function returns false, fish shall become invisible and immobile so as to now swim out of the containment</param>
+            If the function returns false, fish shall become invisible and immobile so as to not swim out of the containment</param>
             <param name="WallLayerMask">A bit-mask that encapsules all tank walls, floor, and ceiling in order to ray cast only the walls. Should not contain layer 0 (fish)</param>
             <param name="TopMargin">Margin at the top of the tank, in meters, that fish cannot enter.</param>
             <param name="BottomMargin">Margin at the bottom of the tank, in meters, that fish cannot enter.</param>
             <param name="HorizontalMargin">Margin at the sides of the tank, in meters, that fish cannot enter.</param>
+            <param name="Plants">List of plants to place in the water park.</param>
         </member>
         <member name="P:AVS.VehicleBuilding.MobileWaterPark.ContentContainer">
             <summary>The game object that will contain the fish.</summary>
@@ -11915,10 +12039,13 @@
         </member>
         <member name="P:AVS.VehicleBuilding.MobileWaterPark.CollidersAreLive">
             <summary>Function that returns true if the colliders are active and fish can move.
-            If the function returns false, fish shall become invisible and immobile so as to now swim out of the containment</summary>
+            If the function returns false, fish shall become invisible and immobile so as to not swim out of the containment</summary>
         </member>
         <member name="P:AVS.VehicleBuilding.MobileWaterPark.WallLayerMask">
             <summary>A bit-mask that encapsules all tank walls, floor, and ceiling in order to ray cast only the walls. Should not contain layer 0 (fish)</summary>
+        </member>
+        <member name="P:AVS.VehicleBuilding.MobileWaterPark.Plants">
+            <summary>List of plants to place in the water park.</summary>
         </member>
         <member name="P:AVS.VehicleBuilding.MobileWaterPark.TopMargin">
             <summary>Margin at the top of the tank, in meters, that fish cannot enter.</summary>

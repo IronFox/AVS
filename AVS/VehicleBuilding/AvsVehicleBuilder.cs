@@ -95,7 +95,7 @@ internal static class AvsVehicleBuilder
         if (!av.ReSetupModularStorages())
             return false;
 
-        if (!av.ReSetupWaterParks())
+        if (!av.ReSetupWaterParks(false))
             return false;
 
         using var log = av.NewAvsLog();

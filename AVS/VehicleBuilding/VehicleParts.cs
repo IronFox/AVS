@@ -216,6 +216,46 @@ public readonly struct VehicleHatchDefinition
 }
 
 /// <summary>
+/// Represents a plant instance placed within a water park, including its container transform and plant type.
+/// </summary>
+/// <param name="PlantRoot">The transform that specifies the location, orientation, and scale of the plant within the water park.</param>
+/// <param name="PlantType">
+/// The type of plant represented, used to identify its species or behavior.
+/// Suitable plants are:<br />
+/// <ul>
+/// <li><b><see cref="TechType.AcidMushroom"></see> (Acid Mushroom)</b><br /></li>
+/// <li><see cref="TechType.BluePalm"></see> (Blue Palm)<br /></li>
+/// <li><see cref="TechType.BloodVine"></see> (Bloodvine, tall)<br /></li>
+/// <li><see cref="TechType.SmallKoosh"></see> (Bulb Bush)<br /></li>
+/// <li><see cref="TechType.PurpleBranches"></see> (Cave Bush)<br /></li>
+/// <li><see cref="TechType.Creepvine"></see> (tall)<br /></li>
+/// <li><see cref="TechType.WhiteMushroom"></see> (Deep Shroom)<br /></li>
+/// <li><see cref="TechType.EyesPlant"></see> (Eye Stalk)<br /></li>
+/// <li><see cref="TechType.FernPalm"></see> (Fern Palm)<br /></li>
+/// <li><see cref="TechType.RedRollPlant"></see> (Furled Papyrus)<br /></li>
+/// <li><see cref="TechType.GabeSFeather"></see> (Gabe's Feather)<br /></li>
+/// <li><see cref="TechType.RedGreenTentacle"></see> (Ghost Weed)<br /></li>
+/// <li><see cref="TechType.OrangePetalsPlant"></see> (Grub Basket)<br /></li>
+/// <li><see cref="TechType.SnakeMushroom"></see> (Jellyshroom)<br /></li>
+/// <li><see cref="TechType.MembrainTree"></see> (Membrain Tree)<br /></li>
+/// <li><see cref="TechType.SmallFan"></see> (Pygmy Fan)<br /></li>
+/// <li><see cref="TechType.SmallFanCluster"></see> (Pygmy Fan Cluster)<br /></li>
+/// <li><see cref="TechType.RedBush"></see> (Redwort)<br /></li>
+/// <li><see cref="TechType.RedConePlant"></see> (Regress Shell)<br /></li>
+/// <li><see cref="TechType.ShellGrass"></see> (Spiked Horn Grass)<br /></li>
+/// <li><see cref="TechType.SpottedLeavesPlant"></see> (Spotted Dockleaf)<br /></li>
+/// <li><see cref="TechType.PurpleFan"></see> (Veined Nettle)<br /></li>
+/// <li><see cref="TechType.PurpleStalk"></see> (Violet Beau)<br /></li>
+/// <li><see cref="TechType.PurpleTentacle"></see> (Writhing Weed)<br /></li>
+/// <li><see cref="TechType.BloodGrass"></see> (Blood Grass)<br /></li>
+/// </ul>
+/// </param>
+public readonly record struct WaterParkPlant(
+    Transform PlantRoot,
+    TechType PlantType
+    );
+
+/// <summary>
 /// Definition of a fish tank within a vehicle.
 /// The fish tank can accommodate fish and other aquatic life
 /// that may be added to a water park.
@@ -229,11 +269,12 @@ public readonly struct VehicleHatchDefinition
 /// <param name="AllowReproduction">If true, fish in this tank may reproduce.</param>
 /// <param name="HatchEggs">If true, eggs in this tank will hatch eventually.</param>
 /// <param name="CollidersAreLive">Function that returns true if the colliders are active and fish can move.
-/// If the function returns false, fish shall become invisible and immobile so as to now swim out of the containment</param>
+/// If the function returns false, fish shall become invisible and immobile so as to not swim out of the containment</param>
 /// <param name="WallLayerMask">A bit-mask that encapsules all tank walls, floor, and ceiling in order to ray cast only the walls. Should not contain layer 0 (fish)</param>
 /// <param name="TopMargin">Margin at the top of the tank, in meters, that fish cannot enter.</param>
 /// <param name="BottomMargin">Margin at the bottom of the tank, in meters, that fish cannot enter.</param>
 /// <param name="HorizontalMargin">Margin at the sides of the tank, in meters, that fish cannot enter.</param>
+/// <param name="Plants">List of plants to place in the water park.</param>
 public readonly record struct MobileWaterPark(
     Transform ContentContainer,
     GameObject Root,
@@ -244,6 +285,7 @@ public readonly record struct MobileWaterPark(
     bool HatchEggs,
     Func<bool> CollidersAreLive,
     int WallLayerMask,
+    IReadOnlyList<WaterParkPlant>? Plants = null,
     float TopMargin = 0,
     float BottomMargin = 0,
     float HorizontalMargin = 0

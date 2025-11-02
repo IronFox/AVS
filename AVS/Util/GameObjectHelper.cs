@@ -658,6 +658,23 @@ public static class GameObjectHelper
     }
 
     /// <summary>
+    /// Destroys all components attached to the specified Transform, except for the Transform itself.
+    /// </summary>
+    /// <remarks>This method removes all components from the GameObject associated with the given Transform,
+    /// leaving only the Transform component intact. Use with caution, as destroying essential components may affect the
+    /// GameObject's behavior.</remarks>
+    /// <param name="transform">The Transform whose attached components will be destroyed. Cannot be null.</param>
+    public static void DestroyComponents(this Transform transform)
+    {
+        foreach (var c in transform.GetComponents<Component>())
+        {
+            if (c is Transform)
+                continue;
+            Object.Destroy(c);
+        }
+    }
+
+    /// <summary>
     /// Safely checks if a Unity object is null
     /// </summary>
     /// <param name="o">Object to check</param>
