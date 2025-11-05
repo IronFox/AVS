@@ -1362,9 +1362,10 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                     position + Vector3.down, 0, 0));
     }
 
-    private IEnumerator SetPlant(SmartLog log, IGrouping<TechType, WaterParkPlant> group, PrefabLoader loader)
+    private IEnumerator SetPlant(SmartLog log, IGrouping<TechType, WaterParkPlant> group, PrefabLoader loader, Func<bool> interiorLoaded)
     {
         yield return loader.WaitUntilLoaded();
+        yield return new WaitUntil(interiorLoaded);
 
         if (loader.Prefab.IsNull())
         {
@@ -1390,6 +1391,7 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
                         x.localRotation = Quaternion.Euler(-90, 0, 0);
                     }
                 });
+                go.GetComponentsInChildren<Collider>(includeInactive: true).DestroyAll();
                 //go.GetComponent<Plantable>().SafeDo(x =>
                 //{
                 //    x.isSeedling = false;
@@ -1410,13 +1412,13 @@ internal class MobileWaterPark : MonoBehaviour, ICraftTarget, IProtoTreeEventLis
         log.Write($"Set {group.Count()} plants of type {group.Key.AsString()}");
     }
 
-    internal void InstantiatePlants(IReadOnlyList<WaterParkPlant> plants)
+    internal void InstantiatePlants(VehicleBuilding.MobileWaterPark vp, IReadOnlyList<WaterParkPlant> plants)
     {
         foreach (var group in plants.GroupBy(x => x.PlantType))
         {
             var loader = PrefabLoader.Request(group.Key, ifNotFoundLeaveEmpty: true);
             AV.Owner.StartAvsCoroutine(nameof(MobileWaterPark) + '.' + nameof(SetPlant),
-                            log => SetPlant(log, group, loader));
+                            log => SetPlant(log, group, loader, vp.CollidersAreLive));
         }
     }
 

@@ -9899,6 +9899,13 @@
             </remarks>
             <param name="transform">Parent transform to destroy all children of</param>
         </member>
+        <member name="M:AVS.Util.GameObjectHelper.DestroyAll``1(``0[])">
+            <summary>
+            Destroys all objects in the specified array by calling Object.Destroy on each element.
+            </summary>
+            <typeparam name="T">The type of objects contained in the array. Must derive from Object.</typeparam>
+            <param name="array">The array of objects to destroy. If the array is null or empty, no action is taken.</param>
+        </member>
         <member name="M:AVS.Util.GameObjectHelper.DestroyComponents(UnityEngine.Transform)">
             <summary>
             Destroys all components attached to the specified Transform, except for the Transform itself.

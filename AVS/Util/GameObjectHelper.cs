@@ -658,6 +658,21 @@ public static class GameObjectHelper
     }
 
     /// <summary>
+    /// Destroys all objects in the specified array by calling Object.Destroy on each element.
+    /// </summary>
+    /// <typeparam name="T">The type of objects contained in the array. Must derive from Object.</typeparam>
+    /// <param name="array">The array of objects to destroy. If the array is null or empty, no action is taken.</param>
+    public static void DestroyAll<T>(this T[]? array) where T : Object
+    {
+        if (array.IsNullOrEmpty())
+            return;
+        foreach (var item in array)
+        {
+            Object.Destroy(item);
+        }
+    }
+
+    /// <summary>
     /// Destroys all components attached to the specified Transform, except for the Transform itself.
     /// </summary>
     /// <remarks>This method removes all components from the GameObject associated with the given Transform,

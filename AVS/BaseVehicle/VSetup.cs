@@ -400,7 +400,7 @@ public abstract partial class AvsVehicle
                 cont.Setup(this, name, vp, iter + 1);
 
                 if (setupPlants && vp.Plants.IsNotNull())
-                    cont.InstantiatePlants(vp.Plants);
+                    cont.InstantiatePlants(vp, vp.Plants);
 
                 var storageCloseSound = SeamothHelper.RequireSeamoth.transform.Find("Storage/Storage1")
                     .GetComponent<SeamothStorageInput>().closeSound;
