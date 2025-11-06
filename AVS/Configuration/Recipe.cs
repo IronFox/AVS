@@ -1,8 +1,10 @@
 ﻿using AVS.Log;
 using Nautilus.Crafting;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 
 namespace AVS.Configuration;
@@ -212,7 +214,7 @@ public static class NewRecipe
 /// <summary>
 /// Readonly vehicle construction recipe.
 /// </summary>
-public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
+public class Recipe : IReadOnlyCollection<RecipeIngredient>, IEquatable<Recipe>
 {
     /// <summary>
     /// Gets an example recipe that demonstrates the required ingredients for crafting.
@@ -277,7 +279,8 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
     /// ingredient's type will be used as a key in the internal dictionary.</param>
     public Recipe(IEnumerable<RecipeIngredient> ingredients)
     {
-        foreach (var ingredient in ingredients) IngredientsDictionary[ingredient.Type] = ingredient.Amount;
+        foreach (var ingredient in ingredients)
+            IngredientsDictionary[ingredient.Type] = ingredient.Amount;
     }
 
     internal Recipe(Dictionary<TechType, int> ingredients)
@@ -289,6 +292,11 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
     /// Gets a value indicating whether the collection of ingredients is empty.
     /// </summary>
     public bool IsEmpty => IngredientsDictionary.Count == 0;
+
+    /// <summary>
+    /// Gets the number of ingredients contained in the collection.
+    /// </summary>
+    public int Count => IngredientsDictionary.Count;
 
     /// <summary>
     /// Converts the current object to a <see cref="RecipeData"/> instance.
@@ -403,5 +411,64 @@ public class Recipe : IEnumerable<RecipeIngredient>, IEquatable<Recipe>
     public override string ToString()
     {
         return string.Join(", ", IngredientsDictionary.Select(kvp => $"{kvp.Key}: {kvp.Value}"));
+    }
+
+    /// <summary>
+    /// Loads a recipe from a JSON file. Never fails. If the file was not found or could not be parsed, null is returned.
+    /// </summary>
+    /// <param name="jsonRecipeFileName">Path to load from. May or may point to an existing file</param>
+    /// <param name="rmc">Root mod controller, used for logging</param>
+    /// <returns>Recipe from the given JSON file.
+    /// Null if the file does not exist, could not be opened, or has an unknown format</returns>
+    public static Recipe? LoadFromFile(RootModController rmc, string jsonRecipeFileName)
+    {
+        if (!File.Exists(jsonRecipeFileName))
+            return null;
+        using var log = SmartLog.LazyForAVS(rmc);
+
+        try
+        {
+            var json = File.ReadAllText(jsonRecipeFileName);
+            try
+            {
+                var recipe1 = JsonConvert.DeserializeObject<List<RecipeIngredient>>(json);
+                return new Recipe(recipe1);
+            }
+            catch (Exception)
+            {
+                log.Debug("Failed to parse Recipe as List<RecipeIngredient>, trying old format");
+                // try old format
+                var recipe2 = JsonConvert.DeserializeObject<RecipeData>(json);
+                return Import(rmc, recipe2, Empty);
+            }
+        }
+        catch (Exception e)
+        {
+            log.Error($"Failed to load Recipe from file {jsonRecipeFileName}", e);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Saves the local recipe to a JSON file.
+    /// Effectively writes an array of RecipeIngredient to the given file.
+    /// </summary>
+    /// <remarks>Logs errors but otherwise continues.</remarks>
+    /// <param name="jsonRecipeFileName">Path to save to</param>
+    /// <returns>this</returns>
+    public Recipe SaveToFile(string jsonRecipeFileName)
+    {
+        try
+        {
+            Nautilus.Utility.JsonUtils.Save(this,
+                jsonRecipeFileName,
+                new Nautilus.Json.Converters.CustomEnumConverter());
+        }
+        catch (Exception e)
+        {
+            using var log = SmartLog.ForAVS(RootModController.AnyInstance);
+            log.Error($"Failed to save Recipe to file {jsonRecipeFileName}", e);
+        }
+        return this;
     }
 }

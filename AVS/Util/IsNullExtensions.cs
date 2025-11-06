@@ -19,7 +19,7 @@ public static class IsNullExtensions
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
     public static bool IsNull<K, V>([NotNullWhen(false)] this Dictionary<K, V>? en)
         => en is null;
-    
+
     public static bool IsNull([NotNullWhen(true)] this Attribute? a)
         => a is null;
 
@@ -30,6 +30,9 @@ public static class IsNullExtensions
         => en is null;
 
     public static bool IsNullOrEmpty<K, V>([NotNullWhen(false)] this IReadOnlyDictionary<K, V>? en)
+        => en is null || en.Count == 0;
+
+    public static bool IsNullOrEmpty<V>([NotNullWhen(false)] this IReadOnlyCollection<V>? en)
         => en is null || en.Count == 0;
 
     public static bool IsNull([NotNullWhen(false)] this IDictionary? en)

@@ -2705,6 +2705,11 @@
             Gets a value indicating whether the collection of ingredients is empty.
             </summary>
         </member>
+        <member name="P:AVS.Configuration.Recipe.Count">
+            <summary>
+            Gets the number of ingredients contained in the collection.
+            </summary>
+        </member>
         <member name="M:AVS.Configuration.Recipe.ToRecipeData">
             <summary>
             Converts the current object to a <see cref="T:Nautilus.Crafting.RecipeData"/> instance.
@@ -2754,6 +2759,24 @@
         </member>
         <member name="M:AVS.Configuration.Recipe.ToString">
             <inheritdoc />
+        </member>
+        <member name="M:AVS.Configuration.Recipe.LoadFromFile(AVS.RootModController,System.String)">
+            <summary>
+            Loads a recipe from a JSON file. Never fails. If the file was not found or could not be parsed, null is returned.
+            </summary>
+            <param name="jsonRecipeFileName">Path to load from. May or may point to an existing file</param>
+            <param name="rmc">Root mod controller, used for logging</param>
+            <returns>Recipe from the given JSON file.
+            Null if the file does not exist, could not be opened, or has an unknown format</returns>
+        </member>
+        <member name="M:AVS.Configuration.Recipe.SaveToFile(System.String)">
+            <summary>
+            Saves the local recipe to a JSON file.
+            Effectively writes an array of RecipeIngredient to the given file.
+            </summary>
+            <remarks>Logs errors but otherwise continues.</remarks>
+            <param name="jsonRecipeFileName">Path to save to</param>
+            <returns>this</returns>
         </member>
         <member name="T:AVS.Configuration.VehicleConfiguration">
             <summary>

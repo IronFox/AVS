@@ -3,7 +3,6 @@ using AVS.Log;
 using AVS.Util;
 using Nautilus.Assets.Gadgets;
 using Nautilus.Crafting;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 
@@ -34,40 +33,39 @@ internal static class VehicleNautilusInterface
                 $"{vehicleKey}_recipe.json");
 
             var loadedRecipe = vehicle.AV.Config.AllowRecipeOverride
-                ? Nautilus.Utility.JsonUtils.Load<List<RecipeIngredient>>(jsonRecipeFileName, false, new Nautilus.Json.Converters.CustomEnumConverter())
+                ? Recipe.LoadFromFile(vehicle.RMC, jsonRecipeFileName)
                 : null;
 
             RecipeData vehicleRecipe;
 
-            if (loadedRecipe is null || loadedRecipe.Count == 0)
+            if (loadedRecipe.IsNullOrEmpty())
             {
                 if (!vehicle.AV.Config.AllowRecipeOverride)
                     log.Debug(
                         $"Recipe override not permitted for vehicle.");
                 else
                 {
-                    if (loadedRecipe is null)
+                    if (loadedRecipe.IsNull())
                         log.Debug(
                             $"No custom recipe file found.");
-                    else if (loadedRecipe.Count == 0)
+                    else if (loadedRecipe.IsEmpty)
                         log.Debug(
                             $"Custom recipe file is empty or does not exist.");
                 }
-                log.Debug(
-                        $"Creating default recipe file at {jsonRecipeFileName}.");
+                log.Debug($"Creating default recipe file at:");
+                log.Debug(jsonRecipeFileName);
                 // If the custom recipe file doesn't exist, go ahead and make it using the default recipe.
-                Nautilus.Utility.JsonUtils.Save(vehicle.AV.Config.Recipe, jsonRecipeFileName,
-                    new Nautilus.Json.Converters.CustomEnumConverter());
-                vehicleRecipe = vehicle.AV.Config.Recipe.ToRecipeData();
+                vehicleRecipe = vehicle.AV.Config.Recipe.SaveToFile(jsonRecipeFileName).ToRecipeData();
             }
             else
             {
                 log.Debug(
                     $"Custom recipe file found and permitted. Applying recipe overrides and saving updated recipe to:");
                 log.Debug(jsonRecipeFileName);
-                vehicleRecipe = vehicle.AV.OnRecipeOverride(new Recipe(loadedRecipe)).ToRecipeData();
-                Nautilus.Utility.JsonUtils.Save(vehicleRecipe, jsonRecipeFileName,
-                    new Nautilus.Json.Converters.CustomEnumConverter());
+                vehicleRecipe = vehicle.AV
+                    .OnRecipeOverride(loadedRecipe)
+                    .SaveToFile(jsonRecipeFileName)
+                    .ToRecipeData();
             }
 
             customPrefab
