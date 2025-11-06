@@ -39,7 +39,7 @@ If you just want the dll and not compile anything, you can just copy the dll fro
 11) AVS provides code-documentation along side the exported dll. It aspires to document as much as possible in code.
 	Much of the added documentation of original VF code comes from Github Copilot, however, and may not be accurate.
 	Added functionality has manually written documentation and should be accurate.
-12) AVS used an interfaced translator (AVS.Localization.Translator.Implementation) to localize all AVS-used keys.
+12) AVS uses an interfaced translator (AVS.Localization.Translator.Implementation) to localize all AVS-used keys.
 	You can override this to provide your own localization. If you don't, you need to provide all 'AVS.[key]' translation keys yourself where [key] is any enumeration value in AVS.Localization.TranslationKey.
 	All localizable keys that AVS uses are declared and documented in this enumeration.
 
@@ -53,6 +53,10 @@ SUBNAUTICA_PATH = [your Subnautica install directory WITHOUT trailing \ ]
 Create the required publicized Subnautica DLL:
 
 1) dotnet tool install -g BepInEx.AssemblyPublicizer.Cli
+
+When doing a full rebuild of the library, Visual Studio will create the required publicized files automatically.
+Otherwise:
+
 2) mkdir -Force "$Env:SUBNAUTICA_PATH\Subnautica_Data\Managed\publicized_assemblies"
 3) assembly-publicizer "$Env:SUBNAUTICA_PATH\Subnautica_Data\Managed\Assembly-CSharp.dll" -o "$Env:SUBNAUTICA_PATH\Subnautica_Data\Managed\publicized_assemblies\Assembly-CSharp_publicized.dll"
 4) assembly-publicizer "$Env:SUBNAUTICA_PATH\Subnautica_Data\Managed\Assembly-CSharp-firstpass.dll" -o "$Env:SUBNAUTICA_PATH\Subnautica_Data\Managed\publicized_assemblies\Assembly-CSharp-firstpass_publicized.dll"
