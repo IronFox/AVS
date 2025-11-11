@@ -1,6 +1,7 @@
 ﻿using AVS.BaseVehicle;
 using AVS.Log;
 using AVS.Util;
+using AVS.Util.CoroutineHandling;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -56,15 +57,19 @@ internal class ModuleBuilder : MonoBehaviour
     public Transform? leftArmSlot = null;
 
 
-    public static void LinkVehicleSlots(ref Dictionary<string, uGUI_EquipmentSlot> sourceSlots,
+    public static void LinkVehicleSlots(uGUI_Equipment instance,
+        Dictionary<string, uGUI_EquipmentSlot> sourceSlots,
         bool clearExisting = true)
     {
         using var log = SmartLog.LazyForAVS(RootModController.AnyInstance, parameters: Params.Of(sourceSlots.Count, clearExisting));
+        linkedToEquipment = instance;
         if (clearExisting)
         {
             log.Write($"Clearing existing vehicle slots, then replacing");
             AllVehicleSlots = sourceSlots;
-            sourceSlots = AllVehicleSlots;
+
+            foreach (var pair in AllVehicleSlots)
+                log.Debug($" - {pair.Key}: {pair.Value.NiceName()}");
             return;
         }
 
@@ -73,7 +78,7 @@ internal class ModuleBuilder : MonoBehaviour
             if (!AllVehicleSlots.ContainsKey(pair.Key))
             {
                 AllVehicleSlots.Add(pair.Key, pair.Value);
-                //Log.Write($"Loaded slot {pair.Key}: {pair.Value.NiceName()}");
+                //log.Debug($"Added AVS slot {pair.Key}: {pair.Value.NiceName()}");
                 added.Add(pair.Key);
             }
 
@@ -83,7 +88,7 @@ internal class ModuleBuilder : MonoBehaviour
             foreach (var name in added)
                 log.Debug($" - {name}");
         }
-
+        log.Write($"Vehicle slots now total {AllVehicleSlots.Count} entries.");
         sourceSlots = AllVehicleSlots;
     }
 
@@ -107,9 +112,10 @@ internal class ModuleBuilder : MonoBehaviour
         {
             log.Write($"Building vehicle module slots for {rmc.ModName}...");
 
-            if (!AllVehicleSlots.ContainsKey(ModuleName(rmc, 0)))
+            var mName = ModuleName(rmc, 0);
+            if (!AllVehicleSlots.ContainsKey(mName))
             {
-                log.Write($"Slots have not previously been mapped (currently: {AllVehicleSlots.Count})");
+                log.Write($"Slots have not previously been mapped (currently: {AllVehicleSlots.Count}, looking for {mName})");
 
                 for (var i = 0; i < MaxNumModules; i++)
                 {
@@ -123,14 +129,17 @@ internal class ModuleBuilder : MonoBehaviour
                     }
 
                     var slot = mod.GetComponent<uGUI_EquipmentSlot>();
-                    //Log.Write($"Mapping slot {slotName}: {slot.NiceName()}");
+                    log.Debug($"Mapping slot {slotName}: {slot.NiceName()}");
 
                     AllVehicleSlots.Add(slotName, slot);
                 }
+
+                foreach (var pair in AllVehicleSlots)
+                    log.Debug($" - {pair.Key}: {pair.Value.NiceName()}");
             }
             else
             {
-                log.Write($"Slots have previously been mapped. Updating...");
+                log.Write($"Slots have previously been mapped ({mName} exists). Updating...");
 
                 for (var i = 0; i < MaxNumModules; i++)
                 {
@@ -440,6 +449,7 @@ internal class ModuleBuilder : MonoBehaviour
     }
 
     private bool haveFixed = false;
+    private static uGUI_Equipment? linkedToEquipment;
 
     internal void SignalOpened(VehicleUpgradeConsoleInput instance, AvsVehicle av)
     {
@@ -450,7 +460,7 @@ internal class ModuleBuilder : MonoBehaviour
         if (equipment.IsNotNull())
         {
             var img = equipment.transform
-                .Find(ModuleName(rmc, 0) + "/VehicleModuleBackground(Clone)")
+                .Find(ModuleName(rmc, 0) + "/AvsVehicleModuleBackground(Clone)")
                 .SafeGetComponent<UnityEngine.UI.Image>();
             if (img.IsNotNull())
             {
@@ -483,24 +493,56 @@ internal class ModuleBuilder : MonoBehaviour
             log.Write("PDA still open. Closing, reopening");
             pda.Close();
             pda.isInUse = false;
-            //yield return new WaitForEndOfFrame();
             instance.OpenPDA();
             haveFixed = true;
         }
-        //else
-        //    av.Log.Tag("ModuleBuilder").Write("PDA is not open, no need to close and reopen.");
     }
 
-    internal static void Init(ref Dictionary<string, uGUI_EquipmentSlot> allSlots)
+    private static ICoroutineHandle? SanityCheckCoroutine { get; set; } = null;
+    internal static void Init(uGUI_Equipment instance, Dictionary<string, uGUI_EquipmentSlot> allSlots)
     {
         using var log = SmartLog.LazyForAVS(RootModController.AnyInstance);
         if (haveWeCalledBuildAllSlots)
             return;
         log.Write("Patching uGUI_Equipment.Awake to add custom vehicle slots");
         haveWeCalledBuildAllSlots = true;
+        linkedToEquipment = instance;
         _main = Player.main.gameObject.AddComponent<ModuleBuilder>();
-        LinkVehicleSlots(ref allSlots);
+        LinkVehicleSlots(instance, allSlots);
         Main.Build();
+
+        SanityCheckCoroutine ??= RootModController.AnyInstance.StartAvsCoroutine(
+            nameof(ModuleBuilder) + '.' + nameof(SanityCheck),
+            SanityCheck);
+    }
+
+    private static IEnumerator SanityCheck(SmartLog log)
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(10);
+            //log.Debug("Performing vehicle slot sanity check...");
+            var slots = linkedToEquipment?.allSlots;
+            if (slots.IsNull())
+            {
+                log.Error("Sanity check: linkedToEquipment or its allSlots is null.");
+                continue;
+            }
+            if (slots != AllVehicleSlots)
+            {
+                foreach (var mine in AllVehicleSlots)
+                {
+                    if (!slots.ContainsKey(mine.Key))
+                    {
+                        log.Write($"Sanity check: Missing slot {mine.Key} detected.");
+                        slots.Add(mine.Key, mine.Value);
+                    }
+                }
+                log.Write("Sanity check: Re-linking vehicle slots.");
+                AllVehicleSlots = slots;
+            }
+
+        }
     }
 
     internal static void Reset()
