@@ -1,4 +1,6 @@
 ﻿using AVS.BaseVehicle;
+using AVS.Log;
+using AVS.Util;
 using HarmonyLib;
 using System.Collections.Generic;
 using System.Linq;
@@ -43,30 +45,52 @@ namespace AVS.Patches.CreaturePatches
         [HarmonyPatch(nameof(AttachAndSuck.OnCollisionEnter))]
         static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions)
         {
-            List<CodeInstruction> codes = new List<CodeInstruction>(instructions);
-            List<CodeInstruction> newCodes = new List<CodeInstruction>(codes.Count + 2);
+            using var log = SmartLog.LazyForAVS(RootModController.AnyInstance);
+            List<CodeInstruction> codes = [.. instructions];
+            //List<CodeInstruction> newCodes = new List<CodeInstruction>(codes.Count + 2);
+
+            int firstReturnAt = -1;
+
             CodeInstruction myNOP = new CodeInstruction(OpCodes.Nop);
             for (int i = 0; i < codes.Count; i++)
             {
-                newCodes.Add(myNOP);
-            }
-            for (int i = 0; i < codes.Count; i++)
-            {
-                if (codes[i].opcode == OpCodes.Callvirt)
+                //newCodes.Add(myNOP);
+                log.Debug($"[{i}] {codes[i].ToStr()}");
+                if (codes[i].opcode == OpCodes.Ret && firstReturnAt == -1)
                 {
-                    if (codes[i].operand.ToString().Contains("IsInSub"))
-                    {
-                        newCodes[i] = codes[i];
-                        newCodes[i + 1] = codes[i + 1];
-                        newCodes[i + 2] = CodeInstruction.Call(typeof(BleederPatcher), nameof(IsPlayerInsideAvsVehicle));
-                        newCodes[i + 3] = new CodeInstruction(codes[i + 1]);
-                        i += 4;
-                        continue;
-                    }
+                    firstReturnAt = i;
                 }
-                newCodes[i] = codes[i];
             }
-            return newCodes.AsEnumerable();
+            if (firstReturnAt > 0)
+            {
+                var prevOp = codes[firstReturnAt - 1];
+                codes.Insert(firstReturnAt, new CodeInstruction(OpCodes.Brfalse, prevOp.operand));
+                codes.Insert(firstReturnAt, CodeInstruction.Call(typeof(BleederPatcher), nameof(IsPlayerInsideAvsVehicle)));
+
+                //for (int i = 0; i < codes.Count; i++)
+                //{
+                //    if (codes[i].opcode == OpCodes.Callvirt)
+                //    {
+                //        if (codes[i].operand.ToString().Contains("IsInSub"))
+                //        {
+                //            newCodes[i] = codes[i];
+                //            newCodes[i + 1] = codes[i + 1];
+                //            newCodes[i + 2] = CodeInstruction.Call(typeof(BleederPatcher), nameof(IsPlayerInsideAvsVehicle));
+                //            newCodes[i + 3] = new CodeInstruction(codes[i + 1]);
+                //            i += 4;
+                //            continue;
+                //        }
+                //    }
+                //    newCodes[i] = codes[i];
+                //}
+                foreach (var code in codes)
+                {
+                    log.Debug($"Modded: {code.ToStr()}");
+                }
+            }
+            else
+                log.Warn("Failed to find return instruction in AttachAndSuck.OnCollisionEnter transpiler!");
+            return codes.AsEnumerable();
         }
     }
 }
