@@ -685,7 +685,8 @@ internal static class AvsVehicleBuilder
             {
                 log.Debug(
                     $"Setting icon for ping {ping.name} of type {inputType} to sprite {ve.PingSprite?.texture.NiceName()}");
-                ping.SetIcon(ve.PingSprite);
+                ping.icon.sprite = ve.PingSprite;
+                //ping.SetIcon(ve.PingSprite);
                 return;
             }
 
@@ -694,7 +695,8 @@ internal static class AvsVehicleBuilder
             {
                 log.Debug(
                     $"Setting icon for ping {ping.name} of type {inputType} to sprite {pair.Sprite?.texture.NiceName()}");
-                ping.SetIcon(pair.Sprite);
+                ping.icon.sprite = pair.Sprite;
+                //ping.SetIcon(pair.Sprite);
                 return;
             }
 
