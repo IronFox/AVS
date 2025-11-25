@@ -132,19 +132,19 @@ namespace Assets.Behavior.Util.Math
                 string t = $"matrix {matrixToRoot}, computed from scale {transform.localScale} on {transform.NiceName()}";
                 if (includeRenderers)
                 {
-                    // var mf = transform.GetComponent<MeshFilter>();
-                    // var r = transform.GetComponent<Renderer>();
-                    // var l = transform.GetComponent<Light>();
-                    //
-                    // if (r && mf && !l && (!r.name.Contains("Volum") || !r.name.Contains("Light")) && r.enabled && mf.mesh)
-                    // {
-                    //     var wasTooBig = IsTooBig(bounds);
-                    //     foreach (var corner in mf.mesh.bounds.GetCornerPoints())
-                    //         bounds.Encapsulate(matrixToRoot * corner);
-                    //     if (!wasTooBig && IsTooBig(bounds))
-                    //         Log.Default.LogError(
-                    //             $"Computed bounds have gotten too large ({bounds}) after using renderer {r.NiceName()} bounds {mf.mesh.bounds} on {t}");
-                    // }
+                    var mf = transform.GetComponent<MeshFilter>();
+                    var r = transform.GetComponent<Renderer>();
+                    var l = transform.GetComponent<Light>();
+
+                    if (r && mf && !l /*&& (!r.name.Contains("Volum") || !r.name.Contains("Light"))*/ && r.enabled && mf.mesh)
+                    {
+                        var wasTooBig = IsTooBig(bounds);
+                        foreach (var corner in mf.mesh.bounds.GetCornerPoints())
+                            bounds.Encapsulate(matrixToRoot * corner);
+                        if (!wasTooBig && IsTooBig(bounds))
+                            log.Error(
+                                $"Computed bounds have gotten too large ({bounds}) after using renderer {r.NiceName()} bounds {mf.mesh.bounds} on {t}");
+                    }
 
                 }
 
