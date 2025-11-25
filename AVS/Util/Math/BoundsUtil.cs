@@ -140,7 +140,7 @@ namespace Assets.Behavior.Util.Math
                     {
                         var wasTooBig = IsTooBig(bounds);
                         foreach (var corner in mf.mesh.bounds.GetCornerPoints())
-                            bounds.Encapsulate(matrixToRoot * corner);
+                            bounds.Encapsulate(matrixToRoot * M.V4(corner, 1));
                         if (!wasTooBig && IsTooBig(bounds))
                             log.Error(
                                 $"Computed bounds have gotten too large ({bounds}) after using renderer {r.NiceName()} bounds {mf.mesh.bounds} on {t}");
